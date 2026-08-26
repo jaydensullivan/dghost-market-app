@@ -1048,6 +1048,44 @@ line-height:1.5;
 resize:vertical;
 }
 
+.admin-emoji-insert-row{
+display:flex;
+flex-wrap:wrap;
+gap:6px;
+margin-top:8px;
+}
+
+.admin-emoji-insert-btn{
+width:32px;
+height:32px;
+border-radius:8px;
+border:1px solid var(--red-dim);
+background:rgba(0,0,0,0.3);
+font-size:16px;
+display:flex;
+align-items:center;
+justify-content:center;
+cursor:pointer;
+}
+
+.admin-emoji-insert-btn:active{
+border-color:var(--red);
+background:rgba(217,74,82,0.12);
+}
+
+.admin-post-preview{
+margin-bottom:10px;
+padding:12px;
+border-radius:12px;
+background:rgba(0,0,0,0.35);
+border:1px solid var(--red-dim);
+white-space:pre-wrap;
+word-break:break-word;
+font-size:13px;
+line-height:1.5;
+color:var(--silver);
+}
+
 .admin-commission-box{
 flex:1;
 padding:12px;
@@ -2296,6 +2334,13 @@ transform="rotate(-90 100 100)"></circle>
 </select>
 <div class="shop-hint" data-i18n="admin_emoji_hint">Список пополняется командой /emoji_id боту в личке — пришли premium-эмодзи, он появится тут сам, без копирования.</div>
 </div>
+<div class="edit-field">
+<label for="adminGwCustomPostText" data-i18n="admin_custom_post_label">Текст поста (необязательно — если пусто, используется стандартный)</label>
+<textarea id="adminGwCustomPostText" class="admin-template-textarea" rows="5" placeholder="Свой текст поста. Оставь пустым для стандартного текста."></textarea>
+<div class="admin-emoji-insert-row" id="gwEmojiInsertRow"></div>
+</div>
+<button type="button" class="steam-link-btn secondary" id="gwPreviewBtn" style="margin-bottom:8px;" data-i18n="admin_btn_preview">👁 Предпросмотр</button>
+<div class="admin-post-preview" id="gwPreviewBox" style="display:none;"></div>
 <div class="edit-row">
 <button type="button" id="adminGwSaveBtn" class="steam-link-btn secondary" data-i18n="btn_save">Сохранить</button>
 <button type="button" id="adminGwStartBtn" class="steam-link-btn" data-i18n="admin_gw_start">🚀 Запустить</button>
@@ -2307,6 +2352,9 @@ transform="rotate(-90 100 100)"></circle>
 <div id="adminGwParticipantsList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="admin_gw_no_participants">Пока никто не зарегистрировался.</div></div>
 <button type="button" id="adminGwPickWinnerBtn" class="steam-link-btn secondary" style="margin-top:8px;" data-i18n="admin_gw_pick_winner">🎲 Выбрать победителя</button>
 <div id="adminGwWinnerResult" class="shop-hint" style="margin-top:8px;"></div>
+
+<div class="profile-section-title" style="margin-top:16px;" data-i18n="admin_section_giveaway_history">История розыгрышей</div>
+<div id="adminGiveawayHistoryList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
 </div>
 
 <div class="profile-section admin-group" id="adminAuctionSection" data-group="auction">
@@ -2335,6 +2383,13 @@ transform="rotate(-90 100 100)"></circle>
 <label for="aMinutes" data-i18n="admin_label_minutes">Сколько минут идёт аукцион</label>
 <input id="aMinutes" type="number" min="1" placeholder="10">
 </div>
+<div class="edit-field">
+<label for="aCustomPostText" data-i18n="admin_custom_post_label">Текст поста (необязательно — если пусто, используется стандартный)</label>
+<textarea id="aCustomPostText" class="admin-template-textarea" rows="5" placeholder="Свой текст поста. Оставь пустым для стандартного текста."></textarea>
+<div class="admin-emoji-insert-row" id="aEmojiInsertRow"></div>
+</div>
+<button type="button" class="steam-link-btn secondary" id="aPreviewBtn" style="margin-bottom:8px;" data-i18n="admin_btn_preview">👁 Предпросмотр</button>
+<div class="admin-post-preview" id="aPreviewBox" style="display:none;"></div>
 <button type="button" id="adminCreateAuctionBtn" class="steam-link-btn" data-i18n="admin_btn_propose_auction">Отправить продавцу запрос</button>
 <div class="edit-status" id="adminAuctionStatus"></div>
 </div>
@@ -2344,6 +2399,11 @@ transform="rotate(-90 100 100)"></circle>
 <div id="adminActiveAuctionsList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
 <div class="profile-section-title" style="margin-top:16px;" data-i18n="admin_section_pending_proposals">Ждут ответа продавца</div>
 <div id="adminPendingProposalsList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+</div>
+
+<div class="profile-section admin-group" id="adminAuctionHistorySection" data-group="auction" style="margin-top:10px;">
+<div class="profile-section-title" data-i18n="admin_section_auction_history">История аукционов</div>
+<div id="adminAuctionHistoryList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
 </div>
 
 <div class="profile-section admin-group" id="adminDealsSection" data-group="deals" style="margin-top:10px; display:none;">
@@ -5753,6 +5813,56 @@ stopAdminStatsLive();
 }
 });
 
+// ---------------- История аукционов / розыгрышей ----------------
+
+function eventStatusLabel(status){
+const labels = {
+completed: '🏆 Завершён',
+no_bids: '❌ Без ставок',
+cancelled: '🚫 Отменён',
+ended: '⏹ Завершился',
+winner_picked: '🎲 Победитель выбран',
+};
+return labels[status] || status;
+}
+
+function formatHistoryDate(iso){
+if (!iso) return '';
+try {
+const d = new Date(iso);
+return d.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+} catch(e){ return ''; }
+}
+
+function renderHistoryList(items){
+if (!items.length){
+return `<div class="skins-empty" style="padding:12px 4px;">Пока пусто</div>`;
+}
+return items.map(it => `
+<div class="deal-card" style="flex-direction:column; align-items:stretch;">
+<div class="deal-info">
+<div class="deal-title">${escapeHtml(it.title || '—')}</div>
+<div class="deal-meta">${eventStatusLabel(it.status)}${it.final_value ? ' · ' + escapeHtml(it.final_value) : ''}</div>
+${it.winner_username ? `<div class="deal-meta">🥇 ${escapeHtml(it.winner_username)}</div>` : ''}
+<div class="deal-meta">${formatHistoryDate(it.ended_at)}</div>
+</div>
+</div>`).join('');
+}
+
+function loadAdminEventsHistory(){
+adminApiFetch('/api/admin/events/history')
+.then(data => {
+const items = data.items || [];
+const auctionItems = items.filter(it => it.event_type === 'auction');
+const giveawayItems = items.filter(it => it.event_type === 'giveaway');
+const auctionEl = document.getElementById('adminAuctionHistoryList');
+const giveawayEl = document.getElementById('adminGiveawayHistoryList');
+if (auctionEl) auctionEl.innerHTML = renderHistoryList(auctionItems);
+if (giveawayEl) giveawayEl.innerHTML = renderHistoryList(giveawayItems);
+})
+.catch(() => {});
+}
+
 function loadAdminPanel(){
 applyAdminChipFilter(currentAdminChip);
 
@@ -5774,6 +5884,7 @@ loadAdminDeals();
 loadAdminHolds();
 loadAdminTemplates();
 loadAdminGiveawayPanel();
+loadAdminEventsHistory();
 loadAdminTopups();
 loadAdminWithdrawals();
 loadAdminSettings();
@@ -5861,9 +5972,11 @@ status.textContent = dict.admin_sending_request;
 
 const gwEmoji = getSelectedEmoji('aEmoji');
 
+const aCustomText = document.getElementById('aCustomPostText').value.trim();
+
 adminApiFetch('/api/admin/auction/propose', {
 method: 'POST',
-body: { skin_id: adminSelectedSkinId, start_price: startPrice, step: step, minutes: minutes, emoji: gwEmoji.emoji_char, emoji_id: gwEmoji.emoji_id }
+body: { skin_id: adminSelectedSkinId, start_price: startPrice, step: step, minutes: minutes, emoji: gwEmoji.emoji_char, emoji_id: gwEmoji.emoji_id, custom_post_text: aCustomText || undefined }
 })
 .then(() => {
 status.textContent = dict.admin_request_sent;
@@ -5871,6 +5984,8 @@ document.getElementById('aStartPrice').value = '';
 document.getElementById('aStep').value = '';
 document.getElementById('aMinutes').value = '';
 document.getElementById('aEmoji').value = '';
+document.getElementById('aCustomPostText').value = '';
+document.getElementById('aPreviewBox').style.display = 'none';
 document.getElementById('adminSelectedSkin').style.display = 'none';
 adminSelectedSkinId = null;
 loadAdminSkinPicker();
@@ -5948,7 +6063,7 @@ const btn = e.target.closest('[data-cancel-active]');
 if (!btn) return;
 showConfirm((I18N[currentLang] || I18N.ru).admin_confirm_cancel_active, () => {
 adminApiFetch('/api/admin/auction/' + btn.dataset.cancelActive + '/cancel', { method: 'POST' })
-.then(() => { loadAdminActiveAuctions(); loadAuctionsList(); loadAdminSkinPicker(); })
+.then(() => { loadAdminActiveAuctions(); loadAuctionsList(); loadAdminSkinPicker(); loadAdminEventsHistory(); })
 .catch(err => showAlert(friendlyErrorMessage(err)));
 });
 });
@@ -6179,6 +6294,50 @@ el.textContent = dict.admin_gw_running_label + ' ' + (h > 0 ? `${h}:${pad(m)}:${
 
 let savedEmojisList = [];
 
+function renderEmojiInsertRow(rowId, textareaId){
+const row = document.getElementById(rowId);
+if (!row) return;
+if (!savedEmojisList.length){
+row.innerHTML = '';
+return;
+}
+row.innerHTML = savedEmojisList.map(e =>
+`<button type="button" class="admin-emoji-insert-btn" data-insert-emoji="${escapeHtml(e.emoji_char)}" data-target="${textareaId}">${escapeHtml(e.emoji_char)}</button>`
+).join('');
+}
+
+document.addEventListener('click', (e) => {
+const btn = e.target.closest('[data-insert-emoji]');
+if (!btn) return;
+const ta = document.getElementById(btn.dataset.target);
+if (!ta) return;
+const start = ta.selectionStart || 0;
+const end = ta.selectionEnd || 0;
+const char = btn.dataset.insertEmoji;
+ta.value = ta.value.slice(0, start) + char + ta.value.slice(end);
+const newPos = start + char.length;
+ta.focus();
+ta.setSelectionRange(newPos, newPos);
+});
+
+function renderPostPreview(boxId, text){
+const box = document.getElementById(boxId);
+if (!text || !text.trim()){
+box.style.display = 'none';
+return;
+}
+box.textContent = text;
+box.style.display = '';
+}
+
+document.getElementById('aPreviewBtn').addEventListener('click', () => {
+renderPostPreview('aPreviewBox', document.getElementById('aCustomPostText').value);
+});
+
+document.getElementById('gwPreviewBtn').addEventListener('click', () => {
+renderPostPreview('gwPreviewBox', document.getElementById('adminGwCustomPostText').value);
+});
+
 function populateEmojiSelect(selectId, selectedEmojiId){
 const el = document.getElementById(selectId);
 const dict = I18N[currentLang] || I18N.ru;
@@ -6203,6 +6362,8 @@ adminApiFetch('/api/admin/emojis')
 savedEmojisList = data.items || [];
 populateEmojiSelect('aEmoji', preselectAuction);
 populateEmojiSelect('adminGwEmoji', preselectGiveaway);
+renderEmojiInsertRow('aEmojiInsertRow', 'aCustomPostText');
+renderEmojiInsertRow('gwEmojiInsertRow', 'adminGwCustomPostText');
 })
 .catch(() => {});
 }
@@ -6215,6 +6376,7 @@ const dict = I18N[currentLang] || I18N.ru;
 document.getElementById('adminGwTitle').value = data.title || '';
 document.getElementById('adminGwSubtitle').value = data.subtitle || '';
 document.getElementById('adminGwPrize').value = data.prize || '';
+document.getElementById('adminGwCustomPostText').value = data.custom_post_text || '';
 
 loadSavedEmojis(null, data.emoji_id || null);
 loadAdminGwParticipants();
@@ -6253,6 +6415,8 @@ status.textContent = '...';
 
 const gwEmojiSave = getSelectedEmoji('adminGwEmoji');
 
+const gwCustomTextSave = document.getElementById('adminGwCustomPostText').value.trim();
+
 adminApiFetch('/api/giveaway', {
 method: 'POST',
 body: {
@@ -6262,6 +6426,7 @@ prize: prize || undefined,
 minutes: minutes ? Number(minutes) : undefined,
 emoji_id: gwEmojiSave.emoji_id,
 emoji_char: gwEmojiSave.emoji_char,
+custom_post_text: gwCustomTextSave,
 }
 })
 .then(() => { status.textContent = 'Готово ✓'; loadAdminGiveawayPanel(); })
@@ -6284,6 +6449,8 @@ status.textContent = '...';
 
 const gwEmoji = getSelectedEmoji('adminGwEmoji');
 
+const gwCustomTextStart = document.getElementById('adminGwCustomPostText').value.trim();
+
 // Сохраняем текущие значения формы и сразу запускаем — раньше
 // нужно было отдельно жать "Сохранить" перед "Запустить", иначе
 // сервер не знал время окончания и запуск падал с ошибкой.
@@ -6296,6 +6463,7 @@ prize: prize || undefined,
 minutes: Number(minutes),
 emoji_id: gwEmoji.emoji_id,
 emoji_char: gwEmoji.emoji_char,
+custom_post_text: gwCustomTextStart,
 }
 })
 .then(() => adminApiFetch('/api/admin/giveaway/start', { method: 'POST' }))
@@ -6341,6 +6509,7 @@ adminApiFetch('/api/admin/giveaway/pick_winner', { method: 'POST' })
 .then(data => {
 const w = data.winner;
 result.innerHTML = `🎉 ${dict.admin_gw_winner_is} <b>${escapeHtml(w.username || String(w.user_id))}</b>`;
+loadAdminEventsHistory();
 })
 .catch(err => { result.textContent = friendlyErrorMessage(err); });
 });
