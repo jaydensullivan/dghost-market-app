@@ -1096,6 +1096,68 @@ font-size:12px;
 line-height:1.6;
 }
 
+.set-card{
+background:rgba(0,0,0,0.3);
+border:1px solid var(--red-dim);
+border-radius:14px;
+padding:12px;
+margin-bottom:12px;
+}
+
+.set-card-title{
+font-weight:700;
+font-size:15px;
+margin-bottom:6px;
+}
+
+.set-card-items{
+font-size:12px;
+color:var(--silver);
+line-height:1.6;
+margin-bottom:8px;
+}
+
+.set-card-price-row{
+display:flex;
+align-items:baseline;
+gap:8px;
+margin-bottom:10px;
+}
+
+.set-card-old-price{
+text-decoration:line-through;
+color:#888;
+font-size:13px;
+}
+
+.set-card-new-price{
+font-size:18px;
+font-weight:700;
+color:#4ad880;
+}
+
+.set-card-discount{
+font-size:11px;
+color:#e0555a;
+background:rgba(224,85,90,0.15);
+border-radius:6px;
+padding:2px 6px;
+}
+
+.btn-row{
+display:flex;
+gap:8px;
+}
+
+.set-discount-type-btn{
+opacity:0.5;
+}
+
+.set-discount-type-btn.active{
+opacity:1;
+border-color:#e0555a;
+}
+
 .market-price-box .mp-row{
 display:flex;
 justify-content:space-between;
@@ -2191,6 +2253,10 @@ transform="rotate(-90 100 100)"></circle>
 <span id="filtersActiveCount" class="filters-count" style="display:none;">0</span>
 </button>
 
+<button type="button" id="openSetsBtn" class="filters-btn" style="margin-top:6px; border-color:#e0555a;">
+🔥 <span data-i18n="sets_btn">Сеты оружия</span>
+</button>
+
 <div class="skins-grid" id="skinsList">
 <div class="skins-empty">Загрузка...</div>
 </div>
@@ -2313,6 +2379,7 @@ transform="rotate(-90 100 100)"></circle>
 <button type="button" class="category-chip active" data-admin-group="overview" data-i18n="admin_chip_overview">Обзор</button>
 <button type="button" class="category-chip" data-admin-group="auction" data-i18n="admin_chip_auction">Аукцион</button>
 <button type="button" class="category-chip" data-admin-group="giveaway" data-i18n="admin_chip_giveaway">Розыгрыш</button>
+<button type="button" class="category-chip" data-admin-group="sets" data-i18n="admin_chip_sets">Сеты</button>
 <button type="button" class="category-chip" data-admin-group="deals" data-i18n="admin_chip_deals">Сделки</button>
 <button type="button" class="category-chip" data-admin-group="requests" data-i18n="admin_chip_requests">Заявки</button>
 <button type="button" class="category-chip" data-admin-group="finance" data-i18n="admin_chip_finance">Финансы</button>
@@ -2364,8 +2431,8 @@ transform="rotate(-90 100 100)"></circle>
 <div class="shop-hint" data-i18n="admin_emoji_hint">Список пополняется командой /emoji_id боту в личке — пришли premium-эмодзи, он появится тут сам, без копирования.</div>
 </div>
 <div class="edit-field">
-<label for="adminGwCustomPostText" data-i18n="admin_custom_post_label">Текст поста (необязательно — если пусто, используется стандартный)</label>
-<textarea id="adminGwCustomPostText" class="admin-template-textarea" rows="5" placeholder="Свой текст поста. Оставь пустым для стандартного текста."></textarea>
+<label for="adminGwCustomPostText" data-i18n="admin_custom_post_label">Текст поста (обязательно)</label>
+<textarea id="adminGwCustomPostText" class="admin-template-textarea" rows="5" placeholder="Напиши текст поста для канала — уйдёт как есть, без шаблона." required></textarea>
 <div class="admin-emoji-insert-row" id="gwEmojiInsertRow"></div>
 </div>
 <button type="button" class="steam-link-btn secondary" id="gwPreviewBtn" style="margin-bottom:8px;" data-i18n="admin_btn_preview">👁 Предпросмотр</button>
@@ -2384,6 +2451,40 @@ transform="rotate(-90 100 100)"></circle>
 
 <div class="profile-section-title" style="margin-top:16px;" data-i18n="admin_section_giveaway_history">История розыгрышей</div>
 <div id="adminGiveawayHistoryList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+</div>
+
+<div class="profile-section admin-group" id="adminSetsSection" data-group="sets" style="display:none;">
+<div class="profile-section-title">Создать сет</div>
+
+<div class="edit-field">
+<label for="setTitle">Название сета</label>
+<input id="setTitle" type="text" maxlength="100" placeholder="Asiimov Set">
+</div>
+
+<div class="edit-field">
+<label for="setDescription">Описание (необязательно)</label>
+<input id="setDescription" type="text" maxlength="500" placeholder="Три предмета в стиле Asiimov">
+</div>
+
+<div class="edit-field">
+<label>Скидка</label>
+<div class="btn-row" style="margin-bottom:8px;">
+<button type="button" class="steam-link-btn secondary set-discount-type-btn active" data-discount-type="percent" style="flex:1;">В процентах</button>
+<button type="button" class="steam-link-btn secondary set-discount-type-btn" data-discount-type="fixed" style="flex:1;">Фикс. цена</button>
+</div>
+<input id="setDiscountValue" type="number" min="0" placeholder="10 (значит -10%)">
+</div>
+
+<div class="edit-field">
+<label>Выбери минимум 2 лота (недоступные для сетов не показаны)</label>
+<div class="admin-skin-picker" id="setSkinPicker"><div class="skins-empty" style="padding:12px 4px;">Загрузка...</div></div>
+</div>
+
+<div class="edit-status" id="setCreateStatus"></div>
+<button type="button" id="setCreateBtn" class="steam-link-btn">Создать сет</button>
+
+<div class="profile-section-title" style="margin-top:16px;">Существующие сеты</div>
+<div id="adminSetsList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
 </div>
 
 <div class="profile-section admin-group" id="adminAuctionSection" data-group="auction">
@@ -2413,8 +2514,8 @@ transform="rotate(-90 100 100)"></circle>
 <input id="aMinutes" type="number" min="1" placeholder="10">
 </div>
 <div class="edit-field">
-<label for="aCustomPostText" data-i18n="admin_custom_post_label">Текст поста (необязательно — если пусто, используется стандартный)</label>
-<textarea id="aCustomPostText" class="admin-template-textarea" rows="5" placeholder="Свой текст поста. Оставь пустым для стандартного текста."></textarea>
+<label for="aCustomPostText" data-i18n="admin_custom_post_label">Текст поста (обязательно)</label>
+<textarea id="aCustomPostText" class="admin-template-textarea" rows="5" placeholder="Напиши текст поста для канала — уйдёт как есть, без шаблона." required></textarea>
 <div class="admin-emoji-insert-row" id="aEmojiInsertRow"></div>
 </div>
 <button type="button" class="steam-link-btn secondary" id="aPreviewBtn" style="margin-bottom:8px;" data-i18n="admin_btn_preview">👁 Предпросмотр</button>
@@ -2470,28 +2571,6 @@ transform="rotate(-90 100 100)"></circle>
 <div class="profile-section-title" data-i18n="admin_section_api_usage">Остаток запросов Steamwebapi</div>
 <button type="button" id="adminApiUsageCheckBtn" class="steam-link-btn secondary" data-i18n="admin_btn_check">Проверить</button>
 <div id="adminApiUsageResult" class="shop-hint" style="margin-top:8px;"></div>
-</div>
-
-<div class="profile-section admin-group" id="adminTemplatesSection" data-group="settings" style="margin-top:10px; display:none;">
-<div class="profile-section-title" data-i18n="admin_section_templates">Шаблоны постов</div>
-
-<div class="profile-section-title" style="font-size:12px; margin-top:10px;" data-i18n="admin_template_auction">Аукцион</div>
-<div class="shop-hint" data-i18n="admin_template_placeholders_auction">Плейсхолдеры: {title} {price} {step} {remaining} {bid_bot_url}</div>
-<textarea id="adminTemplateAuction" class="admin-template-textarea" rows="6"></textarea>
-<div class="edit-row">
-<button type="button" id="adminTemplateAuctionSave" class="steam-link-btn" data-i18n="btn_save">Сохранить</button>
-<button type="button" id="adminTemplateAuctionReset" class="steam-link-btn secondary" data-i18n="admin_btn_reset_default">Сбросить</button>
-</div>
-<div class="edit-status" id="adminTemplateAuctionStatus"></div>
-
-<div class="profile-section-title" style="font-size:12px; margin-top:16px;" data-i18n="admin_template_timer">Таймер / розыгрыш</div>
-<div class="shop-hint" data-i18n="admin_template_placeholders_timer">Плейсхолдеры: {title} {prize} {remaining} {bid_bot_url} {join_url}</div>
-<textarea id="adminTemplateTimer" class="admin-template-textarea" rows="6"></textarea>
-<div class="edit-row">
-<button type="button" id="adminTemplateTimerSave" class="steam-link-btn" data-i18n="btn_save">Сохранить</button>
-<button type="button" id="adminTemplateTimerReset" class="steam-link-btn secondary" data-i18n="admin_btn_reset_default">Сбросить</button>
-</div>
-<div class="edit-status" id="adminTemplateTimerStatus"></div>
 </div>
 
 <div class="profile-section admin-group" id="adminTopupsSection" data-group="requests" style="margin-top:10px; display:none;">
@@ -2885,6 +2964,17 @@ transform="rotate(-90 100 100)"></circle>
 <button type="button" id="buySendOfferBtn" class="save" style="display:none;" data-i18n="btn_send_offer">Отправить предложение</button>
 <button type="button" id="buyEditPriceBtn" class="save" style="display:none;" data-i18n="btn_edit_price">Изменить цену</button>
 <button type="button" id="buySavePriceBtn" class="save" style="display:none;" data-i18n="btn_save_price">Сохранить цену</button>
+</div>
+</div>
+
+<div class="edit-overlay" id="setsOverlay">
+<div class="edit-sheet">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+<h2 style="margin:0;">🔥 <span data-i18n="sets_title">Сеты оружия</span></h2>
+<button type="button" id="setsCloseBtn" class="buy-close-btn" style="position:static;">✕</button>
+</div>
+<div class="edit-status" id="setsStatus"></div>
+<div id="setsList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
 </div>
 </div>
 
@@ -4721,6 +4811,86 @@ document.getElementById('filterStickers').value = activeFilters.stickers;
 document.getElementById('filtersOverlay').classList.add('show');
 });
 
+// ---------------- Сеты оружия ----------------
+
+document.getElementById('openSetsBtn').addEventListener('click', () => {
+document.getElementById('setsOverlay').classList.add('show');
+loadSetsList();
+});
+
+document.getElementById('setsCloseBtn').addEventListener('click', () => {
+document.getElementById('setsOverlay').classList.remove('show');
+});
+
+function renderSetCard(item){
+const itemsLine = item.items.map(it => escapeHtml(it.title)).join(', ');
+return `
+<div class="set-card">
+<div class="set-card-title">${escapeHtml(item.title)}</div>
+${item.description ? `<div class="set-card-items">${escapeHtml(item.description)}</div>` : ''}
+<div class="set-card-items">${itemsLine}</div>
+<div class="set-card-price-row">
+<span class="set-card-old-price">${formatCoins(item.individual_total)}</span>
+<span class="set-card-new-price">${formatCoins(item.set_price)}</span>
+<span class="set-card-discount">-${item.discount_percent}%</span>
+</div>
+<button type="button" class="steam-link-btn" data-buy-set="${item.id}">Купить сет</button>
+</div>`;
+}
+
+function loadSetsList(){
+const list = document.getElementById('setsList');
+const status = document.getElementById('setsStatus');
+status.textContent = '';
+list.innerHTML = '<div class="skins-empty" style="padding:12px 4px;">Загрузка...</div>';
+fetch(API_BASE + '/api/sets')
+.then(r => r.json())
+.then(data => {
+const items = data.items || [];
+if (!items.length){
+list.innerHTML = '<div class="skins-empty" style="padding:12px 4px;">Сейчас нет доступных сетов</div>';
+return;
+}
+list.innerHTML = items.map(renderSetCard).join('');
+})
+.catch(() => { list.innerHTML = '<div class="skins-empty" style="padding:12px 4px;">Не удалось загрузить</div>'; });
+}
+
+document.getElementById('setsList').addEventListener('click', (e) => {
+const btn = e.target.closest('[data-buy-set]');
+if (!btn) return;
+const setId = btn.dataset.buySet;
+if (!tg || !tg.initData){
+showAlert(errorMessage('unauthorized'));
+return;
+}
+showConfirm('Купить этот сет целиком?', () => {
+btn.disabled = true;
+const status = document.getElementById('setsStatus');
+status.textContent = '...';
+fetch(API_BASE + '/api/sets/' + setId + '/buy', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+})
+.then(async r => {
+const data = await r.json();
+if (!r.ok || data.error) throw data;
+return data;
+})
+.then(data => {
+status.textContent = `✅ Куплено за ${formatCoins(data.set_price)}`;
+loadSetsList();
+loadSkins();
+loadMe();
+})
+.catch(err => {
+status.textContent = friendlyErrorMessage(err);
+btn.disabled = false;
+});
+});
+});
+
 document.getElementById('filtersCloseBtn').addEventListener('click', () => {
 document.getElementById('filtersOverlay').classList.remove('show');
 });
@@ -5848,7 +6018,7 @@ const ADMIN_ONLY_SECTIONS = new Set([
 'adminTopupsSection','adminWithdrawalsSection','adminTopupDetailsSection',
 'adminCommissionSection','adminPromoSection','adminReferralSection',
 'adminPeopleSection','adminDealsSection','adminBalanceSection',
-'adminHoldsSection','adminApiUsageSection','adminTemplatesSection',
+'adminHoldsSection','adminApiUsageSection',
 'adminStatusSection','adminGiveawaySection'
 ]);
 
@@ -5874,6 +6044,126 @@ startAdminStatsLive();
 } else {
 stopAdminStatsLive();
 }
+});
+
+// ---------------- Сеты оружия (админка) ----------------
+
+let adminSetSelectedSkinIds = new Set();
+let adminSetSkinsPool = [];
+let adminSetDiscountType = 'percent';
+
+function loadAdminSetSkinPicker(){
+const picker = document.getElementById('setSkinPicker');
+adminApiFetch('/api/admin/skins_for_auction')
+.then(data => {
+adminSetSkinsPool = data.items || [];
+if (!adminSetSkinsPool.length){
+picker.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">Нет доступных лотов</div>`;
+return;
+}
+picker.innerHTML = adminSetSkinsPool.map(s => {
+const photo = s.photo_url ? `<img src="${s.photo_url}" alt="" onerror="this.style.display='none'">` : '';
+const title = (s.stattrak ? 'StatTrak™ ' : '') + escapeHtml(s.title);
+return `<div class="admin-skin-picker-item" data-skin-id="${s.id}">
+${photo}
+<div class="admin-skin-picker-name">${title}</div>
+<div class="admin-skin-picker-price">${formatCoins(s.price)}</div>
+</div>`;
+}).join('');
+})
+.catch(() => {
+picker.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">Не удалось загрузить</div>`;
+});
+}
+
+document.getElementById('setSkinPicker').addEventListener('click', (e) => {
+const item = e.target.closest('.admin-skin-picker-item');
+if (!item) return;
+const skinId = Number(item.dataset.skinId);
+if (adminSetSelectedSkinIds.has(skinId)){
+adminSetSelectedSkinIds.delete(skinId);
+item.classList.remove('selected');
+} else {
+adminSetSelectedSkinIds.add(skinId);
+item.classList.add('selected');
+}
+});
+
+document.querySelectorAll('.set-discount-type-btn').forEach(btn => {
+btn.addEventListener('click', () => {
+adminSetDiscountType = btn.dataset.discountType;
+document.querySelectorAll('.set-discount-type-btn').forEach(b => b.classList.toggle('active', b === btn));
+document.getElementById('setDiscountValue').placeholder =
+adminSetDiscountType === 'percent' ? '10 (значит -10%)' : 'Итоговая цена сета, сум';
+});
+});
+
+document.getElementById('setCreateBtn').addEventListener('click', () => {
+const status = document.getElementById('setCreateStatus');
+const title = document.getElementById('setTitle').value.trim();
+const description = document.getElementById('setDescription').value.trim();
+const discountValue = Number(document.getElementById('setDiscountValue').value);
+const skinIds = Array.from(adminSetSelectedSkinIds);
+
+if (!title){ status.textContent = 'Укажи название'; return; }
+if (skinIds.length < 2){ status.textContent = 'Выбери минимум 2 лота'; return; }
+if (!discountValue || discountValue < 0){ status.textContent = 'Укажи скидку'; return; }
+
+status.textContent = '...';
+
+adminApiFetch('/api/admin/sets', {
+method: 'POST',
+body: {
+title, description,
+discount_type: adminSetDiscountType,
+discount_value: discountValue,
+skin_ids: skinIds,
+}
+})
+.then(data => {
+if (!data.ok) throw data;
+status.textContent = '✅ Сет создан';
+document.getElementById('setTitle').value = '';
+document.getElementById('setDescription').value = '';
+document.getElementById('setDiscountValue').value = '';
+adminSetSelectedSkinIds.clear();
+loadAdminSetSkinPicker();
+loadAdminSetsList();
+})
+.catch(err => { status.textContent = friendlyErrorMessage(err); });
+});
+
+function loadAdminSetsList(){
+const list = document.getElementById('adminSetsList');
+adminApiFetch('/api/admin/sets')
+.then(data => {
+const items = data.items || [];
+if (!items.length){
+list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">Сетов пока нет</div>`;
+return;
+}
+list.innerHTML = items.map(it => `
+<div class="deal-card" style="flex-direction:column; align-items:stretch;">
+<div class="deal-info">
+<div class="deal-title">${escapeHtml(it.title)} ${it.is_active ? '' : '(расформирован)'}</div>
+<div class="deal-meta">${formatCoins(it.set_price)} вместо ${formatCoins(it.individual_total)} (-${it.discount_percent}%)</div>
+</div>
+${it.is_active ? `<div class="deal-actions"><button class="deal-action secondary" data-deactivate-set="${it.id}" type="button">Расформировать</button></div>` : ''}
+</div>`).join('');
+})
+.catch(() => {
+list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">Не удалось загрузить</div>`;
+});
+}
+
+document.getElementById('adminSetsList').addEventListener('click', (e) => {
+const btn = e.target.closest('[data-deactivate-set]');
+if (!btn) return;
+showConfirm('Расформировать сет? Лоты вернутся в обычный каталог.', () => {
+adminApiFetch('/api/admin/sets/' + btn.dataset.deactivateSet + '/deactivate', { method: 'POST' })
+.then(() => { loadAdminSetsList(); loadAdminSetSkinPicker(); loadSkins(); })
+.catch(err => showAlert(friendlyErrorMessage(err)));
+});
 });
 
 // ---------------- История аукционов / розыгрышей ----------------
@@ -5945,9 +6235,10 @@ if (!isAdmin) return;
 
 loadAdminDeals();
 loadAdminHolds();
-loadAdminTemplates();
 loadAdminGiveawayPanel();
 loadAdminEventsHistory();
+loadAdminSetSkinPicker();
+loadAdminSetsList();
 loadAdminTopups();
 loadAdminWithdrawals();
 loadAdminSettings();
@@ -6030,16 +6321,21 @@ status.textContent = dict.admin_fill_all_fields;
 return;
 }
 
+const aCustomText = document.getElementById('aCustomPostText').value.trim();
+
+if (!aCustomText){
+status.textContent = 'Напиши текст поста — без него аукцион не создать';
+return;
+}
+
 btn.disabled = true;
 status.textContent = dict.admin_sending_request;
 
 const gwEmoji = getSelectedEmoji('aEmoji');
 
-const aCustomText = document.getElementById('aCustomPostText').value.trim();
-
 adminApiFetch('/api/admin/auction/propose', {
 method: 'POST',
-body: { skin_id: adminSelectedSkinId, start_price: startPrice, step: step, minutes: minutes, emoji: gwEmoji.emoji_char, emoji_id: gwEmoji.emoji_id, custom_post_text: aCustomText || undefined }
+body: { skin_id: adminSelectedSkinId, start_price: startPrice, step: step, minutes: minutes, emoji: gwEmoji.emoji_char, emoji_id: gwEmoji.emoji_id, custom_post_text: aCustomText }
 })
 .then(() => {
 status.textContent = dict.admin_request_sent;
@@ -6508,11 +6804,16 @@ status.textContent = (I18N[currentLang] || I18N.ru).admin_gw_need_minutes;
 return;
 }
 
+const gwCustomTextStart = document.getElementById('adminGwCustomPostText').value.trim();
+
+if (!gwCustomTextStart){
+status.textContent = 'Напиши текст поста — без него розыгрыш не запустить';
+return;
+}
+
 status.textContent = '...';
 
 const gwEmoji = getSelectedEmoji('adminGwEmoji');
-
-const gwCustomTextStart = document.getElementById('adminGwCustomPostText').value.trim();
 
 // Сохраняем текущие значения формы и сразу запускаем — раньше
 // нужно было отдельно жать "Сохранить" перед "Запустить", иначе
@@ -6649,43 +6950,6 @@ result.innerHTML = apiUsageRowsHtml(data);
 })
 .catch(err => { result.textContent = friendlyErrorMessage(err); });
 });
-
-// ---------------- Шаблоны постов ----------------
-
-function loadAdminTemplates(){
-adminApiFetch('/api/admin/templates')
-.then(data => {
-document.getElementById('adminTemplateAuction').value = data.auction || data.auction_default || '';
-document.getElementById('adminTemplateTimer').value = data.timer || data.timer_default || '';
-})
-.catch(() => {});
-}
-
-function saveAdminTemplate(kind, textareaId, statusId){
-const status = document.getElementById(statusId);
-const text = document.getElementById(textareaId).value.trim();
-if (!text){
-status.textContent = (I18N[currentLang] || I18N.ru).admin_template_empty;
-return;
-}
-status.textContent = '...';
-adminApiFetch('/api/admin/templates/' + kind, { method: 'POST', body: { text: text } })
-.then(() => { status.textContent = 'Готово ✓'; })
-.catch(err => { status.textContent = friendlyErrorMessage(err); });
-}
-
-function resetAdminTemplate(kind, statusId){
-const status = document.getElementById(statusId);
-status.textContent = '...';
-adminApiFetch('/api/admin/templates/' + kind + '/reset', { method: 'POST' })
-.then(() => { status.textContent = 'Готово ✓'; loadAdminTemplates(); })
-.catch(err => { status.textContent = friendlyErrorMessage(err); });
-}
-
-document.getElementById('adminTemplateAuctionSave').addEventListener('click', () => saveAdminTemplate('auction', 'adminTemplateAuction', 'adminTemplateAuctionStatus'));
-document.getElementById('adminTemplateAuctionReset').addEventListener('click', () => resetAdminTemplate('auction', 'adminTemplateAuctionStatus'));
-document.getElementById('adminTemplateTimerSave').addEventListener('click', () => saveAdminTemplate('timer', 'adminTemplateTimer', 'adminTemplateTimerStatus'));
-document.getElementById('adminTemplateTimerReset').addEventListener('click', () => resetAdminTemplate('timer', 'adminTemplateTimerStatus'));
 
 // ---------------- Заявки на пополнение ----------------
 
