@@ -1086,6 +1086,35 @@ line-height:1.5;
 color:var(--silver);
 }
 
+.market-price-box{
+margin-top:10px;
+padding:10px 12px;
+border-radius:12px;
+background:rgba(0,0,0,0.25);
+border:1px solid rgba(255,255,255,0.08);
+font-size:12px;
+line-height:1.6;
+}
+
+.market-price-box .mp-row{
+display:flex;
+justify-content:space-between;
+color:var(--silver);
+}
+
+.market-price-box .mp-diff{
+margin-top:2px;
+font-weight:600;
+}
+
+.market-price-box .mp-diff.cheaper{
+color:#4ad880;
+}
+
+.market-price-box .mp-diff.pricier{
+color:#e0555a;
+}
+
 .admin-commission-box{
 flex:1;
 padding:12px;
@@ -2830,6 +2859,7 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 
 <div class="buy-details-table" id="buyDetailsTable"></div>
+<div class="market-price-box" id="marketPriceBox" style="display:none;"></div>
 
 <div class="buy-price-edit" id="buyPriceEdit" style="display:none;">
 <div class="edit-field" style="margin:14px 20px 0;">
@@ -4826,6 +4856,39 @@ buyOfferInput.value = '';
 
 buyStatus.textContent = '';
 buyOverlay.classList.add('show');
+
+loadMarketPriceComparison(skin.id);
+}
+
+function renderMarketPriceBox(data){
+const box = document.getElementById('marketPriceBox');
+if (!data || !data.available){
+box.style.display = 'none';
+return;
+}
+const cheaper = data.diff_percent >= 0;
+const diffLabel = cheaper
+? `🔥 Выгоднее рынка на ${Math.abs(data.diff_percent)}%`
+: `⚠️ Дороже рынка на ${Math.abs(data.diff_percent)}%`;
+box.innerHTML = `
+<div class="mp-row"><span>📊 Рыночная цена</span><span>${formatCoins(data.market_price_uzs)}</span></div>
+<div class="mp-diff ${cheaper ? 'cheaper' : 'pricier'}">${diffLabel}</div>
+`;
+box.style.display = '';
+}
+
+function loadMarketPriceComparison(skinId){
+const box = document.getElementById('marketPriceBox');
+box.style.display = 'none';
+fetch(API_BASE + '/api/market_price?skin_id=' + skinId)
+.then(r => r.json())
+.then(data => {
+// Пользователь мог уже закрыть/сменить лот, пока запрос летал —
+// не показываем устаревшие данные не по тому лоту.
+if (!pendingBuySkin || pendingBuySkin.id !== skinId) return;
+renderMarketPriceBox(data);
+})
+.catch(() => {});
 }
 
 buyShareBtn.addEventListener('click', () => {
