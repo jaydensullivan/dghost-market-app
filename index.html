@@ -2697,6 +2697,7 @@ transform="rotate(-90 100 100)"></circle>
 <button type="button" id="adminAddAdminBtn" class="money-btn" data-i18n="admin_btn_add_admin">+ Админ</button>
 <button type="button" id="adminAddAuctioneerBtn" class="money-btn" data-i18n="admin_btn_add_auctioneer">+ Организатор</button>
 <button type="button" id="adminAddSupportAdminBtn" class="money-btn" data-i18n="admin_btn_add_support_admin">+ Пультовый</button>
+<button type="button" id="adminBlockUserBtn" class="money-btn" style="background:rgba(224,85,90,0.15); border-color:#e0555a;">🚫 Заблокировать</button>
 </div>
 <div class="edit-status" id="adminPeopleStatus"></div>
 </div>
@@ -7349,6 +7350,9 @@ rows.push(`<div class="deal-card" style="padding:8px 12px;"><div class="deal-inf
 (data.support_admins || []).forEach(id => {
 rows.push(`<div class="deal-card" style="padding:8px 12px;"><div class="deal-info"><div class="deal-title" style="font-size:13px;">Пультовый · ${id}</div></div>${data.is_owner ? `<div class="deal-actions"><button class="deal-action secondary" data-remove-support-admin="${id}" type="button">Снять</button></div>` : ''}</div>`);
 });
+(data.blocked_users || []).forEach(id => {
+rows.push(`<div class="deal-card" style="padding:8px 12px;"><div class="deal-info"><div class="deal-title" style="font-size:13px; color:#e0555a;">🚫 Заблокирован · ${id}</div></div><div class="deal-actions"><button class="deal-action secondary" data-unblock-user="${id}" type="button">Разблокировать</button></div></div>`);
+});
 list.innerHTML = rows.join('');
 document.getElementById('adminAddAdminBtn').style.display = data.is_owner ? '' : 'none';
 document.getElementById('adminAddAuctioneerBtn').style.display = data.is_owner ? '' : 'none';
@@ -7390,6 +7394,12 @@ adminApiFetch('/api/admin/people/remove_support_admin', { method: 'POST', body: 
 .then(loadAdminPeople)
 .catch(err => showAlert(friendlyErrorMessage(err)));
 }
+const unblockBtn = e.target.closest('[data-unblock-user]');
+if (unblockBtn){
+adminApiFetch('/api/admin/people/unblock_user', { method: 'POST', body: { user_id: Number(unblockBtn.dataset.unblockUser) } })
+.then(loadAdminPeople)
+.catch(err => showAlert(friendlyErrorMessage(err)));
+}
 });
 
 document.getElementById('adminAddAdminBtn').addEventListener('click', () => {
@@ -7417,6 +7427,17 @@ if (!id){ status.textContent = 'Укажи user_id.'; return; }
 adminApiFetch('/api/admin/people/add_support_admin', { method: 'POST', body: { user_id: id } })
 .then(() => { status.textContent = 'Готово ✓'; document.getElementById('adminNewPersonId').value = ''; loadAdminPeople(); })
 .catch(err => { status.textContent = friendlyErrorMessage(err); });
+});
+
+document.getElementById('adminBlockUserBtn').addEventListener('click', () => {
+const status = document.getElementById('adminPeopleStatus');
+const id = Number(document.getElementById('adminNewPersonId').value);
+if (!id){ status.textContent = 'Укажи user_id.'; return; }
+showConfirm('Заблокировать этого пользователя? Он не сможет писать в саппорт и покупать.', () => {
+adminApiFetch('/api/admin/people/block_user', { method: 'POST', body: { user_id: id } })
+.then(() => { status.textContent = 'Готово ✓'; document.getElementById('adminNewPersonId').value = ''; loadAdminPeople(); })
+.catch(err => { status.textContent = friendlyErrorMessage(err); });
+});
 });
 
 // ============================================================
