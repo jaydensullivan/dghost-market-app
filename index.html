@@ -861,6 +861,14 @@ display:flex;
 gap:10px;
 }
 
+.money-btn-row-wrap{
+flex-wrap:wrap;
+}
+
+.money-btn-row-wrap .money-btn{
+flex:0 0 calc(50% - 5px);
+}
+
 .filters-btn{
 display:flex;
 align-items:center;
@@ -1145,8 +1153,8 @@ padding:2px 6px;
 }
 
 .admin-perm-chips{
-display:flex;
-flex-wrap:wrap;
+display:grid;
+grid-template-columns:1fr 1fr;
 gap:6px;
 }
 
@@ -2693,7 +2701,7 @@ transform="rotate(-90 100 100)"></circle>
 <label for="adminNewPersonId" data-i18n="admin_label_user_id">Telegram user_id</label>
 <input id="adminNewPersonId" type="number" placeholder="123456789">
 </div>
-<div class="money-btn-row">
+<div class="money-btn-row money-btn-row-wrap">
 <button type="button" id="adminAddAdminBtn" class="money-btn" data-i18n="admin_btn_add_admin">+ Админ</button>
 <button type="button" id="adminAddAuctioneerBtn" class="money-btn" data-i18n="admin_btn_add_auctioneer">+ Организатор</button>
 <button type="button" id="adminAddSupportAdminBtn" class="money-btn" data-i18n="admin_btn_add_support_admin">+ Пультовый</button>
