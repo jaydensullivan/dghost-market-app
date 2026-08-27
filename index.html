@@ -2859,7 +2859,7 @@ transform="rotate(-90 100 100)"></circle>
 <div class="edit-row">
 <div class="edit-field">
 <label for="sWear" data-i18n="label_wear">Износ</label>
-<select id="sWear" required>
+<select id="sWear">
 <option value="">—</option>
 <option value="FN">Factory New (FN)</option>
 <option value="MW">Minimal Wear (MW)</option>
@@ -2870,13 +2870,13 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 <div class="edit-field">
 <label for="sFloat" data-i18n="label_float">Float (0.00–1.00)</label>
-<input id="sFloat" type="number" min="0" max="1" step="any" placeholder="0.1834" required>
+<input id="sFloat" type="number" min="0" max="1" step="any" placeholder="0.1834 (если применимо — у агентов/наборов музыки его нет)">
 </div>
 </div>
 
 <div class="edit-field">
 <label for="sPattern" data-i18n="label_pattern">Паттерн (paint seed)</label>
-<input id="sPattern" type="text" maxlength="40" placeholder="661" required>
+<input id="sPattern" type="text" maxlength="40" placeholder="661 (необязательно)">
 </div>
 
 <div class="edit-field edit-checkbox-field">
@@ -3307,6 +3307,8 @@ btn_cancel_sale: 'Отменить',
 status_confirmed: 'Подтверждено',
 status_seller_sent: 'Продавец отправил',
 btn_received: 'Получил',
+btn_not_received: 'Не получил',
+status_disputed: 'Спор — ждём решения админа',
 status_waiting_send: 'Ждём отправки',
 countdown_credit: 'Зачисление через: ',
 countdown_hold: 'Холд снимется через: ',
@@ -3570,6 +3572,8 @@ btn_cancel_sale: 'Bekor qilish',
 status_confirmed: 'Tasdiqlandi',
 status_seller_sent: 'Sotuvchi yubordi',
 btn_received: 'Oldim',
+btn_not_received: 'Olmadim',
+status_disputed: "Nizo — admin qarorini kutmoqda",
 status_waiting_send: 'Yuborilishini kutmoqda',
 countdown_credit: "Hisoblanishiga: ",
 countdown_hold: "Hold tugashiga: ",
@@ -4245,9 +4249,12 @@ actionHtml = `<button class="deal-action" data-mark-sent="${deal.id}" type="butt
 } else {
 if (deal.confirmed_at){
 statusHtml = `<div class="deal-status done">${dict.status_confirmed}</div>`;
+} else if (deal.disputed_at){
+statusHtml = `<div class="deal-status pending" style="color:#e0555a;">${dict.status_disputed}</div>`;
 } else if (deal.sent_at){
 statusHtml = `<div class="deal-status sent">${dict.status_seller_sent}</div>`;
-actionHtml = `<button class="deal-action" data-mark-received="${deal.id}" type="button">${dict.btn_received}</button>`;
+actionHtml = `<button class="deal-action" data-mark-received="${deal.id}" type="button">${dict.btn_received}</button>
+<button class="deal-action secondary" data-mark-disputed="${deal.id}" type="button">${dict.btn_not_received}</button>`;
 } else {
 statusHtml = `<div class="deal-status pending">${dict.status_waiting_send}</div>`;
 }
@@ -4313,6 +4320,7 @@ document.getElementById('dealsList').innerHTML = lastDeals.map(dealCardHtml).joi
 document.getElementById('dealsList').addEventListener('click', (e) => {
 const sentBtn = e.target.closest('[data-mark-sent]');
 const receivedBtn = e.target.closest('[data-mark-received]');
+const disputedBtn = e.target.closest('[data-mark-disputed]');
 const cancelBtn = e.target.closest('[data-cancel-sale]');
 const relayBtn = e.target.closest('[data-relay]');
 
@@ -4341,6 +4349,26 @@ body: JSON.stringify({ init_data: tg.initData })
 .then(r => { if (!r.ok) throw new Error(); return r.json(); })
 .then(() => loadDeals())
 .catch(() => showAlert('Не удалось обновить статус.'));
+});
+}
+
+if (disputedBtn){
+const id = disputedBtn.dataset.markDisputed;
+showConfirm('Продавец отметил «Отправил», но предмет не пришёл? Админ получит уведомление и разберётся в споре.', () => {
+fetch(API_BASE + '/api/skins/' + id + '/mark_disputed', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(errorMessage(data.error));
+}
+return r.json();
+})
+.then(() => { showAlert('Спор создан, админ разберётся.'); loadDeals(); })
+.catch(err => showAlert(err.message || 'Не удалось создать спор.'));
 });
 }
 
@@ -5925,7 +5953,7 @@ addSkinStatus.textContent = (I18N[currentLang] || I18N.ru).skin_fill_title_price
 return;
 }
 
-if (!photo || !wear || floatStr === '' || !pattern){
+if (!photo){
 addSkinStatus.textContent = (I18N[currentLang] || I18N.ru).skin_fill_required;
 return;
 }
@@ -5943,10 +5971,10 @@ description: sDescription.value.trim(),
 price: price,
 photo_url: photo,
 weapon_type: sWeaponType.value.trim(),
-wear: wear,
+wear: wear || null,
 rarity: sRarity.value,
-float_value: Number(floatStr),
-pattern: pattern,
+float_value: floatStr === '' ? null : Number(floatStr),
+pattern: pattern || null,
 stattrak: sStattrak.checked,
 has_stickers: sHasStickers.checked,
 })
