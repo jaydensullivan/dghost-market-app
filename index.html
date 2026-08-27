@@ -3931,6 +3931,8 @@ const screenShop = document.getElementById('screenShop');
 const screenProfile = document.getElementById('screenProfile');
 
 let isAdmin = false;
+let isOwner = false;
+let adminPermissions = [];
 
 let adminStatsLiveTimer = null;
 let isAuctioneer = false;
@@ -4135,8 +4137,11 @@ fetch(API_BASE + '/api/me?init_data=' + encodeURIComponent(tg.initData))
 if (!data || data.error) return;
 document.getElementById('balanceAmount').textContent = formatCoins(data.available);
 isAdmin = !!data.is_admin;
+isOwner = !!data.is_owner;
+adminPermissions = data.admin_permissions || [];
 isAuctioneer = !!data.is_auctioneer;
 document.getElementById('tabAdminBtn').style.display = (isAdmin || isAuctioneer) ? '' : 'none';
+if (typeof applyChipVisibility === 'function') applyChipVisibility();
 currentUserId = data.user_id;
 hasSteamLink = !!data.has_steam_link;
 if (data.language && data.language !== currentLang){
@@ -4188,8 +4193,11 @@ return r.json();
 if (!data || data.error) throw new Error();
 
 isAdmin = !!data.is_admin;
+isOwner = !!data.is_owner;
+adminPermissions = data.admin_permissions || [];
 isAuctioneer = !!data.is_auctioneer;
 document.getElementById('tabAdminBtn').style.display = (isAdmin || isAuctioneer) ? '' : 'none';
+if (typeof applyChipVisibility === 'function') applyChipVisibility();
 currentUserId = data.user_id;
 hasSteamLink = !!data.has_steam_link;
 updateFabVisibility();
@@ -6075,6 +6083,23 @@ const ADMIN_ONLY_SECTIONS = new Set([
 'adminStatusSection','adminGiveawaySection'
 ]);
 
+function hasChipPermission(chip){
+if (isOwner) return true;
+if (!isAdmin) return false;
+// Владелец видит все чипы всегда. Организатор аукционов
+// (isAuctioneer, не полный админ) — только "Аукцион", без
+// системы прав (это отдельная, более старая роль).
+if (!adminPermissions.length && isAuctioneer && !isAdmin) return chip === 'auction';
+return adminPermissions.includes(chip);
+}
+
+function applyChipVisibility(){
+document.querySelectorAll('#adminChips [data-admin-group]').forEach(chip => {
+const group = chip.dataset.adminGroup;
+chip.style.display = hasChipPermission(group) ? '' : 'none';
+});
+}
+
 let currentAdminChip = 'overview';
 
 function applyAdminChipFilter(group){
@@ -6082,7 +6107,8 @@ currentAdminChip = group;
 document.querySelectorAll('.admin-group').forEach(el => {
 const matchesGroup = el.dataset.group === group;
 const adminOk = !ADMIN_ONLY_SECTIONS.has(el.id) || isAdmin;
-el.style.display = (matchesGroup && adminOk) ? '' : 'none';
+const chipOk = hasChipPermission(el.dataset.group);
+el.style.display = (matchesGroup && adminOk && chipOk) ? '' : 'none';
 });
 }
 
@@ -6270,6 +6296,17 @@ if (giveawayEl) giveawayEl.innerHTML = renderHistoryList(giveawayItems);
 }
 
 function loadAdminPanel(){
+applyChipVisibility();
+
+if (!hasChipPermission(currentAdminChip)){
+const firstAllowed = document.querySelector('#adminChips [data-admin-group]:not([style*="display: none"])');
+if (firstAllowed){
+document.querySelectorAll('#adminChips .category-chip').forEach(c => c.classList.remove('active'));
+firstAllowed.classList.add('active');
+currentAdminChip = firstAllowed.dataset.adminGroup;
+}
+}
+
 applyAdminChipFilter(currentAdminChip);
 
 loadAdminSkinPicker();
