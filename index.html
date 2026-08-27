@@ -2636,6 +2636,31 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 </div>
 
+<div class="profile-section admin-group" id="adminFinanceSummarySection" data-group="finance" style="margin-top:10px; display:none;">
+<div class="profile-section-title">Пополнения и выводы (всего)</div>
+<div class="money-btn-row">
+<div class="admin-commission-box">
+<div class="admin-commission-label">Всего пополнено</div>
+<div class="admin-commission-value" id="adminTotalTopped">—</div>
+</div>
+<div class="admin-commission-box">
+<div class="admin-commission-label">Всего выведено</div>
+<div class="admin-commission-value" id="adminTotalWithdrawn">—</div>
+</div>
+</div>
+
+<div class="profile-section-title" style="font-size:12px; margin-top:16px;">Топ-10 по пополнениям</div>
+<div id="adminTopTopupersList"><div class="skins-empty" style="padding:12px 4px;">Загрузка...</div></div>
+
+<div class="profile-section-title" style="font-size:12px; margin-top:16px;">История клиента</div>
+<div class="edit-field">
+<label for="adminClientHistoryId">Telegram user_id</label>
+<input id="adminClientHistoryId" type="number" placeholder="123456789">
+</div>
+<button type="button" id="adminClientHistoryBtn" class="steam-link-btn secondary">Показать</button>
+<div id="adminClientHistoryResult" style="margin-top:10px;"></div>
+</div>
+
 <div class="profile-section admin-group" id="adminPromoSection" data-group="finance" style="margin-top:10px; display:none;">
 <div class="profile-section-title" data-i18n="admin_section_promo">Промо: продажи без комиссии</div>
 <div class="shop-hint" id="adminPromoStatus2" style="margin-bottom:10px;"></div>
@@ -3001,6 +3026,17 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 <div class="edit-status" id="setsStatus"></div>
 <div id="setsList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+</div>
+</div>
+
+<div class="edit-overlay" id="inspectOverlay">
+<div class="edit-sheet">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+<h2 style="margin:0;">🔍 Проверка предмета</h2>
+<button type="button" id="inspectCloseBtn" class="buy-close-btn" style="position:static;">✕</button>
+</div>
+<div id="inspectStatus" class="edit-status">Загрузка...</div>
+<img id="inspectImage" style="width:100%; border-radius:12px; display:none;" alt="Превью предмета">
 </div>
 </div>
 
@@ -4284,7 +4320,7 @@ statusHtml = `<div class="deal-status pending">${dict.status_need_to_send}</div>
 actionHtml = `<button class="deal-action" data-mark-sent="${deal.id}" type="button">${dict.btn_sent}</button>
 <button class="deal-action secondary" data-cancel-sale="${deal.id}" type="button">${dict.btn_cancel_sale}</button>`;
 if (deal.inspect_link){
-actionHtml += `<a class="deal-action secondary" href="${deal.inspect_link}" target="_blank" rel="noopener">${dict.btn_inspect_item}</a>`;
+actionHtml += `<button class="deal-action secondary" data-inspect-skin="${deal.id}" type="button">${dict.btn_inspect_item}</button>`;
 }
 }
 } else {
@@ -4364,6 +4400,27 @@ const receivedBtn = e.target.closest('[data-mark-received]');
 const disputedBtn = e.target.closest('[data-mark-disputed]');
 const cancelBtn = e.target.closest('[data-cancel-sale]');
 const relayBtn = e.target.closest('[data-relay]');
+const inspectBtn = e.target.closest('[data-inspect-skin]');
+
+if (inspectBtn){
+const id = inspectBtn.dataset.inspectSkin;
+const overlay = document.getElementById('inspectOverlay');
+const status = document.getElementById('inspectStatus');
+const img = document.getElementById('inspectImage');
+img.style.display = 'none';
+status.style.display = '';
+status.textContent = 'Загрузка превью...';
+overlay.classList.add('show');
+fetch(API_BASE + '/api/skins/' + id + '/inspect_screenshot')
+.then(r => { if (!r.ok) throw new Error(); return r.blob(); })
+.then(blob => {
+img.src = URL.createObjectURL(blob);
+img.style.display = '';
+status.style.display = 'none';
+})
+.catch(() => { status.textContent = 'Не удалось загрузить превью. Попробуй ещё раз чуть позже.'; });
+return;
+}
 
 if (sentBtn){
 const id = sentBtn.dataset.markSent;
@@ -4889,6 +4946,10 @@ loadSetsList();
 
 document.getElementById('setsCloseBtn').addEventListener('click', () => {
 document.getElementById('setsOverlay').classList.remove('show');
+});
+
+document.getElementById('inspectCloseBtn').addEventListener('click', () => {
+document.getElementById('inspectOverlay').classList.remove('show');
 });
 
 function renderSetCard(item){
@@ -6102,7 +6163,7 @@ return r.json();
 
 const ADMIN_ONLY_SECTIONS = new Set([
 'adminTopupsSection','adminWithdrawalsSection','adminTopupDetailsSection',
-'adminCommissionSection','adminPromoSection','adminReferralSection',
+'adminCommissionSection','adminFinanceSummarySection','adminPromoSection','adminReferralSection',
 'adminPeopleSection','adminDealsSection','adminBalanceSection',
 'adminHoldsSection','adminApiUsageSection',
 'adminStatusSection','adminGiveawaySection'
@@ -7171,7 +7232,63 @@ document.getElementById('adminCommissionSale').textContent = formatCoins(data.co
 document.getElementById('adminCommissionWithdraw').textContent = formatCoins(data.commission_withdraw_total || 0);
 })
 .catch(() => {});
+loadAdminFinanceSummary();
+loadAdminTopTopupers();
 }
+
+function loadAdminFinanceSummary(){
+adminApiFetch('/api/admin/finance/summary')
+.then(data => {
+document.getElementById('adminTotalTopped').textContent = formatCoins(data.total_topped_up || 0);
+document.getElementById('adminTotalWithdrawn').textContent = formatCoins(data.total_withdrawn || 0);
+})
+.catch(() => {});
+}
+
+function loadAdminTopTopupers(){
+const list = document.getElementById('adminTopTopupersList');
+adminApiFetch('/api/admin/finance/top_topupers')
+.then(data => {
+const items = data.items || [];
+if (!items.length){
+list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">Пока пусто</div>`;
+return;
+}
+list.innerHTML = items.map((it, i) => `
+<div class="deal-card" style="padding:8px 12px;">
+<div class="deal-info">
+<div class="deal-title" style="font-size:13px;">#${i + 1} · ${escapeHtml(it.username || ('ID ' + it.user_id))}</div>
+<div class="deal-meta">${formatCoins(it.total)} · ${it.count} попол.</div>
+</div>
+</div>`).join('');
+})
+.catch(() => { list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">Не удалось загрузить</div>`; });
+}
+
+document.getElementById('adminClientHistoryBtn').addEventListener('click', () => {
+const result = document.getElementById('adminClientHistoryResult');
+const id = Number(document.getElementById('adminClientHistoryId').value);
+if (!id){ result.innerHTML = '<div class="shop-hint">Укажи user_id.</div>'; return; }
+result.innerHTML = '<div class="skins-empty" style="padding:12px 4px;">Загрузка...</div>';
+adminApiFetch('/api/admin/finance/client_history?user_id=' + id)
+.then(data => {
+const items = data.items || [];
+const header = `<div class="deal-meta" style="margin-bottom:8px;">${escapeHtml(data.username || ('ID ' + data.user_id))} · баланс ${formatCoins(data.balance)} (в холде ${formatCoins(data.held)})</div>`;
+if (!items.length){
+result.innerHTML = header + `<div class="skins-empty" style="padding:12px 4px;">Транзакций нет</div>`;
+return;
+}
+const rows = items.map(t => `
+<div class="deal-card" style="padding:8px 12px;">
+<div class="deal-info">
+<div class="deal-title" style="font-size:12px;">${escapeHtml(t.type)}</div>
+<div class="deal-meta">${t.amount >= 0 ? '+' : ''}${formatCoins(t.amount)} · ${escapeHtml(t.note || '')}</div>
+</div>
+</div>`).join('');
+result.innerHTML = header + rows;
+})
+.catch(err => { result.innerHTML = `<div class="shop-hint">${friendlyErrorMessage(err)}</div>`; });
+});
 
 document.getElementById('adminSaveTopupDetailsBtn').addEventListener('click', () => {
 const status = document.getElementById('adminTopupDetailsStatus');
