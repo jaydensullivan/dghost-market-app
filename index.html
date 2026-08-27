@@ -1383,6 +1383,9 @@ font-size:10px;
 font-weight:600;
 cursor:pointer;
 white-space:nowrap;
+display:inline-block;
+text-align:center;
+text-decoration:none;
 }
 
 .deal-actions{
@@ -3304,6 +3307,7 @@ status_hold_running: 'Холд идёт',
 status_need_to_send: 'Нужно отправить',
 btn_sent: 'Отправил',
 btn_cancel_sale: 'Отменить',
+btn_inspect_item: '🔍 Проверить в Steam',
 status_confirmed: 'Подтверждено',
 status_seller_sent: 'Продавец отправил',
 btn_received: 'Получил',
@@ -3569,6 +3573,7 @@ status_hold_running: "Hold davom etmoqda",
 status_need_to_send: 'Yuborish kerak',
 btn_sent: 'Yubordim',
 btn_cancel_sale: 'Bekor qilish',
+btn_inspect_item: "🔍 Steam'da tekshirish",
 status_confirmed: 'Tasdiqlandi',
 status_seller_sent: 'Sotuvchi yubordi',
 btn_received: 'Oldim',
@@ -4245,6 +4250,9 @@ statusHtml = `<div class="deal-status sent">${dict.status_waiting_buyer_confirm}
 statusHtml = `<div class="deal-status pending">${dict.status_need_to_send}</div>`;
 actionHtml = `<button class="deal-action" data-mark-sent="${deal.id}" type="button">${dict.btn_sent}</button>
 <button class="deal-action secondary" data-cancel-sale="${deal.id}" type="button">${dict.btn_cancel_sale}</button>`;
+if (deal.inspect_link){
+actionHtml += `<a class="deal-action secondary" href="${deal.inspect_link}" target="_blank" rel="noopener">${dict.btn_inspect_item}</a>`;
+}
 }
 } else {
 if (deal.confirmed_at){
@@ -5766,6 +5774,8 @@ ${wearText ? `<div class="inv-item-wear">${wearText}</div>` : ''}
 }
 
 let lastInventoryItems = [];
+let pendingSkinAssetId = null;
+let pendingSkinInspectLink = null;
 
 function formatWaitHours(hours){
 if (hours >= 1) return `${Math.ceil(hours)} ч`;
@@ -5837,6 +5847,13 @@ sFloat.value = (item.float_value !== null && item.float_value !== undefined)
 // текст внутри описания.
 sPattern.value = (item.pattern !== null && item.pattern !== undefined) ? item.pattern : '';
 
+// asset_id/inspect_link не показываются в форме — сохраняем
+// в переменные, чтобы отправить вместе с лотом при "Выставить".
+// Продавец потом сможет открыть точный экземпляр предмета в Steam
+// (чтобы не перепутать с похожим скином при ручной отправке).
+pendingSkinAssetId = item.asset_id || null;
+pendingSkinInspectLink = item.inspect_link || null;
+
 sDescription.value = '';
 
 inventoryOverlay.classList.remove('show');
@@ -5849,6 +5866,8 @@ return;
 }
 addSkinStatus.textContent = '';
 updateSteamBlockVisibility();
+pendingSkinAssetId = null;
+pendingSkinInspectLink = null;
 addSkinOverlay.classList.add('show');
 });
 
@@ -5901,6 +5920,8 @@ return;
 
 addSkinStatus.textContent = '';
 updateSteamBlockVisibility();
+pendingSkinAssetId = null;
+pendingSkinInspectLink = null;
 addSkinOverlay.classList.add('show');
 
 // Если Steam уже привязан — сразу открываем инвентарь, без
@@ -5977,6 +5998,8 @@ float_value: floatStr === '' ? null : Number(floatStr),
 pattern: pattern || null,
 stattrak: sStattrak.checked,
 has_stickers: sHasStickers.checked,
+asset_id: pendingSkinAssetId,
+inspect_link: pendingSkinInspectLink,
 })
 })
 .then(async r => {
@@ -5999,6 +6022,8 @@ sFloat.value = '';
 sPattern.value = '';
 sStattrak.checked = false;
 sHasStickers.checked = false;
+pendingSkinAssetId = null;
+pendingSkinInspectLink = null;
 loadSkins();
 setTimeout(() => {
 addSkinOverlay.classList.remove('show');
