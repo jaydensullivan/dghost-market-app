@@ -1144,6 +1144,28 @@ border-radius:6px;
 padding:2px 6px;
 }
 
+.admin-perm-chips{
+display:flex;
+flex-wrap:wrap;
+gap:6px;
+}
+
+.admin-perm-chip{
+display:flex;
+align-items:center;
+gap:4px;
+font-size:11px;
+color:var(--muted);
+background:rgba(255,255,255,0.04);
+border:1px solid rgba(255,255,255,0.08);
+border-radius:8px;
+padding:4px 8px;
+}
+
+.admin-perm-chip input{
+margin:0;
+}
+
 .btn-row{
 display:flex;
 gap:8px;
@@ -2649,6 +2671,7 @@ transform="rotate(-90 100 100)"></circle>
 <div class="money-btn-row">
 <button type="button" id="adminAddAdminBtn" class="money-btn" data-i18n="admin_btn_add_admin">+ Админ</button>
 <button type="button" id="adminAddAuctioneerBtn" class="money-btn" data-i18n="admin_btn_add_auctioneer">+ Организатор</button>
+<button type="button" id="adminAddSupportAdminBtn" class="money-btn" data-i18n="admin_btn_add_support_admin">+ Пультовый</button>
 </div>
 <div class="edit-status" id="adminPeopleStatus"></div>
 </div>
@@ -3245,6 +3268,7 @@ admin_section_people: 'Админы и организаторы аукционо
 admin_label_user_id: 'Telegram user_id',
 admin_btn_add_admin: '+ Админ',
 admin_btn_add_auctioneer: '+ Организатор',
+admin_btn_add_support_admin: '+ Пультовый',
 btn_save: 'Сохранить',
 admin_pick_skin_hint: 'Выбери лот из списка ниже — после твоего запроса продавцу придёт вопрос, согласен ли он выставить его на торги.',
 admin_btn_propose_auction: 'Отправить продавцу запрос',
@@ -3511,6 +3535,7 @@ admin_section_people: "Adminlar va auksion tashkilotchilari",
 admin_label_user_id: 'Telegram user_id',
 admin_btn_add_admin: '+ Admin',
 admin_btn_add_auctioneer: '+ Tashkilotchi',
+admin_btn_add_support_admin: "+ Pult",
 btn_save: 'Saqlash',
 admin_pick_skin_hint: "Quyidagi ro'yxatdan lotni tanlang — so'rovingizdan so'ng sotuvchiga uni auksionga qo'yishga rozimi degan savol boradi.",
 admin_btn_propose_auction: "Sotuvchiga so'rov yuborish",
@@ -7186,18 +7211,48 @@ adminApiFetch('/api/admin/people')
 .then(data => {
 const rows = [];
 rows.push(`<div class="deal-meta" style="margin-bottom:8px;">Владелец: ${data.owner_id}</div>`);
+const chipLabels = data.chip_labels || {};
+const permsMap = data.permissions || {};
 (data.admins || []).forEach(id => {
-rows.push(`<div class="deal-card" style="padding:8px 12px;"><div class="deal-info"><div class="deal-title" style="font-size:13px;">Админ · ${id}</div></div>${data.is_owner ? `<div class="deal-actions"><button class="deal-action secondary" data-remove-admin="${id}" type="button">Снять</button></div>` : ''}</div>`);
+const perms = permsMap[String(id)] || [];
+let chipsHtml = '';
+if (data.is_owner){
+chipsHtml = `<div class="admin-perm-chips" style="margin-top:8px;">` +
+Object.keys(chipLabels).map(chip => {
+const checked = perms.includes(chip) ? 'checked' : '';
+return `<label class="admin-perm-chip"><input type="checkbox" data-perm-user="${id}" data-perm-chip="${chip}" ${checked}> ${escapeHtml(chipLabels[chip])}</label>`;
+}).join('') +
+`</div>`;
+}
+rows.push(`<div class="deal-card" style="padding:8px 12px; flex-direction:column; align-items:stretch;"><div style="display:flex; justify-content:space-between; align-items:center;"><div class="deal-info"><div class="deal-title" style="font-size:13px;">Админ · ${id}</div></div>${data.is_owner ? `<div class="deal-actions"><button class="deal-action secondary" data-remove-admin="${id}" type="button">Снять</button></div>` : ''}</div>${chipsHtml}</div>`);
 });
 (data.auctioneers || []).forEach(id => {
 rows.push(`<div class="deal-card" style="padding:8px 12px;"><div class="deal-info"><div class="deal-title" style="font-size:13px;">Организатор · ${id}</div></div>${data.is_owner ? `<div class="deal-actions"><button class="deal-action secondary" data-remove-auctioneer="${id}" type="button">Снять</button></div>` : ''}</div>`);
 });
+(data.support_admins || []).forEach(id => {
+rows.push(`<div class="deal-card" style="padding:8px 12px;"><div class="deal-info"><div class="deal-title" style="font-size:13px;">Пультовый · ${id}</div></div>${data.is_owner ? `<div class="deal-actions"><button class="deal-action secondary" data-remove-support-admin="${id}" type="button">Снять</button></div>` : ''}</div>`);
+});
 list.innerHTML = rows.join('');
 document.getElementById('adminAddAdminBtn').style.display = data.is_owner ? '' : 'none';
 document.getElementById('adminAddAuctioneerBtn').style.display = data.is_owner ? '' : 'none';
+document.getElementById('adminAddSupportAdminBtn').style.display = data.is_owner ? '' : 'none';
 })
 .catch(() => {});
 }
+
+document.getElementById('adminPeopleList').addEventListener('change', (e) => {
+const checkbox = e.target.closest('[data-perm-user]');
+if (!checkbox) return;
+adminApiFetch('/api/admin/people/set_permission', {
+method: 'POST',
+body: {
+user_id: Number(checkbox.dataset.permUser),
+chip: checkbox.dataset.permChip,
+enabled: checkbox.checked,
+}
+})
+.catch(() => { checkbox.checked = !checkbox.checked; showAlert('Не удалось изменить право.'); });
+});
 
 document.getElementById('adminPeopleList').addEventListener('click', (e) => {
 const removeAdminBtn = e.target.closest('[data-remove-admin]');
@@ -7209,6 +7264,12 @@ adminApiFetch('/api/admin/people/remove_admin', { method: 'POST', body: { user_i
 }
 if (removeAuctBtn){
 adminApiFetch('/api/admin/people/remove_auctioneer', { method: 'POST', body: { user_id: Number(removeAuctBtn.dataset.removeAuctioneer) } })
+.then(loadAdminPeople)
+.catch(err => showAlert(friendlyErrorMessage(err)));
+}
+const removeSupportBtn = e.target.closest('[data-remove-support-admin]');
+if (removeSupportBtn){
+adminApiFetch('/api/admin/people/remove_support_admin', { method: 'POST', body: { user_id: Number(removeSupportBtn.dataset.removeSupportAdmin) } })
 .then(loadAdminPeople)
 .catch(err => showAlert(friendlyErrorMessage(err)));
 }
@@ -7228,6 +7289,15 @@ const status = document.getElementById('adminPeopleStatus');
 const id = Number(document.getElementById('adminNewPersonId').value);
 if (!id){ status.textContent = 'Укажи user_id.'; return; }
 adminApiFetch('/api/admin/people/add_auctioneer', { method: 'POST', body: { user_id: id } })
+.then(() => { status.textContent = 'Готово ✓'; document.getElementById('adminNewPersonId').value = ''; loadAdminPeople(); })
+.catch(err => { status.textContent = friendlyErrorMessage(err); });
+});
+
+document.getElementById('adminAddSupportAdminBtn').addEventListener('click', () => {
+const status = document.getElementById('adminPeopleStatus');
+const id = Number(document.getElementById('adminNewPersonId').value);
+if (!id){ status.textContent = 'Укажи user_id.'; return; }
+adminApiFetch('/api/admin/people/add_support_admin', { method: 'POST', body: { user_id: id } })
 .then(() => { status.textContent = 'Готово ✓'; document.getElementById('adminNewPersonId').value = ''; loadAdminPeople(); })
 .catch(err => { status.textContent = friendlyErrorMessage(err); });
 });
