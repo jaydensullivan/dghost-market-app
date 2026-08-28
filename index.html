@@ -2961,6 +2961,7 @@ transform="rotate(-90 100 100)"></circle>
 <div class="edit-field">
 <label for="sPrice" data-i18n="label_price">Цена, сум</label>
 <input id="sPrice" type="number" min="1" placeholder="5000">
+<div id="sMarketPricePreview" class="market-price-box" style="display:none;"></div>
 </div>
 
 <div class="edit-field">
@@ -5200,6 +5201,53 @@ renderMarketPriceBox(data);
 .catch(() => {});
 }
 
+// ---------------- Предпросмотр рыночной цены при выставлении ----------------
+
+let sMarketPreviewTimer = null;
+
+function renderSellMarketPreview(data){
+const box = document.getElementById('sMarketPricePreview');
+if (!data || !data.available){
+box.style.display = 'none';
+return;
+}
+let extra = '';
+if (typeof data.diff_percent === 'number'){
+const cheaper = data.diff_percent >= 0;
+extra = `<div class="mp-diff ${cheaper ? 'cheaper' : 'pricier'}">${cheaper ? '🔥 Дешевле рынка' : '⚠️ Дороже рынка'} на ${Math.abs(data.diff_percent)}%</div>`;
+}
+box.innerHTML = `<div class="mp-row"><span>📊 Ориентир по рынку</span><span>${formatCoins(data.market_price_uzs)}</span></div>${extra}`;
+box.style.display = '';
+}
+
+function refreshSellMarketPreview(){
+const title = sTitle.value.trim();
+const wear = sWear.value;
+if (!title || !wear){
+document.getElementById('sMarketPricePreview').style.display = 'none';
+return;
+}
+const params = new URLSearchParams({ title, wear });
+if (sStattrak.checked) params.set('stattrak', '1');
+const price = sPrice.value.trim();
+if (price) params.set('price', price);
+fetch(API_BASE + '/api/market_price_preview?' + params.toString())
+.then(r => r.json())
+.then(renderSellMarketPreview)
+.catch(() => {});
+}
+
+function scheduleSellMarketPreview(){
+clearTimeout(sMarketPreviewTimer);
+sMarketPreviewTimer = setTimeout(refreshSellMarketPreview, 500);
+}
+
+['sTitle', 'sWear', 'sStattrak', 'sPrice'].forEach(id => {
+const el = document.getElementById(id);
+el.addEventListener('input', scheduleSellMarketPreview);
+el.addEventListener('change', scheduleSellMarketPreview);
+});
+
 buyShareBtn.addEventListener('click', () => {
 if (!pendingBuySkin) return;
 const shareText = `${pendingBuySkin.stattrak ? 'StatTrak™ ' : ''}${pendingBuySkin.title} — ${formatCoins(pendingBuySkin.price)} в DGhost`;
@@ -5959,6 +6007,8 @@ pendingSkinInspectLink = item.inspect_link || null;
 
 sDescription.value = '';
 
+scheduleSellMarketPreview();
+
 inventoryOverlay.classList.remove('show');
 });
 
@@ -5971,6 +6021,7 @@ addSkinStatus.textContent = '';
 updateSteamBlockVisibility();
 pendingSkinAssetId = null;
 pendingSkinInspectLink = null;
+document.getElementById('sMarketPricePreview').style.display = 'none';
 addSkinOverlay.classList.add('show');
 });
 
@@ -6025,6 +6076,7 @@ addSkinStatus.textContent = '';
 updateSteamBlockVisibility();
 pendingSkinAssetId = null;
 pendingSkinInspectLink = null;
+document.getElementById('sMarketPricePreview').style.display = 'none';
 addSkinOverlay.classList.add('show');
 
 // Если Steam уже привязан — сразу открываем инвентарь, без
@@ -6127,6 +6179,7 @@ sStattrak.checked = false;
 sHasStickers.checked = false;
 pendingSkinAssetId = null;
 pendingSkinInspectLink = null;
+document.getElementById('sMarketPricePreview').style.display = 'none';
 loadSkins();
 setTimeout(() => {
 addSkinOverlay.classList.remove('show');
