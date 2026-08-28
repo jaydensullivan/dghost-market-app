@@ -10,12 +10,12 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 :root{
---bg:#0a0708;
---red:#d94a52;
---red-glow:#e2565d;
---red-dim:#3d1418;
+--bg:#0a0710;
+--red:#a855f7;
+--red-glow:#c081fa;
+--red-dim:#2a1140;
 --text:#ece7e6;
---muted:#8c7275;
+--muted:#8c7c96;
 --silver:#e8e4e2;
 }
 
@@ -329,7 +329,7 @@ opacity:0.7;
 }
 
 h1::before{
-color:#d94a52;
+color:#a855f7;
 animation:glitchA 3.4s infinite steps(1);
 clip-path:inset(0 0 60% 0);
 }
@@ -1146,8 +1146,8 @@ color:#4ad880;
 
 .set-card-discount{
 font-size:11px;
-color:#e0555a;
-background:rgba(224,85,90,0.15);
+color:#a855f7;
+background:rgba(168,85,247,0.15);
 border-radius:6px;
 padding:2px 6px;
 }
@@ -1185,7 +1185,7 @@ opacity:0.5;
 
 .set-discount-type-btn.active{
 opacity:1;
-border-color:#e0555a;
+border-color:#a855f7;
 }
 
 .market-price-box .mp-row{
@@ -2286,8 +2286,8 @@ transform="rotate(-90 100 100)"></circle>
 <span id="filtersActiveCount" class="filters-count" style="display:none;">0</span>
 </button>
 
-<button type="button" id="openSetsBtn" class="filters-btn" style="margin-top:6px; border-color:#e0555a;">
-🔥 <span data-i18n="sets_btn">Сеты оружия</span>
+<button type="button" id="openSetsBtn" class="filters-btn" style="margin-top:6px; border-color:#a855f7;">
+<span data-i18n="sets_btn">Сеты оружия</span>
 </button>
 
 <div class="skins-grid" id="skinsList">
@@ -2472,14 +2472,14 @@ transform="rotate(-90 100 100)"></circle>
 <div class="admin-post-preview" id="gwPreviewBox" style="display:none;"></div>
 <div class="edit-row">
 <button type="button" id="adminGwSaveBtn" class="steam-link-btn secondary" data-i18n="btn_save">Сохранить</button>
-<button type="button" id="adminGwStartBtn" class="steam-link-btn" data-i18n="admin_gw_start">🚀 Запустить</button>
+<button type="button" id="adminGwStartBtn" class="steam-link-btn" data-i18n="admin_gw_start">Запустить</button>
 </div>
 <button type="button" id="adminGwStopBtn" class="steam-link-btn secondary" style="margin-top:8px; display:none;" data-i18n="admin_gw_stop">⏹ Остановить сейчас</button>
 <div class="edit-status" id="adminGwStatus"></div>
 
 <div class="profile-section-title" style="font-size:13px; margin-top:16px;" data-i18n="admin_gw_participants">Участники</div>
 <div id="adminGwParticipantsList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="admin_gw_no_participants">Пока никто не зарегистрировался.</div></div>
-<button type="button" id="adminGwPickWinnerBtn" class="steam-link-btn secondary" style="margin-top:8px;" data-i18n="admin_gw_pick_winner">🎲 Выбрать победителя</button>
+<button type="button" id="adminGwPickWinnerBtn" class="steam-link-btn secondary" style="margin-top:8px;" data-i18n="admin_gw_pick_winner">Выбрать победителя</button>
 <div id="adminGwWinnerResult" class="shop-hint" style="margin-top:8px;"></div>
 
 <div class="profile-section-title" style="margin-top:16px;" data-i18n="admin_section_giveaway_history">История розыгрышей</div>
@@ -3031,7 +3031,7 @@ transform="rotate(-90 100 100)"></circle>
 <div class="edit-overlay" id="setsOverlay">
 <div class="edit-sheet">
 <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-<h2 style="margin:0;">🔥 <span data-i18n="sets_title">Сеты оружия</span></h2>
+<h2 style="margin:0;"><span data-i18n="sets_title">Сеты оружия</span></h2>
 <button type="button" id="setsCloseBtn" class="buy-close-btn" style="position:static;">✕</button>
 </div>
 <div class="edit-status" id="setsStatus"></div>
@@ -3238,7 +3238,7 @@ admin_deals_empty: 'Активных сделок нет.',
 admin_deal_seller: 'Продавец',
 admin_deal_buyer: 'Покупатель',
 admin_deal_status_confirmed: '✅ Покупатель подтвердил',
-admin_deal_status_sent: '📦 Продавец отправил',
+admin_deal_status_sent: 'Продавец отправил',
 admin_deal_status_pending: '⏳ Ждём отправки',
 admin_btn_finalize: 'Выплатить',
 admin_btn_refund: 'Вернуть покупателю',
@@ -3274,7 +3274,7 @@ admin_gw_title: 'Название',
 admin_gw_subtitle: 'Подзаголовок',
 admin_gw_prize: 'Приз',
 admin_gw_minutes: 'Через сколько минут финал',
-admin_gw_start: '🚀 Запустить',
+admin_gw_start: 'Запустить',
 admin_gw_stop: '⏹ Остановить сейчас',
 admin_gw_running_label: 'Идёт, осталось:',
 admin_gw_ending: 'Завершается...',
@@ -3284,7 +3284,7 @@ admin_gw_confirm_stop: 'Досрочно завершить розыгрыш п�
 admin_gw_participants: 'Участники',
 admin_gw_no_participants: 'Пока никто не зарегистрировался.',
 admin_gw_participants_count: 'Всего участников: {n}',
-admin_gw_pick_winner: '🎲 Выбрать победителя',
+admin_gw_pick_winner: 'Выбрать победителя',
 admin_gw_winner_is: 'Победитель:',
 admin_gw_need_minutes: 'Укажи, через сколько минут финал.',
 admin_section_api_usage: 'Остаток запросов Steamwebapi',
@@ -3332,7 +3332,7 @@ admin_no_bids_yet: 'Ставок пока нет.',
 admin_btn_cancel: 'Отменить',
 admin_confirm_cancel_active: 'Отменить аукцион? Лот вернётся в продажу, холд снимется.',
 admin_confirm_cancel_proposal: 'Отменить предложение продавцу?',
-auction_live_label: '🔨 Идёт аукцион',
+auction_live_label: 'Идёт аукцион',
 auction_current_price: 'Текущая цена:',
 auction_btn_bid: 'Ставка',
 auction_bid_title: 'Ставка на аукционе',
@@ -3505,7 +3505,7 @@ admin_deals_empty: "Faol bitimlar yo'q.",
 admin_deal_seller: 'Sotuvchi',
 admin_deal_buyer: 'Xaridor',
 admin_deal_status_confirmed: '✅ Xaridor tasdiqladi',
-admin_deal_status_sent: '📦 Sotuvchi yubordi',
+admin_deal_status_sent: 'Sotuvchi yubordi',
 admin_deal_status_pending: '⏳ Yuborilishini kutmoqda',
 admin_btn_finalize: "To'lash",
 admin_btn_refund: 'Xaridorga qaytarish',
@@ -3541,7 +3541,7 @@ admin_gw_title: 'Nomi',
 admin_gw_subtitle: 'Subtitr',
 admin_gw_prize: 'Sovg\'a',
 admin_gw_minutes: 'Necha daqiqadan keyin yakun',
-admin_gw_start: "🚀 Ishga tushirish",
+admin_gw_start: "Ishga tushirish",
 admin_gw_stop: "⏹ Hozir to'xtatish",
 admin_gw_running_label: 'Boradi, qoldi:',
 admin_gw_ending: 'Tugamoqda...',
@@ -3551,7 +3551,7 @@ admin_gw_confirm_stop: "Yutuq o'yinini hozir muddatidan oldin to'xtatasizmi?",
 admin_gw_participants: 'Ishtirokchilar',
 admin_gw_no_participants: "Hozircha hech kim ro'yxatdan o'tmagan.",
 admin_gw_participants_count: 'Jami ishtirokchilar: {n}',
-admin_gw_pick_winner: "🎲 G'olibni tanlash",
+admin_gw_pick_winner: "G'olibni tanlash",
 admin_gw_winner_is: "G'olib:",
 admin_gw_need_minutes: "Necha daqiqadan keyin yakun bo'lishini ko'rsating.",
 admin_section_api_usage: 'Steamwebapi so\'rovlar qoldig\'i',
@@ -3599,7 +3599,7 @@ admin_no_bids_yet: "Hozircha stavkalar yo'q.",
 admin_btn_cancel: 'Bekor qilish',
 admin_confirm_cancel_active: "Auksionni bekor qilasizmi? Lot sotuvga qaytadi, hold yechiladi.",
 admin_confirm_cancel_proposal: "Sotuvchiga taklifni bekor qilasizmi?",
-auction_live_label: '🔨 Auksion ketmoqda',
+auction_live_label: 'Auksion ketmoqda',
 auction_current_price: 'Joriy narx:',
 auction_btn_bid: 'Stavka',
 auction_bid_title: 'Auksionda stavka',
@@ -5178,10 +5178,10 @@ return;
 }
 const cheaper = data.diff_percent >= 0;
 const diffLabel = cheaper
-? `🔥 Выгоднее рынка на ${Math.abs(data.diff_percent)}%`
+? `Выгоднее рынка на ${Math.abs(data.diff_percent)}%`
 : `⚠️ Дороже рынка на ${Math.abs(data.diff_percent)}%`;
 box.innerHTML = `
-<div class="mp-row"><span>📊 Рыночная цена</span><span>${formatCoins(data.market_price_uzs)}</span></div>
+<div class="mp-row"><span>Рыночная цена</span><span>${formatCoins(data.market_price_uzs)}</span></div>
 <div class="mp-diff ${cheaper ? 'cheaper' : 'pricier'}">${diffLabel}</div>
 `;
 box.style.display = '';
@@ -5214,9 +5214,9 @@ return;
 let extra = '';
 if (typeof data.diff_percent === 'number'){
 const cheaper = data.diff_percent >= 0;
-extra = `<div class="mp-diff ${cheaper ? 'cheaper' : 'pricier'}">${cheaper ? '🔥 Дешевле рынка' : '⚠️ Дороже рынка'} на ${Math.abs(data.diff_percent)}%</div>`;
+extra = `<div class="mp-diff ${cheaper ? 'cheaper' : 'pricier'}">${cheaper ? 'Дешевле рынка' : '⚠️ Дороже рынка'} на ${Math.abs(data.diff_percent)}%</div>`;
 }
-box.innerHTML = `<div class="mp-row"><span>📊 Ориентир по рынку</span><span>${formatCoins(data.market_price_uzs)}</span></div>${extra}`;
+box.innerHTML = `<div class="mp-row"><span>Ориентир по рынку</span><span>${formatCoins(data.market_price_uzs)}</span></div>${extra}`;
 box.style.display = '';
 }
 
@@ -6401,7 +6401,7 @@ completed: '🏆 Завершён',
 no_bids: '❌ Без ставок',
 cancelled: '🚫 Отменён',
 ended: '⏹ Завершился',
-winner_picked: '🎲 Победитель выбран',
+winner_picked: 'Победитель выбран',
 };
 return labels[status] || status;
 }
@@ -6423,7 +6423,7 @@ return items.map(it => `
 <div class="deal-info">
 <div class="deal-title">${escapeHtml(it.title || '—')}</div>
 <div class="deal-meta">${eventStatusLabel(it.status)}${it.final_value ? ' · ' + escapeHtml(it.final_value) : ''}</div>
-${it.winner_username ? `<div class="deal-meta">🥇 ${escapeHtml(it.winner_username)}</div>` : ''}
+${it.winner_username ? `<div class="deal-meta">${escapeHtml(it.winner_username)}</div>` : ''}
 <div class="deal-meta">${formatHistoryDate(it.ended_at)}</div>
 </div>
 </div>`).join('');
@@ -7110,7 +7110,7 @@ result.textContent = '...';
 adminApiFetch('/api/admin/giveaway/pick_winner', { method: 'POST' })
 .then(data => {
 const w = data.winner;
-result.innerHTML = `🎉 ${dict.admin_gw_winner_is} <b>${escapeHtml(w.username || String(w.user_id))}</b>`;
+result.innerHTML = `${dict.admin_gw_winner_is} <b>${escapeHtml(w.username || String(w.user_id))}</b>`;
 loadAdminEventsHistory();
 })
 .catch(err => { result.textContent = friendlyErrorMessage(err); });
