@@ -2407,6 +2407,12 @@ transform="rotate(-90 100 100)"></circle>
 </button>
 </div>
 <div class="shop-hint" style="margin-top:10px;"><span data-i18n="label_invited">Приглашено:</span> <span id="referralInvitedCount">—</span></div>
+<div class="admin-commission-box" style="margin-top:12px;">
+<div class="admin-commission-label" data-i18n="referral_wallet_label">Реферальный кошелёк</div>
+<div class="admin-commission-value" id="referralWalletValue">—</div>
+</div>
+<button type="button" id="referralClaimBtn" class="steam-link-btn" style="margin-top:10px; display:none;" data-i18n="btn_claim_referral">Перевести на баланс</button>
+<div class="edit-status" id="referralClaimStatus"></div>
 </div>
 
 <div class="profile-section" id="profileDealsSection" style="margin-top:10px;">
@@ -2710,16 +2716,7 @@ transform="rotate(-90 100 100)"></circle>
 
 <div class="profile-section admin-group" id="adminReferralSection" data-group="finance" style="margin-top:10px; display:none;">
 <div class="profile-section-title" data-i18n="admin_section_referral_bonus">Реферальный бонус</div>
-<div class="edit-field">
-<label for="adminRefReferrer" data-i18n="admin_label_ref_referrer">Пригласившему, сум</label>
-<input id="adminRefReferrer" type="number" min="0" placeholder="0">
-</div>
-<div class="edit-field">
-<label for="adminRefReferred" data-i18n="admin_label_ref_referred">Приглашённому, сум</label>
-<input id="adminRefReferred" type="number" min="0" placeholder="0">
-</div>
-<button type="button" id="adminSaveReferralBtn" class="steam-link-btn secondary" data-i18n="btn_save">Сохранить</button>
-<div class="edit-status" id="adminReferralStatus"></div>
+<div class="shop-hint" data-i18n="admin_referral_info_text">Копится автоматически: 0.05% от цены с каждой завершённой покупки приглашённого (после снятия холда), в реферальный кошелёк с потолком 200 000 сум на человека. Настраивается только в коде.</div>
 </div>
 
 <div class="profile-section admin-group" id="adminPeopleSection" data-group="people" style="margin-top:10px; display:none;">
@@ -3350,8 +3347,7 @@ admin_commission_withdraw: 'С выводов (2.5%)',
 admin_section_promo: 'Промо: продажи без комиссии',
 admin_label_promo_limit: 'Лимит продаж без комиссии (всего)',
 admin_section_referral_bonus: 'Реферальный бонус',
-admin_label_ref_referrer: 'Пригласившему, сум',
-admin_label_ref_referred: 'Приглашённому, сум',
+admin_referral_info_text: 'Копится автоматически: 0.05% от цены с каждой завершённой покупки приглашённого (после снятия холда), в реферальный кошелёк с потолком 200 000 сум на человека. Настраивается только в коде.',
 admin_section_people: 'Админы и организаторы аукционов',
 admin_label_user_id: 'Telegram user_id',
 admin_btn_add_admin: '+ Админ',
@@ -3447,12 +3443,13 @@ btn_edit_price: 'Изменить цену',
 btn_save_price: 'Сохранить цену',
 btn_copy: 'Скопировать',
 label_invited: 'Приглашено:',
+referral_wallet_label: 'Реферальный кошелёк',
+btn_claim_referral: 'Перевести на баланс',
 open_via_telegram: 'Открой через Telegram',
 no_active_deals: 'Активных сделок нет',
 load_failed: 'Не удалось загрузить',
 copied_text: 'Скопировано ✓',
-referral_no_bonus_text: 'Делись ссылкой — приглашённые друзья появятся в счётчике ниже.',
-referral_bonus_text: (a, b) => `Пригласи друга — получи ${a} после его первой покупки, а он получит ${b}.`,
+referral_bonus_text: (percent) => `Приглашай друзей — с каждой их покупки на площадке ${percent}% от цены копится в твой реферальный кошелёк.`,
 },
 uz: {
 nav_timer: 'Taymer',
@@ -3617,8 +3614,7 @@ admin_commission_withdraw: "Pul yechishdan (2.5%)",
 admin_section_promo: "Promo: komissiyasiz sotuvlar",
 admin_label_promo_limit: "Komissiyasiz sotuvlar limiti (jami)",
 admin_section_referral_bonus: 'Referal bonusi',
-admin_label_ref_referrer: "Taklif qiluvchiga, sum",
-admin_label_ref_referred: "Taklif qilinganga, sum",
+admin_referral_info_text: "Avtomatik to'planadi: taklif qilingan foydalanuvchining har bir yakunlangan xarididan (hold olib tashlangandan keyin) narxning 0.05% i, kishi boshiga 200 000 so'm chegara bilan referal hamyoniga. Faqat kodda sozlanadi.",
 admin_section_people: "Adminlar va auksion tashkilotchilari",
 admin_label_user_id: 'Telegram user_id',
 admin_btn_add_admin: '+ Admin',
@@ -3714,12 +3710,13 @@ btn_edit_price: "Narxni o'zgartirish",
 btn_save_price: "Narxni saqlash",
 btn_copy: "Nusxalash",
 label_invited: 'Taklif qilingan:',
+referral_wallet_label: "Referal hamyoni",
+btn_claim_referral: "Balansga o'tkazish",
 open_via_telegram: 'Telegram orqali oching',
 no_active_deals: "Faol bitimlar yo'q",
 load_failed: "Yuklab bo'lmadi",
 copied_text: "Nusxalandi ✓",
-referral_no_bonus_text: "Havolani ulashing — taklif qilingan do'stlar quyidagi hisoblagichda paydo bo'ladi.",
-referral_bonus_text: (a, b) => `Do'stingizni taklif qiling — uning birinchi xarididan so'ng ${a} olasiz, u esa ${b} oladi.`,
+referral_bonus_text: (percent) => `Do'stlaringizni taklif qiling — ularning har bir xarididan narxning ${percent}% referal hamyoningizga to'planadi.`,
 },
 };
 
@@ -5786,6 +5783,9 @@ const referralLinkText = document.getElementById('referralLinkText');
 const referralCopyBtn = document.getElementById('referralCopyBtn');
 const referralBonusText = document.getElementById('referralBonusText');
 const referralInvitedCount = document.getElementById('referralInvitedCount');
+const referralWalletValue = document.getElementById('referralWalletValue');
+const referralClaimBtn = document.getElementById('referralClaimBtn');
+const referralClaimStatus = document.getElementById('referralClaimStatus');
 
 let referralLinkRaw = '';
 
@@ -5802,16 +5802,43 @@ if (!data || data.error) throw new Error();
 referralLinkRaw = data.link;
 referralLinkText.textContent = referralLinkRaw;
 referralInvitedCount.textContent = data.invited_count;
-if (data.bonus_referrer > 0 || data.bonus_referred > 0){
-referralBonusText.textContent = dict.referral_bonus_text(formatCoins(data.bonus_referrer), formatCoins(data.bonus_referred));
-} else {
-referralBonusText.textContent = dict.referral_no_bonus_text;
-}
+referralBonusText.textContent = dict.referral_bonus_text(data.bonus_percent);
+referralWalletValue.textContent = `${formatCoins(data.wallet)} / ${formatCoins(data.wallet_cap)}`;
+referralClaimBtn.style.display = data.wallet > 0 ? '' : 'none';
 })
 .catch(() => {
 referralLinkText.textContent = dict.load_failed;
 });
 }
+
+referralClaimBtn.addEventListener('click', () => {
+if (!tg || !tg.initData) return;
+referralClaimBtn.disabled = true;
+referralClaimStatus.textContent = '...';
+fetch(API_BASE + '/api/referral/claim', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(errorMessage(data.error));
+}
+return r.json();
+})
+.then(data => {
+referralClaimStatus.textContent = `Готово ✓ +${formatCoins(data.claimed)} на баланс`;
+loadReferralInfo();
+loadMe();
+})
+.catch(err => {
+referralClaimStatus.textContent = friendlyErrorMessage(err);
+})
+.finally(() => {
+referralClaimBtn.disabled = false;
+});
+});
 
 function copyReferralLink(){
 if (!referralLinkRaw) return;
@@ -7436,8 +7463,6 @@ document.getElementById('adminCardHolder').value = '';
 document.getElementById('adminCardNumber').value = data.topup_details || '';
 document.getElementById('adminPromoLimit').value = data.promo_limit || 0;
 document.getElementById('adminPromoStatus2').textContent = `Использовано: ${data.promo_used || 0} из ${data.promo_limit || 0}`;
-document.getElementById('adminRefReferrer').value = data.referral_bonus_referrer || 0;
-document.getElementById('adminRefReferred').value = data.referral_bonus_referred || 0;
 document.getElementById('adminCommissionSale').textContent = formatCoins(data.commission_sale_total || 0);
 document.getElementById('adminCommissionWithdraw').textContent = formatCoins(data.commission_withdraw_total || 0);
 })
@@ -7517,16 +7542,6 @@ const limit = Number(document.getElementById('adminPromoLimit').value);
 status.textContent = 'Сохраняю...';
 adminApiFetch('/api/admin/promo_limit', { method: 'POST', body: { limit: limit } })
 .then(() => { status.textContent = 'Сохранено ✓'; loadAdminSettings(); })
-.catch(err => { status.textContent = friendlyErrorMessage(err); });
-});
-
-document.getElementById('adminSaveReferralBtn').addEventListener('click', () => {
-const status = document.getElementById('adminReferralStatus');
-const referrer = Number(document.getElementById('adminRefReferrer').value);
-const referred = Number(document.getElementById('adminRefReferred').value);
-status.textContent = 'Сохраняю...';
-adminApiFetch('/api/admin/referral_bonus', { method: 'POST', body: { referrer: referrer, referred: referred } })
-.then(() => { status.textContent = 'Сохранено ✓'; })
 .catch(err => { status.textContent = friendlyErrorMessage(err); });
 });
 
