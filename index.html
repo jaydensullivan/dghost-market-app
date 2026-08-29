@@ -2014,18 +2014,46 @@ cursor:pointer;
 padding:34px 20px 20px;
 text-align:center;
 border-radius:14px 14px 0 0;
-background:radial-gradient(ellipse at 50% 0%, var(--rarity-glow, rgba(235,75,75,0.35)) 0%, rgba(10,10,12,0) 70%);
+background:
+radial-gradient(ellipse at 50% 0%, var(--rarity-glow-strong, rgba(235,75,75,0.55)) 0%, rgba(10,10,12,0) 75%),
+linear-gradient(180deg, var(--rarity-glow, rgba(235,75,75,0.35)) 0%, rgba(10,10,12,0) 100%);
+position:relative;
+}
+
+.buy-badges-row{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:14px;
+}
+
+.buy-badge{
+font-family:'JetBrains Mono', monospace;
+font-size:10px;
+font-weight:700;
+letter-spacing:0.06em;
+text-transform:uppercase;
+padding:4px 10px;
+border-radius:6px;
+background:rgba(255,255,255,0.12);
+color:var(--silver);
+}
+
+.buy-badge-stattrak{
+background:#e07b1a;
+color:#fff;
+margin-left:auto;
 }
 
 .buy-photo{
-width:150px;
-height:150px;
+width:200px;
+height:200px;
 border-radius:10px;
 object-fit:cover;
 margin:0 auto 14px;
 display:block;
 background:rgba(255,255,255,0.04);
-filter:drop-shadow(0 6px 18px rgba(0,0,0,0.5));
+filter:drop-shadow(0 8px 22px rgba(0,0,0,0.5));
 }
 
 .buy-hero h2{
@@ -2982,6 +3010,10 @@ transform="rotate(-90 100 100)"></circle>
 <div class="buy-sheet">
 <button type="button" id="buyClose" class="buy-close-btn">✕</button>
 <div class="buy-hero" id="buyHero">
+<div class="buy-badges-row">
+<span class="buy-badge" id="buyRarityBadge" style="display:none;"></span>
+<span class="buy-badge buy-badge-stattrak" id="buyStattrakBadge" style="display:none;">STATTRAK™</span>
+</div>
 <img id="buyPhoto" class="buy-photo" alt="" style="display:none;">
 <h2 id="buyTitle">—</h2>
 <div class="buy-subtitle" id="buySubtitle"></div>
@@ -4605,6 +4637,17 @@ const RARITY_GLOW = {
 'Extraordinary': 'rgba(219,184,79,0.26)',
 };
 
+const RARITY_GLOW_STRONG = {
+'Consumer Grade': 'rgba(174,194,209,0.6)',
+'Industrial Grade': 'rgba(95,147,199,0.6)',
+'Mil-Spec Grade': 'rgba(90,111,214,0.6)',
+'Restricted': 'rgba(140,95,214,0.6)',
+'Classified': 'rgba(193,91,201,0.6)',
+'Covert': 'rgba(216,84,84,0.6)',
+'Contraband': 'rgba(219,184,79,0.6)',
+'Extraordinary': 'rgba(219,184,79,0.6)',
+};
+
 function skinCardHtml(skin){
 const photo = skin.photo_url
 ? `<img class="skin-photo" src="${skin.photo_url}" alt="" onerror="showPlaceholderIcon(this)">`
@@ -5128,6 +5171,17 @@ buyTitle.textContent = titleText;
 buySubtitle.textContent = skin.weapon_type || 'CS2 SKIN';
 
 buyHero.style.setProperty('--rarity-glow', RARITY_GLOW[skin.rarity] || 'rgba(235,75,75,0.35)');
+buyHero.style.setProperty('--rarity-glow-strong', RARITY_GLOW_STRONG[skin.rarity] || 'rgba(235,75,75,0.55)');
+
+const rarityBadge = document.getElementById('buyRarityBadge');
+if (skin.rarity){
+rarityBadge.textContent = (rarityMap[skin.rarity] || skin.rarity).toUpperCase();
+rarityBadge.style.display = '';
+} else {
+rarityBadge.style.display = 'none';
+}
+
+document.getElementById('buyStattrakBadge').style.display = skin.stattrak ? '' : 'none';
 
 buyPrice.textContent = formatCoins(skin.price);
 
