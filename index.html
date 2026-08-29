@@ -2743,6 +2743,7 @@ transform="rotate(-90 100 100)"></circle>
 <div class="edit-overlay" id="topupOverlay">
 <div class="edit-sheet">
 <h2 data-i18n="section_topup">Пополнить баланс</h2>
+<button type="button" id="topupCryptoBtn" class="steam-link-btn" style="margin-bottom:12px; display:none;">💳 Оплатить криптовалютой</button>
 <div class="topup-details-box" id="topupDetailsBox">
 <div class="topup-details-text" id="topupDetailsText">Загрузка реквизитов...</div>
 <button type="button" id="topupCopyBtn" class="topup-copy-btn">
@@ -2773,15 +2774,24 @@ transform="rotate(-90 100 100)"></circle>
 <div class="edit-sheet">
 <h2 data-i18n="section_withdraw">Вывод средств</h2>
 <div class="shop-hint" style="margin-bottom:10px;" data-i18n="withdraw_hint">Минимум — <span id="withdrawMinLabel">50,000</span> сум. Комиссия за вывод — <span id="withdrawFeeLabel">2.5</span>%. Деньги переводятся вручную на указанные реквизиты в течение некоторого времени.</div>
+<div class="btn-row" style="margin-bottom:10px;">
+<button type="button" class="steam-link-btn secondary withdraw-method-btn active" data-method="card" style="flex:1;">На карту</button>
+<button type="button" class="steam-link-btn secondary withdraw-method-btn" data-method="crypto" id="withdrawCryptoMethodBtn" style="flex:1; display:none;">В крипту (USDT)</button>
+</div>
 <div class="edit-field">
 <label for="wAmount" data-i18n="label_amount_sum">Сумма, сум</label>
 <input id="wAmount" type="number" min="1" placeholder="50000">
 <div class="shop-hint" id="withdrawPayoutPreview" style="margin-top:6px;"></div>
 </div>
-<div class="edit-field">
+<div class="edit-field" id="withdrawCardField">
 <label for="wDetails" data-i18n="label_card_uzcard_humo">Карта Uzcard/Humo</label>
 <div style="color:var(--red); font-family:'Inter', sans-serif; font-size:12px; font-weight:600; margin-bottom:6px;" data-i18n="warning_fio">⚠️ Обязательно укажи Ф.И.О. владельца карты — без этого заявку не обработают</div>
 <input id="wDetails" type="text" placeholder="8600 1234 5678 9012, Иванов И.И.">
+</div>
+<div class="edit-field" id="withdrawCryptoField" style="display:none;">
+<label for="wCryptoAddress">Адрес кошелька USDT (сеть TRC20)</label>
+<div class="shop-hint" style="margin-bottom:6px;">Отправь только адрес в сети TRC20 (Tron) — на другую сеть деньги потеряются безвозвратно.</div>
+<input id="wCryptoAddress" type="text" placeholder="TXYZ...">
 </div>
 <div class="edit-actions">
 <button type="button" id="withdrawCancel" data-i18n="btn_cancel">Отмена</button>
@@ -4035,6 +4045,8 @@ const screenProfile = document.getElementById('screenProfile');
 
 let isAdmin = false;
 let isOwner = false;
+let cryptoTopupAvailable = false;
+let cryptoPayoutAvailable = false;
 let adminPermissions = [];
 
 let adminStatsLiveTimer = null;
@@ -4247,6 +4259,10 @@ document.getElementById('tabAdminBtn').style.display = (isAdmin || isAuctioneer)
 if (typeof applyChipVisibility === 'function') applyChipVisibility();
 currentUserId = data.user_id;
 hasSteamLink = !!data.has_steam_link;
+cryptoTopupAvailable = !!data.crypto_topup_available;
+cryptoPayoutAvailable = !!data.crypto_payout_available;
+document.getElementById('withdrawCryptoMethodBtn').style.display = cryptoPayoutAvailable ? '' : 'none';
+if (typeof updateTopupCryptoBtnVisibility === 'function') updateTopupCryptoBtnVisibility();
 if (data.language && data.language !== currentLang){
 currentLang = data.language;
 applyTranslations();
@@ -4303,6 +4319,10 @@ document.getElementById('tabAdminBtn').style.display = (isAdmin || isAuctioneer)
 if (typeof applyChipVisibility === 'function') applyChipVisibility();
 currentUserId = data.user_id;
 hasSteamLink = !!data.has_steam_link;
+cryptoTopupAvailable = !!data.crypto_topup_available;
+cryptoPayoutAvailable = !!data.crypto_payout_available;
+document.getElementById('withdrawCryptoMethodBtn').style.display = cryptoPayoutAvailable ? '' : 'none';
+if (typeof updateTopupCryptoBtnVisibility === 'function') updateTopupCryptoBtnVisibility();
 updateFabVisibility();
 updateSteamBlockVisibility();
 updateProfileSteamBlock();
@@ -5158,6 +5178,11 @@ showAlert(errorMessage('unauthorized'));
 return;
 }
 pendingBuySkin = skin;
+
+const dict = I18N[currentLang] || I18N.ru;
+const rarityMap = currentLang === 'uz' ? RARITY_LABEL_UZ : RARITY_LABEL_RU;
+const wearMap = currentLang === 'uz' ? WEAR_LABEL_FULL_UZ : WEAR_LABEL_FULL;
+
 if (skin.photo_url){
 buyPhoto.src = skin.photo_url;
 buyPhoto.style.display = '';
@@ -5186,10 +5211,6 @@ document.getElementById('buyStattrakBadge').style.display = skin.stattrak ? '' :
 buyPrice.textContent = formatCoins(skin.price);
 
 const isOwn = currentUserId && skin.seller_id === currentUserId;
-
-const dict = I18N[currentLang] || I18N.ru;
-const rarityMap = currentLang === 'uz' ? RARITY_LABEL_UZ : RARITY_LABEL_RU;
-const wearMap = currentLang === 'uz' ? WEAR_LABEL_FULL_UZ : WEAR_LABEL_FULL;
 
 const rows = [
 isOwn ? '' : buyDetailRow(dict.detail_seller, dict.value_anon),
@@ -5822,6 +5843,54 @@ copyReferralLink();
 
 loadReferralInfo();
 
+function updateTopupCryptoBtnVisibility(){
+document.getElementById('topupCryptoBtn').style.display = cryptoTopupAvailable ? '' : 'none';
+}
+
+document.getElementById('topupCryptoBtn').addEventListener('click', () => {
+if (!tg || !tg.initData){
+topupStatus.textContent = errorMessage('unauthorized');
+return;
+}
+const amount = Number(tAmount.value);
+if (!amount || amount < 1000){
+topupStatus.textContent = 'Укажи сумму пополнения (минимум 1000 сум).';
+return;
+}
+const btn = document.getElementById('topupCryptoBtn');
+btn.disabled = true;
+topupStatus.textContent = 'Создаю счёт...';
+fetch(API_BASE + '/api/topup/crypto', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData, amount: amount })
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(data.error === 'not_configured' ? 'Оплата криптой сейчас недоступна.' : errorMessage(data.error));
+}
+return r.json();
+})
+.then(data => {
+topupStatus.textContent = 'Счёт создан — открой ссылку для оплаты.';
+const link = data.tg_deeplink || data.url;
+if (tg && tg.openTelegramLink && data.tg_deeplink){
+tg.openTelegramLink(data.tg_deeplink);
+} else if (tg && tg.openLink){
+tg.openLink(link);
+} else {
+window.open(link, '_blank');
+}
+})
+.catch(err => {
+topupStatus.textContent = friendlyErrorMessage(err);
+})
+.finally(() => {
+btn.disabled = false;
+});
+});
+
 topupSubmitBtn.addEventListener('click', () => {
 if (!tg || !tg.initData){
 topupStatus.textContent = errorMessage('unauthorized');
@@ -5881,6 +5950,19 @@ const withdrawPayoutPreview = document.getElementById('withdrawPayoutPreview');
 
 const WITHDRAW_FEE_PERCENT = 2.5;
 
+let withdrawMethod = 'card';
+
+function setWithdrawMethod(method){
+withdrawMethod = method;
+document.querySelectorAll('.withdraw-method-btn').forEach(b => b.classList.toggle('active', b.dataset.method === method));
+document.getElementById('withdrawCardField').style.display = method === 'card' ? '' : 'none';
+document.getElementById('withdrawCryptoField').style.display = method === 'crypto' ? '' : 'none';
+}
+
+document.querySelectorAll('.withdraw-method-btn').forEach(btn => {
+btn.addEventListener('click', () => setWithdrawMethod(btn.dataset.method));
+});
+
 function updateWithdrawPayoutPreview(){
 const amount = Number(wAmount.value);
 if (!amount || amount <= 0){
@@ -5895,8 +5977,10 @@ wAmount.addEventListener('input', updateWithdrawPayoutPreview);
 
 const WITHDRAW_ERROR_MESSAGES = {
 no_payment_details: 'Укажи карту и Ф.И.О. владельца карты.',
+no_crypto_details: 'Укажи адрес кошелька.',
 below_minimum: 'Сумма меньше минимальной для вывода.',
 insufficient_funds: 'Недостаточно средств на балансе.',
+not_configured: 'Вывод в крипту сейчас недоступен.',
 };
 
 withdrawSubmitBtn.addEventListener('click', () => {
@@ -5906,12 +5990,23 @@ return;
 }
 
 const amount = Number(wAmount.value);
-const details = wDetails.value.trim();
 
 if (!amount || amount <= 0){
 withdrawStatus.textContent = 'Укажи сумму.';
 return;
 }
+
+let payload = { init_data: tg.initData, amount: amount, method: withdrawMethod };
+
+if (withdrawMethod === 'crypto'){
+const address = document.getElementById('wCryptoAddress').value.trim();
+if (!address){
+withdrawStatus.textContent = 'Укажи адрес кошелька.';
+return;
+}
+payload.crypto_address = address;
+} else {
+const details = wDetails.value.trim();
 if (!details){
 withdrawStatus.textContent = 'Укажи карту и Ф.И.О. владельца карты.';
 return;
@@ -5920,6 +6015,8 @@ if (details.length < 10){
 withdrawStatus.textContent = 'Не забудь указать Ф.И.О. владельца карты рядом с номером.';
 return;
 }
+payload.payment_details = details;
+}
 
 withdrawSubmitBtn.disabled = true;
 withdrawStatus.textContent = 'Отправляю заявку...';
@@ -5927,11 +6024,7 @@ withdrawStatus.textContent = 'Отправляю заявку...';
 fetch(API_BASE + '/api/withdraw', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({
-init_data: tg.initData,
-amount: amount,
-payment_details: details,
-})
+body: JSON.stringify(payload)
 })
 .then(async r => {
 if (!r.ok){
@@ -5941,10 +6034,11 @@ throw new Error(WITHDRAW_ERROR_MESSAGES[data.error] || errorMessage(data.error))
 return r.json();
 })
 .then(data => {
-const payoutText = data.payout ? ` На карту придёт ${formatCoins(data.payout)}.` : '';
+const payoutText = data.payout ? ` Придёт ${formatCoins(data.payout)}.` : '';
 withdrawStatus.textContent = `Заявка #${data.id} отправлена ✓ Ожидай перевод.${payoutText}`;
 wAmount.value = '';
 wDetails.value = '';
+document.getElementById('wCryptoAddress').value = '';
 withdrawPayoutPreview.textContent = '';
 loadProfile();
 })
