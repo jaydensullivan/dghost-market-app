@@ -2716,7 +2716,13 @@ transform="rotate(-90 100 100)"></circle>
 
 <div class="profile-section admin-group" id="adminReferralSection" data-group="finance" style="margin-top:10px; display:none;">
 <div class="profile-section-title" data-i18n="admin_section_referral_bonus">Реферальный бонус</div>
-<div class="shop-hint" data-i18n="admin_referral_info_text">Копится автоматически: 0.05% от цены с каждой завершённой покупки приглашённого (после снятия холда), в реферальный кошелёк с потолком 200 000 сум на человека. Настраивается только в коде.</div>
+<div class="shop-hint" style="margin-bottom:10px;" data-i18n="admin_referral_info_text">Копится автоматически с каждой завершённой покупки приглашённого (после снятия холда), в реферальный кошелёк с потолком 200 000 сум на человека.</div>
+<div class="edit-field">
+<label for="adminReferralPercent" data-i18n="admin_label_referral_percent">Процент от цены, %</label>
+<input id="adminReferralPercent" type="number" min="0" max="100" step="0.01" placeholder="0.05">
+</div>
+<button type="button" id="adminSaveReferralPercentBtn" class="steam-link-btn secondary" data-i18n="btn_save">Сохранить</button>
+<div class="edit-status" id="adminReferralPercentStatus"></div>
 </div>
 
 <div class="profile-section admin-group" id="adminPeopleSection" data-group="people" style="margin-top:10px; display:none;">
@@ -3347,7 +3353,8 @@ admin_commission_withdraw: 'С выводов (2.5%)',
 admin_section_promo: 'Промо: продажи без комиссии',
 admin_label_promo_limit: 'Лимит продаж без комиссии (всего)',
 admin_section_referral_bonus: 'Реферальный бонус',
-admin_referral_info_text: 'Копится автоматически: 0.05% от цены с каждой завершённой покупки приглашённого (после снятия холда), в реферальный кошелёк с потолком 200 000 сум на человека. Настраивается только в коде.',
+admin_referral_info_text: 'Копится автоматически с каждой завершённой покупки приглашённого (после снятия холда), в реферальный кошелёк с потолком 200 000 сум на человека.',
+admin_label_referral_percent: 'Процент от цены, %',
 admin_section_people: 'Админы и организаторы аукционов',
 admin_label_user_id: 'Telegram user_id',
 admin_btn_add_admin: '+ Админ',
@@ -3614,7 +3621,8 @@ admin_commission_withdraw: "Pul yechishdan (2.5%)",
 admin_section_promo: "Promo: komissiyasiz sotuvlar",
 admin_label_promo_limit: "Komissiyasiz sotuvlar limiti (jami)",
 admin_section_referral_bonus: 'Referal bonusi',
-admin_referral_info_text: "Avtomatik to'planadi: taklif qilingan foydalanuvchining har bir yakunlangan xarididan (hold olib tashlangandan keyin) narxning 0.05% i, kishi boshiga 200 000 so'm chegara bilan referal hamyoniga. Faqat kodda sozlanadi.",
+admin_referral_info_text: "Avtomatik to'planadi: taklif qilingan foydalanuvchining har bir yakunlangan xarididan (hold olib tashlangandan keyin), kishi boshiga 200 000 so'm chegara bilan referal hamyoniga.",
+admin_label_referral_percent: "Narxdan foiz, %",
 admin_section_people: "Adminlar va auksion tashkilotchilari",
 admin_label_user_id: 'Telegram user_id',
 admin_btn_add_admin: '+ Admin',
@@ -4128,7 +4136,8 @@ tabTimerBtn.addEventListener('click', () => switchTab('timer'));
 function displayScreen(name){
 if (name === 'welcome'){
 hideCategoryPicker();
-showWelcomeOverlay();
+hideWelcomeOverlay();
+switchTab('shop');
 } else if (name === 'categoryPicker'){
 hideWelcomeOverlay();
 showCategoryPicker();
@@ -6236,7 +6245,7 @@ document.getElementById('bottomNav').classList.remove('elevated');
 if (deepLinkGiveaway){
 switchTab('timer');
 } else {
-showWelcomeOverlay();
+switchTab('shop');
 }
 
 document.getElementById('welcomeSellBtn').addEventListener('click', () => {
@@ -6456,7 +6465,7 @@ let adminSetDiscountType = 'percent';
 
 function loadAdminSetSkinPicker(){
 const picker = document.getElementById('setSkinPicker');
-adminApiFetch('/api/admin/skins_for_auction')
+adminApiFetch('/api/admin/skins_for_sets')
 .then(data => {
 adminSetSkinsPool = data.items || [];
 if (!adminSetSkinsPool.length){
@@ -7463,6 +7472,7 @@ document.getElementById('adminCardHolder').value = '';
 document.getElementById('adminCardNumber').value = data.topup_details || '';
 document.getElementById('adminPromoLimit').value = data.promo_limit || 0;
 document.getElementById('adminPromoStatus2').textContent = `Использовано: ${data.promo_used || 0} из ${data.promo_limit || 0}`;
+document.getElementById('adminReferralPercent').value = data.referral_bonus_percent || 0;
 document.getElementById('adminCommissionSale').textContent = formatCoins(data.commission_sale_total || 0);
 document.getElementById('adminCommissionWithdraw').textContent = formatCoins(data.commission_withdraw_total || 0);
 })
@@ -7541,6 +7551,19 @@ const status = document.getElementById('adminPromoStatus');
 const limit = Number(document.getElementById('adminPromoLimit').value);
 status.textContent = 'Сохраняю...';
 adminApiFetch('/api/admin/promo_limit', { method: 'POST', body: { limit: limit } })
+.then(() => { status.textContent = 'Сохранено ✓'; loadAdminSettings(); })
+.catch(err => { status.textContent = friendlyErrorMessage(err); });
+});
+
+document.getElementById('adminSaveReferralPercentBtn').addEventListener('click', () => {
+const status = document.getElementById('adminReferralPercentStatus');
+const percent = Number(document.getElementById('adminReferralPercent').value);
+if (percent < 0 || percent > 100 || Number.isNaN(percent)){
+status.textContent = 'Процент должен быть от 0 до 100.';
+return;
+}
+status.textContent = 'Сохраняю...';
+adminApiFetch('/api/admin/referral_percent', { method: 'POST', body: { percent: percent } })
 .then(() => { status.textContent = 'Сохранено ✓'; loadAdminSettings(); })
 .catch(err => { status.textContent = friendlyErrorMessage(err); });
 });
