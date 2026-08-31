@@ -6529,6 +6529,22 @@ addSkinStatus.textContent = '';
 pendingSkinAssetId = null;
 pendingSkinInspectLink = null;
 document.getElementById('sMarketPricePreview').style.display = 'none';
+// Явно прячем форму и чистим её поля на случай, если где-то
+// осталось прошлое состояние (например, WebView не перезагрузился
+// полностью между открытиями мини-аппа) — иначе может мелькнуть
+// старая форма с прошлыми тестовыми значениями поверх инвентаря.
+addSkinOverlay.classList.remove('show');
+sTitle.value = '';
+sWeaponType.value = '';
+sRarity.value = '';
+sWear.value = '';
+sFloat.value = '';
+sPattern.value = '';
+sStattrak.checked = false;
+sHasStickers.checked = false;
+sDescription.value = '';
+sPrice.value = '';
+sPhoto.value = '';
 inventoryOverlay.classList.add('show');
 loadInventory(false);
 });
