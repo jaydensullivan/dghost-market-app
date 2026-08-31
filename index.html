@@ -3127,6 +3127,21 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 </div>
 
+<div class="edit-overlay" id="topupRejectOverlay">
+<div class="edit-sheet">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+<h2 style="margin:0;">Отклонить заявку</h2>
+<button type="button" id="topupRejectCloseBtn" class="buy-close-btn" style="position:static;">✕</button>
+</div>
+<div class="edit-field">
+<label for="topupRejectComment">Причина (клиент это увидит)</label>
+<textarea id="topupRejectComment" rows="3" placeholder="Например: не вижу поступление, проверь реквизиты"></textarea>
+</div>
+<button type="button" id="topupRejectConfirmBtn" class="save">Отклонить</button>
+<div class="edit-status" id="topupRejectStatus"></div>
+</div>
+</div>
+
 <div class="edit-overlay" id="inspectOverlay">
 <div class="edit-sheet">
 <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
@@ -7549,7 +7564,7 @@ list.innerHTML = items.map(t => `
 </div>
 <div class="deal-actions">
 <button class="deal-action" data-topup-approve="${t.id}" type="button">Принять</button>
-<button class="deal-action secondary" data-topup-reject="${t.id}" type="button">Отклонить</button>
+<button class="deal-action secondary" data-topup-reject="${t.id}" data-has-receipt="${t.photo_file_id ? '1' : '0'}" type="button">Отклонить</button>
 </div>
 </div>`).join('');
 })
@@ -7565,12 +7580,32 @@ adminApiFetch('/api/admin/topups/' + approveBtn.dataset.topupApprove + '/approve
 .catch(err => showAlert(friendlyErrorMessage(err)));
 }
 if (rejectBtn){
-showConfirm('Отклонить заявку?', () => {
-adminApiFetch('/api/admin/topups/' + rejectBtn.dataset.topupReject + '/reject', { method: 'POST' })
-.then(loadAdminTopups)
-.catch(err => showAlert(friendlyErrorMessage(err)));
-});
+const hasReceipt = rejectBtn.dataset.hasReceipt === '1';
+document.getElementById('topupRejectComment').value = hasReceipt
+? ''
+: 'Не вижу скриншот чека об оплате — пришли его, пожалуйста, следующим сообщением боту.';
+document.getElementById('topupRejectStatus').textContent = '';
+document.getElementById('topupRejectOverlay').dataset.topupId = rejectBtn.dataset.topupReject;
+document.getElementById('topupRejectOverlay').classList.add('show');
 }
+});
+
+document.getElementById('topupRejectCloseBtn').addEventListener('click', () => {
+document.getElementById('topupRejectOverlay').classList.remove('show');
+});
+
+document.getElementById('topupRejectConfirmBtn').addEventListener('click', () => {
+const overlay = document.getElementById('topupRejectOverlay');
+const topupId = overlay.dataset.topupId;
+const comment = document.getElementById('topupRejectComment').value.trim();
+const status = document.getElementById('topupRejectStatus');
+status.textContent = 'Отклоняю...';
+adminApiFetch('/api/admin/topups/' + topupId + '/reject', { method: 'POST', body: { comment: comment } })
+.then(() => {
+overlay.classList.remove('show');
+loadAdminTopups();
+})
+.catch(err => { status.textContent = friendlyErrorMessage(err); });
 });
 
 // ---------------- Заявки на вывод ----------------
