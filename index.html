@@ -2181,6 +2181,19 @@ justify-content:center;
 
 <div class="brand-tl"><img src="logo.PNG" alt="DGhost" class="brand-logo" onerror="this.style.display='none'"></div>
 
+<div class="welcome-overlay" id="mandatorySteamOverlay" style="background:var(--bg); z-index:9999; justify-content:center;">
+<div class="welcome-content" style="padding:0 20px;">
+<div class="welcome-greeting" style="font-size:16px;">🔗 Для работы с площадкой нужно привязать трейд-ссылку Steam — без неё нельзя ни купить, ни продать.</div>
+<div class="edit-field" style="margin-top:16px; text-align:left;">
+<label for="mandatoryTradeLink">Трейд-ссылка Steam</label>
+<input id="mandatoryTradeLink" type="text" placeholder="https://steamcommunity.com/tradeoffer/new/?partner=...&token=...">
+</div>
+<button type="button" id="mandatoryLinkBtn" class="welcome-btn primary" style="margin-top:12px; width:100%;">Привязать и продолжить</button>
+<div class="edit-status" id="mandatorySteamStatus" style="margin-top:8px;"></div>
+<div class="shop-hint" style="margin-top:14px;">Ссылку можно найти в настройках Steam: Инвентарь → Обмен → Куда высылать предметы.</div>
+</div>
+</div>
+
 <div class="welcome-overlay" id="welcomeOverlay">
 <div class="welcome-bg"></div>
 <div class="welcome-content">
@@ -4334,6 +4347,15 @@ document.getElementById('steamLinkBlock').style.display = hasSteamLink ? 'none' 
 document.getElementById('steamInventoryBlock').style.display = hasSteamLink ? 'block' : 'none';
 }
 
+function updateMandatorySteamOverlay(){
+const overlay = document.getElementById('mandatorySteamOverlay');
+if (currentUserId && !hasSteamLink){
+overlay.classList.add('show');
+} else {
+overlay.classList.remove('show');
+}
+}
+
 function loadMe(){
 if (!tg || !tg.initData){
 document.getElementById('balanceAmount').textContent = '—';
@@ -4382,6 +4404,7 @@ document.getElementById('dealsList').innerHTML = lastDeals.map(dealCardHtml).joi
 }
 updateFabVisibility();
 updateSteamBlockVisibility();
+updateMandatorySteamOverlay();
 })
 .catch(() => {
 document.getElementById('balanceAmount').textContent = '—';
@@ -4434,6 +4457,7 @@ document.getElementById('openTopupBtn').style.display = (!topupCardEnabled && !t
 document.getElementById('openWithdrawBtn').style.display = (!withdrawCardEnabled && !withdrawCryptoEnabled) ? 'none' : '';
 updateFabVisibility();
 updateSteamBlockVisibility();
+updateMandatorySteamOverlay();
 updateProfileSteamBlock();
 
 profileName.textContent = data.username || ('ID ' + data.user_id);
@@ -5776,18 +5800,23 @@ profileSteamLinked.style.display = hasSteamLink ? 'block' : 'none';
 profileSteamUnlinked.style.display = hasSteamLink ? 'none' : 'block';
 }
 
-function submitTradeLink(){
+function submitTradeLink(opts){
+opts = opts || {};
+const inputEl = opts.inputEl || pTradeLink;
+const statusEl = opts.statusEl || profileSteamStatus;
+const btnEl = opts.btnEl || profileLinkBtn;
+const onSuccess = opts.onSuccess;
 if (!tg || !tg.initData){
-profileSteamStatus.textContent = errorMessage('unauthorized');
+statusEl.textContent = errorMessage('unauthorized');
 return;
 }
-const link = pTradeLink.value.trim();
+const link = inputEl.value.trim();
 if (!link){
-profileSteamStatus.textContent = 'Вставь трейд-ссылку.';
+statusEl.textContent = 'Вставь трейд-ссылку.';
 return;
 }
-profileLinkBtn.disabled = true;
-profileSteamStatus.textContent = 'Привязываю...';
+btnEl.disabled = true;
+statusEl.textContent = 'Привязываю...';
 fetch(API_BASE + '/api/steam/link', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
@@ -5802,23 +5831,33 @@ return r.json();
 })
 .then(() => {
 hasSteamLink = true;
-profileSteamStatus.textContent = 'Привязано ✓';
-pTradeLink.value = '';
+statusEl.textContent = 'Привязано ✓';
+inputEl.value = '';
 setTimeout(() => {
 updateProfileSteamBlock();
 updateSteamBlockVisibility();
-profileSteamStatus.textContent = '';
+updateMandatorySteamOverlay();
+statusEl.textContent = '';
+if (onSuccess) onSuccess();
 }, 500);
 })
 .catch(err => {
-profileSteamStatus.textContent = friendlyErrorMessage(err);
+statusEl.textContent = friendlyErrorMessage(err);
 })
 .finally(() => {
-profileLinkBtn.disabled = false;
+btnEl.disabled = false;
 });
 }
 
-profileLinkBtn.addEventListener('click', submitTradeLink);
+profileLinkBtn.addEventListener('click', () => submitTradeLink());
+
+document.getElementById('mandatoryLinkBtn').addEventListener('click', () => {
+submitTradeLink({
+inputEl: document.getElementById('mandatoryTradeLink'),
+statusEl: document.getElementById('mandatorySteamStatus'),
+btnEl: document.getElementById('mandatoryLinkBtn'),
+});
+});
 
 openSteamTradeUrlBtn.addEventListener('click', () => {
 const url = 'https://steamcommunity.com/my/tradeoffers/privacy';
@@ -6474,6 +6513,7 @@ sDescription.value = '';
 scheduleSellMarketPreview();
 
 inventoryOverlay.classList.remove('show');
+addSkinOverlay.classList.add('show');
 });
 
 addSkinBtn.addEventListener('click', () => {
@@ -6481,12 +6521,16 @@ if (!tg || !tg.initData){
 showAlert(errorMessage('unauthorized'));
 return;
 }
+if (!hasSteamLink){
+showAlert('Сначала привяжи трейд-ссылку Steam в Профиле.');
+return;
+}
 addSkinStatus.textContent = '';
-updateSteamBlockVisibility();
 pendingSkinAssetId = null;
 pendingSkinInspectLink = null;
 document.getElementById('sMarketPricePreview').style.display = 'none';
-addSkinOverlay.classList.add('show');
+inventoryOverlay.classList.add('show');
+loadInventory(false);
 });
 
 const welcomeOverlay = document.getElementById('welcomeOverlay');
@@ -6538,6 +6582,7 @@ return;
 
 addSkinStatus.textContent = '';
 updateSteamBlockVisibility();
+updateMandatorySteamOverlay();
 pendingSkinAssetId = null;
 pendingSkinInspectLink = null;
 document.getElementById('sMarketPricePreview').style.display = 'none';
@@ -6578,6 +6623,11 @@ addSkinOverlay.classList.remove('show');
 addSkinSave.addEventListener('click', () => {
 if (!tg || !tg.initData){
 addSkinStatus.textContent = errorMessage('unauthorized');
+return;
+}
+
+if (!pendingSkinAssetId){
+addSkinStatus.textContent = 'Выбери предмет из инвентаря Steam — вручную заполнять нельзя.';
 return;
 }
 
