@@ -2690,11 +2690,17 @@ transform="rotate(-90 100 100)"></circle>
 
 <div class="profile-section admin-group" id="adminFeatureTogglesSection" data-group="finance" style="margin-top:10px; display:none;">
 <div class="profile-section-title">Доступность функций</div>
+<div style="font-size:12px; color:var(--muted); margin-bottom:4px;">Пополнение</div>
 <div class="admin-perm-chips">
-<label class="admin-perm-chip"><input type="checkbox" id="toggleTopupEnabled"> Пополнение включено</label>
-<label class="admin-perm-chip"><input type="checkbox" id="toggleWithdrawEnabled"> Вывод включён</label>
+<label class="admin-perm-chip"><input type="checkbox" id="toggleTopupCard"> П2П (карта)</label>
+<label class="admin-perm-chip"><input type="checkbox" id="toggleTopupCrypto"> Крипто</label>
 </div>
-<div class="shop-hint" style="margin-top:8px;">Видно и настраивается только владельцу. Если выключить — клиенты не смогут подать заявку, кнопки в Профиле скроются.</div>
+<div style="font-size:12px; color:var(--muted); margin:10px 0 4px;">Вывод</div>
+<div class="admin-perm-chips">
+<label class="admin-perm-chip"><input type="checkbox" id="toggleWithdrawCard"> П2П (карта)</label>
+<label class="admin-perm-chip"><input type="checkbox" id="toggleWithdrawCrypto"> Крипто</label>
+</div>
+<div class="shop-hint" style="margin-top:8px;">Видно и настраивается только владельцу. Выключенный способ пропадает у клиента из выбора при пополнении/выводе.</div>
 </div>
 
 <div class="profile-section admin-group" id="adminFinanceSummarySection" data-group="finance" style="margin-top:10px; display:none;">
@@ -2801,7 +2807,7 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 <div class="shop-hint" style="margin-bottom:10px;" data-i18n="withdraw_hint">Минимум — <span id="withdrawMinLabel">50,000</span> сум. Комиссия за вывод — <span id="withdrawFeeLabel">2.5</span>%. Деньги переводятся вручную на указанные реквизиты в течение некоторого времени.</div>
 <div class="btn-row" style="margin-bottom:10px;">
-<button type="button" class="steam-link-btn secondary withdraw-method-btn active" data-method="card" style="flex:1;">На карту</button>
+<button type="button" class="steam-link-btn secondary withdraw-method-btn active" data-method="card" id="withdrawCardMethodBtn" style="flex:1;">На карту</button>
 <button type="button" class="steam-link-btn secondary withdraw-method-btn" data-method="crypto" id="withdrawCryptoMethodBtn" style="flex:1; display:none;">В крипту (USDT)</button>
 </div>
 <div class="edit-field">
@@ -4119,6 +4125,10 @@ let isAdmin = false;
 let isOwner = false;
 let cryptoTopupAvailable = false;
 let cryptoPayoutAvailable = false;
+let topupCardEnabled = true;
+let topupCryptoEnabled = true;
+let withdrawCardEnabled = true;
+let withdrawCryptoEnabled = true;
 let adminPermissions = [];
 
 let adminStatsLiveTimer = null;
@@ -4334,10 +4344,14 @@ currentUserId = data.user_id;
 hasSteamLink = !!data.has_steam_link;
 cryptoTopupAvailable = !!data.crypto_topup_available;
 cryptoPayoutAvailable = !!data.crypto_payout_available;
-document.getElementById('withdrawCryptoMethodBtn').style.display = cryptoPayoutAvailable ? '' : 'none';
+topupCardEnabled = data.topup_card_enabled !== false;
+topupCryptoEnabled = data.topup_crypto_enabled !== false;
+withdrawCardEnabled = data.withdraw_card_enabled !== false;
+withdrawCryptoEnabled = data.withdraw_crypto_enabled !== false;
+if (typeof updateWithdrawMethodVisibility === 'function') updateWithdrawMethodVisibility();
 if (typeof updateTopupCryptoBtnVisibility === 'function') updateTopupCryptoBtnVisibility();
-document.getElementById('openTopupBtn').style.display = data.topup_enabled === false ? 'none' : '';
-document.getElementById('openWithdrawBtn').style.display = data.withdraw_enabled === false ? 'none' : '';
+document.getElementById('openTopupBtn').style.display = (!topupCardEnabled && !topupCryptoEnabled) ? 'none' : '';
+document.getElementById('openWithdrawBtn').style.display = (!withdrawCardEnabled && !withdrawCryptoEnabled) ? 'none' : '';
 if (data.language && data.language !== currentLang){
 currentLang = data.language;
 applyTranslations();
@@ -4396,10 +4410,14 @@ currentUserId = data.user_id;
 hasSteamLink = !!data.has_steam_link;
 cryptoTopupAvailable = !!data.crypto_topup_available;
 cryptoPayoutAvailable = !!data.crypto_payout_available;
-document.getElementById('withdrawCryptoMethodBtn').style.display = cryptoPayoutAvailable ? '' : 'none';
+topupCardEnabled = data.topup_card_enabled !== false;
+topupCryptoEnabled = data.topup_crypto_enabled !== false;
+withdrawCardEnabled = data.withdraw_card_enabled !== false;
+withdrawCryptoEnabled = data.withdraw_crypto_enabled !== false;
+if (typeof updateWithdrawMethodVisibility === 'function') updateWithdrawMethodVisibility();
 if (typeof updateTopupCryptoBtnVisibility === 'function') updateTopupCryptoBtnVisibility();
-document.getElementById('openTopupBtn').style.display = data.topup_enabled === false ? 'none' : '';
-document.getElementById('openWithdrawBtn').style.display = data.withdraw_enabled === false ? 'none' : '';
+document.getElementById('openTopupBtn').style.display = (!topupCardEnabled && !topupCryptoEnabled) ? 'none' : '';
+document.getElementById('openWithdrawBtn').style.display = (!withdrawCardEnabled && !withdrawCryptoEnabled) ? 'none' : '';
 updateFabVisibility();
 updateSteamBlockVisibility();
 updateProfileSteamBlock();
@@ -6066,7 +6084,9 @@ copyReferralLink();
 loadReferralInfo();
 
 function updateTopupCryptoBtnVisibility(){
-document.getElementById('topupCryptoBtn').style.display = cryptoTopupAvailable ? '' : 'none';
+document.getElementById('topupCryptoBtn').style.display = (cryptoTopupAvailable && topupCryptoEnabled) ? '' : 'none';
+document.getElementById('topupDetailsBox').style.display = topupCardEnabled ? '' : 'none';
+topupSubmitBtn.style.display = topupCardEnabled ? '' : 'none';
 }
 
 document.getElementById('topupCryptoBtn').addEventListener('click', () => {
@@ -6179,6 +6199,15 @@ withdrawMethod = method;
 document.querySelectorAll('.withdraw-method-btn').forEach(b => b.classList.toggle('active', b.dataset.method === method));
 document.getElementById('withdrawCardField').style.display = method === 'card' ? '' : 'none';
 document.getElementById('withdrawCryptoField').style.display = method === 'crypto' ? '' : 'none';
+}
+
+function updateWithdrawMethodVisibility(){
+const cardOn = withdrawCardEnabled;
+const cryptoOn = cryptoPayoutAvailable && withdrawCryptoEnabled;
+document.getElementById('withdrawCardMethodBtn').style.display = cardOn ? '' : 'none';
+document.getElementById('withdrawCryptoMethodBtn').style.display = cryptoOn ? '' : 'none';
+if (withdrawMethod === 'card' && !cardOn && cryptoOn) setWithdrawMethod('crypto');
+else if (withdrawMethod === 'crypto' && !cryptoOn && cardOn) setWithdrawMethod('card');
 }
 
 document.querySelectorAll('.withdraw-method-btn').forEach(btn => {
@@ -7683,22 +7712,26 @@ document.getElementById('adminReferralPercent').value = data.referral_bonus_perc
 document.getElementById('adminCommissionSale').textContent = formatCoins(data.commission_sale_total || 0);
 document.getElementById('adminCommissionWithdraw').textContent = formatCoins(data.commission_withdraw_total || 0);
 document.getElementById('adminFeatureTogglesSection').style.display = data.is_owner ? '' : 'none';
-document.getElementById('toggleTopupEnabled').checked = data.topup_enabled !== false;
-document.getElementById('toggleWithdrawEnabled').checked = data.withdraw_enabled !== false;
+document.getElementById('toggleTopupCard').checked = data.topup_card_enabled !== false;
+document.getElementById('toggleTopupCrypto').checked = data.topup_crypto_enabled !== false;
+document.getElementById('toggleWithdrawCard').checked = data.withdraw_card_enabled !== false;
+document.getElementById('toggleWithdrawCrypto').checked = data.withdraw_crypto_enabled !== false;
 })
 .catch(() => {});
 loadAdminFinanceSummary();
 
-document.getElementById('toggleTopupEnabled').addEventListener('change', (e) => {
+[
+['toggleTopupCard', 'topup_card'],
+['toggleTopupCrypto', 'topup_crypto'],
+['toggleWithdrawCard', 'withdraw_card'],
+['toggleWithdrawCrypto', 'withdraw_crypto'],
+].forEach(([elId, feature]) => {
+document.getElementById(elId).addEventListener('change', (e) => {
 const checkbox = e.target;
-adminApiFetch('/api/admin/toggle_feature', { method: 'POST', body: { feature: 'topup', enabled: checkbox.checked } })
+adminApiFetch('/api/admin/toggle_feature', { method: 'POST', body: { feature: feature, enabled: checkbox.checked } })
+.then(() => { loadProfile(); })
 .catch(() => { checkbox.checked = !checkbox.checked; showAlert('Не удалось изменить.'); });
 });
-
-document.getElementById('toggleWithdrawEnabled').addEventListener('change', (e) => {
-const checkbox = e.target;
-adminApiFetch('/api/admin/toggle_feature', { method: 'POST', body: { feature: 'withdraw', enabled: checkbox.checked } })
-.catch(() => { checkbox.checked = !checkbox.checked; showAlert('Не удалось изменить.'); });
 });
 loadAdminTopTopupers();
 }
