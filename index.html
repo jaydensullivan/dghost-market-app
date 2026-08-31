@@ -2694,6 +2694,7 @@ transform="rotate(-90 100 100)"></circle>
 <div class="admin-perm-chips">
 <label class="admin-perm-chip"><input type="checkbox" id="toggleTopupCard"> П2П (карта)</label>
 <label class="admin-perm-chip"><input type="checkbox" id="toggleTopupCrypto"> Крипто</label>
+<label class="admin-perm-chip"><input type="checkbox" id="toggleTopupStars"> ⭐ Stars</label>
 </div>
 <div style="font-size:12px; color:var(--muted); margin:10px 0 4px;">Вывод</div>
 <div class="admin-perm-chips">
@@ -2701,6 +2702,12 @@ transform="rotate(-90 100 100)"></circle>
 <label class="admin-perm-chip"><input type="checkbox" id="toggleWithdrawCrypto"> Крипто</label>
 </div>
 <div class="shop-hint" style="margin-top:8px;">Видно и настраивается только владельцу. Выключенный способ пропадает у клиента из выбора при пополнении/выводе.</div>
+<div class="edit-field" style="margin-top:10px;">
+<label for="adminStarsRate">Курс: сум за 1 ★</label>
+<input id="adminStarsRate" type="number" min="1" placeholder="200">
+</div>
+<button type="button" id="adminSaveStarsRateBtn" class="steam-link-btn secondary">Сохранить курс</button>
+<div class="edit-status" id="adminStarsRateStatus"></div>
 </div>
 
 <div class="profile-section admin-group" id="adminFinanceSummarySection" data-group="finance" style="margin-top:10px; display:none;">
@@ -2774,6 +2781,7 @@ transform="rotate(-90 100 100)"></circle>
 <h2 data-i18n="section_topup" style="margin:0;">Пополнить баланс</h2>
 </div>
 <button type="button" id="topupCryptoBtn" class="steam-link-btn" style="margin-bottom:12px; display:none;">💳 Оплатить криптовалютой</button>
+<button type="button" id="topupStarsBtn" class="steam-link-btn" style="margin-bottom:12px; display:none;">⭐ Оплатить Stars</button>
 <div class="topup-details-box" id="topupDetailsBox">
 <div class="topup-details-text" id="topupDetailsText">Загрузка реквизитов...</div>
 <button type="button" id="topupCopyBtn" class="topup-copy-btn">
@@ -4127,6 +4135,8 @@ let cryptoTopupAvailable = false;
 let cryptoPayoutAvailable = false;
 let topupCardEnabled = true;
 let topupCryptoEnabled = true;
+let topupStarsEnabled = true;
+let coinsPerStar = 200;
 let withdrawCardEnabled = true;
 let withdrawCryptoEnabled = true;
 let adminPermissions = [];
@@ -4346,6 +4356,8 @@ cryptoTopupAvailable = !!data.crypto_topup_available;
 cryptoPayoutAvailable = !!data.crypto_payout_available;
 topupCardEnabled = data.topup_card_enabled !== false;
 topupCryptoEnabled = data.topup_crypto_enabled !== false;
+topupStarsEnabled = data.topup_stars_enabled !== false;
+coinsPerStar = data.coins_per_star || 200;
 withdrawCardEnabled = data.withdraw_card_enabled !== false;
 withdrawCryptoEnabled = data.withdraw_crypto_enabled !== false;
 if (typeof updateWithdrawMethodVisibility === 'function') updateWithdrawMethodVisibility();
@@ -4412,6 +4424,8 @@ cryptoTopupAvailable = !!data.crypto_topup_available;
 cryptoPayoutAvailable = !!data.crypto_payout_available;
 topupCardEnabled = data.topup_card_enabled !== false;
 topupCryptoEnabled = data.topup_crypto_enabled !== false;
+topupStarsEnabled = data.topup_stars_enabled !== false;
+coinsPerStar = data.coins_per_star || 200;
 withdrawCardEnabled = data.withdraw_card_enabled !== false;
 withdrawCryptoEnabled = data.withdraw_crypto_enabled !== false;
 if (typeof updateWithdrawMethodVisibility === 'function') updateWithdrawMethodVisibility();
@@ -6085,6 +6099,7 @@ loadReferralInfo();
 
 function updateTopupCryptoBtnVisibility(){
 document.getElementById('topupCryptoBtn').style.display = (cryptoTopupAvailable && topupCryptoEnabled) ? '' : 'none';
+document.getElementById('topupStarsBtn').style.display = topupStarsEnabled ? '' : 'none';
 document.getElementById('topupDetailsBox').style.display = topupCardEnabled ? '' : 'none';
 topupSubmitBtn.style.display = topupCardEnabled ? '' : 'none';
 }
@@ -6123,6 +6138,55 @@ tg.openTelegramLink(data.tg_deeplink);
 tg.openLink(link);
 } else {
 window.open(link, '_blank');
+}
+})
+.catch(err => {
+topupStatus.textContent = friendlyErrorMessage(err);
+})
+.finally(() => {
+btn.disabled = false;
+});
+});
+
+document.getElementById('topupStarsBtn').addEventListener('click', () => {
+if (!tg || !tg.initData){
+topupStatus.textContent = errorMessage('unauthorized');
+return;
+}
+const amount = Number(tAmount.value);
+if (!amount || amount < coinsPerStar){
+topupStatus.textContent = `Укажи сумму пополнения (минимум ${formatCoins(coinsPerStar)}).`;
+return;
+}
+const btn = document.getElementById('topupStarsBtn');
+btn.disabled = true;
+topupStatus.textContent = 'Выставляю счёт...';
+fetch(API_BASE + '/api/topup/stars', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData, amount: amount })
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(data.error === 'feature_disabled' ? 'Оплата Stars сейчас недоступна.' : errorMessage(data.error));
+}
+return r.json();
+})
+.then(data => {
+if (tg && tg.openInvoice){
+tg.openInvoice(data.link, (status) => {
+if (status === 'paid'){
+topupStatus.textContent = 'Оплата прошла ✓ Баланс обновится через пару секунд...';
+setTimeout(() => { loadMe(); loadProfile(); }, 2500);
+} else if (status === 'cancelled'){
+topupStatus.textContent = '';
+} else {
+topupStatus.textContent = 'Оплата не прошла, попробуй ещё раз.';
+}
+});
+} else {
+window.open(data.link, '_blank');
 }
 })
 .catch(err => {
@@ -7714,8 +7778,10 @@ document.getElementById('adminCommissionWithdraw').textContent = formatCoins(dat
 document.getElementById('adminFeatureTogglesSection').style.display = data.is_owner ? '' : 'none';
 document.getElementById('toggleTopupCard').checked = data.topup_card_enabled !== false;
 document.getElementById('toggleTopupCrypto').checked = data.topup_crypto_enabled !== false;
+document.getElementById('toggleTopupStars').checked = data.topup_stars_enabled !== false;
 document.getElementById('toggleWithdrawCard').checked = data.withdraw_card_enabled !== false;
 document.getElementById('toggleWithdrawCrypto').checked = data.withdraw_crypto_enabled !== false;
+document.getElementById('adminStarsRate').value = data.coins_per_star || 200;
 })
 .catch(() => {});
 loadAdminFinanceSummary();
@@ -7723,6 +7789,7 @@ loadAdminFinanceSummary();
 [
 ['toggleTopupCard', 'topup_card'],
 ['toggleTopupCrypto', 'topup_crypto'],
+['toggleTopupStars', 'topup_stars'],
 ['toggleWithdrawCard', 'withdraw_card'],
 ['toggleWithdrawCrypto', 'withdraw_crypto'],
 ].forEach(([elId, feature]) => {
@@ -7733,6 +7800,20 @@ adminApiFetch('/api/admin/toggle_feature', { method: 'POST', body: { feature: fe
 .catch(() => { checkbox.checked = !checkbox.checked; showAlert('Не удалось изменить.'); });
 });
 });
+
+document.getElementById('adminSaveStarsRateBtn').addEventListener('click', () => {
+const status = document.getElementById('adminStarsRateStatus');
+const rate = Number(document.getElementById('adminStarsRate').value);
+if (!rate || rate <= 0){
+status.textContent = 'Курс должен быть больше нуля.';
+return;
+}
+status.textContent = 'Сохраняю...';
+adminApiFetch('/api/admin/stars_rate', { method: 'POST', body: { rate: rate } })
+.then(() => { status.textContent = 'Сохранено ✓'; loadAdminSettings(); })
+.catch(err => { status.textContent = friendlyErrorMessage(err); });
+});
+
 loadAdminTopTopupers();
 }
 
