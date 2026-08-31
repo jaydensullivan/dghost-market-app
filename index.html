@@ -2688,6 +2688,15 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 </div>
 
+<div class="profile-section admin-group" id="adminFeatureTogglesSection" data-group="finance" style="margin-top:10px; display:none;">
+<div class="profile-section-title">Доступность функций</div>
+<div class="admin-perm-chips">
+<label class="admin-perm-chip"><input type="checkbox" id="toggleTopupEnabled"> Пополнение включено</label>
+<label class="admin-perm-chip"><input type="checkbox" id="toggleWithdrawEnabled"> Вывод включён</label>
+</div>
+<div class="shop-hint" style="margin-top:8px;">Видно и настраивается только владельцу. Если выключить — клиенты не смогут подать заявку, кнопки в Профиле скроются.</div>
+</div>
+
 <div class="profile-section admin-group" id="adminFinanceSummarySection" data-group="finance" style="margin-top:10px; display:none;">
 <div class="profile-section-title">Пополнения и выводы (всего)</div>
 <div class="money-btn-row">
@@ -4327,6 +4336,8 @@ cryptoTopupAvailable = !!data.crypto_topup_available;
 cryptoPayoutAvailable = !!data.crypto_payout_available;
 document.getElementById('withdrawCryptoMethodBtn').style.display = cryptoPayoutAvailable ? '' : 'none';
 if (typeof updateTopupCryptoBtnVisibility === 'function') updateTopupCryptoBtnVisibility();
+document.getElementById('openTopupBtn').style.display = data.topup_enabled === false ? 'none' : '';
+document.getElementById('openWithdrawBtn').style.display = data.withdraw_enabled === false ? 'none' : '';
 if (data.language && data.language !== currentLang){
 currentLang = data.language;
 applyTranslations();
@@ -4387,6 +4398,8 @@ cryptoTopupAvailable = !!data.crypto_topup_available;
 cryptoPayoutAvailable = !!data.crypto_payout_available;
 document.getElementById('withdrawCryptoMethodBtn').style.display = cryptoPayoutAvailable ? '' : 'none';
 if (typeof updateTopupCryptoBtnVisibility === 'function') updateTopupCryptoBtnVisibility();
+document.getElementById('openTopupBtn').style.display = data.topup_enabled === false ? 'none' : '';
+document.getElementById('openWithdrawBtn').style.display = data.withdraw_enabled === false ? 'none' : '';
 updateFabVisibility();
 updateSteamBlockVisibility();
 updateProfileSteamBlock();
@@ -5805,6 +5818,7 @@ let topupCardNumber = '';
 
 const TOPUP_ERROR_MESSAGES = {
 below_minimum: 'Сумма меньше минимальной для пополнения.',
+feature_disabled: 'Пополнение сейчас временно недоступно.',
 };
 
 function loadTopupInfo(){
@@ -6189,6 +6203,7 @@ no_crypto_details: 'Укажи адрес кошелька.',
 below_minimum: 'Сумма меньше минимальной для вывода.',
 insufficient_funds: 'Недостаточно средств на балансе.',
 not_configured: 'Вывод в крипту сейчас недоступен.',
+feature_disabled: 'Вывод сейчас временно недоступен.',
 };
 
 withdrawSubmitBtn.addEventListener('click', () => {
@@ -7667,9 +7682,24 @@ document.getElementById('adminPromoStatus2').textContent = `Использова
 document.getElementById('adminReferralPercent').value = data.referral_bonus_percent || 0;
 document.getElementById('adminCommissionSale').textContent = formatCoins(data.commission_sale_total || 0);
 document.getElementById('adminCommissionWithdraw').textContent = formatCoins(data.commission_withdraw_total || 0);
+document.getElementById('adminFeatureTogglesSection').style.display = data.is_owner ? '' : 'none';
+document.getElementById('toggleTopupEnabled').checked = data.topup_enabled !== false;
+document.getElementById('toggleWithdrawEnabled').checked = data.withdraw_enabled !== false;
 })
 .catch(() => {});
 loadAdminFinanceSummary();
+
+document.getElementById('toggleTopupEnabled').addEventListener('change', (e) => {
+const checkbox = e.target;
+adminApiFetch('/api/admin/toggle_feature', { method: 'POST', body: { feature: 'topup', enabled: checkbox.checked } })
+.catch(() => { checkbox.checked = !checkbox.checked; showAlert('Не удалось изменить.'); });
+});
+
+document.getElementById('toggleWithdrawEnabled').addEventListener('change', (e) => {
+const checkbox = e.target;
+adminApiFetch('/api/admin/toggle_feature', { method: 'POST', body: { feature: 'withdraw', enabled: checkbox.checked } })
+.catch(() => { checkbox.checked = !checkbox.checked; showAlert('Не удалось изменить.'); });
+});
 loadAdminTopTopupers();
 }
 
