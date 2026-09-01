@@ -4323,6 +4323,8 @@ insufficient_funds: 'Недостаточно сум на балансе.',
 race_lost: 'Кто-то купил этот скин на секунду раньше.',
 forbidden: 'Можно снять только свой лот.',
 not_found: 'Лот не найден.',
+items_unavailable: 'Один или несколько лотов из этого сета уже проданы — сет больше недоступен целиком.',
+set_not_found: 'Этот сет больше не существует.',
 invalid: 'Проверь название и цену.',
 bad_price: 'Укажи корректную цену.',
 too_low: 'Ставка слишком маленькая — кто-то уже успел поставить больше.',
@@ -5324,9 +5326,11 @@ headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({ init_data: tg.initData })
 })
 .then(async r => {
-const data = await r.json();
-if (!r.ok || data.error) throw data;
-return data;
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(errorMessage(data.error));
+}
+return r.json();
 })
 .then(data => {
 status.textContent = `✅ Куплено за ${formatCoins(data.set_price)}`;
