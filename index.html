@@ -2184,13 +2184,17 @@ justify-content:center;
 <div class="welcome-overlay" id="mandatorySteamOverlay" style="background:var(--bg); z-index:9999; justify-content:center;">
 <div class="welcome-content" style="padding:0 20px;">
 <div class="welcome-greeting" style="font-size:16px;">🔗 Для работы с площадкой нужно привязать трейд-ссылку Steam — без неё нельзя ни купить, ни продать.</div>
+<button type="button" id="mandatoryOpenSteamBtn" class="steam-link-btn secondary" style="margin-top:16px; width:100%;">
+<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="vertical-align:-3px;margin-right:5px"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>
+Открыть страницу Steam с трейд-ссылкой
+</button>
 <div class="edit-field" style="margin-top:16px; text-align:left;">
 <label for="mandatoryTradeLink">Трейд-ссылка Steam</label>
 <input id="mandatoryTradeLink" type="text" placeholder="https://steamcommunity.com/tradeoffer/new/?partner=...&token=...">
 </div>
 <button type="button" id="mandatoryLinkBtn" class="welcome-btn primary" style="margin-top:12px; width:100%;">Привязать и продолжить</button>
 <div class="edit-status" id="mandatorySteamStatus" style="margin-top:8px;"></div>
-<div class="shop-hint" style="margin-top:14px;">Ссылку можно найти в настройках Steam: Инвентарь → Обмен → Куда высылать предметы.</div>
+<div class="shop-hint" style="margin-top:14px;">Нажми кнопку выше — откроется страница Steam с твоей трейд-ссылкой, останется скопировать и вставить сюда.</div>
 </div>
 </div>
 
@@ -5870,6 +5874,15 @@ btnEl: document.getElementById('mandatoryLinkBtn'),
 });
 
 openSteamTradeUrlBtn.addEventListener('click', () => {
+const url = 'https://steamcommunity.com/my/tradeoffers/privacy';
+if (tg && tg.openLink) {
+tg.openLink(url);
+} else {
+window.open(url, '_blank');
+}
+});
+
+document.getElementById('mandatoryOpenSteamBtn').addEventListener('click', () => {
 const url = 'https://steamcommunity.com/my/tradeoffers/privacy';
 if (tg && tg.openLink) {
 tg.openLink(url);
