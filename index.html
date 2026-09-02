@@ -2725,6 +2725,12 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 <button type="button" id="adminSaveStarsRateBtn" class="steam-link-btn secondary">Сохранить курс</button>
 <div class="edit-status" id="adminStarsRateStatus"></div>
+<div style="font-size:12px; color:var(--muted); margin:14px 0 4px;">Прямая оплата за лот (тест)</div>
+<div class="admin-perm-chips">
+<label class="admin-perm-chip"><input type="checkbox" id="toggleDirectStarsPurchase"> ⭐ Оплата лота напрямую через Stars</label>
+<label class="admin-perm-chip"><input type="checkbox" id="toggleDirectCryptoPurchase"> 💳 Оплата лота напрямую криптой</label>
+</div>
+<div class="shop-hint" style="margin-top:8px;">Тестовая функция: покупатель платит ровно за выбранный лот (Stars или криптой), минуя баланс. При включении кнопка «Купить» открывает счёт вместо мгновенного списания с баланса.</div>
 </div>
 
 <div class="profile-section admin-group" id="adminFinanceSummarySection" data-group="finance" style="margin-top:10px; display:none;">
@@ -4156,6 +4162,8 @@ let topupCardEnabled = true;
 let topupCryptoEnabled = true;
 let topupStarsEnabled = true;
 let coinsPerStar = 200;
+let directStarsPurchaseEnabled = false;
+let directCryptoPurchaseEnabled = false;
 let withdrawCardEnabled = true;
 let withdrawCryptoEnabled = true;
 let adminPermissions = [];
@@ -4394,6 +4402,8 @@ topupCardEnabled = data.topup_card_enabled !== false;
 topupCryptoEnabled = data.topup_crypto_enabled !== false;
 topupStarsEnabled = data.topup_stars_enabled !== false;
 coinsPerStar = data.coins_per_star || 200;
+directStarsPurchaseEnabled = data.direct_stars_purchase_enabled === true;
+directCryptoPurchaseEnabled = data.direct_crypto_purchase_enabled === true;
 withdrawCardEnabled = data.withdraw_card_enabled !== false;
 withdrawCryptoEnabled = data.withdraw_crypto_enabled !== false;
 if (typeof updateWithdrawMethodVisibility === 'function') updateWithdrawMethodVisibility();
@@ -4463,6 +4473,8 @@ topupCardEnabled = data.topup_card_enabled !== false;
 topupCryptoEnabled = data.topup_crypto_enabled !== false;
 topupStarsEnabled = data.topup_stars_enabled !== false;
 coinsPerStar = data.coins_per_star || 200;
+directStarsPurchaseEnabled = data.direct_stars_purchase_enabled === true;
+directCryptoPurchaseEnabled = data.direct_crypto_purchase_enabled === true;
 withdrawCardEnabled = data.withdraw_card_enabled !== false;
 withdrawCryptoEnabled = data.withdraw_crypto_enabled !== false;
 if (typeof updateWithdrawMethodVisibility === 'function') updateWithdrawMethodVisibility();
@@ -5717,6 +5729,89 @@ if (!pendingBuySkin || !tg || !tg.initData) return;
 
 const skinId = pendingBuySkin.id;
 buyConfirm.disabled = true;
+
+if (directCryptoPurchaseEnabled){
+buyStatus.textContent = 'Выставляю счёт...';
+fetch(API_BASE + '/api/skins/' + skinId + '/buy_crypto_invoice', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(data.error === 'feature_disabled' ? 'Прямая оплата сейчас недоступна.' : (data.error === 'not_configured' ? 'Оплата криптой сейчас недоступна.' : errorMessage(data.error)));
+}
+return r.json();
+})
+.then(data => {
+buyStatus.textContent = 'Счёт создан — открой ссылку для оплаты. Покупка завершится автоматически.';
+const link = data.tg_deeplink || data.url;
+if (tg && tg.openTelegramLink && data.tg_deeplink){
+tg.openTelegramLink(data.tg_deeplink);
+} else if (tg && tg.openLink){
+tg.openLink(link);
+} else {
+window.open(link, '_blank');
+}
+})
+.catch(err => {
+buyStatus.textContent = friendlyErrorMessage(err);
+})
+.finally(() => {
+buyConfirm.disabled = false;
+});
+return;
+}
+
+if (directStarsPurchaseEnabled){
+buyStatus.textContent = 'Выставляю счёт...';
+fetch(API_BASE + '/api/skins/' + skinId + '/buy_stars_invoice', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(data.error === 'feature_disabled' ? 'Прямая оплата сейчас недоступна.' : errorMessage(data.error));
+}
+return r.json();
+})
+.then(data => {
+buyStatus.textContent = '';
+const openInvoiceAndWait = (link) => {
+if (tg && tg.openInvoice){
+tg.openInvoice(link, (status) => {
+if (status === 'paid'){
+buyStatus.textContent = 'Оплачено ✓';
+loadMe();
+loadSkins();
+setTimeout(() => {
+buyOverlay.classList.remove('show');
+pendingBuySkin = null;
+}, 700);
+} else if (status === 'cancelled'){
+buyStatus.textContent = '';
+} else {
+buyStatus.textContent = 'Оплата не прошла, попробуй ещё раз.';
+}
+});
+} else {
+window.open(link, '_blank');
+}
+};
+openInvoiceAndWait(data.link);
+})
+.catch(err => {
+buyStatus.textContent = friendlyErrorMessage(err);
+})
+.finally(() => {
+buyConfirm.disabled = false;
+});
+return;
+}
+
 buyStatus.textContent = 'Покупаю...';
 
 fetch(API_BASE + '/api/skins/' + skinId + '/buy', {
@@ -7872,6 +7967,8 @@ document.getElementById('toggleTopupCrypto').checked = data.topup_crypto_enabled
 document.getElementById('toggleTopupStars').checked = data.topup_stars_enabled !== false;
 document.getElementById('toggleWithdrawCard').checked = data.withdraw_card_enabled !== false;
 document.getElementById('toggleWithdrawCrypto').checked = data.withdraw_crypto_enabled !== false;
+document.getElementById('toggleDirectStarsPurchase').checked = data.direct_stars_purchase_enabled === true;
+document.getElementById('toggleDirectCryptoPurchase').checked = data.direct_crypto_purchase_enabled === true;
 document.getElementById('adminStarsRate').value = data.coins_per_star || 200;
 })
 .catch(() => {});
@@ -7883,6 +7980,8 @@ loadAdminFinanceSummary();
 ['toggleTopupStars', 'topup_stars'],
 ['toggleWithdrawCard', 'withdraw_card'],
 ['toggleWithdrawCrypto', 'withdraw_crypto'],
+['toggleDirectStarsPurchase', 'direct_stars_purchase'],
+['toggleDirectCryptoPurchase', 'direct_crypto_purchase'],
 ].forEach(([elId, feature]) => {
 document.getElementById(elId).addEventListener('change', (e) => {
 const checkbox = e.target;
