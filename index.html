@@ -6056,11 +6056,34 @@ return;
 p2pSkinStatus.textContent = 'Обрабатываю фото...';
 const reader = new FileReader();
 reader.onload = () => {
-p2pReceiptBase64 = reader.result;
-p2pSkinReceiptPreview.src = reader.result;
+const img = new Image();
+img.onload = () => {
+// Сжимаем — фото с телефона легко весит 3-8 МБ, для чека
+// такое разрешение не нужно, а большой файл дольше грузится
+// и рискует упереться в лимиты.
+const MAX_SIDE = 1600;
+let { width, height } = img;
+if (width > MAX_SIDE || height > MAX_SIDE){
+const scale = MAX_SIDE / Math.max(width, height);
+width = Math.round(width * scale);
+height = Math.round(height * scale);
+}
+const canvas = document.createElement('canvas');
+canvas.width = width;
+canvas.height = height;
+canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+const compressed = canvas.toDataURL('image/jpeg', 0.82);
+p2pReceiptBase64 = compressed;
+p2pSkinReceiptPreview.src = compressed;
 p2pSkinReceiptPreview.style.display = 'block';
 p2pSkinSentBtn.disabled = false;
 p2pSkinStatus.textContent = '';
+};
+img.onerror = () => {
+p2pSkinStatus.textContent = 'Не удалось обработать фото, попробуй другое.';
+p2pSkinSentBtn.disabled = true;
+};
+img.src = reader.result;
 };
 reader.onerror = () => {
 p2pSkinStatus.textContent = 'Не удалось прочитать файл, попробуй другой.';
