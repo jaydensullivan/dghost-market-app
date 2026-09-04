@@ -6883,7 +6883,7 @@ fetch(url)
 if (!r.ok){
 const data = await r.json().catch(() => ({}));
 if (data.error === 'refresh_limited'){
-throw new Error(`Обновлять инвентарь можно раз в сутки. Попробуй ещё раз через ${formatWaitHours(data.wait_hours)}.`);
+throw new Error(`Обновлять инвентарь можно не больше 3 раз в сутки. Попробуй ещё раз через ${formatWaitHours(data.wait_hours)}.`);
 }
 throw new Error(steamErrorMessage(data.error));
 }
