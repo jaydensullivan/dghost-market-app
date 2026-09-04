@@ -2743,6 +2743,7 @@ transform="rotate(-90 100 100)"></circle>
 <div class="admin-perm-chips">
 <label class="admin-perm-chip"><input type="checkbox" id="toggleDirectStarsPurchase"> ⭐ Оплата лота напрямую через Stars</label>
 <label class="admin-perm-chip"><input type="checkbox" id="toggleDirectCryptoPurchase"> 💳 Оплата лота напрямую криптой</label>
+<label class="admin-perm-chip"><input type="checkbox" id="toggleDirectP2pPurchase"> 🏦 Оплата лота напрямую П2П (карта, ручное подтверждение)</label>
 </div>
 <div class="shop-hint" style="margin-top:8px;">Покупатель всегда сам выбирает способ оплаты на карточке лота — с баланса, Stars или криптой. Здесь включаются/выключаются именно варианты Stars/крипта; оплата с баланса доступна всегда.</div>
 </div>
@@ -2810,6 +2811,27 @@ transform="rotate(-90 100 100)"></circle>
 <div class="edit-status" id="adminPeopleStatus"></div>
 </div>
 
+</div>
+
+<div class="edit-overlay" id="p2pSkinOverlay">
+<div class="edit-sheet">
+<h2 style="margin:0 0 14px;">🏦 Оплата П2П</h2>
+<div class="topup-details-box" id="p2pSkinDetailsBox">
+<div class="topup-details-text" id="p2pSkinDetailsText">Загрузка реквизитов...</div>
+<button type="button" id="p2pSkinCopyBtn" class="topup-copy-btn">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+<span data-i18n="btn_copy">Скопировать</span>
+</button>
+</div>
+<div class="edit-field">
+<label>Сумма к переводу</label>
+<div id="p2pSkinAmount" style="font-size:20px; font-weight:700; color:var(--silver);">—</div>
+</div>
+<div class="topup-warning">⚠️ Переведи ровно эту сумму, затем нажми «Я отправил средства» — после этого пришли скриншот чека прямо в чат с ботом. Без чека заявку не подтвердят.</div>
+<button type="button" id="p2pSkinSentBtn" class="welcome-btn primary" style="width:100%; margin-top:12px;">Я отправил средства</button>
+<div class="edit-status" id="p2pSkinStatus" style="margin-top:8px;"></div>
+<button type="button" id="p2pSkinCloseBtn" style="width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_cancel">Отмена</button>
+</div>
 </div>
 
 <div class="edit-overlay" id="topupOverlay">
@@ -3145,6 +3167,7 @@ transform="rotate(-90 100 100)"></circle>
 <button type="button" id="buyConfirmBalance" class="save">💰 <span data-i18n="btn_buy_prefix">Купить</span> · <span id="buyPrice">—</span></button>
 <button type="button" id="buyConfirmStars" class="save" style="display:none;">⭐ Оплатить Stars</button>
 <button type="button" id="buyConfirmCrypto" class="save" style="display:none;">💳 Оплатить криптой</button>
+<button type="button" id="buyConfirmP2P" class="save" style="display:none;">🏦 Оплатить П2П (карта)</button>
 </div>
 <button type="button" id="buyMakeOfferBtn" class="steam-link-btn secondary" data-i18n="btn_make_offer">Предложить цену</button>
 <button type="button" id="buySendOfferBtn" class="save" style="display:none;" data-i18n="btn_send_offer">Отправить предложение</button>
@@ -4182,6 +4205,8 @@ let topupStarsEnabled = true;
 let coinsPerStar = 200;
 let directStarsPurchaseEnabled = false;
 let directCryptoPurchaseEnabled = false;
+let directP2pPurchaseEnabled = false;
+let p2pCardDetails = '';
 let withdrawCardEnabled = true;
 let withdrawCryptoEnabled = true;
 let adminPermissions = [];
@@ -4335,6 +4360,7 @@ const buyCancel = document.getElementById('buyCancel');
 const buyConfirmBalance = document.getElementById('buyConfirmBalance');
 const buyConfirmStars = document.getElementById('buyConfirmStars');
 const buyConfirmCrypto = document.getElementById('buyConfirmCrypto');
+const buyConfirmP2P = document.getElementById('buyConfirmP2P');
 const buyEditPriceBtn = document.getElementById('buyEditPriceBtn');
 const buySavePriceBtn = document.getElementById('buySavePriceBtn');
 const buyPriceEdit = document.getElementById('buyPriceEdit');
@@ -4454,6 +4480,8 @@ topupStarsEnabled = data.topup_stars_enabled !== false;
 coinsPerStar = data.coins_per_star || 200;
 directStarsPurchaseEnabled = data.direct_stars_purchase_enabled === true;
 directCryptoPurchaseEnabled = data.direct_crypto_purchase_enabled === true;
+directP2pPurchaseEnabled = data.direct_p2p_purchase_enabled === true;
+p2pCardDetails = data.p2p_card_details || '';
 withdrawCardEnabled = data.withdraw_card_enabled !== false;
 withdrawCryptoEnabled = data.withdraw_crypto_enabled !== false;
 if (typeof updateWithdrawMethodVisibility === 'function') updateWithdrawMethodVisibility();
@@ -4526,6 +4554,8 @@ topupStarsEnabled = data.topup_stars_enabled !== false;
 coinsPerStar = data.coins_per_star || 200;
 directStarsPurchaseEnabled = data.direct_stars_purchase_enabled === true;
 directCryptoPurchaseEnabled = data.direct_crypto_purchase_enabled === true;
+directP2pPurchaseEnabled = data.direct_p2p_purchase_enabled === true;
+p2pCardDetails = data.p2p_card_details || '';
 withdrawCardEnabled = data.withdraw_card_enabled !== false;
 withdrawCryptoEnabled = data.withdraw_crypto_enabled !== false;
 if (typeof updateWithdrawMethodVisibility === 'function') updateWithdrawMethodVisibility();
@@ -5558,6 +5588,7 @@ document.getElementById('buyPaymentMethods').style.display = isOwn ? 'none' : 'f
 buyConfirmBalance.style.display = isOwn ? 'none' : '';
 buyConfirmStars.style.display = (!isOwn && directStarsPurchaseEnabled) ? '' : 'none';
 buyConfirmCrypto.style.display = (!isOwn && directCryptoPurchaseEnabled) ? '' : 'none';
+buyConfirmP2P.style.display = (!isOwn && directP2pPurchaseEnabled) ? '' : 'none';
 buyEditPriceBtn.style.display = isOwn ? '' : 'none';
 buySavePriceBtn.style.display = 'none';
 buyPriceEdit.style.display = 'none';
@@ -5899,6 +5930,104 @@ buyStatus.textContent = friendlyErrorMessage(err);
 .finally(() => {
 buyConfirmCrypto.disabled = false;
 });
+});
+
+let pendingP2pOrderId = null;
+
+const p2pSkinOverlay = document.getElementById('p2pSkinOverlay');
+const p2pSkinDetailsText = document.getElementById('p2pSkinDetailsText');
+const p2pSkinAmount = document.getElementById('p2pSkinAmount');
+const p2pSkinSentBtn = document.getElementById('p2pSkinSentBtn');
+const p2pSkinStatus = document.getElementById('p2pSkinStatus');
+const p2pSkinCopyBtn = document.getElementById('p2pSkinCopyBtn');
+const p2pSkinDetailsBox = document.getElementById('p2pSkinDetailsBox');
+const p2pSkinCloseBtn = document.getElementById('p2pSkinCloseBtn');
+
+buyConfirmP2P.addEventListener('click', () => {
+if (!pendingBuySkin || !tg || !tg.initData) return;
+
+const skinId = pendingBuySkin.id;
+buyConfirmP2P.disabled = true;
+buyStatus.textContent = 'Резервирую лот...';
+
+fetch(API_BASE + '/api/skins/' + skinId + '/buy_p2p_reserve', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(data.error === 'feature_disabled' ? 'Оплата П2П сейчас недоступна.' : errorMessage(data.error));
+}
+return r.json();
+})
+.then(data => {
+buyStatus.textContent = '';
+pendingP2pOrderId = data.order_id;
+p2pSkinDetailsText.textContent = data.card_details || p2pCardDetails || 'Реквизиты не заданы — обратись в поддержку.';
+p2pSkinAmount.textContent = fmtAmount(data.amount) + ' сум';
+p2pSkinSentBtn.style.display = '';
+p2pSkinSentBtn.disabled = false;
+p2pSkinStatus.textContent = '';
+buyOverlay.classList.remove('show');
+p2pSkinOverlay.classList.add('show');
+})
+.catch(err => {
+buyStatus.textContent = friendlyErrorMessage(err);
+})
+.finally(() => {
+buyConfirmP2P.disabled = false;
+});
+});
+
+function copyP2pSkinDetails(){
+const text = p2pSkinDetailsText.textContent;
+if (!text) return;
+navigator.clipboard?.writeText(text).catch(() => {});
+const original = p2pSkinCopyBtn.innerHTML;
+p2pSkinCopyBtn.classList.add('copied');
+p2pSkinCopyBtn.textContent = (I18N[currentLang] || I18N.ru).copied_text;
+setTimeout(() => {
+p2pSkinCopyBtn.classList.remove('copied');
+p2pSkinCopyBtn.innerHTML = original;
+}, 1500);
+}
+
+p2pSkinDetailsBox.addEventListener('click', copyP2pSkinDetails);
+
+p2pSkinSentBtn.addEventListener('click', () => {
+if (!pendingP2pOrderId || !tg || !tg.initData) return;
+
+p2pSkinSentBtn.disabled = true;
+p2pSkinStatus.textContent = 'Сохраняю...';
+
+fetch(API_BASE + '/api/p2p_skin_orders/' + pendingP2pOrderId + '/mark_sent', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(errorMessage(data.error));
+}
+return r.json();
+})
+.then(() => {
+p2pSkinStatus.textContent = '';
+p2pSkinSentBtn.style.display = 'none';
+showAlert('Теперь пришли скриншот чека прямо в чат с ботом (не сюда, а в обычную переписку с ботом в Telegram) — заявка появится у админа сразу после этого.');
+})
+.catch(err => {
+p2pSkinStatus.textContent = friendlyErrorMessage(err);
+p2pSkinSentBtn.disabled = false;
+});
+});
+
+p2pSkinCloseBtn.addEventListener('click', () => {
+p2pSkinOverlay.classList.remove('show');
+pendingP2pOrderId = null;
 });
 
 function cancelListing(skinId){
@@ -8058,6 +8187,7 @@ document.getElementById('toggleWithdrawCard').checked = data.withdraw_card_enabl
 document.getElementById('toggleWithdrawCrypto').checked = data.withdraw_crypto_enabled !== false;
 document.getElementById('toggleDirectStarsPurchase').checked = data.direct_stars_purchase_enabled === true;
 document.getElementById('toggleDirectCryptoPurchase').checked = data.direct_crypto_purchase_enabled === true;
+document.getElementById('toggleDirectP2pPurchase').checked = data.direct_p2p_purchase_enabled === true;
 document.getElementById('adminStarsRate').value = data.coins_per_star || 200;
 })
 .catch(() => {});
@@ -8071,6 +8201,7 @@ loadAdminFinanceSummary();
 ['toggleWithdrawCrypto', 'withdraw_crypto'],
 ['toggleDirectStarsPurchase', 'direct_stars_purchase'],
 ['toggleDirectCryptoPurchase', 'direct_crypto_purchase'],
+['toggleDirectP2pPurchase', 'direct_p2p_purchase'],
 ].forEach(([elId, feature]) => {
 document.getElementById(elId).addEventListener('change', (e) => {
 const checkbox = e.target;
