@@ -2159,7 +2159,8 @@ justify-content:center;
 
 .buy-sticky-bar #buyConfirmBalance,
 .buy-sticky-bar #buyConfirmStars,
-.buy-sticky-bar #buyConfirmCrypto{
+.buy-sticky-bar #buyConfirmCrypto,
+.buy-sticky-bar #buyConfirmP2P{
 flex:1;
 min-height:48px;
 padding:0 18px;
@@ -2182,6 +2183,14 @@ justify-content:center;
 <div class="princess-bg" id="princessBg"></div>
 
 <div class="brand-tl"><video class="brand-logo" src="logo.mp4" autoplay loop muted playsinline disablepictureinpicture onerror="this.style.display='none'"></video></div>
+
+<div class="edit-overlay" id="changelogBanner" style="z-index:8000;">
+<div class="edit-sheet">
+<h2 id="changelogTitle" style="margin:0 0 14px;">📣 Что нового</h2>
+<ul id="changelogList" style="margin:0 0 16px; padding-left:20px; color:var(--silver); font-size:14px; line-height:1.6;"></ul>
+<button type="button" id="changelogOkBtn" class="welcome-btn primary" style="width:100%;">Понятно</button>
+</div>
+</div>
 
 <div class="welcome-overlay" id="mandatoryAgreementOverlay" style="background:var(--bg); z-index:10000; justify-content:center;">
 <div class="welcome-content" style="padding:0 20px;">
@@ -2827,8 +2836,13 @@ transform="rotate(-90 100 100)"></circle>
 <label>Сумма к переводу</label>
 <div id="p2pSkinAmount" style="font-size:20px; font-weight:700; color:var(--silver);">—</div>
 </div>
-<div class="topup-warning">⚠️ Переведи ровно эту сумму, затем нажми «Я отправил средства» — после этого пришли скриншот чека прямо в чат с ботом. Без чека заявку не подтвердят.</div>
-<button type="button" id="p2pSkinSentBtn" class="welcome-btn primary" style="width:100%; margin-top:12px;">Я отправил средства</button>
+<div class="edit-field">
+<label>Скриншот чека</label>
+<input type="file" id="p2pSkinReceiptInput" accept="image/*" style="color:var(--silver);">
+<img id="p2pSkinReceiptPreview" style="display:none; max-width:100%; max-height:180px; margin-top:8px; border-radius:8px;">
+</div>
+<div class="topup-warning">⚠️ Переведи ровно эту сумму на реквизиты выше, приложи скриншот чека и нажми «Отправил, подтверждаю».</div>
+<button type="button" id="p2pSkinSentBtn" class="welcome-btn primary" style="width:100%; margin-top:12px;" disabled>Отправил, подтверждаю</button>
 <div class="edit-status" id="p2pSkinStatus" style="margin-top:8px;"></div>
 <button type="button" id="p2pSkinCloseBtn" style="width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_cancel">Отмена</button>
 </div>
@@ -4450,8 +4464,36 @@ document.body.style.overflow = 'hidden';
 } else {
 steamOverlay.classList.remove('show');
 document.body.style.overflow = '';
+maybeShowChangelogBanner();
 }
 }
+
+let changelogSeen = true;
+
+function maybeShowChangelogBanner(){
+if (!currentUserId || changelogSeen) return;
+fetch(API_BASE + '/api/changelog')
+.then(r => r.json())
+.then(data => {
+document.getElementById('changelogTitle').textContent = '📣 ' + (data.title || 'Что нового');
+const list = document.getElementById('changelogList');
+list.innerHTML = (data.items || []).map(t => `<li style="margin-bottom:6px;">${t}</li>`).join('');
+document.getElementById('changelogBanner').classList.add('show');
+})
+.catch(() => {});
+}
+
+document.getElementById('changelogOkBtn').addEventListener('click', () => {
+document.getElementById('changelogBanner').classList.remove('show');
+changelogSeen = true;
+if (tg && tg.initData){
+fetch(API_BASE + '/api/changelog/seen', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+}).catch(() => {});
+}
+});
 
 function loadMe(){
 if (!tg || !tg.initData){
@@ -4472,6 +4514,7 @@ if (typeof applyChipVisibility === 'function') applyChipVisibility();
 currentUserId = data.user_id;
 hasSteamLink = !!data.has_steam_link;
 agreementAccepted = !!data.agreement_accepted;
+changelogSeen = !!data.changelog_seen;
 cryptoTopupAvailable = !!data.crypto_topup_available;
 cryptoPayoutAvailable = !!data.crypto_payout_available;
 topupCardEnabled = data.topup_card_enabled !== false;
@@ -4546,6 +4589,7 @@ if (typeof applyChipVisibility === 'function') applyChipVisibility();
 currentUserId = data.user_id;
 hasSteamLink = !!data.has_steam_link;
 agreementAccepted = !!data.agreement_accepted;
+changelogSeen = !!data.changelog_seen;
 cryptoTopupAvailable = !!data.crypto_topup_available;
 cryptoPayoutAvailable = !!data.crypto_payout_available;
 topupCardEnabled = data.topup_card_enabled !== false;
@@ -5933,6 +5977,7 @@ buyConfirmCrypto.disabled = false;
 });
 
 let pendingP2pOrderId = null;
+let p2pReceiptBase64 = null;
 
 const p2pSkinOverlay = document.getElementById('p2pSkinOverlay');
 const p2pSkinDetailsText = document.getElementById('p2pSkinDetailsText');
@@ -5942,6 +5987,8 @@ const p2pSkinStatus = document.getElementById('p2pSkinStatus');
 const p2pSkinCopyBtn = document.getElementById('p2pSkinCopyBtn');
 const p2pSkinDetailsBox = document.getElementById('p2pSkinDetailsBox');
 const p2pSkinCloseBtn = document.getElementById('p2pSkinCloseBtn');
+const p2pSkinReceiptInput = document.getElementById('p2pSkinReceiptInput');
+const p2pSkinReceiptPreview = document.getElementById('p2pSkinReceiptPreview');
 
 buyConfirmP2P.addEventListener('click', () => {
 if (!pendingBuySkin || !tg || !tg.initData) return;
@@ -5965,10 +6012,12 @@ return r.json();
 .then(data => {
 buyStatus.textContent = '';
 pendingP2pOrderId = data.order_id;
+p2pReceiptBase64 = null;
+p2pSkinReceiptInput.value = '';
+p2pSkinReceiptPreview.style.display = 'none';
 p2pSkinDetailsText.textContent = data.card_details || p2pCardDetails || 'Реквизиты не заданы — обратись в поддержку.';
 p2pSkinAmount.textContent = fmtAmount(data.amount) + ' сум';
-p2pSkinSentBtn.style.display = '';
-p2pSkinSentBtn.disabled = false;
+p2pSkinSentBtn.disabled = true;
 p2pSkinStatus.textContent = '';
 buyOverlay.classList.remove('show');
 p2pSkinOverlay.classList.add('show');
@@ -5996,16 +6045,40 @@ p2pSkinCopyBtn.innerHTML = original;
 
 p2pSkinDetailsBox.addEventListener('click', copyP2pSkinDetails);
 
+p2pSkinReceiptInput.addEventListener('change', () => {
+const file = p2pSkinReceiptInput.files[0];
+if (!file){
+p2pReceiptBase64 = null;
+p2pSkinReceiptPreview.style.display = 'none';
+p2pSkinSentBtn.disabled = true;
+return;
+}
+p2pSkinStatus.textContent = 'Обрабатываю фото...';
+const reader = new FileReader();
+reader.onload = () => {
+p2pReceiptBase64 = reader.result;
+p2pSkinReceiptPreview.src = reader.result;
+p2pSkinReceiptPreview.style.display = 'block';
+p2pSkinSentBtn.disabled = false;
+p2pSkinStatus.textContent = '';
+};
+reader.onerror = () => {
+p2pSkinStatus.textContent = 'Не удалось прочитать файл, попробуй другой.';
+p2pSkinSentBtn.disabled = true;
+};
+reader.readAsDataURL(file);
+});
+
 p2pSkinSentBtn.addEventListener('click', () => {
-if (!pendingP2pOrderId || !tg || !tg.initData) return;
+if (!pendingP2pOrderId || !tg || !tg.initData || !p2pReceiptBase64) return;
 
 p2pSkinSentBtn.disabled = true;
-p2pSkinStatus.textContent = 'Сохраняю...';
+p2pSkinStatus.textContent = 'Отправляю...';
 
 fetch(API_BASE + '/api/p2p_skin_orders/' + pendingP2pOrderId + '/mark_sent', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ init_data: tg.initData })
+body: JSON.stringify({ init_data: tg.initData, photo_base64: p2pReceiptBase64 })
 })
 .then(async r => {
 if (!r.ok){
@@ -6016,8 +6089,9 @@ return r.json();
 })
 .then(() => {
 p2pSkinStatus.textContent = '';
-p2pSkinSentBtn.style.display = 'none';
-showAlert('Теперь пришли скриншот чека прямо в чат с ботом (не сюда, а в обычную переписку с ботом в Telegram) — заявка появится у админа сразу после этого.');
+p2pSkinOverlay.classList.remove('show');
+pendingP2pOrderId = null;
+showAlert('Заявка отправлена админу на проверку — как только подтвердят, лот станет твоим.');
 })
 .catch(err => {
 p2pSkinStatus.textContent = friendlyErrorMessage(err);
