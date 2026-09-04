@@ -5579,6 +5579,8 @@ return;
 }
 pendingBuySkin = skin;
 
+fetch(API_BASE + '/api/skins/' + skin.id + '/view', { method: 'POST' }).catch(() => {});
+
 const dict = I18N[currentLang] || I18N.ru;
 const rarityMap = currentLang === 'uz' ? RARITY_LABEL_UZ : RARITY_LABEL_RU;
 const wearMap = currentLang === 'uz' ? WEAR_LABEL_FULL_UZ : WEAR_LABEL_FULL;
