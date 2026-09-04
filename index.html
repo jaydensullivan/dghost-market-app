@@ -6016,7 +6016,7 @@ p2pReceiptBase64 = null;
 p2pSkinReceiptInput.value = '';
 p2pSkinReceiptPreview.style.display = 'none';
 p2pSkinDetailsText.textContent = data.card_details || p2pCardDetails || 'Реквизиты не заданы — обратись в поддержку.';
-p2pSkinAmount.textContent = fmtAmount(data.amount) + ' сум';
+p2pSkinAmount.textContent = formatCoins(data.amount);
 p2pSkinSentBtn.disabled = true;
 p2pSkinStatus.textContent = '';
 buyOverlay.classList.remove('show');
