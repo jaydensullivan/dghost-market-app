@@ -2181,6 +2181,15 @@ justify-content:center;
 
 <div class="brand-tl"><video class="brand-logo" src="logo.mp4" autoplay loop muted playsinline disablepictureinpicture onerror="this.style.display='none'"></video></div>
 
+<div class="welcome-overlay" id="mandatoryAgreementOverlay" style="background:var(--bg); z-index:10000; justify-content:center;">
+<div class="welcome-content" style="padding:0 20px;">
+<div class="welcome-greeting" style="font-size:16px; margin-bottom:12px;">📄 Пользовательское соглашение</div>
+<div id="agreementTextBox" style="max-height:50vh; overflow-y:auto; text-align:left; font-size:13px; line-height:1.5; color:var(--muted); background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px; white-space:pre-wrap;">Загрузка...</div>
+<button type="button" id="mandatoryAcceptAgreementBtn" class="welcome-btn primary" style="margin-top:14px; width:100%;">Принимаю условия</button>
+<div class="edit-status" id="mandatoryAgreementStatus" style="margin-top:8px;"></div>
+</div>
+</div>
+
 <div class="welcome-overlay" id="mandatorySteamOverlay" style="background:var(--bg); z-index:9999; justify-content:center;">
 <div class="welcome-content" style="padding:0 20px;">
 <video src="promo.mp4" autoplay loop muted playsinline disablepictureinpicture style="width:100%; max-width:260px; border-radius:16px; margin-bottom:16px; display:block; margin-left:auto; margin-right:auto;" onerror="this.style.display='none'"></video>
@@ -4360,23 +4369,51 @@ return Number(n || 0).toLocaleString('ru-RU') + ' сум';
 }
 
 let hasSteamLink = false;
+let agreementAccepted = false;
+let agreementTextLoaded = false;
 
 function updateSteamBlockVisibility(){
 document.getElementById('steamLinkBlock').style.display = hasSteamLink ? 'none' : 'block';
 document.getElementById('steamInventoryBlock').style.display = hasSteamLink ? 'block' : 'none';
 }
 
+function loadAgreementText(){
+if (agreementTextLoaded) return;
+fetch(API_BASE + '/api/agreement')
+.then(r => r.json())
+.then(data => {
+document.getElementById('agreementTextBox').textContent = data.text;
+agreementTextLoaded = true;
+})
+.catch(() => {
+document.getElementById('agreementTextBox').textContent = 'Не удалось загрузить текст соглашения — попробуй закрыть и открыть мини-апп заново.';
+});
+}
+
 function updateMandatorySteamOverlay(){
-const overlay = document.getElementById('mandatorySteamOverlay');
+const agreementOverlay = document.getElementById('mandatoryAgreementOverlay');
+const steamOverlay = document.getElementById('mandatorySteamOverlay');
+
+if (currentUserId && !agreementAccepted){
+loadAgreementText();
+agreementOverlay.style.height = window.innerHeight + 'px';
+agreementOverlay.classList.add('show');
+steamOverlay.classList.remove('show');
+document.body.style.overflow = 'hidden';
+return;
+}
+
+agreementOverlay.classList.remove('show');
+
 if (currentUserId && !hasSteamLink){
 // Та же особенность Telegram WebView, что и на welcomeOverlay —
 // 100vh может считаться неверно, задаём высоту явно через JS и
 // блокируем скролл страницы, пока экран показан.
-overlay.style.height = window.innerHeight + 'px';
-overlay.classList.add('show');
+steamOverlay.style.height = window.innerHeight + 'px';
+steamOverlay.classList.add('show');
 document.body.style.overflow = 'hidden';
 } else {
-overlay.classList.remove('show');
+steamOverlay.classList.remove('show');
 document.body.style.overflow = '';
 }
 }
@@ -4399,6 +4436,7 @@ document.getElementById('tabAdminBtn').style.display = (isAdmin || isAuctioneer)
 if (typeof applyChipVisibility === 'function') applyChipVisibility();
 currentUserId = data.user_id;
 hasSteamLink = !!data.has_steam_link;
+agreementAccepted = !!data.agreement_accepted;
 cryptoTopupAvailable = !!data.crypto_topup_available;
 cryptoPayoutAvailable = !!data.crypto_payout_available;
 topupCardEnabled = data.topup_card_enabled !== false;
@@ -4470,6 +4508,7 @@ document.getElementById('tabAdminBtn').style.display = (isAdmin || isAuctioneer)
 if (typeof applyChipVisibility === 'function') applyChipVisibility();
 currentUserId = data.user_id;
 hasSteamLink = !!data.has_steam_link;
+agreementAccepted = !!data.agreement_accepted;
 cryptoTopupAvailable = !!data.crypto_topup_available;
 cryptoPayoutAvailable = !!data.crypto_payout_available;
 topupCardEnabled = data.topup_card_enabled !== false;
@@ -5980,6 +6019,37 @@ tg.openLink(url);
 } else {
 window.open(url, '_blank');
 }
+});
+
+document.getElementById('mandatoryAcceptAgreementBtn').addEventListener('click', () => {
+if (!tg || !tg.initData) return;
+const btn = document.getElementById('mandatoryAcceptAgreementBtn');
+const status = document.getElementById('mandatoryAgreementStatus');
+btn.disabled = true;
+status.textContent = 'Сохраняю...';
+fetch(API_BASE + '/api/agreement/accept', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(errorMessage(data.error));
+}
+return r.json();
+})
+.then(() => {
+agreementAccepted = true;
+status.textContent = '';
+updateMandatorySteamOverlay();
+})
+.catch(err => {
+status.textContent = friendlyErrorMessage(err);
+})
+.finally(() => {
+btn.disabled = false;
+});
 });
 
 document.getElementById('mandatoryOpenSteamBtn').addEventListener('click', () => {
