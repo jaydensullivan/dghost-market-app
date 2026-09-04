@@ -2157,7 +2157,9 @@ align-items:center;
 justify-content:center;
 }
 
-.buy-sticky-bar #buyConfirm{
+.buy-sticky-bar #buyConfirmBalance,
+.buy-sticky-bar #buyConfirmStars,
+.buy-sticky-bar #buyConfirmCrypto{
 flex:1;
 min-height:48px;
 padding:0 18px;
@@ -2737,12 +2739,12 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 <button type="button" id="adminSaveStarsRateBtn" class="steam-link-btn secondary">Сохранить курс</button>
 <div class="edit-status" id="adminStarsRateStatus"></div>
-<div style="font-size:12px; color:var(--muted); margin:14px 0 4px;">Прямая оплата за лот (тест)</div>
+<div style="font-size:12px; color:var(--muted); margin:14px 0 4px;">Прямая оплата за лот</div>
 <div class="admin-perm-chips">
 <label class="admin-perm-chip"><input type="checkbox" id="toggleDirectStarsPurchase"> ⭐ Оплата лота напрямую через Stars</label>
 <label class="admin-perm-chip"><input type="checkbox" id="toggleDirectCryptoPurchase"> 💳 Оплата лота напрямую криптой</label>
 </div>
-<div class="shop-hint" style="margin-top:8px;">Тестовая функция: покупатель платит ровно за выбранный лот (Stars или криптой), минуя баланс. При включении кнопка «Купить» открывает счёт вместо мгновенного списания с баланса.</div>
+<div class="shop-hint" style="margin-top:8px;">Покупатель всегда сам выбирает способ оплаты на карточке лота — с баланса, Stars или криптой. Здесь включаются/выключаются именно варианты Stars/крипта; оплата с баланса доступна всегда.</div>
 </div>
 
 <div class="profile-section admin-group" id="adminFinanceSummarySection" data-group="finance" style="margin-top:10px; display:none;">
@@ -3139,7 +3141,11 @@ transform="rotate(-90 100 100)"></circle>
 
 <div class="buy-sticky-bar">
 <button type="button" id="buyCancel" data-i18n="btn_cancel">Отмена</button>
-<button type="button" id="buyConfirm" class="save"><span data-i18n="btn_buy_prefix">Купить</span> · <span id="buyPrice">—</span></button>
+<div id="buyPaymentMethods" style="display:flex; flex-direction:column; gap:8px; flex:1;">
+<button type="button" id="buyConfirmBalance" class="save">💰 <span data-i18n="btn_buy_prefix">Купить</span> · <span id="buyPrice">—</span></button>
+<button type="button" id="buyConfirmStars" class="save" style="display:none;">⭐ Оплатить Stars</button>
+<button type="button" id="buyConfirmCrypto" class="save" style="display:none;">💳 Оплатить криптой</button>
+</div>
 <button type="button" id="buyMakeOfferBtn" class="steam-link-btn secondary" data-i18n="btn_make_offer">Предложить цену</button>
 <button type="button" id="buySendOfferBtn" class="save" style="display:none;" data-i18n="btn_send_offer">Отправить предложение</button>
 <button type="button" id="buyEditPriceBtn" class="save" style="display:none;" data-i18n="btn_edit_price">Изменить цену</button>
@@ -4326,7 +4332,9 @@ const buyRemoveBtn = document.getElementById('buyRemoveBtn');
 const buyClose = document.getElementById('buyClose');
 const buyPrice = document.getElementById('buyPrice');
 const buyCancel = document.getElementById('buyCancel');
-const buyConfirm = document.getElementById('buyConfirm');
+const buyConfirmBalance = document.getElementById('buyConfirmBalance');
+const buyConfirmStars = document.getElementById('buyConfirmStars');
+const buyConfirmCrypto = document.getElementById('buyConfirmCrypto');
 const buyEditPriceBtn = document.getElementById('buyEditPriceBtn');
 const buySavePriceBtn = document.getElementById('buySavePriceBtn');
 const buyPriceEdit = document.getElementById('buyPriceEdit');
@@ -5546,7 +5554,10 @@ buyDetailsTable.innerHTML = rows;
 // (принудительная отмена — спам/обман), но не видит "Изменить цену"
 // и "Предложить цену" на чужом.
 buyRemoveBtn.style.display = (isOwn || isAdmin) ? '' : 'none';
-buyConfirm.style.display = isOwn ? 'none' : '';
+document.getElementById('buyPaymentMethods').style.display = isOwn ? 'none' : 'flex';
+buyConfirmBalance.style.display = isOwn ? 'none' : '';
+buyConfirmStars.style.display = (!isOwn && directStarsPurchaseEnabled) ? '' : 'none';
+buyConfirmCrypto.style.display = (!isOwn && directCryptoPurchaseEnabled) ? '' : 'none';
 buyEditPriceBtn.style.display = isOwn ? '' : 'none';
 buySavePriceBtn.style.display = 'none';
 buyPriceEdit.style.display = 'none';
@@ -5767,94 +5778,11 @@ buySendOfferBtn.disabled = false;
 });
 });
 
-buyConfirm.addEventListener('click', () => {
+buyConfirmBalance.addEventListener('click', () => {
 if (!pendingBuySkin || !tg || !tg.initData) return;
 
 const skinId = pendingBuySkin.id;
-buyConfirm.disabled = true;
-
-if (directCryptoPurchaseEnabled){
-buyStatus.textContent = 'Выставляю счёт...';
-fetch(API_BASE + '/api/skins/' + skinId + '/buy_crypto_invoice', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ init_data: tg.initData })
-})
-.then(async r => {
-if (!r.ok){
-const data = await r.json().catch(() => ({}));
-throw new Error(data.error === 'feature_disabled' ? 'Прямая оплата сейчас недоступна.' : (data.error === 'not_configured' ? 'Оплата криптой сейчас недоступна.' : errorMessage(data.error)));
-}
-return r.json();
-})
-.then(data => {
-buyStatus.textContent = 'Счёт создан — открой ссылку для оплаты. Покупка завершится автоматически.';
-const link = data.tg_deeplink || data.url;
-if (tg && tg.openTelegramLink && data.tg_deeplink){
-tg.openTelegramLink(data.tg_deeplink);
-} else if (tg && tg.openLink){
-tg.openLink(link);
-} else {
-window.open(link, '_blank');
-}
-})
-.catch(err => {
-buyStatus.textContent = friendlyErrorMessage(err);
-})
-.finally(() => {
-buyConfirm.disabled = false;
-});
-return;
-}
-
-if (directStarsPurchaseEnabled){
-buyStatus.textContent = 'Выставляю счёт...';
-fetch(API_BASE + '/api/skins/' + skinId + '/buy_stars_invoice', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ init_data: tg.initData })
-})
-.then(async r => {
-if (!r.ok){
-const data = await r.json().catch(() => ({}));
-throw new Error(data.error === 'feature_disabled' ? 'Прямая оплата сейчас недоступна.' : errorMessage(data.error));
-}
-return r.json();
-})
-.then(data => {
-buyStatus.textContent = '';
-const openInvoiceAndWait = (link) => {
-if (tg && tg.openInvoice){
-tg.openInvoice(link, (status) => {
-if (status === 'paid'){
-buyStatus.textContent = 'Оплачено ✓';
-loadMe();
-loadSkins();
-setTimeout(() => {
-buyOverlay.classList.remove('show');
-pendingBuySkin = null;
-}, 700);
-} else if (status === 'cancelled'){
-buyStatus.textContent = '';
-} else {
-buyStatus.textContent = 'Оплата не прошла, попробуй ещё раз.';
-}
-});
-} else {
-window.open(link, '_blank');
-}
-};
-openInvoiceAndWait(data.link);
-})
-.catch(err => {
-buyStatus.textContent = friendlyErrorMessage(err);
-})
-.finally(() => {
-buyConfirm.disabled = false;
-});
-return;
-}
-
+buyConfirmBalance.disabled = true;
 buyStatus.textContent = 'Покупаю...';
 
 fetch(API_BASE + '/api/skins/' + skinId + '/buy', {
@@ -5882,7 +5810,94 @@ pendingBuySkin = null;
 buyStatus.textContent = friendlyErrorMessage(err);
 })
 .finally(() => {
-buyConfirm.disabled = false;
+buyConfirmBalance.disabled = false;
+});
+});
+
+buyConfirmStars.addEventListener('click', () => {
+if (!pendingBuySkin || !tg || !tg.initData) return;
+
+const skinId = pendingBuySkin.id;
+buyConfirmStars.disabled = true;
+buyStatus.textContent = 'Выставляю счёт...';
+
+fetch(API_BASE + '/api/skins/' + skinId + '/buy_stars_invoice', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(data.error === 'feature_disabled' ? 'Оплата Stars сейчас недоступна.' : errorMessage(data.error));
+}
+return r.json();
+})
+.then(data => {
+buyStatus.textContent = '';
+if (tg && tg.openInvoice){
+tg.openInvoice(data.link, (status) => {
+if (status === 'paid'){
+buyStatus.textContent = 'Оплачено ✓';
+loadMe();
+loadSkins();
+setTimeout(() => {
+buyOverlay.classList.remove('show');
+pendingBuySkin = null;
+}, 700);
+} else if (status === 'cancelled'){
+buyStatus.textContent = '';
+} else {
+buyStatus.textContent = 'Оплата не прошла, попробуй ещё раз.';
+}
+});
+} else {
+window.open(data.link, '_blank');
+}
+})
+.catch(err => {
+buyStatus.textContent = friendlyErrorMessage(err);
+})
+.finally(() => {
+buyConfirmStars.disabled = false;
+});
+});
+
+buyConfirmCrypto.addEventListener('click', () => {
+if (!pendingBuySkin || !tg || !tg.initData) return;
+
+const skinId = pendingBuySkin.id;
+buyConfirmCrypto.disabled = true;
+buyStatus.textContent = 'Выставляю счёт...';
+
+fetch(API_BASE + '/api/skins/' + skinId + '/buy_crypto_invoice', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(data.error === 'feature_disabled' ? 'Оплата криптой сейчас недоступна.' : (data.error === 'not_configured' ? 'Оплата криптой сейчас недоступна.' : errorMessage(data.error)));
+}
+return r.json();
+})
+.then(data => {
+buyStatus.textContent = 'Счёт создан — открой ссылку для оплаты. Покупка завершится автоматически.';
+const link = data.tg_deeplink || data.url;
+if (tg && tg.openTelegramLink && data.tg_deeplink){
+tg.openTelegramLink(data.tg_deeplink);
+} else if (tg && tg.openLink){
+tg.openLink(link);
+} else {
+window.open(link, '_blank');
+}
+})
+.catch(err => {
+buyStatus.textContent = friendlyErrorMessage(err);
+})
+.finally(() => {
+buyConfirmCrypto.disabled = false;
 });
 });
 
