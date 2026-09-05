@@ -737,6 +737,29 @@ font-weight:700;
 color:var(--red);
 }
 
+.trust-badge{
+display:inline-flex;
+align-items:center;
+gap:4px;
+font-family:'Inter', sans-serif;
+font-size:11px;
+font-weight:600;
+padding:3px 10px;
+border-radius:20px;
+background:var(--red-dim);
+color:var(--red-glow);
+border:1px solid rgba(168,85,247,0.35);
+margin-bottom:8px;
+}
+
+.trust-progress{
+font-family:'Inter', sans-serif;
+font-size:10px;
+color:var(--muted);
+margin-bottom:8px;
+margin-top:-4px;
+}
+
 .profile-held{
 font-family:'JetBrains Mono', monospace;
 font-size:10px;
@@ -2382,6 +2405,8 @@ transform="rotate(-90 100 100)"></circle>
 <canvas id="rain"></canvas>
 <div class="profile-avatar" id="profileAvatar"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.2-4 4-6 7.5-6s6.3 2 7.5 6"/></svg></div>
 <div class="profile-name" id="profileName">—</div>
+<div class="trust-badge" id="trustBadge" style="display:none;"></div>
+<div class="trust-progress" id="trustProgress" style="display:none;"></div>
 <div class="profile-balance" id="profileBalance"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="vertical-align:-2px"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5c0-1 1-1.8 2.5-1.8s2.5.7 2.5 1.7c0 2.3-5 1.3-5 3.6 0 1 1 1.8 2.5 1.8s2.5-.8 2.5-1.8"/></svg> <span id="profileBalanceAmount">—</span></div>
 <div class="profile-held" id="profileHeld"></div>
 </div>
@@ -4229,6 +4254,34 @@ let adminStatsLiveTimer = null;
 let isAuctioneer = false;
 let currentUserId = null;
 let currentTab = 'shop';
+let currentUserTrust = null;
+
+const TRUST_BADGE_ICON = { new: '🌱', verified: '✅', trusted: '⭐' };
+
+function renderTrustBadge(){
+const badge = document.getElementById('trustBadge');
+const progressEl = document.getElementById('trustProgress');
+if (!badge) return;
+if (!currentUserTrust){
+badge.style.display = 'none';
+if (progressEl) progressEl.style.display = 'none';
+return;
+}
+const icon = TRUST_BADGE_ICON[currentUserTrust.level] || '';
+badge.textContent = `${icon} ${currentUserTrust.label_ru}`.trim();
+badge.style.display = 'inline-flex';
+badge.title = `Сделок завершено: ${currentUserTrust.completed_trades}`;
+if (progressEl){
+const p = currentUserTrust.progress;
+if (p && p.trades_needed > 0){
+const word = p.trades_needed === 1 ? 'сделка' : (p.trades_needed < 5 ? 'сделки' : 'сделок');
+progressEl.textContent = `До «${p.next_label_ru}»: ещё ${p.trades_needed} ${word}`;
+progressEl.style.display = 'block';
+} else {
+progressEl.style.display = 'none';
+}
+}
+}
 
 function showAlert(message){
 if (tg && tg.showAlert){ tg.showAlert(message); }
@@ -4413,6 +4466,16 @@ function errorMessage(code){
 return ERROR_MESSAGES[code] || 'Что-то пошло не так, попробуй ещё раз.';
 }
 
+function purchaseTrustLimitMessage(data){
+if (data.error === 'trust_limit_exceeded'){
+const limitText = data.limit ? formatCoins(data.limit) : null;
+return limitText
+? `Максимальная разовая покупка на твоём уровне доверия — ${limitText}. Свяжись с поддержкой, если нужен лимит побольше.`
+: 'Эта покупка превышает лимит твоего уровня доверия. Свяжись с поддержкой.';
+}
+return null;
+}
+
 function formatCoins(n){
 return Number(n || 0).toLocaleString('ru-RU') + ' сум';
 }
@@ -4527,6 +4590,8 @@ directP2pPurchaseEnabled = data.direct_p2p_purchase_enabled === true;
 p2pCardDetails = data.p2p_card_details || '';
 withdrawCardEnabled = data.withdraw_card_enabled !== false;
 withdrawCryptoEnabled = data.withdraw_crypto_enabled !== false;
+currentUserTrust = data.trust || null;
+renderTrustBadge();
 if (typeof updateWithdrawMethodVisibility === 'function') updateWithdrawMethodVisibility();
 if (typeof updateTopupCryptoBtnVisibility === 'function') updateTopupCryptoBtnVisibility();
 document.getElementById('openTopupBtn').style.display = (!topupCardEnabled && !topupCryptoEnabled) ? 'none' : '';
@@ -5870,7 +5935,7 @@ body: JSON.stringify({ init_data: tg.initData })
 .then(async r => {
 if (!r.ok){
 const data = await r.json().catch(() => ({}));
-throw new Error(errorMessage(data.error));
+throw new Error(purchaseTrustLimitMessage(data) || errorMessage(data.error));
 }
 return r.json();
 })
@@ -5906,7 +5971,7 @@ body: JSON.stringify({ init_data: tg.initData })
 .then(async r => {
 if (!r.ok){
 const data = await r.json().catch(() => ({}));
-throw new Error(data.error === 'feature_disabled' ? 'Оплата Stars сейчас недоступна.' : errorMessage(data.error));
+throw new Error(purchaseTrustLimitMessage(data) || (data.error === 'feature_disabled' ? 'Оплата Stars сейчас недоступна.' : errorMessage(data.error)));
 }
 return r.json();
 })
@@ -5955,7 +6020,7 @@ body: JSON.stringify({ init_data: tg.initData })
 .then(async r => {
 if (!r.ok){
 const data = await r.json().catch(() => ({}));
-throw new Error(data.error === 'feature_disabled' ? 'Оплата криптой сейчас недоступна.' : (data.error === 'not_configured' ? 'Оплата криптой сейчас недоступна.' : errorMessage(data.error)));
+throw new Error(purchaseTrustLimitMessage(data) || (data.error === 'feature_disabled' ? 'Оплата криптой сейчас недоступна.' : (data.error === 'not_configured' ? 'Оплата криптой сейчас недоступна.' : errorMessage(data.error))));
 }
 return r.json();
 })
@@ -6007,7 +6072,7 @@ body: JSON.stringify({ init_data: tg.initData })
 .then(async r => {
 if (!r.ok){
 const data = await r.json().catch(() => ({}));
-throw new Error(data.error === 'feature_disabled' ? 'Оплата П2П сейчас недоступна.' : errorMessage(data.error));
+throw new Error(purchaseTrustLimitMessage(data) || (data.error === 'feature_disabled' ? 'Оплата П2П сейчас недоступна.' : errorMessage(data.error)));
 }
 return r.json();
 })
@@ -6775,6 +6840,16 @@ not_configured: 'Вывод в крипту сейчас недоступен.',
 feature_disabled: 'Вывод сейчас временно недоступен.',
 };
 
+function withdrawTrustLimitMessage(data){
+if (data.error === 'single_limit'){
+return `Максимум за один вывод на твоём уровне доверия — ${formatCoins(data.limit)}. Попробуй сумму меньше.`;
+}
+if (data.error === 'daily_limit'){
+return `Превышен дневной лимит вывода для твоего уровня доверия (${formatCoins(data.limit)} за 24 часа). Попробуй позже или уменьши сумму.`;
+}
+return null;
+}
+
 withdrawSubmitBtn.addEventListener('click', () => {
 if (!tg || !tg.initData){
 withdrawStatus.textContent = errorMessage('unauthorized');
@@ -6821,7 +6896,7 @@ body: JSON.stringify(payload)
 .then(async r => {
 if (!r.ok){
 const data = await r.json().catch(() => ({}));
-throw new Error(WITHDRAW_ERROR_MESSAGES[data.error] || errorMessage(data.error));
+throw new Error(withdrawTrustLimitMessage(data) || WITHDRAW_ERROR_MESSAGES[data.error] || errorMessage(data.error));
 }
 return r.json();
 })
