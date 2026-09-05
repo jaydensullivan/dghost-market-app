@@ -6878,7 +6878,14 @@ inventoryStatus.textContent = forceRefresh ? 'Обновляю...' : 'Загру
 inventoryGrid.innerHTML = '';
 let url = API_BASE + '/api/steam/inventory?init_data=' + encodeURIComponent(tg.initData);
 if (forceRefresh) url += '&refresh=1';
-fetch(url)
+// Cache-busting: WKWebView (Telegram Mini App на iOS) может закэшировать
+// GET-запрос по URL и при повторном открытии/обновлении отдать старый
+// ответ из локального кэша вместо похода в сеть. init_data не меняется
+// в рамках сессии, поэтому URL без этой метки был бы идентичным при
+// каждом вызове. Добавляем текущее время + { cache: 'no-store' } ниже,
+// чтобы гарантированно обойти любой браузерный/WebView-кэш.
+url += '&_t=' + Date.now();
+fetch(url, { cache: 'no-store' })
 .then(async r => {
 if (!r.ok){
 const data = await r.json().catch(() => ({}));
