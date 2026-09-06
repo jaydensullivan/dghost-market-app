@@ -2389,6 +2389,10 @@ transform="rotate(-90 100 100)"></circle>
 <span data-i18n="builder_btn">🎯 Билдер под бюджет</span>
 </button>
 
+<button type="button" id="openCsfloatBtn" class="filters-btn" style="margin-top:6px; border-color:#a855f7; display:none;">
+🌐 Витрина CSFloat
+</button>
+
 <div class="skins-grid" id="skinsList">
 <div class="skins-empty">Загрузка...</div>
 </div>
@@ -2454,7 +2458,25 @@ transform="rotate(-90 100 100)"></circle>
 <div class="edit-status" id="profileSteamStatus"></div>
 </div>
 
-<div class="profile-section" id="profileMoneyButtons" style="margin-top:10px; background-image:linear-gradient(180deg, rgba(10,7,16,0.75), rgba(10,7,16,0.92)), url('https://jaydensullivan.github.io/dghost-market-app/coins-scattered.png'); background-size:cover; background-position:center 20%;">
+<div class="profile-section" id="profileSellerSection">
+<div class="profile-section-title">🪪 Статус продавца</div>
+<div id="sellerStatusNone">
+<div class="shop-hint" style="margin-bottom:10px;">Покупать можно всем без ограничений. Чтобы выставлять свои лоты и пользоваться балансом — нужно пройти проверку (ФИО, телефон, страна, адрес).</div>
+<button type="button" id="openKycBtn" class="steam-link-btn" style="width:100%;">Стать продавцом</button>
+</div>
+<div id="sellerStatusPending" style="display:none;">
+<div class="shop-hint">⏳ Заявка на проверке — обычно рассматривается в течение дня.</div>
+</div>
+<div id="sellerStatusRejected" style="display:none;">
+<div class="shop-hint" style="color:#e07a7a; margin-bottom:10px;">❌ Заявка отклонена. Проверь данные и подай заново.</div>
+<button type="button" id="openKycBtnAgain" class="steam-link-btn secondary" style="width:100%;">Подать заявку снова</button>
+</div>
+<div id="sellerStatusVerified" style="display:none;">
+<div class="shop-hint" style="color:#7ec98a;">✅ Ты продавец — можешь выставлять лоты и пользоваться балансом.</div>
+</div>
+</div>
+
+<div class="profile-section" id="profileMoneyButtons" style="display:none; margin-top:10px; background-image:linear-gradient(180deg, rgba(10,7,16,0.75), rgba(10,7,16,0.92)), url('https://jaydensullivan.github.io/dghost-market-app/coins-scattered.png'); background-size:cover; background-position:center 20%;">
 <div class="money-btn-row">
 <button type="button" id="openTopupBtn" class="money-btn">
 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
@@ -2778,6 +2800,7 @@ transform="rotate(-90 100 100)"></circle>
 <label class="admin-perm-chip"><input type="checkbox" id="toggleDirectStarsPurchase"> ⭐ Оплата лота напрямую через Stars</label>
 <label class="admin-perm-chip"><input type="checkbox" id="toggleDirectCryptoPurchase"> 💳 Оплата лота напрямую криптой</label>
 <label class="admin-perm-chip"><input type="checkbox" id="toggleDirectP2pPurchase"> 🏦 Оплата лота напрямую П2П (карта, ручное подтверждение)</label>
+<label class="admin-perm-chip"><input type="checkbox" id="toggleCsfloat"> 🌐 Витрина CSFloat (внешние лоты, ручное исполнение)</label>
 </div>
 <div class="shop-hint" style="margin-top:8px;">Покупатель всегда сам выбирает способ оплаты на карточке лота — с баланса, Stars или криптой. Здесь включаются/выключаются именно варианты Stars/крипта; оплата с баланса доступна всегда.</div>
 </div>
@@ -2845,6 +2868,45 @@ transform="rotate(-90 100 100)"></circle>
 <div class="edit-status" id="adminPeopleStatus"></div>
 </div>
 
+</div>
+
+<div class="edit-overlay" id="kycOverlay">
+<div class="edit-sheet">
+<h2 style="margin:0 0 6px;">🪪 Заявка на роль продавца</h2>
+<div class="shop-hint" style="margin-bottom:12px;">Нужно для AML/KYC-проверки — без документа, просто данные для ручной проверки админом.</div>
+<div class="edit-field">
+<label>ФИО</label>
+<input id="kycFullName" type="text" placeholder="Иванов Иван Иванович">
+</div>
+<div class="edit-field">
+<label>Номер телефона</label>
+<input id="kycPhone" type="text" placeholder="+998 90 123 45 67">
+</div>
+<div class="edit-field">
+<label>Страна проживания</label>
+<input id="kycCountry" type="text" placeholder="Узбекистан">
+</div>
+<div class="edit-field">
+<label>Адрес проживания</label>
+<input id="kycAddress" type="text" placeholder="Город, улица, дом">
+</div>
+<button type="button" id="kycSubmitBtn" class="welcome-btn primary" style="width:100%; margin-top:6px;">Отправить заявку</button>
+<div class="edit-status" id="kycStatus" style="margin-top:8px;"></div>
+<button type="button" id="kycCloseBtn" style="width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_cancel">Отмена</button>
+</div>
+</div>
+
+<div class="edit-overlay" id="csfloatOverlay">
+<div class="edit-sheet">
+<h2 style="margin:0 0 6px;">🌐 Витрина CSFloat</h2>
+<div class="shop-hint" style="margin-bottom:10px;">Внешние лоты, не наш склад. Покупка исполняется вручную — доставка может занять время.</div>
+<div class="edit-field">
+<input type="text" id="csfloatSearchInput" placeholder="Название скина (например AK-47 | Redline)">
+</div>
+<button type="button" id="csfloatSearchBtn" class="steam-link-btn secondary" style="width:100%; margin-bottom:10px;">Искать</button>
+<div id="csfloatResults" style="max-height:50vh; overflow-y:auto;"></div>
+<button type="button" id="csfloatCloseBtn" style="width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_cancel">Отмена</button>
+</div>
 </div>
 
 <div class="edit-overlay" id="p2pSkinOverlay">
@@ -4245,15 +4307,8 @@ let coinsPerStar = 200;
 let directStarsPurchaseEnabled = false;
 let directCryptoPurchaseEnabled = false;
 let directP2pPurchaseEnabled = false;
-let p2pCardDetails = '';
-let withdrawCardEnabled = true;
-let withdrawCryptoEnabled = true;
-let adminPermissions = [];
-
-let adminStatsLiveTimer = null;
-let isAuctioneer = false;
-let currentUserId = null;
-let currentTab = 'shop';
+let csfloatEnabled = false;
+let sellerKycStatus = 'none';
 let currentUserTrust = null;
 
 const TRUST_BADGE_ICON = { new: '🌱', verified: '✅', trusted: '⭐' };
@@ -4282,6 +4337,15 @@ progressEl.style.display = 'none';
 }
 }
 }
+let p2pCardDetails = '';
+let withdrawCardEnabled = true;
+let withdrawCryptoEnabled = true;
+let adminPermissions = [];
+
+let adminStatsLiveTimer = null;
+let isAuctioneer = false;
+let currentUserId = null;
+let currentTab = 'shop';
 
 function showAlert(message){
 if (tg && tg.showAlert){ tg.showAlert(message); }
@@ -4443,6 +4507,8 @@ let pendingBuySkin = null;
 const WEAR_LABELS = { FN: 'FN', MW: 'MW', FT: 'FT', WW: 'WW', BS: 'BS' };
 
 const ERROR_MESSAGES = {
+seller_kyc_required: 'Эта функция доступна только продавцам, прошедшим проверку. Подай заявку в Профиле.',
+already_submitted: 'Заявка уже отправлена или уже одобрена.',
 seller_not_sent_yet: 'Продавец ещё не отметил "Отправил" — подтвердить получение можно только после этого.',
 unauthorized: 'Открой мини-апп через Telegram, а не в браузере.',
 not_available: 'Этот скин уже продан или снят с продажи.',
@@ -4587,11 +4653,15 @@ coinsPerStar = data.coins_per_star || 200;
 directStarsPurchaseEnabled = data.direct_stars_purchase_enabled === true;
 directCryptoPurchaseEnabled = data.direct_crypto_purchase_enabled === true;
 directP2pPurchaseEnabled = data.direct_p2p_purchase_enabled === true;
+csfloatEnabled = data.csfloat_enabled === true;
+sellerKycStatus = data.seller_kyc_status || 'none';
+updateSellerStatusUI(sellerKycStatus);
+document.getElementById('openCsfloatBtn').style.display = csfloatEnabled ? '' : 'none';
 p2pCardDetails = data.p2p_card_details || '';
 withdrawCardEnabled = data.withdraw_card_enabled !== false;
-withdrawCryptoEnabled = data.withdraw_crypto_enabled !== false;
 currentUserTrust = data.trust || null;
 renderTrustBadge();
+withdrawCryptoEnabled = data.withdraw_crypto_enabled !== false;
 if (typeof updateWithdrawMethodVisibility === 'function') updateWithdrawMethodVisibility();
 if (typeof updateTopupCryptoBtnVisibility === 'function') updateTopupCryptoBtnVisibility();
 document.getElementById('openTopupBtn').style.display = (!topupCardEnabled && !topupCryptoEnabled) ? 'none' : '';
@@ -4664,8 +4734,14 @@ coinsPerStar = data.coins_per_star || 200;
 directStarsPurchaseEnabled = data.direct_stars_purchase_enabled === true;
 directCryptoPurchaseEnabled = data.direct_crypto_purchase_enabled === true;
 directP2pPurchaseEnabled = data.direct_p2p_purchase_enabled === true;
+csfloatEnabled = data.csfloat_enabled === true;
+sellerKycStatus = data.seller_kyc_status || 'none';
+updateSellerStatusUI(sellerKycStatus);
+document.getElementById('openCsfloatBtn').style.display = csfloatEnabled ? '' : 'none';
 p2pCardDetails = data.p2p_card_details || '';
 withdrawCardEnabled = data.withdraw_card_enabled !== false;
+currentUserTrust = data.trust || null;
+renderTrustBadge();
 withdrawCryptoEnabled = data.withdraw_crypto_enabled !== false;
 if (typeof updateWithdrawMethodVisibility === 'function') updateWithdrawMethodVisibility();
 if (typeof updateTopupCryptoBtnVisibility === 'function') updateTopupCryptoBtnVisibility();
@@ -5373,6 +5449,171 @@ document.getElementById('setsOverlay').classList.remove('show');
 document.getElementById('inspectCloseBtn').addEventListener('click', () => {
 document.getElementById('inspectOverlay').classList.remove('show');
 });
+
+// ---------------- Роль продавца / AML-KYC ----------------
+
+const kycOverlay = document.getElementById('kycOverlay');
+const kycStatus = document.getElementById('kycStatus');
+
+function updateSellerStatusUI(status){
+document.getElementById('sellerStatusNone').style.display = (status === 'none') ? '' : 'none';
+document.getElementById('sellerStatusPending').style.display = (status === 'pending') ? '' : 'none';
+document.getElementById('sellerStatusRejected').style.display = (status === 'rejected') ? '' : 'none';
+document.getElementById('sellerStatusVerified').style.display = (status === 'verified') ? '' : 'none';
+document.getElementById('profileMoneyButtons').style.display = (status === 'verified') ? '' : 'none';
+}
+
+function openKycOverlay(){
+document.getElementById('kycFullName').value = '';
+document.getElementById('kycPhone').value = '';
+document.getElementById('kycCountry').value = '';
+document.getElementById('kycAddress').value = '';
+kycStatus.textContent = '';
+kycOverlay.classList.add('show');
+}
+
+document.getElementById('openKycBtn').addEventListener('click', openKycOverlay);
+document.getElementById('openKycBtnAgain').addEventListener('click', openKycOverlay);
+
+document.getElementById('kycCloseBtn').addEventListener('click', () => {
+kycOverlay.classList.remove('show');
+});
+
+document.getElementById('kycSubmitBtn').addEventListener('click', () => {
+if (!tg || !tg.initData) return;
+const fullName = document.getElementById('kycFullName').value.trim();
+const phone = document.getElementById('kycPhone').value.trim();
+const country = document.getElementById('kycCountry').value.trim();
+const address = document.getElementById('kycAddress').value.trim();
+if (!fullName || !phone || !country || !address){
+kycStatus.textContent = 'Заполни все поля.';
+return;
+}
+const btn = document.getElementById('kycSubmitBtn');
+btn.disabled = true;
+kycStatus.textContent = 'Отправляю...';
+fetch(API_BASE + '/api/kyc/submit', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+init_data: tg.initData,
+full_name: fullName, phone: phone, country: country, address: address,
+})
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(errorMessage(data.error));
+}
+return r.json();
+})
+.then(() => {
+kycStatus.textContent = '';
+kycOverlay.classList.remove('show');
+sellerKycStatus = 'pending';
+updateSellerStatusUI('pending');
+showAlert('Заявка отправлена — жди решения админа.');
+})
+.catch(err => {
+kycStatus.textContent = friendlyErrorMessage(err);
+})
+.finally(() => {
+btn.disabled = false;
+});
+});
+
+// ---------------- Витрина CSFloat ----------------
+
+const csfloatOverlay = document.getElementById('csfloatOverlay');
+const csfloatSearchInput = document.getElementById('csfloatSearchInput');
+const csfloatResults = document.getElementById('csfloatResults');
+const openCsfloatBtn = document.getElementById('openCsfloatBtn');
+
+openCsfloatBtn.addEventListener('click', () => {
+csfloatOverlay.classList.add('show');
+csfloatResults.innerHTML = '';
+csfloatSearchInput.value = '';
+});
+
+document.getElementById('csfloatCloseBtn').addEventListener('click', () => {
+csfloatOverlay.classList.remove('show');
+});
+
+function runCsfloatSearch(){
+const q = csfloatSearchInput.value.trim();
+csfloatResults.innerHTML = '<div class="shop-hint">Ищу...</div>';
+fetch(API_BASE + '/api/csfloat/listings?search=' + encodeURIComponent(q))
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(data.error === 'feature_disabled' ? 'Витрина CSFloat сейчас недоступна.' : errorMessage(data.error));
+}
+return r.json();
+})
+.then(data => {
+const items = data.items || [];
+if (!items.length){
+csfloatResults.innerHTML = '<div class="shop-hint">Ничего не найдено.</div>';
+return;
+}
+csfloatResults.innerHTML = items.map((it, i) => `
+<div class="steam-inv-item" style="display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.06);">
+${it.image_url ? `<img src="${it.image_url}" style="width:48px;height:48px;object-fit:contain;">` : ''}
+<div style="flex:1; min-width:0;">
+<div style="font-size:13px; color:var(--silver); overflow:hidden; text-overflow:ellipsis;">${it.name}</div>
+${it.float_value != null ? `<div style="font-size:11px; color:var(--muted);">Float: ${Number(it.float_value).toFixed(4)}</div>` : ''}
+<div style="font-size:13px; font-weight:700; color:var(--red-glow);">${formatCoins(it.price_uzs)}</div>
+</div>
+<button type="button" class="steam-link-btn secondary csfloat-buy-btn" data-idx="${i}" style="padding:6px 12px; font-size:12px;">Купить</button>
+</div>
+`).join('');
+csfloatResults.querySelectorAll('.csfloat-buy-btn').forEach(btn => {
+btn.addEventListener('click', () => buyCsfloatItem(items[Number(btn.dataset.idx)], btn));
+});
+})
+.catch(err => {
+csfloatResults.innerHTML = '<div class="shop-hint">' + friendlyErrorMessage(err) + '</div>';
+});
+}
+
+document.getElementById('csfloatSearchBtn').addEventListener('click', runCsfloatSearch);
+
+function buyCsfloatItem(item, btnEl){
+if (!tg || !tg.initData) return;
+showConfirm(`Купить «${item.name}» за ${formatCoins(item.price_uzs)}? Деньги списываются сразу, доставка вручную.`, () => {
+btnEl.disabled = true;
+btnEl.textContent = 'Покупаю...';
+fetch(API_BASE + '/api/csfloat/order', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+init_data: tg.initData,
+listing_id: item.listing_id,
+item_name: item.name,
+item_image_url: item.image_url,
+price_usd_cents: item.price_usd_cents,
+price_uzs: item.price_uzs,
+})
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(errorMessage(data.error));
+}
+return r.json();
+})
+.then(() => {
+loadMe();
+showAlert('Заказ оформлен — деньги списаны, админ купит лот и передаст предмет трейдом. Жди уведомления.');
+csfloatOverlay.classList.remove('show');
+})
+.catch(err => {
+showAlert(friendlyErrorMessage(err));
+btnEl.disabled = false;
+btnEl.textContent = 'Купить';
+});
+});
+}
 
 // ---------------- Билдер под бюджет (Combo / Inventory) ----------------
 
@@ -6953,14 +7194,7 @@ inventoryStatus.textContent = forceRefresh ? 'Обновляю...' : 'Загру
 inventoryGrid.innerHTML = '';
 let url = API_BASE + '/api/steam/inventory?init_data=' + encodeURIComponent(tg.initData);
 if (forceRefresh) url += '&refresh=1';
-// Cache-busting: WKWebView (Telegram Mini App на iOS) может закэшировать
-// GET-запрос по URL и при повторном открытии/обновлении отдать старый
-// ответ из локального кэша вместо похода в сеть. init_data не меняется
-// в рамках сессии, поэтому URL без этой метки был бы идентичным при
-// каждом вызове. Добавляем текущее время + { cache: 'no-store' } ниже,
-// чтобы гарантированно обойти любой браузерный/WebView-кэш.
-url += '&_t=' + Date.now();
-fetch(url, { cache: 'no-store' })
+fetch(url)
 .then(async r => {
 if (!r.ok){
 const data = await r.json().catch(() => ({}));
@@ -7038,6 +7272,10 @@ addSkinOverlay.classList.add('show');
 addSkinBtn.addEventListener('click', () => {
 if (!tg || !tg.initData){
 showAlert(errorMessage('unauthorized'));
+return;
+}
+if (sellerKycStatus !== 'verified'){
+showAlert('Чтобы выставлять лоты, нужно пройти проверку продавца — открой Профиль → «Стать продавцом».');
 return;
 }
 if (!hasSteamLink){
@@ -8369,6 +8607,7 @@ document.getElementById('toggleWithdrawCrypto').checked = data.withdraw_crypto_e
 document.getElementById('toggleDirectStarsPurchase').checked = data.direct_stars_purchase_enabled === true;
 document.getElementById('toggleDirectCryptoPurchase').checked = data.direct_crypto_purchase_enabled === true;
 document.getElementById('toggleDirectP2pPurchase').checked = data.direct_p2p_purchase_enabled === true;
+document.getElementById('toggleCsfloat').checked = data.csfloat_enabled === true;
 document.getElementById('adminStarsRate').value = data.coins_per_star || 200;
 })
 .catch(() => {});
@@ -8383,6 +8622,7 @@ loadAdminFinanceSummary();
 ['toggleDirectStarsPurchase', 'direct_stars_purchase'],
 ['toggleDirectCryptoPurchase', 'direct_crypto_purchase'],
 ['toggleDirectP2pPurchase', 'direct_p2p_purchase'],
+['toggleCsfloat', 'csfloat'],
 ].forEach(([elId, feature]) => {
 document.getElementById(elId).addEventListener('change', (e) => {
 const checkbox = e.target;
