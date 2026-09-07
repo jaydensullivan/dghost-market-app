@@ -1393,6 +1393,66 @@ line-height:1.4;
 }
 
 /* ---------- deal cards ---------- */
+.trade-party{
+display:flex;
+flex-direction:column;
+align-items:center;
+gap:4px;
+flex:1;
+}
+
+.trade-party-dot{
+width:32px;
+height:32px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+background:var(--red-dim);
+border:1.5px solid var(--red);
+}
+
+.trade-party-line{
+flex:1;
+height:2px;
+background:var(--red-dim);
+position:relative;
+}
+
+.trade-party-line.done{
+background:var(--red);
+}
+
+.trade-timeline-item{
+display:flex;
+gap:10px;
+padding:6px 0;
+font-size:12px;
+}
+
+.trade-timeline-dot{
+width:16px;
+height:16px;
+border-radius:50%;
+background:var(--red);
+flex-shrink:0;
+margin-top:2px;
+display:flex;
+align-items:center;
+justify-content:center;
+color:#fff;
+font-size:9px;
+}
+
+.trade-timeline-text{
+color:var(--silver);
+}
+
+.trade-timeline-time{
+color:var(--muted);
+font-size:10px;
+}
+
 .deal-card{
 display:flex;
 gap:10px;
@@ -3103,6 +3163,19 @@ transform="rotate(-90 100 100)"></circle>
 <button type="button" id="cartCheckoutBtn" class="save" data-i18n="cart_checkout">Купить всё</button>
 </div>
 <div class="edit-status" id="cartStatus"></div>
+</div>
+</div>
+
+<div class="edit-overlay" id="tradeDetailsOverlay">
+<div class="edit-sheet">
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+<h2 style="margin:0; font-size:14px;">Детали сделки</h2>
+<span id="tradeDetailsCode" style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted);">—</span>
+</div>
+<div id="tradeDetailsItem" style="display:flex; gap:10px; align-items:center; margin:10px 0; padding:10px; background:rgba(255,255,255,0.03); border-radius:10px;"></div>
+<div id="tradeDetailsPartiesLine" style="display:flex; align-items:center; justify-content:center; gap:10px; margin:14px 0; font-family:'Inter', sans-serif; font-size:12px; color:var(--silver);"></div>
+<div id="tradeDetailsTimeline" style="max-height:35vh; overflow-y:auto;"></div>
+<button type="button" id="tradeDetailsCloseBtn" style="width:100%; margin-top:14px; background:none; border:none; color:var(--muted); padding:10px;">Закрыть</button>
 </div>
 </div>
 
@@ -5000,6 +5073,7 @@ const roleLabel = deal.role === 'selling' ? dict.role_selling : dict.role_buying
 const counterpartyLabel = deal.role === 'selling' ? dict.detail_buyer : dict.detail_seller;
 
 const messageBtn = `<button class="deal-action secondary" data-relay="${deal.id}" type="button">${dict.btn_message}</button>`;
+const detailsBtn = `<button class="deal-action secondary" data-trade-details="${deal.id}" type="button">Подробнее</button>`;
 
 return `
 <div class="deal-card">
@@ -5010,7 +5084,7 @@ ${photo}
 ${countdownHtml}
 ${statusHtml}
 </div>
-<div class="deal-actions">${actionHtml}${messageBtn}</div>
+<div class="deal-actions">${actionHtml}${messageBtn}${detailsBtn}</div>
 </div>`;
 }
 
@@ -5053,6 +5127,12 @@ const disputedBtn = e.target.closest('[data-mark-disputed]');
 const cancelBtn = e.target.closest('[data-cancel-sale]');
 const relayBtn = e.target.closest('[data-relay]');
 const inspectBtn = e.target.closest('[data-inspect-skin]');
+const detailsBtn = e.target.closest('[data-trade-details]');
+
+if (detailsBtn){
+openTradeDetails(Number(detailsBtn.dataset.tradeDetails));
+return;
+}
 
 if (inspectBtn){
 const id = inspectBtn.dataset.inspectSkin;
@@ -5613,6 +5693,90 @@ document.getElementById('setsOverlay').classList.remove('show');
 
 document.getElementById('inspectCloseBtn').addEventListener('click', () => {
 document.getElementById('inspectOverlay').classList.remove('show');
+});
+
+// ---------------- Детали сделки (Trade Details) ----------------
+
+const TRADE_STATUS_LABELS = {
+  RESERVED: 'Лот зарезервирован',
+  PAYMENT_CONFIRMED: 'Оплата подтверждена',
+  TRADE_PENDING: 'Ожидание передачи предмета',
+  DELIVERY_CONFIRMED: 'Получение подтверждено',
+  COMPLETED: 'Сделка завершена',
+  PAYOUT_PENDING: 'Ожидание окончания холда',
+  PAYOUT_PROCESSING: 'Выплата обрабатывается',
+  PAYOUT_COMPLETED: 'Средства выплачены продавцу',
+  DISPUTE_OPENED: 'Открыт спор',
+  REFUNDED: 'Деньги возвращены покупателю',
+  ORDER_CANCELLED: 'Заказ отменён',
+};
+
+function openTradeDetails(skinId){
+const deal = lastDeals.find(d => d.id === skinId);
+if (!deal || !tg || !tg.initData) return;
+
+const overlay = document.getElementById('tradeDetailsOverlay');
+document.getElementById('tradeDetailsCode').textContent = '…';
+document.getElementById('tradeDetailsItem').innerHTML = `
+${deal.photo_url ? `<img src="${deal.photo_url}" style="width:48px;height:48px;object-fit:contain;">` : ''}
+<div>
+<div style="font-size:13px; color:var(--silver);">${escapeHtml(deal.title)}</div>
+<div style="font-size:12px; color:var(--muted);">${formatCoins(deal.price)}</div>
+</div>
+`;
+document.getElementById('tradeDetailsTimeline').innerHTML = '<div class="shop-hint">Загрузка...</div>';
+overlay.classList.add('show');
+
+const reachedCompleted = !!(deal.confirmed_at);
+const isDisputed = !!(deal.disputed_at) && !reachedCompleted;
+
+const sellerLabel = deal.role === 'selling' ? 'Ты' : 'Продавец';
+const buyerLabel = deal.role === 'buying' ? 'Ты' : 'Покупатель';
+const dotIcon = (done) => done ? '✓' : '';
+const lineClass = reachedCompleted ? 'trade-party-line done' : 'trade-party-line';
+
+document.getElementById('tradeDetailsPartiesLine').innerHTML = `
+<div class="trade-party">
+<div class="trade-party-dot">${dotIcon(true)}</div>
+<div>${sellerLabel}</div>
+</div>
+<div class="${lineClass}"></div>
+<div class="trade-party">
+<div class="trade-party-dot" style="${reachedCompleted ? '' : 'background:rgba(255,255,255,0.05); border-color:var(--muted);'}">${dotIcon(reachedCompleted)}</div>
+<div>${buyerLabel}</div>
+</div>
+`;
+
+fetch(API_BASE + '/api/deals/' + skinId + '/history?init_data=' + encodeURIComponent(tg.initData))
+.then(r => r.json())
+.then(data => {
+document.getElementById('tradeDetailsCode').textContent = data.order_code || '';
+const history = data.history || [];
+if (!history.length){
+document.getElementById('tradeDetailsTimeline').innerHTML = '<div class="shop-hint">История пока пуста.</div>';
+return;
+}
+document.getElementById('tradeDetailsTimeline').innerHTML = history.map(h => {
+const t = h.created_at ? new Date(h.created_at).toLocaleString(currentLang === 'uz' ? 'uz-UZ' : 'ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+const label = TRADE_STATUS_LABELS[h.status] || h.status;
+return `
+<div class="trade-timeline-item">
+<div class="trade-timeline-dot">✓</div>
+<div>
+<div class="trade-timeline-text">${label}</div>
+<div class="trade-timeline-time">${t}</div>
+</div>
+</div>
+`;
+}).join('');
+})
+.catch(() => {
+document.getElementById('tradeDetailsTimeline').innerHTML = '<div class="shop-hint">Не удалось загрузить историю.</div>';
+});
+}
+
+document.getElementById('tradeDetailsCloseBtn').addEventListener('click', () => {
+document.getElementById('tradeDetailsOverlay').classList.remove('show');
 });
 
 // ---------------- Роль продавца / AML-KYC ----------------
