@@ -551,6 +551,24 @@ border-radius:14px 14px 0 0;
 padding:20px 18px 28px;
 }
 
+.header-menu-item{
+display:block;
+width:100%;
+text-align:left;
+background:none;
+border:none;
+color:var(--silver);
+font-family:'Inter', sans-serif;
+font-size:13px;
+padding:10px 10px;
+border-radius:8px;
+cursor:pointer;
+}
+
+.header-menu-item:active{
+background:var(--red-dim);
+}
+
 .edit-sheet h2{
 margin:0 0 16px;
 font-family:'JetBrains Mono', monospace;
@@ -1968,6 +1986,20 @@ border:1px solid var(--red-dim);
 background:rgba(10,7,8,0.94);
 cursor:pointer;
 text-align:center;
+position:relative;
+}
+
+.inv-item-banned{
+opacity:0.4;
+cursor:not-allowed;
+filter:grayscale(0.6);
+}
+
+.inv-item-ban-label{
+font-family:'Inter', sans-serif;
+font-size:8px;
+color:#e07a7a;
+margin-top:2px;
 }
 
 .inv-item img{
@@ -2207,6 +2239,19 @@ justify-content:center;
 
 <div class="brand-tl"><video class="brand-logo" src="logo.mp4" autoplay loop muted playsinline disablepictureinpicture onerror="this.style.display='none'"></video></div>
 
+<div class="brand-tr" style="position:fixed; top:18px; z-index:500;">
+<button type="button" id="headerAvatarBtn" class="brand-logo" style="border:1px solid var(--red-dim); background:var(--red-dim); padding:0; cursor:pointer; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--silver);"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.2-4 4-6 7.5-6s6.3 2 7.5 6"/></svg>
+</button>
+<div id="headerMenu" class="edit-sheet" style="display:none; position:absolute; top:48px; right:0; width:210px; padding:8px; border-radius:14px; z-index:501;">
+<button type="button" class="header-menu-item" data-header-action="profile">👤 Профиль</button>
+<button type="button" class="header-menu-item" data-header-action="balance">💰 Баланс</button>
+<button type="button" class="header-menu-item" data-header-action="history">📜 История сделок</button>
+<button type="button" class="header-menu-item" data-header-action="sell">🏷️ Продать скин</button>
+<button type="button" class="header-menu-item" data-header-action="support">🆘 Поддержка</button>
+</div>
+</div>
+
 <div class="edit-overlay" id="changelogBanner" style="z-index:8000;">
 <div class="edit-sheet">
 <h2 id="changelogTitle" style="margin:0 0 14px;">📣 Что нового</h2>
@@ -2359,9 +2404,9 @@ transform="rotate(-90 100 100)"></circle>
 <div class="shop-header">
 <div style="display:flex; align-items:center; gap:10px;">
 <button type="button" class="back-btn" id="shopBackBtn">←</button>
-<div class="balance-pill" id="balancePill"><img src="https://jaydensullivan.github.io/dghost-market-app/coin.PNG" alt="" style="width:15px; height:15px; vertical-align:-3px; object-fit:contain;" onerror="this.style.display='none'"> <span id="balanceAmount">—</span></div>
+<div class="balance-pill" id="balancePill" style="display:none;"><img src="https://jaydensullivan.github.io/dghost-market-app/coin.PNG" alt="" style="width:15px; height:15px; vertical-align:-3px; object-fit:contain;" onerror="this.style.display='none'"> <span id="balanceAmount">—</span></div>
 </div>
-<button class="add-skin-btn" id="addSkinBtn" type="button" data-i18n="btn_add_skin">+ Скин</button>
+<button class="add-skin-btn" id="addSkinBtn" type="button" data-i18n="btn_add_skin" style="display:none;">+ Скин</button>
 </div>
 
 <div class="shop-hint" data-i18n="hint_sell_flow">Продал скин — деньги придут покупателю в холд на 7 дней (трейд-бан Steam), затем автоматически на твой баланс.</div>
@@ -4384,6 +4429,53 @@ loadAdminPanel();
 loadAuctionsList();
 }
 }
+
+// ============================================================
+// АВАТАР В ХЭДЕРЕ — ВЫПАДАЮЩЕЕ МЕНЮ
+// ============================================================
+
+const headerAvatarBtn = document.getElementById('headerAvatarBtn');
+const headerMenu = document.getElementById('headerMenu');
+
+if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.photo_url){
+headerAvatarBtn.innerHTML = `<img src="${tg.initDataUnsafe.user.photo_url}" alt="" style="width:100%; height:100%; object-fit:cover;">`;
+}
+
+headerAvatarBtn.addEventListener('click', (e) => {
+e.stopPropagation();
+headerMenu.style.display = (headerMenu.style.display === 'none') ? 'block' : 'none';
+});
+
+document.addEventListener('click', (e) => {
+if (headerMenu.style.display === 'block' && !headerMenu.contains(e.target) && e.target !== headerAvatarBtn){
+headerMenu.style.display = 'none';
+}
+});
+
+headerMenu.addEventListener('click', (e) => {
+const btn = e.target.closest('[data-header-action]');
+if (!btn) return;
+headerMenu.style.display = 'none';
+const action = btn.dataset.headerAction;
+if (action === 'profile' || action === 'balance'){
+switchTab('profile');
+} else if (action === 'history'){
+switchTab('profile');
+document.getElementById('historyOverlay').classList.add('show');
+} else if (action === 'sell'){
+switchTab('shop');
+setTimeout(() => addSkinBtn.click(), 150);
+} else if (action === 'support'){
+const url = 'https://t.me/DGhostCountdownBot';
+if (tg && tg.openTelegramLink){
+tg.openTelegramLink(url);
+} else if (tg && tg.openLink){
+tg.openLink(url);
+} else {
+window.open(url, '_blank');
+}
+}
+});
 
 tabTimerBtn.addEventListener('click', () => switchTab('timer'));
 
@@ -7055,11 +7147,14 @@ const photo = item.photo_url
 : '';
 const wearText = item.wear ? WEAR_LABELS[item.wear] || '' : '';
 const stText = item.stattrak ? 'ST™ ' : '';
+const isTradable = item.tradable !== false;
+const bannedClass = isTradable ? '' : ' inv-item-banned';
 return `
-<div class="inv-item" data-idx="${i}">
+<div class="inv-item${bannedClass}" data-idx="${i}" data-tradable="${isTradable ? '1' : '0'}">
 ${photo}
 <div class="inv-item-name">${stText}${escapeHtml(item.title)}</div>
 ${wearText ? `<div class="inv-item-wear">${wearText}</div>` : ''}
+${!isTradable ? '<div class="inv-item-ban-label">🔒 Трейд-бан</div>' : ''}
 </div>`;
 }).join('');
 }
@@ -7118,6 +7213,11 @@ const card = e.target.closest('.inv-item');
 if (!card) return;
 const item = lastInventoryItems[Number(card.dataset.idx)];
 if (!item) return;
+
+if (item.tradable === false){
+showAlert('Этот предмет сейчас в трейд-бане Steam — выбрать его для продажи нельзя, пока бан не закончится.');
+return;
+}
 
 sTitle.value = item.title || '';
 sWeaponType.value = item.weapon_type || '';
