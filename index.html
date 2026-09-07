@@ -3215,6 +3215,7 @@ transform="rotate(-90 100 100)"></circle>
 <label for="sRarity" data-i18n="label_rarity">Редкость</label>
 <select id="sRarity">
 <option value="">—</option>
+<option value="Base Grade">Base Grade (кейсы)</option>
 <option value="Consumer Grade">Consumer Grade</option>
 <option value="Industrial Grade">Industrial Grade</option>
 <option value="Mil-Spec Grade">Mil-Spec Grade</option>
@@ -3222,7 +3223,7 @@ transform="rotate(-90 100 100)"></circle>
 <option value="Classified">Classified</option>
 <option value="Covert">Covert</option>
 <option value="Contraband">Contraband</option>
-<option value="Extraordinary">Extraordinary (нож/перчатки)</option>
+<option value="Extraordinary">Extraordinary (нож/перчатки/чармы)</option>
 </select>
 </div>
 
@@ -3279,7 +3280,7 @@ transform="rotate(-90 100 100)"></circle>
 <input id="sPhoto" type="url" placeholder="https://..." required>
 </div>
 
-<div class="shop-hint" style="margin-top:4px;">С продажи будет удержана комиссия площадки — 0.5% от цены. Она списывается автоматически при снятии холда, тебе ничего доплачивать не нужно.</div>
+<div class="shop-hint" id="sellerFeeHint" style="margin-top:4px;">С продажи будет удержана комиссия площадки — 0.5% от цены. Она списывается автоматически при снятии холда, тебе ничего доплачивать не нужно.</div>
 
 <div class="edit-actions">
 <button type="button" id="addSkinCancel" data-i18n="btn_cancel">Отмена</button>
@@ -3668,8 +3669,8 @@ admin_label_amount: 'Сумма, сум',
 admin_btn_add_balance: 'Начислить',
 admin_btn_remove_balance: 'Списать',
 admin_balance_fill_required: 'Заполни ID пользователя и сумму.',
-admin_commission_sale: 'С продаж (0.5%)',
-admin_commission_withdraw: 'С выводов (2.5%)',
+admin_commission_sale: 'С продаж ({fee}%)',
+admin_commission_withdraw: 'С выводов ({fee}%)',
 admin_section_promo: 'Промо: продажи без комиссии',
 admin_label_promo_limit: 'Лимит продаж без комиссии (всего)',
 admin_section_referral_bonus: 'Реферальный бонус',
@@ -3731,7 +3732,7 @@ btn_list_skin: 'Выставить',
 detail_seller: 'Продавец',
 detail_buyer: 'Покупатель',
 label_transfer_amount: 'Сумма перевода, сум',
-withdraw_hint: 'Минимум — 50 000 сум. Комиссия за вывод — 2.5%. Деньги переводятся вручную на указанные реквизиты в течение некоторого времени.',
+withdraw_hint: 'Минимум — 50 000 сум. Комиссия за вывод — {fee}%. Деньги переводятся вручную на указанные реквизиты в течение некоторого времени.',
 label_amount_sum: 'Сумма, сум',
 label_card_uzcard_humo: 'Карта Uzcard/Humo',
 warning_fio: '⚠️ Обязательно укажи Ф.И.О. владельца карты — без этого заявку не обработают',
@@ -3936,8 +3937,8 @@ admin_label_amount: 'Summa, sum',
 admin_btn_add_balance: "Qo'shish",
 admin_btn_remove_balance: 'Yechish',
 admin_balance_fill_required: "Foydalanuvchi ID va summani to'ldiring.",
-admin_commission_sale: "Sotuvlardan (0.5%)",
-admin_commission_withdraw: "Pul yechishdan (2.5%)",
+admin_commission_sale: "Sotuvlardan ({fee}%)",
+admin_commission_withdraw: "Pul yechishdan ({fee}%)",
 admin_section_promo: "Promo: komissiyasiz sotuvlar",
 admin_label_promo_limit: "Komissiyasiz sotuvlar limiti (jami)",
 admin_section_referral_bonus: 'Referal bonusi',
@@ -3999,7 +4000,7 @@ btn_list_skin: "Sotuvga qo'yish",
 detail_seller: 'Sotuvchi',
 detail_buyer: 'Xaridor',
 label_transfer_amount: "O'tkazma summasi, sum",
-withdraw_hint: "Minimum — 50 000 sum. Pul yechish komissiyasi — 2.5%. Pul ko'rsatilgan rekvizitlarga qo'lda, ma'lum vaqt ichida o'tkaziladi.",
+withdraw_hint: "Minimum — 50 000 sum. Pul yechish komissiyasi — {fee}%. Pul ko'rsatilgan rekvizitlarga qo'lda, ma'lum vaqt ichida o'tkaziladi.",
 label_amount_sum: 'Summasi, sum',
 label_card_uzcard_humo: 'Uzcard/Humo karta',
 warning_fio: "⚠️ Karta egasining F.I.Sh.ni albatta ko'rsating — bo'lmasa ariza ko'rib chiqilmaydi",
@@ -4050,6 +4051,24 @@ referral_bonus_text: (percent) => `Do'stlaringizni taklif qiling — ularning ha
 
 let currentLang = 'ru';
 
+let saleFeePercent = 0.5;
+let withdrawFeePercent = 2.5;
+
+function applyFeePercents(){
+document.querySelectorAll('[data-i18n]').forEach(el => {
+if (el.textContent.includes('{fee}')){
+const key = el.dataset.i18n;
+const isWithdraw = key.includes('withdraw');
+const fee = isWithdraw ? withdrawFeePercent : saleFeePercent;
+el.textContent = el.textContent.replace('{fee}', fee);
+}
+});
+const sellerHint = document.getElementById('sellerFeeHint');
+if (sellerHint){
+sellerHint.textContent = `С продажи будет удержана комиссия площадки — ${saleFeePercent}% от цены. Она списывается автоматически при снятии холда, тебе ничего доплачивать не нужно.`;
+}
+}
+
 function applyTranslations(){
 const dict = I18N[currentLang] || I18N.ru;
 
@@ -4071,6 +4090,7 @@ function setLanguage(lang){
 if (lang !== 'ru' && lang !== 'uz') return;
 currentLang = lang;
 applyTranslations();
+applyFeePercents();
 
 if (typeof renderCategoryChips === 'function'){
 renderCategoryChips();
@@ -4101,6 +4121,7 @@ document.getElementById('langBtnRu').addEventListener('click', () => setLanguage
 document.getElementById('langBtnUz').addEventListener('click', () => setLanguage('uz'));
 
 applyTranslations();
+applyFeePercents();
 
 const clockEl = document.getElementById('clock');
 const ringEl = document.getElementById('ring');
@@ -4789,6 +4810,10 @@ directStarsPurchaseEnabled = data.direct_stars_purchase_enabled === true;
 directCryptoPurchaseEnabled = data.direct_crypto_purchase_enabled === true;
 directP2pPurchaseEnabled = data.direct_p2p_purchase_enabled === true;
 sellerKycStatus = data.seller_kyc_status || 'none';
+saleFeePercent = data.sale_fee_percent ?? saleFeePercent;
+withdrawFeePercent = data.withdraw_fee_percent ?? withdrawFeePercent;
+applyTranslations();
+applyFeePercents();
 updateSellerStatusUI(sellerKycStatus);
 totp2faStatus = data.totp || totp2faStatus;
 updateTotp2faUI();
@@ -4804,6 +4829,7 @@ document.getElementById('openWithdrawBtn').style.display = (!withdrawCardEnabled
 if (data.language && data.language !== currentLang){
 currentLang = data.language;
 applyTranslations();
+applyFeePercents();
 if (typeof renderCategoryChips === 'function'){
 renderCategoryChips();
 }
@@ -4870,6 +4896,10 @@ directStarsPurchaseEnabled = data.direct_stars_purchase_enabled === true;
 directCryptoPurchaseEnabled = data.direct_crypto_purchase_enabled === true;
 directP2pPurchaseEnabled = data.direct_p2p_purchase_enabled === true;
 sellerKycStatus = data.seller_kyc_status || 'none';
+saleFeePercent = data.sale_fee_percent ?? saleFeePercent;
+withdrawFeePercent = data.withdraw_fee_percent ?? withdrawFeePercent;
+applyTranslations();
+applyFeePercents();
 updateSellerStatusUI(sellerKycStatus);
 totp2faStatus = data.totp || totp2faStatus;
 updateTotp2faUI();
