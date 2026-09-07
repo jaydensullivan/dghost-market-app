@@ -3166,6 +3166,38 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 </div>
 
+<div class="edit-overlay" id="discountOverlay">
+<div class="edit-sheet">
+<h2 style="margin:0 0 6px;">🏷️ Скидка</h2>
+<div id="discountCurrentInfo" class="shop-hint" style="margin-bottom:10px;"></div>
+
+<div class="edit-field">
+<label>Тип скидки</label>
+<select id="discountType">
+<option value="percent">Процент, %</option>
+<option value="fixed">Фиксированная сумма, сум</option>
+</select>
+</div>
+<div class="edit-field">
+<label id="discountValueLabel">Размер скидки, %</label>
+<input id="discountValueInput" type="number" min="1" placeholder="30">
+</div>
+<div class="edit-field">
+<label>Срок действия (не обязательно)</label>
+<input id="discountExpiresInput" type="datetime-local">
+</div>
+
+<button type="button" id="discountApplyBtn" class="welcome-btn primary" style="width:100%; margin-top:6px;">Применить к этому лоту</button>
+<button type="button" id="discountRemoveBtn" class="steam-link-btn secondary" style="width:100%; margin-top:8px; display:none;">Убрать скидку с лота</button>
+
+<div class="shop-hint" style="margin-top:14px;">Или применить сразу ко всем своим активным лотам этой же модели (<span id="discountCategoryLabel">—</span>):</div>
+<button type="button" id="discountApplyCategoryBtn" class="steam-link-btn secondary" style="width:100%; margin-top:8px;">Применить ко всей категории</button>
+
+<div class="edit-status" id="discountStatus" style="margin-top:8px;"></div>
+<button type="button" id="discountCloseBtn" style="width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px;">Закрыть</button>
+</div>
+</div>
+
 <div class="edit-overlay" id="tradeDetailsOverlay">
 <div class="edit-sheet">
 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
@@ -3420,6 +3452,7 @@ transform="rotate(-90 100 100)"></circle>
 <button type="button" id="buySendOfferBtn" class="save" style="display:none;" data-i18n="btn_send_offer">Отправить предложение</button>
 <button type="button" id="buyEditPriceBtn" class="save" style="display:none;" data-i18n="btn_edit_price">Изменить цену</button>
 <button type="button" id="buySavePriceBtn" class="save" style="display:none;" data-i18n="btn_save_price">Сохранить цену</button>
+<button type="button" id="buyDiscountBtn" class="steam-link-btn secondary" style="display:none;">🏷️ Скидка</button>
 </div>
 </div>
 
@@ -5376,6 +5409,10 @@ const title = skin.stattrak
 ? `StatTrak™ ${escapeHtml(skin.title)}`
 : escapeHtml(skin.title);
 
+const priceHtml = skin.original_price
+? `<div class="skin-price"><span style="text-decoration:line-through; color:var(--muted); font-size:11px; margin-right:5px;">${formatCoins(skin.original_price)}</span>${formatCoins(skin.price)} <span style="color:#7ec98a; font-size:11px;">-${skin.discount_type === 'percent' ? skin.discount_value + '%' : formatCoins(skin.discount_value)}</span></div>`
+: `<div class="skin-price">${formatCoins(skin.price)}</div>`;
+
 return `
 <div class="skin-card ${rarityClass}">
 <div class="skin-photo-wrap">
@@ -5386,7 +5423,7 @@ ${stBadge}
 ${weaponType}
 <div class="skin-title">${title}</div>
 ${floatLine}
-<div class="skin-price">${formatCoins(skin.price)}</div>
+${priceHtml}
 ${actionBtn}
 </div>`;
 }
@@ -6334,6 +6371,7 @@ buyConfirmStars.style.display = (!isOwn && directStarsPurchaseEnabled) ? '' : 'n
 buyConfirmCrypto.style.display = (!isOwn && directCryptoPurchaseEnabled) ? '' : 'none';
 buyConfirmP2P.style.display = (!isOwn && directP2pPurchaseEnabled) ? '' : 'none';
 buyEditPriceBtn.style.display = isOwn ? '' : 'none';
+document.getElementById('buyDiscountBtn').style.display = isOwn ? '' : 'none';
 buySavePriceBtn.style.display = 'none';
 buyPriceEdit.style.display = 'none';
 buyNewPriceInput.value = skin.price;
@@ -6504,6 +6542,158 @@ buyStatus.textContent = friendlyErrorMessage(err);
 })
 .finally(() => {
 buySavePriceBtn.disabled = false;
+});
+});
+
+// ---------------- Скидки ----------------
+
+document.getElementById('buyDiscountBtn').addEventListener('click', () => {
+if (!pendingBuySkin) return;
+const skin = pendingBuySkin;
+const hasDiscount = !!skin.original_price;
+document.getElementById('discountCurrentInfo').textContent = hasDiscount
+? `Сейчас: ${formatCoins(skin.original_price)} → ${formatCoins(skin.price)}`
+: `Текущая цена: ${formatCoins(skin.price)}`;
+document.getElementById('discountType').value = skin.discount_type || 'percent';
+document.getElementById('discountValueInput').value = skin.discount_value || '';
+document.getElementById('discountExpiresInput').value = '';
+document.getElementById('discountRemoveBtn').style.display = hasDiscount ? '' : 'none';
+document.getElementById('discountCategoryLabel').textContent = skin.weapon_type || skin.title || '—';
+document.getElementById('discountStatus').textContent = '';
+document.getElementById('discountOverlay').classList.add('show');
+});
+
+document.getElementById('discountType').addEventListener('change', (e) => {
+document.getElementById('discountValueLabel').textContent = e.target.value === 'percent'
+? 'Размер скидки, %'
+: 'Размер скидки, сум';
+});
+
+document.getElementById('discountCloseBtn').addEventListener('click', () => {
+document.getElementById('discountOverlay').classList.remove('show');
+});
+
+function readDiscountForm(){
+const discountType = document.getElementById('discountType').value;
+const discountValue = Number(document.getElementById('discountValueInput').value);
+const expiresRaw = document.getElementById('discountExpiresInput').value;
+const expiresAt = expiresRaw ? new Date(expiresRaw).toISOString() : null;
+if (!discountValue || discountValue <= 0){
+document.getElementById('discountStatus').textContent = 'Укажи размер скидки.';
+return null;
+}
+return { discountType, discountValue, expiresAt };
+}
+
+document.getElementById('discountApplyBtn').addEventListener('click', () => {
+if (!pendingBuySkin || !tg || !tg.initData) return;
+const form = readDiscountForm();
+if (!form) return;
+const btn = document.getElementById('discountApplyBtn');
+const status = document.getElementById('discountStatus');
+btn.disabled = true;
+status.textContent = 'Сохраняю...';
+fetch(API_BASE + '/api/skins/' + pendingBuySkin.id + '/discount', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+init_data: tg.initData,
+discount_type: form.discountType,
+discount_value: form.discountValue,
+expires_at: form.expiresAt,
+})
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(errorMessage(data.error));
+}
+return r.json();
+})
+.then((data) => {
+status.textContent = 'Скидка применена ✓';
+Object.assign(pendingBuySkin, data.skin);
+buyPrice.textContent = formatCoins(data.skin.price);
+loadSkins();
+})
+.catch(err => {
+status.textContent = friendlyErrorMessage(err);
+})
+.finally(() => {
+btn.disabled = false;
+});
+});
+
+document.getElementById('discountRemoveBtn').addEventListener('click', () => {
+if (!pendingBuySkin || !tg || !tg.initData) return;
+const status = document.getElementById('discountStatus');
+status.textContent = 'Убираю...';
+fetch(API_BASE + '/api/skins/' + pendingBuySkin.id + '/discount/remove', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(errorMessage(data.error));
+}
+return r.json();
+})
+.then((data) => {
+status.textContent = 'Скидка убрана ✓';
+Object.assign(pendingBuySkin, data.skin);
+buyPrice.textContent = formatCoins(data.skin.price);
+document.getElementById('discountRemoveBtn').style.display = 'none';
+loadSkins();
+})
+.catch(err => {
+status.textContent = friendlyErrorMessage(err);
+});
+});
+
+document.getElementById('discountApplyCategoryBtn').addEventListener('click', () => {
+if (!pendingBuySkin || !tg || !tg.initData) return;
+const form = readDiscountForm();
+if (!form) return;
+const weaponType = pendingBuySkin.weapon_type;
+if (!weaponType){
+document.getElementById('discountStatus').textContent = 'У этого лота не указана модель — массовая скидка недоступна.';
+return;
+}
+showConfirm(`Применить скидку ко всем твоим активным лотам «${weaponType}»?`, () => {
+const btn = document.getElementById('discountApplyCategoryBtn');
+const status = document.getElementById('discountStatus');
+btn.disabled = true;
+status.textContent = 'Применяю...';
+fetch(API_BASE + '/api/skins/category_discount', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+init_data: tg.initData,
+weapon_type: weaponType,
+discount_type: form.discountType,
+discount_value: form.discountValue,
+expires_at: form.expiresAt,
+})
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(errorMessage(data.error));
+}
+return r.json();
+})
+.then((data) => {
+status.textContent = `Скидка применена к ${data.changed.length} лот(ам) ✓`;
+loadSkins();
+})
+.catch(err => {
+status.textContent = friendlyErrorMessage(err);
+})
+.finally(() => {
+btn.disabled = false;
+});
 });
 });
 
