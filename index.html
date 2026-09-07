@@ -2517,6 +2517,35 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 </div>
 
+<div class="profile-section" id="profile2faSection" style="margin-top:10px;">
+<div class="profile-section-title">🔐 Двухэтапная защита</div>
+<div id="totp2faNotSetUp">
+<div class="shop-hint" style="margin-bottom:10px;">Дополнительная защита через приложение-аутентификатор (Google Authenticator, Microsoft Authenticator и любое другое). Защищает вывод средств и/или вход в админку даже если кто-то получит доступ к твоему Telegram.</div>
+<button type="button" id="setup2faBtn" class="steam-link-btn secondary" style="width:100%;">Настроить</button>
+</div>
+<div id="totp2faSetupBox" style="display:none;">
+<div class="shop-hint" style="margin-bottom:8px;">Открой приложение-аутентификатор → добавить аккаунт вручную (не по QR) → введи этот ключ:</div>
+<div class="topup-details-box" id="totp2faSecretBox">
+<div class="topup-details-text" id="totp2faSecretText" style="font-family:'JetBrains Mono', monospace; letter-spacing:0.05em;">—</div>
+<button type="button" id="totp2faCopyBtn" class="topup-copy-btn">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+<span data-i18n="btn_copy">Скопировать</span>
+</button>
+</div>
+<div class="edit-field" style="margin-top:10px;">
+<label>Код из приложения</label>
+<input id="totp2faConfirmCode" type="text" inputmode="numeric" maxlength="6" placeholder="123456">
+</div>
+<button type="button" id="totp2faConfirmBtn" class="welcome-btn primary" style="width:100%; margin-top:8px;">Подтвердить</button>
+<div class="edit-status" id="totp2faSetupStatus" style="margin-top:6px;"></div>
+</div>
+<div id="totp2faToggles" style="display:none;">
+<div class="shop-hint" style="color:#7ec98a; margin-bottom:10px;">✅ Настроена и готова к использованию.</div>
+<label class="admin-perm-chip" style="display:flex; justify-content:space-between; align-items:center;">🏦 Защита вывода средств <input type="checkbox" id="totp2faToggleWithdraw"></label>
+<label class="admin-perm-chip" id="totp2faAdminToggleRow" style="display:none; justify-content:space-between; align-items:center; margin-top:6px;">🛡️ Защита входа в админку <input type="checkbox" id="totp2faToggleAdmin"></label>
+</div>
+</div>
+
 <div class="profile-section" id="profileMoneyButtons" style="display:none; margin-top:10px; background-image:linear-gradient(180deg, rgba(10,7,16,0.75), rgba(10,7,16,0.92)), url('https://jaydensullivan.github.io/dghost-market-app/coins-scattered.png'); background-size:cover; background-position:center 20%;">
 <div class="money-btn-row">
 <button type="button" id="openTopupBtn" class="money-btn">
@@ -2910,6 +2939,18 @@ transform="rotate(-90 100 100)"></circle>
 
 </div>
 
+<div class="edit-overlay" id="totp2faPromptOverlay">
+<div class="edit-sheet">
+<h2 id="totp2faPromptTitle" style="margin:0 0 10px;">🔐 Введи код</h2>
+<div class="edit-field">
+<input id="totp2faPromptCode" type="text" inputmode="numeric" maxlength="6" placeholder="123456">
+</div>
+<button type="button" id="totp2faPromptOkBtn" class="welcome-btn primary" style="width:100%; margin-top:8px;">Подтвердить</button>
+<div class="edit-status" id="totp2faPromptStatus" style="margin-top:6px;"></div>
+<button type="button" id="totp2faPromptCancelBtn" style="width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_cancel">Отмена</button>
+</div>
+</div>
+
 <div class="edit-overlay" id="kycOverlay">
 <div class="edit-sheet">
 <h2 style="margin:0 0 6px;">🪪 Заявка на роль продавца</h2>
@@ -3019,6 +3060,10 @@ transform="rotate(-90 100 100)"></circle>
 <label for="wCryptoAddress">Адрес кошелька USDT (сеть TRC20)</label>
 <div class="shop-hint" style="margin-bottom:6px;">Отправь только адрес в сети TRC20 (Tron) — на другую сеть деньги потеряются безвозвратно.</div>
 <input id="wCryptoAddress" type="text" placeholder="TXYZ...">
+</div>
+<div class="edit-field" id="withdrawTotpField" style="display:none;">
+<label>Код 2FA</label>
+<input id="wTotpCode" type="text" inputmode="numeric" maxlength="6" placeholder="123456">
 </div>
 <div class="edit-actions">
 <button type="button" id="withdrawCancel" data-i18n="btn_cancel">Отмена</button>
@@ -3430,7 +3475,7 @@ let totalDuration = Math.max(1, endTime - Date.now());
 
 // Адрес бота на Railway — сюда мини-апп ходит за живыми данными
 // розыгрыша и сюда же сохраняет правки из формы редактирования.
-const API_BASE = 'https://dghostmarket-bot-production.up.railway.app';
+const API_BASE = 'https://api.dghostmarket.com';
 const BID_BOT_URL_JS = 'https://t.me/dghostmarketbot';
 const MINI_APP_LINK_BASE = 'https://t.me/dghostmarketbot/DGhost';
 
@@ -4424,7 +4469,24 @@ loadSkins();
 } else if (name === 'profile'){
 loadProfile();
 } else if (name === 'admin'){
+if (totp2faStatus.enabled_admin){
+promptFor2faCode('Код для входа в админку').then(code => {
+if (!code){ switchTab('shop'); return; }
+fetch(API_BASE + '/api/2fa/verify', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData, code: code })
+})
+.then(r => { if (!r.ok) throw new Error('bad_code'); return r.json(); })
+.then(() => loadAdminPanel())
+.catch(() => {
+showAlert('Неверный код.');
+switchTab('shop');
+});
+});
+} else {
 loadAdminPanel();
+}
 } else if (name === 'auctions'){
 loadAuctionsList();
 }
@@ -4728,6 +4790,8 @@ directCryptoPurchaseEnabled = data.direct_crypto_purchase_enabled === true;
 directP2pPurchaseEnabled = data.direct_p2p_purchase_enabled === true;
 sellerKycStatus = data.seller_kyc_status || 'none';
 updateSellerStatusUI(sellerKycStatus);
+totp2faStatus = data.totp || totp2faStatus;
+updateTotp2faUI();
 p2pCardDetails = data.p2p_card_details || '';
 withdrawCardEnabled = data.withdraw_card_enabled !== false;
 currentUserTrust = data.trust || null;
@@ -4807,6 +4871,8 @@ directCryptoPurchaseEnabled = data.direct_crypto_purchase_enabled === true;
 directP2pPurchaseEnabled = data.direct_p2p_purchase_enabled === true;
 sellerKycStatus = data.seller_kyc_status || 'none';
 updateSellerStatusUI(sellerKycStatus);
+totp2faStatus = data.totp || totp2faStatus;
+updateTotp2faUI();
 p2pCardDetails = data.p2p_card_details || '';
 withdrawCardEnabled = data.withdraw_card_enabled !== false;
 currentUserTrust = data.trust || null;
@@ -5543,6 +5609,162 @@ kycOverlay.classList.add('show');
 
 document.getElementById('openKycBtn').addEventListener('click', openKycOverlay);
 document.getElementById('openKycBtnAgain').addEventListener('click', openKycOverlay);
+
+// ---------------- Двухэтапная защита (TOTP) ----------------
+
+let totp2faStatus = { confirmed: false, enabled_withdraw: false, enabled_admin: false };
+
+function loadTotpStatus(){
+if (!tg || !tg.initData) return Promise.resolve();
+return fetch(API_BASE + '/api/2fa/status?init_data=' + encodeURIComponent(tg.initData))
+.then(r => r.json())
+.then(data => {
+totp2faStatus = data;
+updateTotp2faUI();
+})
+.catch(() => {});
+}
+
+function updateTotp2faUI(){
+const notSetUp = document.getElementById('totp2faNotSetUp');
+const setupBox = document.getElementById('totp2faSetupBox');
+const toggles = document.getElementById('totp2faToggles');
+if (totp2faStatus.confirmed){
+notSetUp.style.display = 'none';
+setupBox.style.display = 'none';
+toggles.style.display = '';
+document.getElementById('totp2faToggleWithdraw').checked = !!totp2faStatus.enabled_withdraw;
+document.getElementById('totp2faToggleAdmin').checked = !!totp2faStatus.enabled_admin;
+document.getElementById('totp2faAdminToggleRow').style.display = isAdmin ? 'flex' : 'none';
+} else {
+toggles.style.display = 'none';
+}
+}
+
+document.getElementById('setup2faBtn').addEventListener('click', () => {
+if (!tg || !tg.initData) return;
+const btn = document.getElementById('setup2faBtn');
+btn.disabled = true;
+fetch(API_BASE + '/api/2fa/setup', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(errorMessage(data.error));
+}
+return r.json();
+})
+.then(data => {
+document.getElementById('totp2faSecretText').textContent = data.secret_grouped;
+document.getElementById('totp2faConfirmCode').value = '';
+document.getElementById('totp2faSetupStatus').textContent = '';
+document.getElementById('totp2faNotSetUp').style.display = 'none';
+document.getElementById('totp2faSetupBox').style.display = '';
+})
+.catch(err => {
+showAlert(friendlyErrorMessage(err));
+})
+.finally(() => { btn.disabled = false; });
+});
+
+document.getElementById('totp2faCopyBtn').addEventListener('click', () => {
+const text = document.getElementById('totp2faSecretText').textContent;
+navigator.clipboard?.writeText(text.replace(/\s/g, '')).catch(() => {});
+});
+
+document.getElementById('totp2faConfirmBtn').addEventListener('click', () => {
+if (!tg || !tg.initData) return;
+const code = document.getElementById('totp2faConfirmCode').value.trim();
+const btn = document.getElementById('totp2faConfirmBtn');
+const status = document.getElementById('totp2faSetupStatus');
+if (!code){ status.textContent = 'Введи код из приложения.'; return; }
+btn.disabled = true;
+status.textContent = 'Проверяю...';
+fetch(API_BASE + '/api/2fa/confirm', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData, code: code })
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(data.error === 'bad_code' ? 'Неверный код, попробуй снова.' : (data.error === 'totp_locked' ? 'Слишком много неверных попыток — подождите 15 минут.' : errorMessage(data.error)));
+}
+return r.json();
+})
+.then(() => {
+status.textContent = '';
+loadTotpStatus();
+})
+.catch(err => {
+status.textContent = friendlyErrorMessage(err);
+})
+.finally(() => { btn.disabled = false; });
+});
+
+// Универсальный запрос кода — используется и для переключателей,
+// и для входа в админку. Возвращает Promise<string|null>.
+function promptFor2faCode(title){
+return new Promise((resolve) => {
+const overlay = document.getElementById('totp2faPromptOverlay');
+const input = document.getElementById('totp2faPromptCode');
+const status = document.getElementById('totp2faPromptStatus');
+const okBtn = document.getElementById('totp2faPromptOkBtn');
+const cancelBtn = document.getElementById('totp2faPromptCancelBtn');
+document.getElementById('totp2faPromptTitle').textContent = title;
+input.value = '';
+status.textContent = '';
+overlay.classList.add('show');
+function cleanup(result){
+overlay.classList.remove('show');
+okBtn.removeEventListener('click', onOk);
+cancelBtn.removeEventListener('click', onCancel);
+resolve(result);
+}
+function onOk(){
+const code = input.value.trim();
+if (!code){ status.textContent = 'Введи код.'; return; }
+cleanup(code);
+}
+function onCancel(){ cleanup(null); }
+okBtn.addEventListener('click', onOk);
+cancelBtn.addEventListener('click', onCancel);
+});
+}
+
+function toggle2fa(purpose, enabled, checkboxEl){
+promptFor2faCode(enabled ? 'Введи код, чтобы включить защиту' : 'Введи код, чтобы выключить защиту').then(code => {
+if (!code){ checkboxEl.checked = !enabled; return; }
+fetch(API_BASE + '/api/2fa/toggle', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData, purpose: purpose, enabled: enabled, code: code })
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(data.error === 'bad_code' ? 'Неверный код.' : (data.error === 'totp_locked' ? 'Слишком много неверных попыток — подождите 15 минут.' : errorMessage(data.error)));
+}
+return r.json();
+})
+.then(() => { loadTotpStatus(); })
+.catch(err => {
+checkboxEl.checked = !enabled;
+showAlert(friendlyErrorMessage(err));
+});
+});
+}
+
+document.getElementById('totp2faToggleWithdraw').addEventListener('change', (e) => {
+toggle2fa('withdraw', e.target.checked, e.target);
+});
+
+document.getElementById('totp2faToggleAdmin').addEventListener('change', (e) => {
+toggle2fa('admin', e.target.checked, e.target);
+});
 
 document.getElementById('kycCloseBtn').addEventListener('click', () => {
 kycOverlay.classList.remove('show');
@@ -6753,6 +6975,8 @@ document.getElementById('historyOverlay').classList.remove('show');
 });
 
 document.getElementById('openWithdrawBtn').addEventListener('click', () => {
+document.getElementById('withdrawTotpField').style.display = totp2faStatus.enabled_withdraw ? '' : 'none';
+document.getElementById('wTotpCode').value = '';
 withdrawOverlay.classList.add('show');
 });
 document.getElementById('withdrawCancel').addEventListener('click', () => {
@@ -7055,6 +7279,8 @@ below_minimum: 'Сумма меньше минимальной для вывод
 insufficient_funds: 'Недостаточно средств на балансе.',
 not_configured: 'Вывод в крипту сейчас недоступен.',
 feature_disabled: 'Вывод сейчас временно недоступен.',
+totp_required: 'Неверный или устаревший код 2FA — попробуй новый код из приложения.',
+totp_locked: `Слишком много неверных попыток — 2FA временно заблокирована на ${15} минут.`,
 };
 
 function withdrawTrustLimitMessage(data){
@@ -7081,6 +7307,15 @@ return;
 }
 
 let payload = { init_data: tg.initData, amount: amount, method: withdrawMethod };
+
+if (totp2faStatus.enabled_withdraw){
+const totpCode = document.getElementById('wTotpCode').value.trim();
+if (!totpCode){
+withdrawStatus.textContent = 'Введи код 2FA.';
+return;
+}
+payload.totp_code = totpCode;
+}
 
 if (withdrawMethod === 'crypto'){
 const address = document.getElementById('wCryptoAddress').value.trim();
