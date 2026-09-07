@@ -7666,6 +7666,9 @@ inspect_link: pendingSkinInspectLink,
 .then(async r => {
 if (!r.ok){
 const data = await r.json().catch(() => ({}));
+if (data.error === 'price_too_high'){
+throw new Error(`Цена слишком высокая — максимум для этого предмета сейчас ${formatCoins(data.max_allowed)} (не больше 200% от рыночной цены ${formatCoins(data.market_price_uzs)}).`);
+}
 throw new Error(errorMessage(data.error));
 }
 return r.json();
