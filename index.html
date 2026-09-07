@@ -650,7 +650,7 @@ bottom:0;
 left:0;
 right:0;
 z-index:4;
-display:flex;
+display:none !important;
 border-top:1px solid var(--red-dim);
 background:rgba(5,3,4,0.92);
 backdrop-filter:blur(10px);
@@ -2309,6 +2309,8 @@ justify-content:center;
 <button type="button" class="header-menu-item" data-header-action="history">📜 История сделок</button>
 <button type="button" class="header-menu-item" data-header-action="sell">🏷️ Продать скин</button>
 <button type="button" class="header-menu-item" data-header-action="support">🆘 Поддержка</button>
+<button type="button" class="header-menu-item" data-header-action="auctions" id="headerMenuAuctions" style="display:none;">🔨 Аукцион</button>
+<button type="button" class="header-menu-item" data-header-action="admin" id="headerMenuAdmin" style="display:none;">⚙️ Админка</button>
 </div>
 </div>
 
@@ -2463,7 +2465,7 @@ transform="rotate(-90 100 100)"></circle>
 
 <div class="shop-header">
 <div style="display:flex; align-items:center; gap:10px;">
-<button type="button" class="back-btn" id="shopBackBtn">←</button>
+<button type="button" class="back-btn" id="shopBackBtn" style="display:none;">←</button>
 <div class="balance-pill" id="balancePill" style="display:none;"><img src="https://jaydensullivan.github.io/dghost-market-app/coin.PNG" alt="" style="width:15px; height:15px; vertical-align:-3px; object-fit:contain;" onerror="this.style.display='none'"> <span id="balanceAmount">—</span></div>
 </div>
 <button class="add-skin-btn" id="addSkinBtn" type="button" data-i18n="btn_add_skin" style="display:none;">+ Скин</button>
@@ -3166,7 +3168,7 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 </div>
 
-<div class="edit-overlay" id="discountOverlay">
+<div class="edit-overlay" id="discountOverlay" style="z-index:600;">
 <div class="edit-sheet">
 <h2 style="margin:0 0 6px;">🏷️ Скидка</h2>
 <div id="discountCurrentInfo" class="shop-hint" style="margin-bottom:10px;"></div>
@@ -4663,6 +4665,10 @@ tg.openLink(url);
 } else {
 window.open(url, '_blank');
 }
+} else if (action === 'auctions'){
+switchTab('auctions');
+} else if (action === 'admin'){
+switchTab('admin');
 }
 });
 
@@ -4901,6 +4907,7 @@ isOwner = !!data.is_owner;
 adminPermissions = data.admin_permissions || [];
 isAuctioneer = !!data.is_auctioneer;
 document.getElementById('tabAdminBtn').style.display = (isAdmin || isAuctioneer) ? '' : 'none';
+document.getElementById('headerMenuAdmin').style.display = (isAdmin || isAuctioneer) ? '' : 'none';
 if (typeof applyChipVisibility === 'function') applyChipVisibility();
 currentUserId = data.user_id;
 hasSteamLink = !!data.has_steam_link;
@@ -4987,6 +4994,7 @@ isOwner = !!data.is_owner;
 adminPermissions = data.admin_permissions || [];
 isAuctioneer = !!data.is_auctioneer;
 document.getElementById('tabAdminBtn').style.display = (isAdmin || isAuctioneer) ? '' : 'none';
+document.getElementById('headerMenuAdmin').style.display = (isAdmin || isAuctioneer) ? '' : 'none';
 if (typeof applyChipVisibility === 'function') applyChipVisibility();
 currentUserId = data.user_id;
 hasSteamLink = !!data.has_steam_link;
@@ -9529,6 +9537,7 @@ fetch(API_BASE + '/api/auctions/list')
 .then(data => {
 auctionsData = data.items || [];
 document.getElementById('tabAuctionsBtn').style.display = auctionsData.length ? '' : 'none';
+document.getElementById('headerMenuAuctions').style.display = auctionsData.length ? '' : 'none';
 if (currentTab === 'auctions'){
 renderAuctionsList();
 }
