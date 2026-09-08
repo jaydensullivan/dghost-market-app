@@ -2649,6 +2649,10 @@ transform="rotate(-90 100 100)"></circle>
 <div id="dealsList">
 <div class="skins-empty" style="padding:16px 4px;">Загрузка...</div>
 </div>
+<div class="profile-section-title" style="margin-top:14px;">🔄 Обмены</div>
+<div id="tradeOffersList">
+<div class="skins-empty" style="padding:16px 4px;">Загрузка...</div>
+</div>
 </div>
 
 </div>
@@ -3168,6 +3172,34 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 </div>
 
+<div class="edit-overlay" id="tradeMakeOverlay" style="z-index:600;">
+<div class="edit-sheet">
+<h2 style="margin:0 0 6px;">🔄 Предложить обмен</h2>
+<div id="tradeMakeTargetInfo" class="shop-hint" style="margin-bottom:10px;"></div>
+<div class="shop-hint" style="margin-bottom:6px;">Выбери свой лот для обмена:</div>
+<div id="tradeMakeMySkins" style="max-height:35vh; overflow-y:auto;"></div>
+
+<div id="tradeMakeCashRow" style="display:none; margin-top:10px;">
+<div class="shop-hint" id="tradeMakeCashHint"></div>
+<div class="edit-field" style="margin-top:6px;">
+<label>Доплата, сум</label>
+<input id="tradeMakeCashInput" type="number" min="0" placeholder="0">
+</div>
+<div class="edit-field">
+<label>Кто доплачивает</label>
+<select id="tradeMakeCashPayer">
+<option value="from">Я (предлагающий)</option>
+<option value="to">Владелец выбранного лота</option>
+</select>
+</div>
+</div>
+
+<button type="button" id="tradeMakeSendBtn" class="welcome-btn primary" style="width:100%; margin-top:10px;" disabled>Отправить предложение</button>
+<div class="edit-status" id="tradeMakeStatus" style="margin-top:6px;"></div>
+<button type="button" id="tradeMakeCloseBtn" style="width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px;">Закрыть</button>
+</div>
+</div>
+
 <div class="edit-overlay" id="discountOverlay" style="z-index:600;">
 <div class="edit-sheet">
 <h2 style="margin:0 0 6px;">🏷️ Скидка</h2>
@@ -3451,6 +3483,7 @@ transform="rotate(-90 100 100)"></circle>
 <button type="button" id="buyConfirmP2P" class="save" style="display:none;">🏦 Оплатить П2П (карта)</button>
 </div>
 <button type="button" id="buyMakeOfferBtn" class="steam-link-btn secondary" data-i18n="btn_make_offer">Предложить цену</button>
+<button type="button" id="buyMakeTradeBtn" class="steam-link-btn secondary" style="display:none;">🔄 Предложить обмен</button>
 <button type="button" id="buySendOfferBtn" class="save" style="display:none;" data-i18n="btn_send_offer">Отправить предложение</button>
 <button type="button" id="buyEditPriceBtn" class="save" style="display:none;" data-i18n="btn_edit_price">Изменить цену</button>
 <button type="button" id="buySavePriceBtn" class="save" style="display:none;" data-i18n="btn_save_price">Сохранить цену</button>
@@ -4775,6 +4808,12 @@ let pendingBuySkin = null;
 const WEAR_LABELS = { FN: 'FN', MW: 'MW', FT: 'FT', WW: 'WW', BS: 'BS' };
 
 const ERROR_MESSAGES = {
+self_dealing: 'Нельзя предложить обмен самому себе или связанному аккаунту.',
+not_your_skin: 'Этот лот тебе не принадлежит.',
+target_mismatch: 'Лот уже сменил владельца — обнови страницу.',
+target_no_longer_available: 'Лот уже недоступен — возможно, его уже обменяли или продали.',
+not_pending: 'Это предложение уже обработано.',
+not_accepted: 'Это предложение ещё не принято.',
 seller_kyc_required: 'Эта функция доступна только продавцам, прошедшим проверку. Подай заявку в Профиле.',
 already_submitted: 'Заявка уже отправлена или уже одобрена.',
 seller_not_sent_yet: 'Продавец ещё не отметил "Отправил" — подтвердить получение можно только после этого.',
@@ -5047,6 +5086,7 @@ profileBalanceAmount.textContent = '—';
 });
 
 loadDeals();
+loadTradeOffers();
 }
 
 // ============================================================
@@ -5152,6 +5192,123 @@ dealsList.innerHTML = lastDeals.map(dealCardHtml).join('');
 dealsList.innerHTML = '<div class="skins-empty" style="padding:16px 4px;">Не удалось загрузить</div>';
 });
 }
+
+// ---------------- Обмены ----------------
+
+function tradeOfferCardHtml(offer){
+const isIncoming = offer.role === 'incoming';
+const myItem = isIncoming ? offer.to_skin_title : offer.from_skin_title;
+const theirItem = isIncoming ? offer.from_skin_title : offer.to_skin_title;
+let cashLine = '';
+if (offer.cash_amount){
+const iPay = (offer.cash_payer === 'from' && !isIncoming) || (offer.cash_payer === 'to' && isIncoming);
+cashLine = `<div class="deal-meta">${iPay ? 'Доплачиваешь' : 'Тебе доплатят'}: ${formatCoins(offer.cash_amount)}</div>`;
+}
+
+let statusLine = '';
+let actions = '';
+
+if (offer.status === 'pending'){
+if (isIncoming){
+statusLine = '<div class="deal-meta">🔄 Ожидает твоего решения</div>';
+actions = `<button class="deal-action" data-trade-accept="${offer.id}" type="button">✅ Принять</button><button class="deal-action secondary" data-trade-decline="${offer.id}" type="button">❌ Отклонить</button>`;
+} else {
+statusLine = '<div class="deal-meta">⏳ Ждём ответа второй стороны</div>';
+actions = `<button class="deal-action secondary" data-trade-cancel="${offer.id}" type="button">Отменить</button>`;
+}
+} else if (offer.status === 'accepted'){
+const mySent = isIncoming ? offer.to_sent_at : offer.from_sent_at;
+const theirSent = isIncoming ? offer.from_sent_at : offer.to_sent_at;
+const myConfirmed = isIncoming ? offer.to_confirmed_at : offer.from_confirmed_at;
+statusLine = `<div class="deal-meta">✅ Принято — передайте предметы через Steam${theirSent ? ' (партнёр уже отправил)' : ''}</div>`;
+if (!mySent){
+actions = `<button class="deal-action" data-trade-sent="${offer.id}" type="button">📦 Я отправил</button>`;
+} else if (!myConfirmed){
+actions = `<button class="deal-action" data-trade-received="${offer.id}" type="button">✅ Я получил</button>`;
+} else {
+statusLine += '<div class="deal-meta">Ждём подтверждения от партнёра</div>';
+}
+} else if (offer.status === 'completed'){
+statusLine = '<div class="deal-meta" style="color:#7ec98a;">✅ Обмен завершён</div>';
+} else if (offer.status === 'declined'){
+statusLine = '<div class="deal-meta">❌ Отклонено</div>';
+} else if (offer.status === 'cancelled'){
+statusLine = '<div class="deal-meta">Отменено</div>';
+} else if (offer.status === 'expired'){
+statusLine = '<div class="deal-meta">Истекло</div>';
+}
+
+return `
+<div class="deal-card">
+<div class="deal-info">
+<div class="deal-title">🔄 ${escapeHtml(theirItem || '—')} ↔ ${escapeHtml(myItem || '—')}</div>
+<div class="deal-meta">${isIncoming ? 'Тебе предложили' : 'Ты предложил'}</div>
+${cashLine}
+${statusLine}
+</div>
+<div class="deal-actions">${actions}</div>
+</div>`;
+}
+
+function loadTradeOffers(){
+const el = document.getElementById('tradeOffersList');
+if (!tg || !tg.initData) return;
+fetch(API_BASE + '/api/trade_offers?init_data=' + encodeURIComponent(tg.initData))
+.then(r => r.json())
+.then(data => {
+const items = (data && data.items) || [];
+const active = items.filter(o => o.status !== 'declined' && o.status !== 'cancelled' && o.status !== 'expired');
+if (!active.length){
+el.innerHTML = '<div class="skins-empty" style="padding:16px 4px;">Нет обменов</div>';
+return;
+}
+el.innerHTML = active.map(tradeOfferCardHtml).join('');
+})
+.catch(() => {
+el.innerHTML = '<div class="skins-empty" style="padding:16px 4px;">Не удалось загрузить</div>';
+});
+}
+
+document.getElementById('tradeOffersList').addEventListener('click', (e) => {
+const acceptBtn = e.target.closest('[data-trade-accept]');
+const declineBtn = e.target.closest('[data-trade-decline]');
+const cancelBtn = e.target.closest('[data-trade-cancel]');
+const sentBtn = e.target.closest('[data-trade-sent]');
+const receivedBtn = e.target.closest('[data-trade-received]');
+
+const callAction = (offerId, path, confirmMsg, successMsg) => {
+const doCall = () => {
+fetch(API_BASE + '/api/trade_offers/' + offerId + path, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(errorMessage(data.error));
+}
+return r.json();
+})
+.then((data) => {
+if (successMsg) showAlert(data.completed === false ? 'Отметка сохранена — ждём вторую сторону.' : successMsg);
+loadTradeOffers();
+})
+.catch(err => showAlert(friendlyErrorMessage(err)));
+};
+if (confirmMsg){
+showConfirm(confirmMsg, doCall);
+} else {
+doCall();
+}
+};
+
+if (acceptBtn) callAction(acceptBtn.dataset.tradeAccept, '/accept', 'Принять этот обмен?', 'Обмен принят ✓');
+if (declineBtn) callAction(declineBtn.dataset.tradeDecline, '/decline', 'Отклонить это предложение?', null);
+if (cancelBtn) callAction(cancelBtn.dataset.tradeCancel, '/cancel', 'Отменить своё предложение?', null);
+if (sentBtn) callAction(sentBtn.dataset.tradeSent, '/mark_sent', null, 'Отмечено ✓');
+if (receivedBtn) callAction(receivedBtn.dataset.tradeReceived, '/mark_received', null, 'Обмен успешно завершён!');
+});
 
 // Раз в минуту перерисовываем отсчёт по уже загруженным сделкам —
 // без лишних запросов к серверу
@@ -6385,6 +6542,7 @@ buyPriceEdit.style.display = 'none';
 buyNewPriceInput.value = skin.price;
 
 buyMakeOfferBtn.style.display = isOwn ? 'none' : '';
+document.getElementById('buyMakeTradeBtn').style.display = isOwn ? 'none' : '';
 buySendOfferBtn.style.display = 'none';
 buyOfferEdit.style.display = 'none';
 buyOfferInput.value = '';
@@ -6702,6 +6860,89 @@ status.textContent = friendlyErrorMessage(err);
 .finally(() => {
 btn.disabled = false;
 });
+});
+});
+
+// ---------------- Предложить обмен ----------------
+
+let tradeMakeSelectedSkinId = null;
+
+document.getElementById('buyMakeTradeBtn').addEventListener('click', () => {
+if (!pendingBuySkin || !currentUserId) return;
+tradeMakeSelectedSkinId = null;
+document.getElementById('tradeMakeSendBtn').disabled = true;
+document.getElementById('tradeMakeTargetInfo').textContent = `Получишь: «${pendingBuySkin.title}» (${formatCoins(pendingBuySkin.price)})`;
+document.getElementById('tradeMakeCashInput').value = '';
+document.getElementById('tradeMakeCashHint').textContent = 'Необязательно — можно доплатить деньгами в любую сторону, если лоты не равноценны.';
+document.getElementById('tradeMakeCashRow').style.display = '';
+document.getElementById('tradeMakeStatus').textContent = '';
+
+const mySkins = lastSkins.filter(s => s.seller_id === currentUserId && s.id !== pendingBuySkin.id);
+const grid = document.getElementById('tradeMakeMySkins');
+if (!mySkins.length){
+grid.innerHTML = '<div class="shop-hint">У тебя нет других активных лотов для обмена.</div>';
+} else {
+grid.innerHTML = mySkins.map((s, i) => `
+<div class="inv-item" data-idx="${i}" style="display:inline-block; width:31%; margin:1%; vertical-align:top;">
+${s.photo_url ? `<img src="${s.photo_url}" alt="">` : ''}
+<div class="inv-item-name">${escapeHtml(s.title)}</div>
+<div style="font-size:11px; color:var(--red-glow);">${formatCoins(s.price)}</div>
+</div>
+`).join('');
+grid.querySelectorAll('.inv-item').forEach((card, i) => {
+card.addEventListener('click', () => {
+grid.querySelectorAll('.inv-item').forEach(c => c.style.borderColor = 'var(--red-dim)');
+card.style.borderColor = 'var(--red)';
+tradeMakeSelectedSkinId = mySkins[i].id;
+document.getElementById('tradeMakeSendBtn').disabled = false;
+});
+});
+}
+
+document.getElementById('tradeMakeOverlay').classList.add('show');
+});
+
+document.getElementById('tradeMakeCloseBtn').addEventListener('click', () => {
+document.getElementById('tradeMakeOverlay').classList.remove('show');
+});
+
+document.getElementById('tradeMakeSendBtn').addEventListener('click', () => {
+if (!tradeMakeSelectedSkinId || !pendingBuySkin || !tg || !tg.initData) return;
+const btn = document.getElementById('tradeMakeSendBtn');
+const status = document.getElementById('tradeMakeStatus');
+const cashAmount = Number(document.getElementById('tradeMakeCashInput').value) || 0;
+const cashPayer = document.getElementById('tradeMakeCashPayer').value;
+btn.disabled = true;
+status.textContent = 'Отправляю...';
+fetch(API_BASE + '/api/trade_offers', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+init_data: tg.initData,
+from_skin_id: tradeMakeSelectedSkinId,
+to_skin_id: pendingBuySkin.id,
+cash_amount: cashAmount,
+cash_payer: cashAmount ? cashPayer : null,
+})
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(errorMessage(data.error));
+}
+return r.json();
+})
+.then(() => {
+status.textContent = 'Предложение отправлено ✓';
+loadSkins();
+setTimeout(() => {
+document.getElementById('tradeMakeOverlay').classList.remove('show');
+buyOverlay.classList.remove('show');
+}, 800);
+})
+.catch(err => {
+status.textContent = friendlyErrorMessage(err);
+btn.disabled = false;
 });
 });
 
