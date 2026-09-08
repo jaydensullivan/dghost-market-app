@@ -1888,7 +1888,7 @@ position:fixed;
 right:16px;
 bottom:90px;
 z-index:20;
-display:flex;
+display:none !important;
 align-items:center;
 gap:6px;
 padding:12px 16px;
@@ -3477,7 +3477,8 @@ transform="rotate(-90 100 100)"></circle>
 <div class="buy-sticky-bar">
 <button type="button" id="buyCancel" data-i18n="btn_cancel">Отмена</button>
 <div id="buyPaymentMethods" style="display:flex; flex-direction:column; gap:8px; flex:1;">
-<button type="button" id="buyConfirmBalance" class="save">💰 <span data-i18n="btn_buy_prefix">Купить</span> · <span id="buyPrice">—</span></button>
+<div id="buyNoPaymentHint" class="shop-hint" style="display:none; text-align:center;">Сейчас нет доступного способа оплаты — напиши в поддержку.</div>
+<button type="button" id="buyConfirmBalance" class="save" style="display:none;">💰 <span data-i18n="btn_buy_prefix">Купить</span> · <span id="buyPrice">—</span></button>
 <button type="button" id="buyConfirmStars" class="save" style="display:none;">⭐ Оплатить Stars</button>
 <button type="button" id="buyConfirmCrypto" class="save" style="display:none;">💳 Оплатить криптой</button>
 <button type="button" id="buyConfirmP2P" class="save" style="display:none;">🏦 Оплатить П2П (карта)</button>
@@ -4808,6 +4809,7 @@ let pendingBuySkin = null;
 const WEAR_LABELS = { FN: 'FN', MW: 'MW', FT: 'FT', WW: 'WW', BS: 'BS' };
 
 const ERROR_MESSAGES = {
+balance_purchase_disabled: 'Оплата с баланса покупателем больше не поддерживается — выбери Stars, крипту или П2П.',
 self_dealing: 'Нельзя предложить обмен самому себе или связанному аккаунту.',
 not_your_skin: 'Этот лот тебе не принадлежит.',
 target_mismatch: 'Лот уже сменил владельца — обнови страницу.',
@@ -5557,10 +5559,7 @@ const inCart = cart.includes(skin.id);
 
 const actionBtn = isOwn
 ? `<button class="skin-action own" data-open="${skin.id}" type="button">${(I18N[currentLang] || I18N.ru).btn_manage}</button>`
-: `<div class="skin-action-row">
-<button class="skin-action" data-buy="${skin.id}" type="button">${(I18N[currentLang] || I18N.ru).btn_buy}</button>
-<button class="skin-cart-btn${inCart ? ' in-cart' : ''}" data-cart-toggle="${skin.id}" type="button" title="${(I18N[currentLang] || I18N.ru).btn_add_to_cart}">${inCart ? '✓' : '🛒'}</button>
-</div>`;
+: `<button class="skin-action" data-buy="${skin.id}" type="button" style="width:100%;">${(I18N[currentLang] || I18N.ru).btn_buy}</button>`;
 
 const weaponType = skin.weapon_type
 ? `<div class="skin-weapon-type">${escapeHtml(skin.weapon_type)}</div>`
@@ -6531,10 +6530,12 @@ buyDetailsTable.innerHTML = rows;
 // и "Предложить цену" на чужом.
 buyRemoveBtn.style.display = (isOwn || isAdmin) ? '' : 'none';
 document.getElementById('buyPaymentMethods').style.display = isOwn ? 'none' : 'flex';
-buyConfirmBalance.style.display = isOwn ? 'none' : '';
+buyConfirmBalance.style.display = 'none'; // Оплата с баланса покупателем убрана полностью
 buyConfirmStars.style.display = (!isOwn && directStarsPurchaseEnabled) ? '' : 'none';
 buyConfirmCrypto.style.display = (!isOwn && directCryptoPurchaseEnabled) ? '' : 'none';
 buyConfirmP2P.style.display = (!isOwn && directP2pPurchaseEnabled) ? '' : 'none';
+document.getElementById('buyNoPaymentHint').style.display =
+(!isOwn && !directStarsPurchaseEnabled && !directCryptoPurchaseEnabled && !directP2pPurchaseEnabled) ? '' : 'none';
 buyEditPriceBtn.style.display = isOwn ? '' : 'none';
 document.getElementById('buyDiscountBtn').style.display = isOwn ? '' : 'none';
 buySavePriceBtn.style.display = 'none';
