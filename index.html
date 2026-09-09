@@ -1794,6 +1794,16 @@ text-transform:uppercase;
 color:var(--muted);
 }
 
+.skin-seller-trust{
+font-family:'Inter', sans-serif;
+font-size:9px;
+color:var(--silver);
+margin-top:2px;
+white-space:nowrap;
+overflow:hidden;
+text-overflow:ellipsis;
+}
+
 .skin-title{
 font-family:'Inter', sans-serif;
 font-size:12px;
@@ -2323,6 +2333,7 @@ justify-content:center;
 <button type="button" class="header-menu-item" data-header-action="profile">👤 <span data-i18n="header_menu_profile">Профиль</span></button>
 <button type="button" class="header-menu-item" data-header-action="balance">💰 <span data-i18n="header_menu_balance">Баланс</span></button>
 <button type="button" class="header-menu-item" data-header-action="history">📜 <span data-i18n="header_menu_history">История сделок</span></button>
+<button type="button" class="header-menu-item" data-header-action="buyRequests">🔍 <span data-i18n="header_menu_buy_requests">Ищут</span></button>
 <button type="button" class="header-menu-item" data-header-action="sell">🏷️ <span data-i18n="header_menu_sell">Продать скин</span></button>
 <button type="button" class="header-menu-item" data-header-action="support">🆘 <span data-i18n="header_menu_support">Поддержка</span></button>
 <button type="button" class="header-menu-item" data-header-action="auctions" id="headerMenuAuctions" style="display:none;">🔨 <span data-i18n="header_menu_auctions">Аукцион</span></button>
@@ -2624,6 +2635,22 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 </div>
 
+<div class="profile-section" id="profileWishlistSection" style="margin-top:10px;">
+<div class="profile-section-title" data-i18n="wishlist_section_title">⭐ Каталог желаний</div>
+<div class="shop-hint" style="margin-bottom:10px;" data-i18n="wishlist_intro_hint">Сохрани, что ищешь — пришлём уведомление, когда подходящий лот появится или подешевеет.</div>
+<div id="wishlistItemsList" style="margin-bottom:10px;"></div>
+<div class="edit-field">
+<label data-i18n="wishlist_label_query">Что ищешь (название/модель)</label>
+<input id="wishlistQueryInput" type="text" placeholder="AK-47 | Redline" data-i18n-placeholder="wishlist_placeholder_query">
+</div>
+<div class="edit-field">
+<label data-i18n="wishlist_label_max_price">Не дороже, сум (не обязательно)</label>
+<input id="wishlistMaxPriceInput" type="number" min="0" placeholder="500000">
+</div>
+<button type="button" id="wishlistAddBtn" class="steam-link-btn secondary" style="width:100%;" data-i18n="wishlist_btn_add">Добавить</button>
+<div class="edit-status" id="wishlistStatus" style="margin-top:6px;"></div>
+</div>
+
 <div class="profile-section" id="profileMoneyButtons" style="display:none; margin-top:10px; background-image:linear-gradient(180deg, rgba(10,7,16,0.75), rgba(10,7,16,0.92)), url('https://jaydensullivan.github.io/dghost-market-app/coins-scattered.png'); background-size:cover; background-position:center 20%;">
 <div class="money-btn-row">
 <button type="button" id="openTopupBtn" class="money-btn">
@@ -2689,6 +2716,53 @@ transform="rotate(-90 100 100)"></circle>
 <div class="skins-empty" style="padding:16px 4px;">Загрузка...</div>
 </div>
 
+</div>
+
+<div class="screen-profile" id="screenBuyRequests" style="display:none; padding:50px 16px 100px;">
+
+<button type="button" class="back-btn" id="buyRequestsBackBtn" style="margin-bottom:12px;">←</button>
+
+<div class="profile-section-title" style="font-size:16px; margin-bottom:14px;" data-i18n="br_screen_title">🔍 Ищут</div>
+
+<div class="profile-section">
+<div class="profile-section-title" data-i18n="br_create_title">Опубликовать заявку</div>
+<div class="edit-field">
+<label data-i18n="br_label_title">Что ищешь (название/модель)</label>
+<input id="brTitleInput" type="text" placeholder="AWP | Asiimov" data-i18n-placeholder="br_placeholder_title">
+</div>
+<div class="edit-field">
+<label data-i18n="br_label_max_price">Готов заплатить до, сум (не обязательно)</label>
+<input id="brMaxPriceInput" type="number" min="0" placeholder="1000000">
+</div>
+<button type="button" id="brCreateBtn" class="steam-link-btn secondary" style="width:100%;" data-i18n="br_btn_create">Опубликовать</button>
+<div class="edit-status" id="brCreateStatus" style="margin-top:6px;"></div>
+</div>
+
+<div class="profile-section-title" style="margin-top:18px;" data-i18n="br_my_requests_title">Мои заявки</div>
+<div id="myBuyRequestsList">
+<div class="skins-empty" style="padding:16px 4px;">Загрузка...</div>
+</div>
+
+<div class="profile-section-title" style="margin-top:18px;" data-i18n="br_public_list_title">Заявки других — можно откликнуться</div>
+<div id="publicBuyRequestsList">
+<div class="skins-empty" style="padding:16px 4px;">Загрузка...</div>
+</div>
+
+</div>
+
+<div class="edit-overlay" id="brRespondOverlay" style="z-index:600;">
+<div class="edit-sheet">
+<h2 style="margin:0 0 6px;" data-i18n="br_respond_title">🔍 Откликнуться своим лотом</h2>
+<div id="brRespondTargetInfo" class="shop-hint" style="margin-bottom:10px;"></div>
+<div id="brRespondMySkins" style="max-height:35vh; overflow-y:auto;"></div>
+<div class="edit-field" style="margin-top:10px;">
+<label data-i18n="br_label_price">Твоя цена, сум</label>
+<input id="brRespondPriceInput" type="number" min="1" placeholder="500000">
+</div>
+<button type="button" id="brRespondSendBtn" class="welcome-btn primary" style="width:100%; margin-top:8px;" disabled data-i18n="br_btn_respond">Откликнуться</button>
+<div class="edit-status" id="brRespondStatus" style="margin-top:6px;"></div>
+<button type="button" id="brRespondCloseBtn" style="width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_close">Закрыть</button>
+</div>
 </div>
 
 <div class="screen-profile" id="screenAdmin" style="display:none; padding:50px 16px 100px;">
@@ -3478,6 +3552,10 @@ transform="rotate(-90 100 100)"></circle>
 
 <div class="buy-details-table" id="buyDetailsTable"></div>
 <div class="market-price-box" id="marketPriceBox" style="display:none;"></div>
+<div id="priceHistoryBox" style="display:none; margin:10px 20px 0; padding:10px; background:rgba(255,255,255,0.03); border-radius:10px;">
+<div class="shop-hint" style="margin-bottom:6px;" data-i18n="price_history_title">📈 История цены на этот предмет</div>
+<div id="priceHistoryChart"></div>
+</div>
 
 <div class="buy-price-edit" id="buyPriceEdit" style="display:none;">
 <div class="edit-field" style="margin:14px 20px 0;">
@@ -4062,6 +4140,59 @@ order_status_PAYOUT_COMPLETED: 'Средства выплачены продав
 order_status_DISPUTE_OPENED: 'Открыт спор',
 order_status_REFUNDED: 'Деньги возвращены покупателю',
 order_status_ORDER_CANCELLED: 'Заказ отменён',
+trust_level_new: 'Новый',
+trust_level_verified: 'Проверенный',
+trust_level_trusted: 'Доверенный',
+wishlist_section_title: '⭐ Каталог желаний',
+wishlist_intro_hint: 'Сохрани, что ищешь — пришлём уведомление, когда подходящий лот появится или подешевеет.',
+wishlist_label_query: 'Что ищешь (название/модель)',
+wishlist_placeholder_query: 'AK-47 | Redline',
+wishlist_label_max_price: 'Не дороже, сум (не обязательно)',
+wishlist_btn_add: 'Добавить',
+wishlist_empty: 'Список пуст.',
+wishlist_max_price_label: 'Не дороже',
+wishlist_need_query: 'Укажи, что ищешь.',
+wishlist_adding: 'Добавляю...',
+wishlist_added_ok: 'Добавлено ✓',
+wishlist_too_many: 'Слишком много запросов в списке — удали что-то ненужное.',
+price_history_title: '📈 История цены на этот предмет',
+header_menu_buy_requests: 'Ищут',
+br_screen_title: '🔍 Ищут',
+br_create_title: 'Опубликовать заявку',
+br_label_title: 'Что ищешь (название/модель)',
+br_placeholder_title: 'AWP | Asiimov',
+br_label_max_price: 'Готов заплатить до, сум (не обязательно)',
+br_btn_create: 'Опубликовать',
+br_my_requests_title: 'Мои заявки',
+br_public_list_title: 'Заявки других — можно откликнуться',
+br_respond_title: '🔍 Откликнуться своим лотом',
+br_label_price: 'Твоя цена, сум',
+br_btn_respond: 'Откликнуться',
+br_no_my_requests: 'У тебя пока нет заявок.',
+br_status_open: 'Открыта',
+br_status_fulfilled: 'Закрыта',
+br_status_cancelled: 'Отменена',
+br_status_expired: 'Истекла',
+br_btn_cancel: 'Отменить',
+br_no_max_price: 'Цена не важна',
+br_max_price_label: 'До',
+br_btn_accept: 'Принять',
+br_btn_decline: 'Отклонить',
+br_resp_pending: 'Ожидает решения',
+br_resp_accepted: 'Принят',
+br_resp_declined: 'Отклонён',
+br_confirm_cancel: 'Отменить эту заявку?',
+br_confirm_accept: 'Принять этот отклик? Лот зарезервируется за тобой.',
+br_accepted_ok: 'Отклик принят ✓',
+br_no_public_requests: 'Пока нет открытых заявок.',
+br_respond_target: 'Ищут: «{title}»',
+br_no_own_skins: 'У тебя нет активных лотов, чтобы откликнуться.',
+br_need_price: 'Укажи цену.',
+br_sending: 'Отправляю...',
+br_sent_ok: 'Отклик отправлен ✓',
+br_need_title: 'Укажи, что ищешь.',
+br_creating: 'Публикую...',
+br_created_ok: 'Заявка опубликована ✓',
 },
 uz: {
 nav_timer: 'Taymer',
@@ -4450,6 +4581,59 @@ order_status_PAYOUT_COMPLETED: "Mablag' sotuvchiga to'landi",
 order_status_DISPUTE_OPENED: 'Nizo ochildi',
 order_status_REFUNDED: "Pul xaridorga qaytarildi",
 order_status_ORDER_CANCELLED: 'Buyurtma bekor qilindi',
+trust_level_new: 'Yangi',
+trust_level_verified: 'Tekshirilgan',
+trust_level_trusted: 'Ishonchli',
+wishlist_section_title: '⭐ Istaklar katalogi',
+wishlist_intro_hint: "Nima izlayotganingizni saqlang — mos lot paydo bo'lganda yoki arzonlashganda xabar beramiz.",
+wishlist_label_query: 'Nima izlayapsiz (nomi/modeli)',
+wishlist_placeholder_query: 'AK-47 | Redline',
+wishlist_label_max_price: 'Qimmat bo\'lmasin, sum (ixtiyoriy)',
+wishlist_btn_add: "Qo'shish",
+wishlist_empty: "Ro'yxat bo'sh.",
+wishlist_max_price_label: 'Dan qimmat emas:',
+wishlist_need_query: 'Nima izlayotganingizni ko\'rsating.',
+wishlist_adding: "Qo'shilmoqda...",
+wishlist_added_ok: "Qo'shildi ✓",
+wishlist_too_many: "Ro'yxatda juda ko'p so'rov bor — keraksizini o'chiring.",
+price_history_title: "📈 Bu buyum narxi tarixi",
+header_menu_buy_requests: 'Izlaydi',
+br_screen_title: '🔍 Izlaydi',
+br_create_title: "Ariza e'lon qilish",
+br_label_title: 'Nima izlayapsiz (nomi/modeli)',
+br_placeholder_title: 'AWP | Asiimov',
+br_label_max_price: "To'lashga tayyor summa, sum (ixtiyoriy)",
+br_btn_create: "E'lon qilish",
+br_my_requests_title: 'Mening arizalarim',
+br_public_list_title: "Boshqalarning arizalari — javob berish mumkin",
+br_respond_title: "🔍 O'z lotingiz bilan javob bering",
+br_label_price: 'Sizning narxingiz, sum',
+br_btn_respond: 'Javob berish',
+br_no_my_requests: "Hozircha arizalaringiz yo'q.",
+br_status_open: 'Ochiq',
+br_status_fulfilled: 'Yopilgan',
+br_status_cancelled: 'Bekor qilingan',
+br_status_expired: "Muddati o'tgan",
+br_btn_cancel: 'Bekor qilish',
+br_no_max_price: 'Narx muhim emas',
+br_max_price_label: 'Gacha',
+br_btn_accept: 'Qabul qilish',
+br_btn_decline: 'Rad etish',
+br_resp_pending: 'Qaror kutilmoqda',
+br_resp_accepted: 'Qabul qilindi',
+br_resp_declined: 'Rad etildi',
+br_confirm_cancel: 'Shu arizani bekor qilasizmi?',
+br_confirm_accept: "Shu javobni qabul qilasizmi? Lot sizga band qilinadi.",
+br_accepted_ok: 'Javob qabul qilindi ✓',
+br_no_public_requests: "Hozircha ochiq arizalar yo'q.",
+br_respond_target: 'Izlaydi: «{title}»',
+br_no_own_skins: "Javob berish uchun faol lotlaringiz yo'q.",
+br_need_price: "Narxni ko'rsating.",
+br_sending: 'Yuborilmoqda...',
+br_sent_ok: 'Javob yuborildi ✓',
+br_need_title: "Nima izlayotganingizni ko'rsating.",
+br_creating: "E'lon qilinmoqda...",
+br_created_ok: "Ariza e'lon qilindi ✓",
 },
 };
 
@@ -4879,6 +5063,7 @@ screenProfile.style.display = name === 'profile' ? 'block' : 'none';
 document.getElementById('screenAdmin').style.display = name === 'admin' ? 'block' : 'none';
 document.getElementById('screenAuctions').style.display = name === 'auctions' ? 'block' : 'none';
 document.getElementById('screenDeals').style.display = name === 'deals' ? 'block' : 'none';
+document.getElementById('screenBuyRequests').style.display = name === 'buyRequests' ? 'block' : 'none';
 tabTimerBtn.classList.toggle('active', name === 'timer');
 tabShopBtn.classList.toggle('active', name === 'shop');
 tabProfileBtn.classList.toggle('active', name === 'profile');
@@ -4887,11 +5072,14 @@ document.getElementById('tabAuctionsBtn').classList.toggle('active', name === 'a
 // В каталоге лотов и в панели Admin нижняя навигация не нужна —
 // там только кнопка «Назад». На остальных экранах навигация
 // остаётся видимой как обычно.
-document.getElementById('bottomNav').style.display = (name === 'shop' || name === 'admin' || name === 'deals') ? 'none' : 'flex';
+document.getElementById('bottomNav').style.display = (name === 'shop' || name === 'admin' || name === 'deals' || name === 'buyRequests') ? 'none' : 'flex';
 updateFabVisibility();
 if (name === 'shop'){
 loadMe();
 loadSkins();
+} else if (name === 'buyRequests'){
+loadMyBuyRequests();
+loadPublicBuyRequests();
 } else if (name === 'profile'){
 loadProfile();
 } else if (name === 'deals'){
@@ -4952,6 +5140,8 @@ if (action === 'profile' || action === 'balance'){
 switchTab('profile');
 } else if (action === 'history'){
 switchTab('deals');
+} else if (action === 'buyRequests'){
+switchTab('buyRequests');
 } else if (action === 'sell'){
 switchTab('shop');
 setTimeout(() => addSkinBtn.click(), 150);
@@ -5276,6 +5466,8 @@ const profileAvatar = document.getElementById('profileAvatar');
 const profileName = document.getElementById('profileName');
 const profileBalanceAmount = document.getElementById('profileBalanceAmount');
 const profileHeld = document.getElementById('profileHeld');
+
+loadWishlist();
 
 if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.photo_url){
 profileAvatar.innerHTML = `<img src="${tg.initDataUnsafe.user.photo_url}" alt="">`;
@@ -5855,6 +6047,12 @@ const stBadge = skin.stattrak
 ? `<div class="skin-badge stattrak">ST™</div>`
 : '';
 
+const trustDict = I18N[currentLang] || I18N.ru;
+const trustLabels = { new: trustDict.trust_level_new, verified: trustDict.trust_level_verified, trusted: trustDict.trust_level_trusted };
+const sellerTrustBadge = skin.seller_trust_level
+? `<div class="skin-seller-trust" title="${trustLabels[skin.seller_trust_level] || ''}">${TRUST_BADGE_ICON[skin.seller_trust_level] || ''} ${trustLabels[skin.seller_trust_level] || ''}</div>`
+: '';
+
 const rarityClass = RARITY_CLASS[skin.rarity] || '';
 
 const isOwn = currentUserId && skin.seller_id === currentUserId;
@@ -5889,6 +6087,7 @@ ${wearBadge}
 ${stBadge}
 </div>
 ${weaponType}
+${sellerTrustBadge}
 <div class="skin-title">${title}</div>
 ${floatLine}
 ${priceHtml}
@@ -6303,6 +6502,353 @@ document.getElementById('openKycBtnAgain').addEventListener('click', openKycOver
 // ---------------- Двухэтапная защита (TOTP) ----------------
 
 let totp2faStatus = { confirmed: false, enabled_withdraw: false, enabled_admin: false };
+
+// ---------------- Каталог желаний ----------------
+
+// ---------------- Buy-заявки ("Ищут") ----------------
+
+let brSelectedSkinId = null;
+let brTargetRequestId = null;
+
+function loadMyBuyRequests(){
+if (!tg || !tg.initData) return;
+const dict = I18N[currentLang] || I18N.ru;
+const el = document.getElementById('myBuyRequestsList');
+fetch(API_BASE + '/api/buy_requests/mine?init_data=' + encodeURIComponent(tg.initData))
+.then(r => r.json())
+.then(data => {
+const items = (data && data.items) || [];
+if (!items.length){
+el.innerHTML = `<div class="skins-empty" style="padding:16px 4px;">${dict.br_no_my_requests}</div>`;
+return;
+}
+el.innerHTML = items.map(req => {
+const statusLabel = {
+open: dict.br_status_open,
+fulfilled: dict.br_status_fulfilled,
+cancelled: dict.br_status_cancelled,
+expired: dict.br_status_expired,
+}[req.status] || req.status;
+const cancelBtn = req.status === 'open'
+? `<button class="deal-action secondary" data-br-cancel="${req.id}" type="button">${dict.br_btn_cancel}</button>`
+: '';
+return `
+<div class="deal-card" style="flex-direction:column; align-items:stretch;">
+<div class="deal-title">🔍 ${escapeHtml(req.title)}</div>
+<div class="deal-meta">${req.max_price ? formatCoins(req.max_price) : dict.br_no_max_price} · ${statusLabel}</div>
+<div id="brResponses-${req.id}" style="margin-top:6px;"></div>
+<div class="deal-actions" style="margin-top:6px;">${cancelBtn}</div>
+</div>`;
+}).join('');
+items.forEach(req => loadBuyRequestResponses(req.id));
+})
+.catch(() => {
+el.innerHTML = `<div class="skins-empty" style="padding:16px 4px;">${dict.load_failed}</div>`;
+});
+}
+
+function loadBuyRequestResponses(requestId){
+if (!tg || !tg.initData) return;
+const dict = I18N[currentLang] || I18N.ru;
+const el = document.getElementById('brResponses-' + requestId);
+if (!el) return;
+fetch(API_BASE + '/api/buy_requests/' + requestId + '/responses?init_data=' + encodeURIComponent(tg.initData))
+.then(r => r.json())
+.then(data => {
+const items = (data && data.items) || [];
+if (!items.length){
+el.innerHTML = '';
+return;
+}
+el.innerHTML = items.map(r => {
+let actions = '';
+if (r.status === 'pending'){
+actions = `<button class="deal-action" data-br-resp-accept="${r.id}" type="button">${dict.br_btn_accept}</button><button class="deal-action secondary" data-br-resp-decline="${r.id}" type="button">${dict.br_btn_decline}</button>`;
+}
+const statusLabel = {
+pending: dict.br_resp_pending,
+accepted: dict.br_resp_accepted,
+declined: dict.br_resp_declined,
+}[r.status] || r.status;
+return `
+<div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.06);">
+<div>
+<div style="font-size:12px; color:var(--silver);">${escapeHtml(r.skin_title || '—')} — ${formatCoins(r.price)}</div>
+<div style="font-size:10px; color:var(--muted);">${statusLabel}</div>
+</div>
+<div style="display:flex; gap:4px;">${actions}</div>
+</div>
+`;
+}).join('');
+})
+.catch(() => {});
+}
+
+document.getElementById('myBuyRequestsList').addEventListener('click', (e) => {
+const cancelBtn = e.target.closest('[data-br-cancel]');
+const acceptBtn = e.target.closest('[data-br-resp-accept]');
+const declineBtn = e.target.closest('[data-br-resp-decline]');
+const dict = I18N[currentLang] || I18N.ru;
+
+if (cancelBtn){
+showConfirm(dict.br_confirm_cancel, () => {
+fetch(API_BASE + '/api/buy_requests/' + cancelBtn.dataset.brCancel + '/cancel', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+}).then(() => loadMyBuyRequests()).catch(() => {});
+});
+}
+
+if (acceptBtn){
+showConfirm(dict.br_confirm_accept, () => {
+fetch(API_BASE + '/api/buy_request_responses/' + acceptBtn.dataset.brRespAccept + '/accept', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(errorMessage(data.error));
+}
+showAlert(dict.br_accepted_ok);
+loadMyBuyRequests();
+})
+.catch(err => showAlert(friendlyErrorMessage(err)));
+});
+}
+
+if (declineBtn){
+fetch(API_BASE + '/api/buy_request_responses/' + declineBtn.dataset.brRespDecline + '/decline', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+}).then(() => loadMyBuyRequests()).catch(() => {});
+}
+});
+
+function loadPublicBuyRequests(){
+const dict = I18N[currentLang] || I18N.ru;
+const el = document.getElementById('publicBuyRequestsList');
+fetch(API_BASE + '/api/buy_requests')
+.then(r => r.json())
+.then(data => {
+const items = ((data && data.items) || []).filter(r => r.buyer_id !== currentUserId);
+if (!items.length){
+el.innerHTML = `<div class="skins-empty" style="padding:16px 4px;">${dict.br_no_public_requests}</div>`;
+return;
+}
+el.innerHTML = items.map(req => `
+<div class="deal-card">
+<div class="deal-info">
+<div class="deal-title">🔍 ${escapeHtml(req.title)}</div>
+<div class="deal-meta">${req.max_price ? dict.br_max_price_label + ' ' + formatCoins(req.max_price) : dict.br_no_max_price}</div>
+</div>
+<div class="deal-actions">
+<button class="deal-action" data-br-respond="${req.id}" data-br-title="${escapeHtml(req.title)}" type="button">${dict.br_btn_respond}</button>
+</div>
+</div>
+`).join('');
+})
+.catch(() => {
+el.innerHTML = `<div class="skins-empty" style="padding:16px 4px;">${dict.load_failed}</div>`;
+});
+}
+
+document.getElementById('publicBuyRequestsList').addEventListener('click', (e) => {
+const btn = e.target.closest('[data-br-respond]');
+if (!btn || !currentUserId) return;
+brTargetRequestId = btn.dataset.brRespond;
+brSelectedSkinId = null;
+const dict = I18N[currentLang] || I18N.ru;
+document.getElementById('brRespondSendBtn').disabled = true;
+document.getElementById('brRespondTargetInfo').textContent = dict.br_respond_target.replace('{title}', btn.dataset.brTitle);
+document.getElementById('brRespondPriceInput').value = '';
+document.getElementById('brRespondStatus').textContent = '';
+
+const mySkins = lastSkins.filter(s => s.seller_id === currentUserId);
+const grid = document.getElementById('brRespondMySkins');
+if (!mySkins.length){
+grid.innerHTML = `<div class="shop-hint">${dict.br_no_own_skins}</div>`;
+} else {
+grid.innerHTML = mySkins.map((s, i) => `
+<div class="inv-item" data-idx="${i}" style="display:inline-block; width:31%; margin:1%; vertical-align:top;">
+${s.photo_url ? `<img src="${s.photo_url}" alt="">` : ''}
+<div class="inv-item-name">${escapeHtml(s.title)}</div>
+<div style="font-size:11px; color:var(--red-glow);">${formatCoins(s.price)}</div>
+</div>
+`).join('');
+grid.querySelectorAll('.inv-item').forEach((card, i) => {
+card.addEventListener('click', () => {
+grid.querySelectorAll('.inv-item').forEach(c => c.style.borderColor = 'var(--red-dim)');
+card.style.borderColor = 'var(--red)';
+brSelectedSkinId = mySkins[i].id;
+document.getElementById('brRespondSendBtn').disabled = false;
+});
+});
+}
+
+document.getElementById('brRespondOverlay').classList.add('show');
+});
+
+document.getElementById('brRespondCloseBtn').addEventListener('click', () => {
+document.getElementById('brRespondOverlay').classList.remove('show');
+});
+
+document.getElementById('brRespondSendBtn').addEventListener('click', () => {
+if (!brSelectedSkinId || !brTargetRequestId || !tg || !tg.initData) return;
+const dict = I18N[currentLang] || I18N.ru;
+const price = Number(document.getElementById('brRespondPriceInput').value);
+const status = document.getElementById('brRespondStatus');
+if (!price || price <= 0){
+status.textContent = dict.br_need_price;
+return;
+}
+const btn = document.getElementById('brRespondSendBtn');
+btn.disabled = true;
+status.textContent = dict.br_sending;
+fetch(API_BASE + '/api/buy_requests/' + brTargetRequestId + '/respond', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData, skin_id: brSelectedSkinId, price: price })
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(errorMessage(data.error));
+}
+return r.json();
+})
+.then(() => {
+status.textContent = dict.br_sent_ok;
+setTimeout(() => document.getElementById('brRespondOverlay').classList.remove('show'), 800);
+})
+.catch(err => {
+status.textContent = friendlyErrorMessage(err);
+})
+.finally(() => {
+btn.disabled = false;
+});
+});
+
+document.getElementById('brCreateBtn').addEventListener('click', () => {
+if (!tg || !tg.initData) return;
+const dict = I18N[currentLang] || I18N.ru;
+const title = document.getElementById('brTitleInput').value.trim();
+const maxPrice = Number(document.getElementById('brMaxPriceInput').value) || null;
+const status = document.getElementById('brCreateStatus');
+if (!title){
+status.textContent = dict.br_need_title;
+return;
+}
+const btn = document.getElementById('brCreateBtn');
+btn.disabled = true;
+status.textContent = dict.br_creating;
+fetch(API_BASE + '/api/buy_requests', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData, title: title, max_price: maxPrice })
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(errorMessage(data.error));
+}
+return r.json();
+})
+.then(() => {
+status.textContent = dict.br_created_ok;
+document.getElementById('brTitleInput').value = '';
+document.getElementById('brMaxPriceInput').value = '';
+loadMyBuyRequests();
+})
+.catch(err => {
+status.textContent = friendlyErrorMessage(err);
+})
+.finally(() => {
+btn.disabled = false;
+});
+});
+
+function loadWishlist(){
+if (!tg || !tg.initData) return;
+const dict = I18N[currentLang] || I18N.ru;
+const el = document.getElementById('wishlistItemsList');
+fetch(API_BASE + '/api/wishlist?init_data=' + encodeURIComponent(tg.initData))
+.then(r => r.json())
+.then(data => {
+const items = (data && data.items) || [];
+if (!items.length){
+el.innerHTML = `<div class="shop-hint">${dict.wishlist_empty}</div>`;
+return;
+}
+el.innerHTML = items.map(item => `
+<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.06);">
+<div>
+<div style="font-size:13px; color:var(--silver);">${escapeHtml(item.query)}</div>
+${item.max_price ? `<div style="font-size:11px; color:var(--muted);">${dict.wishlist_max_price_label} ${formatCoins(item.max_price)}</div>` : ''}
+</div>
+<button type="button" data-wishlist-remove="${item.id}" style="background:none; border:none; color:var(--muted); font-size:16px; cursor:pointer; padding:4px 8px;">✕</button>
+</div>
+`).join('');
+})
+.catch(() => {
+el.innerHTML = `<div class="shop-hint">${dict.load_failed}</div>`;
+});
+}
+
+document.getElementById('wishlistItemsList').addEventListener('click', (e) => {
+const btn = e.target.closest('[data-wishlist-remove]');
+if (!btn || !tg || !tg.initData) return;
+const itemId = btn.dataset.wishlistRemove;
+fetch(API_BASE + '/api/wishlist/' + itemId + '/remove', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+})
+.then(() => loadWishlist())
+.catch(() => {});
+});
+
+document.getElementById('wishlistAddBtn').addEventListener('click', () => {
+if (!tg || !tg.initData) return;
+const dict = I18N[currentLang] || I18N.ru;
+const query = document.getElementById('wishlistQueryInput').value.trim();
+const maxPrice = Number(document.getElementById('wishlistMaxPriceInput').value) || null;
+const status = document.getElementById('wishlistStatus');
+if (!query){
+status.textContent = dict.wishlist_need_query;
+return;
+}
+const btn = document.getElementById('wishlistAddBtn');
+btn.disabled = true;
+status.textContent = dict.wishlist_adding;
+fetch(API_BASE + '/api/wishlist', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData, query: query, max_price: maxPrice })
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(data.error === 'too_many_items' ? dict.wishlist_too_many : errorMessage(data.error));
+}
+return r.json();
+})
+.then(() => {
+status.textContent = dict.wishlist_added_ok;
+document.getElementById('wishlistQueryInput').value = '';
+document.getElementById('wishlistMaxPriceInput').value = '';
+loadWishlist();
+})
+.catch(err => {
+status.textContent = friendlyErrorMessage(err);
+})
+.finally(() => {
+btn.disabled = false;
+});
+});
 
 function loadTotpStatus(){
 if (!tg || !tg.initData) return Promise.resolve();
@@ -6769,6 +7315,48 @@ if (value === null || value === undefined || value === '') return '';
 return `<div class="buy-detail-row"><div class="buy-detail-label">${label}</div><div class="buy-detail-value">${value}</div></div>`;
 }
 
+// ---------------- Мини-график истории цены (SVG, без библиотек) ----------------
+
+function loadPriceHistoryChart(title){
+const box = document.getElementById('priceHistoryBox');
+const chartEl = document.getElementById('priceHistoryChart');
+box.style.display = 'none';
+if (!title) return;
+fetch(API_BASE + '/api/price_history?title=' + encodeURIComponent(title))
+.then(r => r.json())
+.then(data => {
+const history = data.history || [];
+if (history.length < 2){
+box.style.display = 'none';
+return;
+}
+const prices = history.map(h => h.price);
+const min = Math.min(...prices);
+const max = Math.max(...prices);
+const range = max - min || 1;
+const w = 280, h = 60, pad = 4;
+const step = (w - pad * 2) / (prices.length - 1);
+const points = prices.map((p, i) => {
+const x = pad + i * step;
+const y = pad + (1 - (p - min) / range) * (h - pad * 2);
+return `${x.toFixed(1)},${y.toFixed(1)}`;
+}).join(' ');
+chartEl.innerHTML = `
+<svg viewBox="0 0 ${w} ${h}" style="width:100%; height:60px; display:block;">
+<polyline points="${points}" fill="none" stroke="var(--red)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+</svg>
+<div style="display:flex; justify-content:space-between; font-size:10px; color:var(--muted); margin-top:2px;">
+<span>${formatCoins(min)}</span>
+<span>${formatCoins(max)}</span>
+</div>
+`;
+box.style.display = '';
+})
+.catch(() => {
+box.style.display = 'none';
+});
+}
+
 function openBuySheet(skin){
 if (!tg || !tg.initData){
 showAlert(errorMessage('unauthorized'));
@@ -6776,7 +7364,13 @@ return;
 }
 pendingBuySkin = skin;
 
-fetch(API_BASE + '/api/skins/' + skin.id + '/view', { method: 'POST' }).catch(() => {});
+fetch(API_BASE + '/api/skins/' + skin.id + '/view', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+}).catch(() => {});
+
+loadPriceHistoryChart(skin.title);
 
 const dict = I18N[currentLang] || I18N.ru;
 const rarityMap = currentLang === 'uz' ? RARITY_LABEL_UZ : RARITY_LABEL_RU;
@@ -8540,6 +9134,7 @@ document.getElementById('profileBackBtn').addEventListener('click', () => goToSc
 document.getElementById('auctionsBackBtn').addEventListener('click', () => goToScreen('welcome'));
 document.getElementById('adminBackBtn').addEventListener('click', () => goToScreen('welcome'));
 document.getElementById('dealsBackBtn').addEventListener('click', () => goToScreen('welcome'));
+document.getElementById('buyRequestsBackBtn').addEventListener('click', () => goToScreen('welcome'));
 
 document.querySelector('.category-tile-grid').addEventListener('click', (e) => {
 const tile = e.target.closest('.category-tile');
