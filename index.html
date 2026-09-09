@@ -2395,6 +2395,7 @@ justify-content:center;
 <button type="button" id="mandatoryLinkBtn" class="welcome-btn primary" style="margin-top:12px; width:100%;">Привязать и продолжить</button>
 <div class="edit-status" id="mandatorySteamStatus" style="margin-top:8px;"></div>
 <div class="shop-hint" style="margin-top:14px;">Нажми кнопку выше — откроется страница Steam с твоей трейд-ссылкой, останется скопировать и вставить сюда.</div>
+<button type="button" id="mandatorySteamLaterBtn" style="width:100%; margin-top:14px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="mandatory_steam_later">Добавить позже</button>
 </div>
 </div>
 
@@ -4289,6 +4290,7 @@ onb_btn_skip: 'Пропустить',
 onb_btn_next: 'Далее',
 onb_btn_done: 'Понятно, начать',
 seller_stats_line: '👤 У продавца: {trades} сделок, {disputes} споров',
+mandatory_steam_later: 'Добавить позже',
 },
 uz: {
 nav_timer: 'Taymer',
@@ -4748,6 +4750,7 @@ onb_btn_skip: "O'tkazib yuborish",
 onb_btn_next: 'Keyingisi',
 onb_btn_done: 'Tushunarli, boshlash',
 seller_stats_line: "👤 Sotuvchida: {trades} bitim, {disputes} nizo",
+mandatory_steam_later: "Keyinroq qo'shish",
 },
 en: {
 nav_timer: 'Timer',
@@ -5207,6 +5210,7 @@ onb_btn_skip: 'Skip',
 onb_btn_next: 'Next',
 onb_btn_done: "Got it, let's start",
 seller_stats_line: '👤 Seller has: {trades} deals, {disputes} disputes',
+mandatory_steam_later: 'Add later',
 },
 };
 
@@ -5839,6 +5843,7 @@ let pendingBuySkin = null;
 const WEAR_LABELS = { FN: 'FN', MW: 'MW', FT: 'FT', WW: 'WW', BS: 'BS' };
 
 const ERROR_MESSAGES = {
+item_no_longer_available: 'Этого предмета уже нет в инвентаре продавца — лот снят с продажи. Извини, оплата не потребуется.',
 balance_purchase_disabled: 'Оплата с баланса покупателем больше не поддерживается — выбери Stars, крипту или П2П.',
 self_dealing: 'Нельзя предложить обмен самому себе или связанному аккаунту.',
 not_your_skin: 'Этот лот тебе не принадлежит.',
@@ -5886,6 +5891,7 @@ return Number(n || 0).toLocaleString('ru-RU') + ' сум';
 }
 
 let hasSteamLink = false;
+let steamLinkSkippedThisSession = false;
 let agreementAccepted = false;
 let agreementTextLoaded = false;
 
@@ -5922,7 +5928,7 @@ return;
 
 agreementOverlay.classList.remove('show');
 
-if (currentUserId && !hasSteamLink){
+if (currentUserId && !hasSteamLink && !steamLinkSkippedThisSession){
 // Та же особенность Telegram WebView, что и на welcomeOverlay —
 // 100vh может считаться неверно, задаём высоту явно через JS и
 // блокируем скролл страницы, пока экран показан.
@@ -6757,9 +6763,22 @@ function renderSkins(list){
 lastSkins = list || [];
 applyFiltersAndRender();
 if (deepLinkSkinId){
-const skin = lastSkins.find(s => String(s.id) === deepLinkSkinId);
-if (skin) openBuySheet(skin);
+const targetId = deepLinkSkinId;
 deepLinkSkinId = null;
+const skin = lastSkins.find(s => String(s.id) === targetId);
+if (skin){
+openBuySheet(skin);
+} else {
+// Лот не в обычном каталоге — например, он уже
+// зарезервирован (принятое предложение цены, победа в
+// аукционе, отклик на buy-заявку). Запрашиваем его отдельно.
+fetch(API_BASE + '/api/skins/' + targetId)
+.then(r => r.json())
+.then(data => {
+if (data && data.skin) openBuySheet(data.skin);
+})
+.catch(() => {});
+}
 }
 }
 
@@ -9045,6 +9064,11 @@ tg.openLink(url);
 } else {
 window.open(url, '_blank');
 }
+});
+
+document.getElementById('mandatorySteamLaterBtn').addEventListener('click', () => {
+steamLinkSkippedThisSession = true;
+updateMandatorySteamOverlay();
 });
 
 profileRelinkBtn.addEventListener('click', () => {
