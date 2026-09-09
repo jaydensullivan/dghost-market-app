@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Пульт DGhostMarket</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root {
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--tg-theme-bg-color, #0f0f14);
+    color: var(--tg-theme-text-color, #f2f2f2);
+    padding: 14px 14px 40px;
+  }
+  h1 {
+    font-size: 20px;
+    margin: 4px 0 16px;
+  }
+  .tabs {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    margin-bottom: 16px;
+    padding-bottom: 4px;
+  }
+  .tab {
+    flex: 0 0 auto;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: #1c1c24;
+    color: #aaa;
+    font-size: 13px;
+    white-space: nowrap;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .tab.active {
+    background: #2e2ef0;
+    color: #fff;
+  }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .card {
+    background: #1a1a22;
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 14px;
+    border-bottom: 1px solid #262631;
+  }
+  .row:last-child { border-bottom: none; }
+  .row span:first-child { color: #999; }
+  .item {
+    background: #1a1a22;
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .item-title {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .item-title b { color: #fff; }
+  .btn-row {
+    display: flex;
+    gap: 8px;
+  }
+  button {
+    border: none;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    flex: 1;
+  }
+  .btn-approve { background: #1f9d55; color: #fff; }
+  .btn-reject { background: #d0433a; color: #fff; }
+  .btn-primary { background: #2e2ef0; color: #fff; }
+  .btn-secondary { background: #2a2a35; color: #ddd; }
+  .btn-warn { background: #b0472f; color: #fff; }
+  .empty {
+    text-align: center;
+    color: #777;
+    padding: 30px 0;
+    font-size: 14px;
+  }
+  input, select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #2a2a35;
+    background: #14141a;
+    color: #fff;
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+  label {
+    font-size: 12px;
+    color: #999;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .toast {
+    position: fixed;
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    background: #2a2a35;
+    color: #fff;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    text-align: center;
+    display: none;
+    z-index: 100;
+  }
+  .loading { text-align: center; color: #777; padding: 20px; font-size: 13px; }
+  .id-badge { color: #6c6cff; font-weight: 600; }
+  .roadmap-section-title { font-size: 12px; color: #999; margin: 16px 0 8px; }
+  .roadmap-list { display: flex; flex-direction: column; gap: 6px; }
+  .roadmap-item {
+    padding: 10px 12px 10px 34px;
+    border-radius: 8px;
+    background: #1a1a22;
+    font-size: 13px;
+    color: #999;
+    position: relative;
+    line-height: 1.4;
+  }
+  .roadmap-item::before {
+    content: "";
+    position: absolute;
+    left: 12px;
+    top: 12px;
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    border: 1.5px solid #666;
+  }
+  .roadmap-item.done { color: #f2f2f2; background: #1e1e2e; }
+  .roadmap-item.done::before { background: #2e2ef0; border-color: #2e2ef0; }
+  .roadmap-item.done::after {
+    content: "";
+    position: absolute;
+    left: 16px;
+    top: 15px;
+    width: 5px;
+    height: 8px;
+    border-right: 2px solid #fff;
+    border-bottom: 2px solid #fff;
+    transform: rotate(45deg);
+  }
+</style>
+</head>
+<body>
+
+<h1>🎛 Пульт DGhostMarket</h1>
+
+<div class="tabs">
+  <div class="tab active" data-tab="overview">Обзор</div>
+  <div class="tab" data-tab="people">Люди</div>
+  <div class="tab" data-tab="deals">Сделки</div>
+  <div class="tab" data-tab="finance">Финансы</div>
+  <div class="tab" data-tab="orders">Заказы</div>
+  <div class="tab" data-tab="analytics">Аналитика</div>
+  <div class="tab" data-tab="fraud">Антифрод</div>
+  <div class="tab" data-tab="autobuy">Auto Buy</div>
+</div>
+
+<div id="panel-overview" class="panel active">
+  <div class="loading">Загрузка…</div>
+</div>
+
+<div id="panel-people" class="panel">
+  <div class="loading">Загрузка…</div>
+</div>
+
+<div id="panel-deals" class="panel">
+  <div class="loading">Загрузка…</div>
+</div>
+
+<div id="panel-finance" class="panel">
+  <div class="loading">Загрузка…</div>
+</div>
+
+<div id="panel-orders" class="panel">
+  <div class="loading">Загрузка…</div>
+</div>
+
+<div id="panel-analytics" class="panel">
+  <div class="loading">Загрузка…</div>
+</div>
+
+<div id="panel-fraud" class="panel">
+  <div class="loading">Загрузка…</div>
+</div>
+
+<div id="panel-autobuy" class="panel">
+  <div class="loading">Загрузка…</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const tg = window.Telegram && window.Telegram.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
+
+function initData() {
+  return (tg && tg.initData) || '';
+}
+
+function showToast(text) {
+  const t = document.getElementById('toast');
+  t.textContent = text;
+  t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, 2500);
+}
+
+function fmtAmount(n) {
+  if (n === null || n === undefined) return '—';
+  return Number(n).toLocaleString('ru-RU');
+}
+
+async function apiGet(path) {
+  const sep = path.includes('?') ? '&' : '?';
+  const res = await fetch(path + sep + 'init_data=' + encodeURIComponent(initData()));
+  return res.json();
+}
+
+async function apiPost(path, body) {
+  const res = await fetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(Object.assign({}, body, { init_data: initData() }))
+  });
+  return res.json();
+}
+
+// ---------- ТАБЫ ----------
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    const name = tab.dataset.tab;
+    document.getElementById('panel-' + name).classList.add('active');
+    if (name === 'overview') loadOverview();
+    if (name === 'people') loadPeople();
+    if (name === 'deals') loadDeals();
+    if (name === 'finance') loadFinance();
+    if (name === 'orders') loadOrders();
+    if (name === 'analytics') loadAnalytics();
+    if (name === 'fraud') loadFraudFlags();
+    if (name === 'autobuy') loadAutobuy();
+  });
+});
+
+// ---------- ОБЗОР ----------
+async function loadOverview() {
+  const el = document.getElementById('panel-overview');
+  el.innerHTML = '<div class="loading">Загрузка…</div>';
+  let data;
+  try {
+    data = await apiGet('/api/pult/status');
+  } catch (e) {
+    el.innerHTML = '<div class="empty">Не удалось загрузить: ' + e.message + '</div>';
+    return;
+  }
+  if (data.error) {
+    el.innerHTML = '<div class="empty">Ошибка: ' + data.error + '</div>';
+    return;
+  }
+  try {
+    const gw = data.giveaway || {};
+    const doneItems = [
+    "Основные 4 задачи: реальные цены, история событий, редактор постов, wear/float в постах",
+    "Сеты оружия (со скидкой, минимум 2 лота)",
+    "Спорные сделки, блокировка пользователей",
+    "Система прав по чипам для админов (гибкая раздача доступа)",
+    "Рендеры предметов с фоном по редкости + лого на постах",
+    "Фиолетовая тема оформления, брендбук применён к цветам/градиентам CTA",
+    "Монета-иконка баланса, фон \"рассыпанные монеты\" в денежных разделах",
+    "Комбо/Инвентарь-билдер под бюджет (нож+перчатки, полный лоадаут T/CT)",
+    "Крипто-пополнение и вывод через 2328.io (USDT/TRC20)",
+    "Реферальная программа v2 — накопительный кошелёк вместо разового бонуса, настраиваемый %",
+    "Комментарий админа при отклонении заявки на пополнение (с подсказкой про скриншот)",
+    "Переключатели способов оплаты вкл/выкл (П2П / крипто / Stars, раздельно пополнение и вывод)",
+    "Оплата Stars в мини-аппе (нативный openInvoice, без выхода в чат)",
+    "Обязательная привязка трейд-ссылки Steam при входе в мини-апп",
+    "\"+ Скин\" теперь сразу открывает инвентарь Steam — обязательный выбор из реального инвентаря",
+    "Анимированный эмодзи-пак DGhostMarket (лого + набор иконок по брендбуку)",
+    "Комиссия площадки показывается клиенту до подтверждения продажи",
+    "Тест: прямая оплата за конкретный лот через Stars и крипту, минуя баланс",
+    "Видео-лого в шапке мини-аппа, зациклено",
+  ];
+  const todoItems = [
+    "Пользовательское соглашение с фиксацией согласия (User ID, версия, дата/время)",
+    "Резервирование лота в момент создания заказа (защита от двойной продажи)",
+    "Прямая оплата за заказ — сделать основным способом, а не тестовым режимом",
+    "Полная история статусов заказа (RESERVED / SECURITY_CHECK как отдельные стадии)",
+    "Уровни доверия пользователей (New / Verified / Trusted) с лимитами",
+    "Настоящий антифрод: аномальные цены, связанные аккаунты, подозрительные сделки",
+    "Отдельная аналитика GMV / Revenue / Take Rate / Conversion Rate",
+    "Автоматические уведомления на каждой стадии статуса заказа",
+    "Юридический трек: ООО, счёт, платёжный партнёр, 8 документов (не код)",
+  ];
+  el.innerHTML = `
+    <div class="card">
+      <div class="row"><span>Активных аукционов</span><span>${data.active_auctions ?? '—'}</span></div>
+      <div class="row"><span>Предложений продавцам</span><span>${data.pending_proposals ?? '—'}</span></div>
+      <div class="row"><span>Заявок на пополнение</span><span>${data.pending_topups ?? '—'}</span></div>
+      <div class="row"><span>Заявок на вывод</span><span>${data.pending_withdrawals ?? '—'}</span></div>
+      <div class="row"><span>Активных сделок</span><span>${data.active_deals ?? '—'}</span></div>
+      <div class="row"><span>Розыгрыш</span><span>${gw.running ? 'запущен' : 'не запущен'}</span></div>
+    </div>
+    <div class="roadmap-section-title">📋 Выполнено (по порядку реализации)</div>
+    <div class="roadmap-list">
+      ${doneItems.map(t => `<div class="roadmap-item done">${t}</div>`).join('')}
+    </div>
+    <div class="roadmap-section-title">Осталось / в работе</div>
+    <div class="roadmap-list">
+      ${todoItems.map(t => `<div class="roadmap-item">${t}</div>`).join('')}
+    </div>
+  `;
+  } catch (e) {
+    el.innerHTML = '<div class="empty">Ошибка отрисовки: ' + e.message + '</div>';
+  }
+}
+
+// ---------- ЛЮДИ (только просмотр) ----------
+async function loadPeople() {
+  const el = document.getElementById('panel-people');
+  el.innerHTML = '<div class="loading">Загрузка…</div>';
+  let data;
+  try {
+    data = await apiGet('/api/pult/people');
+  } catch (e) {
+    el.innerHTML = '<div class="empty">Не удалось загрузить: ' + e.message + '</div>';
+    return;
+  }
+  if (data.error) {
+    el.innerHTML = '<div class="empty">Ошибка: ' + data.error + '</div>';
+    return;
+  }
+  try {
+    const fmtList = (ids) => (ids && ids.length) ? ids.map(id => `<span class="id-badge">${id}</span>`).join(', ') : '<span style="color:#666;">нет</span>';
+    el.innerHTML = `
+      <div class="card">
+        <div class="row"><span>Владелец</span><span class="id-badge">${data.owner_id ?? '—'}</span></div>
+        <div class="row"><span>Админы</span><span>${fmtList(data.admins)}</span></div>
+        <div class="row"><span>Пультовые админы</span><span>${fmtList(data.support_admins)}</span></div>
+        <div class="row"><span>Организаторы аукционов</span><span>${fmtList(data.auctioneers)}</span></div>
+        <div class="row"><span>Заблокированные</span><span>${fmtList(data.blocked_users)}</span></div>
+      </div>
+    `;
+  } catch (e) {
+    el.innerHTML = '<div class="empty">Ошибка отрисовки: ' + e.message + '</div>';
+  }
+}
+
+// ---------- СДЕЛКИ (только просмотр) ----------
+async function loadDeals() {
+  const el = document.getElementById('panel-deals');
+  el.innerHTML = '<div class="loading">Загрузка…</div>';
+  let data;
+  try {
+    data = await apiGet('/api/pult/active_deals');
+  } catch (e) {
+    el.innerHTML = '<div class="empty">Не удалось загрузить: ' + e.message + '</div>';
+    return;
+  }
+  if (data.error) {
+    el.innerHTML = '<div class="empty">Ошибка: ' + data.error + '</div>';
+    return;
+  }
+  const items = data.items || [];
+  if (!items.length) {
+    el.innerHTML = '<div class="empty">Активных сделок в холде нет</div>';
+    return;
+  }
+  const statusLabel = { pending: 'ждёт отправки', sent: 'отправлено', confirmed: 'подтверждено' };
+  el.innerHTML = items.map(it => `
+    <div class="item">
+      <div class="item-title">
+        <span class="id-badge">#${it.skin_id}</span> — <b>${it.title}</b> — ${fmtAmount(it.price)} сум
+      </div>
+      <div class="row"><span>Продавец</span><span>${it.seller_username || it.seller_id}</span></div>
+      <div class="row"><span>Покупатель</span><span>${it.buyer_username || it.buyer_id}</span></div>
+      <div class="row"><span>Статус</span><span>${statusLabel[it.status] || it.status}</span></div>
+      <div class="row"><span>До выплаты</span><span>${it.remaining || '—'}</span></div>
+    </div>
+  `).join('');
+}
+
+// ---------- ФИНАНСЫ (только просмотр) ----------
+async function loadFinance() {
+  const el = document.getElementById('panel-finance');
+  el.innerHTML = '<div class="loading">Загрузка…</div>';
+  let topupsData, withdrawalsData, feesData;
+  try {
+    [topupsData, withdrawalsData, feesData] = await Promise.all([
+      apiGet('/api/pult/topups'),
+      apiGet('/api/pult/withdrawals'),
+      apiGet('/api/pult/fees'),
+    ]);
+  } catch (e) {
+    el.innerHTML = '<div class="empty">Не удалось загрузить: ' + e.message + '</div>';
+    return;
+  }
+  try {
+    const topups = topupsData.items || [];
+    const withdrawals = withdrawalsData.items || [];
+    const renderItem = (it) => `
+      <div class="item">
+        <div class="item-title">
+          <span class="id-badge">#${it.id}</span> —
+          ${it.username || it.user_id} — <b>${fmtAmount(it.amount)} сум</b>
+        </div>
+      </div>
+    `;
+    el.innerHTML = `
+      <div class="roadmap-section-title">Комиссия площадки</div>
+      <div class="item">
+        <div class="row"><span>С продажи</span><span>
+          <input type="number" id="feeSaleInput" value="${feesData.sale_fee_percent ?? ''}" step="0.1" min="0" max="50" style="width:70px; background:#1a1a22; border:1px solid #333; color:#fff; border-radius:6px; padding:4px 6px;">%
+        </span></div>
+        <div class="row"><span>С вывода</span><span>
+          <input type="number" id="feeWithdrawInput" value="${feesData.withdraw_fee_percent ?? ''}" step="0.1" min="0" max="50" style="width:70px; background:#1a1a22; border:1px solid #333; color:#fff; border-radius:6px; padding:4px 6px;">%
+        </span></div>
+        <button onclick="saveFees()" style="width:100%; margin-top:8px; padding:8px; border-radius:8px; border:none; background:#2e2ef0; color:#fff; cursor:pointer;">Сохранить</button>
+        <div id="feesSaveStatus" style="font-size:12px; margin-top:6px; color:#999;"></div>
+      </div>
+      <div class="roadmap-section-title">Заявки на пополнение (${topups.length})</div>
+      ${topups.length ? topups.map(renderItem).join('') : '<div class="empty">Нет заявок</div>'}
+      <div class="roadmap-section-title">Заявки на вывод (${withdrawals.length})</div>
+      ${withdrawals.length ? withdrawals.map(renderItem).join('') : '<div class="empty">Нет заявок</div>'}
+      <div class="shop-hint" style="margin-top:10px; color:#666; font-size:12px;">Заявки — только просмотр, решения принимаются в основном мини-аппе или командами боту. Комиссию можно менять прямо здесь.</div>
+    `;
+  } catch (e) {
+    el.innerHTML = '<div class="empty">Ошибка отрисовки: ' + e.message + '</div>';
+  }
+}
+
+async function saveFees(){
+  const status = document.getElementById('feesSaveStatus');
+  const saleVal = document.getElementById('feeSaleInput').value;
+  const withdrawVal = document.getElementById('feeWithdrawInput').value;
+  status.textContent = 'Сохраняю...';
+  try {
+    const res = await apiPost('/api/pult/fees', {
+      sale_fee_percent: Number(saleVal),
+      withdraw_fee_percent: Number(withdrawVal),
+    });
+    if (res.error){
+      status.textContent = 'Ошибка: ' + res.error;
+      return;
+    }
+    status.textContent = '✅ Сохранено';
+    showToast('Комиссия обновлена');
+  } catch (e) {
+    status.textContent = 'Не удалось сохранить: ' + e.message;
+  }
+}
+
+// ---------- ЗАКАЗЫ (полная история статусов, только просмотр) ----------
+const ORDER_STATUS_LABELS = {
+  RESERVED: '🔒 Зарезервирован',
+  PAYMENT_CONFIRMED: '💳 Оплата подтверждена',
+  TRADE_PENDING: '📦 Ждём отправки/получения',
+  DELIVERY_CONFIRMED: '✅ Получение подтверждено',
+  COMPLETED: '🏁 Завершён',
+  PAYOUT_PENDING: '⏳ Выплата ожидает холда',
+  PAYOUT_PROCESSING: '💸 Выплата обрабатывается',
+  PAYOUT_COMPLETED: '✅ Выплачено продавцу',
+  DISPUTE_OPENED: '⚠️ Открыт спор',
+  REFUNDED: '♻️ Возврат покупателю',
+  ORDER_CANCELLED: '❌ Отменён',
+};
+
+async function loadOrders() {
+  const el = document.getElementById('panel-orders');
+  el.innerHTML = '<div class="loading">Загрузка…</div>';
+  let data;
+  try {
+    data = await apiGet('/api/pult/orders');
+  } catch (e) {
+    el.innerHTML = '<div class="empty">Не удалось загрузить: ' + e.message + '</div>';
+    return;
+  }
+  if (data.error) {
+    el.innerHTML = '<div class="empty">Ошибка: ' + data.error + '</div>';
+    return;
+  }
+  try {
+    const orders = data.items || [];
+    if (!orders.length) {
+      el.innerHTML = '<div class="empty">Заказов пока нет</div>';
+      return;
+    }
+    el.innerHTML = orders.map(o => {
+      const statusLabel = ORDER_STATUS_LABELS[o.status] || o.status;
+      const historyHtml = (o.history || []).map(h => {
+        const t = h.created_at ? new Date(h.created_at).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+        const label = ORDER_STATUS_LABELS[h.status] || h.status;
+        return `<div style="font-size:12px; color:#999; padding:3px 0; border-left:2px solid #333; padding-left:8px; margin-left:4px;">${t} — ${label}${h.note ? ' · ' + h.note : ''}</div>`;
+      }).join('');
+      return `
+        <div class="item">
+          <div class="item-title">
+            <span class="id-badge">${o.order_code}</span> — <b>${o.skin_title || '#' + o.skin_id}</b>
+          </div>
+          <div class="row"><span>Покупатель</span><span>${o.buyer_username || o.buyer_id || '—'}</span></div>
+          <div class="row"><span>Продавец</span><span>${o.seller_username || o.seller_id || '—'}</span></div>
+          <div class="row"><span>Цена</span><span>${fmtAmount(o.price || 0)} сум</span></div>
+          <div class="row"><span>Статус</span><span>${statusLabel}</span></div>
+          <details style="margin-top:8px;">
+            <summary style="cursor:pointer; color:#6c6cff; font-size:12px;">История статусов (${(o.history || []).length})</summary>
+            <div style="margin-top:6px;">${historyHtml}</div>
+          </details>
+        </div>
+      `;
+    }).join('');
+  } catch (e) {
+    el.innerHTML = '<div class="empty">Ошибка отрисовки: ' + e.message + '</div>';
+  }
+}
+
+// ---------- АНАЛИТИКА (только просмотр) ----------
+let analyticsPeriod = '30';
+
+async function loadAnalytics() {
+  const el = document.getElementById('panel-analytics');
+  el.innerHTML = '<div class="loading">Загрузка…</div>';
+  let data;
+  try {
+    data = await apiGet('/api/pult/analytics?period=' + analyticsPeriod);
+  } catch (e) {
+    el.innerHTML = '<div class="empty">Не удалось загрузить: ' + e.message + '</div>';
+    return;
+  }
+  if (data.error) {
+    el.innerHTML = '<div class="empty">Ошибка: ' + data.error + '</div>';
+    return;
+  }
+  try {
+    const periodLabel = { '7': '7 дней', '30': '30 дней', 'all': 'всё время' };
+    const periods = ['7', '30', 'all'];
+    const periodButtons = periods.map(p => `<button onclick="setAnalyticsPeriod('${p}')" style="flex:1; padding:8px; border-radius:8px; border:none; font-size:12px; cursor:pointer; background:${p === analyticsPeriod ? '#2e2ef0' : '#1a1a22'}; color:#fff;">${periodLabel[p]}</button>`).join('');
+
+    el.innerHTML = `
+      <div style="display:flex; gap:6px; margin-bottom:12px;">${periodButtons}</div>
+      <div class="card">
+        <div class="row"><span>GMV (оборот)</span><span><b>${fmtAmount(data.gmv)} сум</b></span></div>
+        <div class="row"><span>Revenue (доход площадки)</span><span><b>${fmtAmount(data.revenue)} сум</b></span></div>
+        <div class="row"><span>&nbsp;&nbsp;из них с продаж</span><span>${fmtAmount(data.sale_commission)} сум</span></div>
+        <div class="row"><span>&nbsp;&nbsp;из них с выводов</span><span>${fmtAmount(data.withdraw_commission)} сум</span></div>
+        <div class="row"><span>Take Rate</span><span>${data.take_rate}%</span></div>
+      </div>
+      <div class="card">
+        <div class="row"><span>Заказов</span><span>${data.order_count}</span></div>
+        <div class="row"><span>Средний чек (AOV)</span><span>${fmtAmount(data.aov)} сум</span></div>
+        <div class="row"><span>Покупателей</span><span>${data.total_buyers}</span></div>
+        <div class="row"><span>Повторных</span><span>${data.repeat_buyers} (${data.repeat_rate}%)</span></div>
+      </div>
+      <div class="card">
+        <div class="row"><span>Просмотров лотов (всё время)</span><span>${data.total_views}</span></div>
+        <div class="row"><span>Конверсия (всё время)</span><span>${data.conversion_rate === null ? '—' : data.conversion_rate + '%'}</span></div>
+      </div>
+      <div class="shop-hint" style="margin-top:6px; color:#666; font-size:12px;">GMV/Revenue/Take Rate/AOV/повторные — за выбранный период. Просмотры и конверсия считаются только с момента добавления счётчика, всегда за всё время.</div>
+    `;
+  } catch (e) {
+    el.innerHTML = '<div class="empty">Ошибка отрисовки: ' + e.message + '</div>';
+  }
+}
+
+function setAnalyticsPeriod(p) {
+  analyticsPeriod = p;
+  loadAnalytics();
+}
+
+// ---------- АНТИФРОД (только просмотр) ----------
+const FRAUD_TYPE_LABELS = {
+  self_dealing: '👤 Самосделка (общий SteamID)',
+  price_anomaly: '💰 Аномальная цена',
+  linked_accounts: '🔗 Связанные аккаунты (Steam)',
+  ip_linked_accounts: '🌐 Связанные аккаунты (IP)',
+  autobuy_manual_review: '🤖 Auto Buy — нужна ручная проверка',
+};
+
+async function loadFraudFlags() {
+  const el = document.getElementById('panel-fraud');
+  el.innerHTML = '<div class="loading">Загрузка…</div>';
+  let data;
+  try {
+    data = await apiGet('/api/pult/fraud_flags');
+  } catch (e) {
+    el.innerHTML = '<div class="empty">Не удалось загрузить: ' + e.message + '</div>';
+    return;
+  }
+  if (data.error) {
+    el.innerHTML = '<div class="empty">Ошибка: ' + data.error + '</div>';
+    return;
+  }
+  try {
+    const items = data.items || [];
+    if (!items.length) {
+      el.innerHTML = '<div class="empty">Флагов антифрода нет</div>';
+      return;
+    }
+    el.innerHTML = items.map(f => {
+      const t = f.created_at ? new Date(f.created_at).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+      const label = FRAUD_TYPE_LABELS[f.flag_type] || f.flag_type;
+      const statusBadge = f.resolved_at ? '<span style="color:#6ba87e;">решено</span>' : '<span style="color:#e0a75e;">новое</span>';
+      return `
+        <div class="item">
+          <div class="item-title">${label} — ${statusBadge}</div>
+          <div class="row"><span>Когда</span><span>${t}</span></div>
+          ${f.user_id ? `<div class="row"><span>Пользователь</span><span class="id-badge">${f.user_id}</span></div>` : ''}
+          ${f.related_user_id ? `<div class="row"><span>Связан с</span><span class="id-badge">${f.related_user_id}</span></div>` : ''}
+          ${f.skin_id ? `<div class="row"><span>Лот</span><span class="id-badge">#${f.skin_id}</span></div>` : ''}
+          <div style="font-size:12px; color:#999; margin-top:6px;">${f.details || ''}</div>
+        </div>
+      `;
+    }).join('');
+  } catch (e) {
+    el.innerHTML = '<div class="empty">Ошибка отрисовки: ' + e.message + '</div>';
+  }
+}
+
+// ---------- AUTO BUY ----------
+async function loadAutobuy() {
+  const el = document.getElementById('panel-autobuy');
+  el.innerHTML = '<div class="loading">Загрузка…</div>';
+  let settings, logData;
+  try {
+    [settings, logData] = await Promise.all([
+      apiGet('/api/pult/autobuy'),
+      apiGet('/api/pult/autobuy_log'),
+    ]);
+  } catch (e) {
+    el.innerHTML = '<div class="empty">Не удалось загрузить: ' + e.message + '</div>';
+    return;
+  }
+  if (settings.error) {
+    el.innerHTML = '<div class="empty">Ошибка: ' + settings.error + '</div>';
+    return;
+  }
+  try {
+    const logItems = logData.items || [];
+    const OUTCOME_LABELS = {
+      bought: '✅ Куплено',
+      skipped: '⏭ Пропущено',
+      manual_review: '🔎 Ручная проверка',
+    };
+    el.innerHTML = `
+      <div class="roadmap-section-title">Настройки Auto Buy</div>
+      <div class="shop-hint" style="margin-bottom:8px; color:#999; font-size:12px;">Покупка идёт от имени владельца площадки, с его реального баланса — отдельный ID указывать не нужно.</div>
+      <div class="item">
+        <label class="admin-perm-chip" style="display:flex; justify-content:space-between; align-items:center;">
+          Включён <input type="checkbox" id="abEnabled" ${settings.autobuy_enabled === '1' ? 'checked' : ''}>
+        </label>
+        <div class="row"><span>Мин. скидка от рынка, %</span><span><input type="number" id="abMinDiscount" value="${settings.autobuy_min_discount_percent}" style="width:70px; background:#1a1a22; border:1px solid #333; color:#fff; border-radius:6px; padding:4px 6px;"></span></div>
+        <div class="row"><span>Мин. цена, сум</span><span><input type="number" id="abMinPrice" value="${settings.autobuy_min_price}" style="width:100px; background:#1a1a22; border:1px solid #333; color:#fff; border-radius:6px; padding:4px 6px;"></span></div>
+        <div class="row"><span>Макс. цена, сум (0 = без лимита)</span><span><input type="number" id="abMaxPrice" value="${settings.autobuy_max_price}" style="width:100px; background:#1a1a22; border:1px solid #333; color:#fff; border-radius:6px; padding:4px 6px;"></span></div>
+        <div class="row"><span>Дневной бюджет, сум (0 = без лимита)</span><span><input type="number" id="abDailyBudget" value="${settings.autobuy_daily_budget}" style="width:120px; background:#1a1a22; border:1px solid #333; color:#fff; border-radius:6px; padding:4px 6px;"></span></div>
+        <div style="margin-top:6px; font-size:12px; color:#999;">Исключения (через запятую, по подстроке в названии)</div>
+        <input id="abExcluded" value="${(settings.autobuy_excluded_titles || '').replace(/"/g, '&quot;')}" style="width:100%; margin-top:4px; background:#1a1a22; border:1px solid #333; color:#fff; border-radius:6px; padding:6px;">
+        <div class="row" style="margin-top:8px;"><span>Потрачено сегодня</span><span>${fmtAmount(settings.spent_today || 0)} сум</span></div>
+        <button onclick="saveAutobuy()" style="width:100%; margin-top:8px; padding:8px; border-radius:8px; border:none; background:#2e2ef0; color:#fff; cursor:pointer;">Сохранить</button>
+        <div id="abSaveStatus" style="font-size:12px; margin-top:6px; color:#999;"></div>
+      </div>
+      <div class="roadmap-section-title">Журнал (${logItems.length})</div>
+      ${logItems.length ? logItems.map(it => {
+        const t = it.created_at ? new Date(it.created_at).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+        return `
+          <div class="item">
+            <div class="item-title">${OUTCOME_LABELS[it.outcome] || it.outcome} — <span class="id-badge">#${it.skin_id}</span> ${it.skin_title || ''}</div>
+            <div class="row"><span>Когда</span><span>${t}</span></div>
+            ${it.market_price_uzs ? `<div class="row"><span>Рынок</span><span>${fmtAmount(it.market_price_uzs)} сум</span></div>` : ''}
+            ${it.purchase_price ? `<div class="row"><span>Куплено за</span><span>${fmtAmount(it.purchase_price)} сум</span></div>` : ''}
+            ${it.discount_percent != null ? `<div class="row"><span>Скидка</span><span>${it.discount_percent}%</span></div>` : ''}
+            ${it.expected_margin ? `<div class="row"><span>Ожидаемая маржа</span><span>${fmtAmount(it.expected_margin)} сум</span></div>` : ''}
+            ${it.reason ? `<div style="font-size:12px; color:#999; margin-top:4px;">${it.reason}</div>` : ''}
+          </div>
+        `;
+      }).join('') : '<div class="empty">Пока пусто</div>'}
+    `;
+  } catch (e) {
+    el.innerHTML = '<div class="empty">Ошибка отрисовки: ' + e.message + '</div>';
+  }
+}
+
+async function saveAutobuy(){
+  const status = document.getElementById('abSaveStatus');
+  status.textContent = 'Сохраняю...';
+  try {
+    const res = await apiPost('/api/pult/autobuy', {
+      autobuy_enabled: document.getElementById('abEnabled').checked,
+      autobuy_min_discount_percent: Number(document.getElementById('abMinDiscount').value),
+      autobuy_min_price: Number(document.getElementById('abMinPrice').value),
+      autobuy_max_price: Number(document.getElementById('abMaxPrice').value),
+      autobuy_daily_budget: Number(document.getElementById('abDailyBudget').value),
+      autobuy_excluded_titles: document.getElementById('abExcluded').value,
+    });
+    if (res.error){
+      status.textContent = 'Ошибка: ' + res.error;
+      return;
+    }
+    status.textContent = '✅ Сохранено';
+    showToast('Настройки Auto Buy обновлены');
+  } catch (e) {
+    status.textContent = 'Не удалось сохранить: ' + e.message;
+  }
+}
+
+// ---------- РОЗЫГРЫШ ----------
+async function giveawayAction(action) {
+  const data = await apiPost('/api/pult/giveaway/' + action, {});
+  if (data.error) {
+    showToast('Ошибка: ' + data.error);
+    return;
+  }
+  if (action === 'start') showToast('🚀 Розыгрыш запущен');
+  if (action === 'stop') showToast('⏹ Розыгрыш остановлен');
+  if (action === 'pick_winner') {
+    const w = data.winner || {};
+    showToast('🏆 Победитель: ' + (w.username || w.user_id || '—'));
+  }
+}
+
+// Стартовая загрузка
+loadOverview();
+</script>
+</body>
+</html>
