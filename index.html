@@ -2256,6 +2256,22 @@ order:3;
 margin:0;
 }
 
+.buy-sticky-bar #buySendOfferBtn{
+min-height:48px;
+padding:0 18px;
+border-radius:10px;
+border:none;
+background:var(--red);
+color:#0a0708;
+font-family:'JetBrains Mono', monospace;
+font-size:14px;
+font-weight:700;
+cursor:pointer;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
 .buy-sticky-bar #buyCancel{
 flex:0 0 auto;
 min-height:48px;
@@ -2304,13 +2320,13 @@ justify-content:center;
 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--silver);"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.2-4 4-6 7.5-6s6.3 2 7.5 6"/></svg>
 </button>
 <div id="headerMenu" class="edit-sheet" style="display:none; position:absolute; top:48px; right:0; width:210px; padding:8px; border-radius:14px; z-index:501;">
-<button type="button" class="header-menu-item" data-header-action="profile">👤 Профиль</button>
-<button type="button" class="header-menu-item" data-header-action="balance">💰 Баланс</button>
-<button type="button" class="header-menu-item" data-header-action="history">📜 История сделок</button>
-<button type="button" class="header-menu-item" data-header-action="sell">🏷️ Продать скин</button>
-<button type="button" class="header-menu-item" data-header-action="support">🆘 Поддержка</button>
-<button type="button" class="header-menu-item" data-header-action="auctions" id="headerMenuAuctions" style="display:none;">🔨 Аукцион</button>
-<button type="button" class="header-menu-item" data-header-action="admin" id="headerMenuAdmin" style="display:none;">⚙️ Админка</button>
+<button type="button" class="header-menu-item" data-header-action="profile">👤 <span data-i18n="header_menu_profile">Профиль</span></button>
+<button type="button" class="header-menu-item" data-header-action="balance">💰 <span data-i18n="header_menu_balance">Баланс</span></button>
+<button type="button" class="header-menu-item" data-header-action="history">📜 <span data-i18n="header_menu_history">История сделок</span></button>
+<button type="button" class="header-menu-item" data-header-action="sell">🏷️ <span data-i18n="header_menu_sell">Продать скин</span></button>
+<button type="button" class="header-menu-item" data-header-action="support">🆘 <span data-i18n="header_menu_support">Поддержка</span></button>
+<button type="button" class="header-menu-item" data-header-action="auctions" id="headerMenuAuctions" style="display:none;">🔨 <span data-i18n="header_menu_auctions">Аукцион</span></button>
+<button type="button" class="header-menu-item" data-header-action="admin" id="headerMenuAdmin" style="display:none;">⚙️ <span data-i18n="header_menu_admin">Админка</span></button>
 </div>
 </div>
 
@@ -2562,31 +2578,31 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 
 <div class="profile-section" id="profileSellerSection">
-<div class="profile-section-title">🪪 Статус продавца</div>
+<div class="profile-section-title" data-i18n="seller_section_title">🪪 Статус продавца</div>
 <div id="sellerStatusNone">
-<div class="shop-hint" style="margin-bottom:10px;">Покупать можно всем без ограничений. Чтобы выставлять свои лоты и пользоваться балансом — нужно пройти проверку (ФИО, телефон, страна, адрес).</div>
-<button type="button" id="openKycBtn" class="steam-link-btn" style="width:100%;">Стать продавцом</button>
+<div class="shop-hint" style="margin-bottom:10px;" data-i18n="seller_status_none_hint">Покупать можно всем без ограничений. Чтобы выставлять свои лоты и пользоваться балансом — нужно пройти проверку (ФИО, телефон, страна, адрес).</div>
+<button type="button" id="openKycBtn" class="steam-link-btn" style="width:100%;" data-i18n="seller_btn_become">Стать продавцом</button>
 </div>
 <div id="sellerStatusPending" style="display:none;">
-<div class="shop-hint">⏳ Заявка на проверке — обычно рассматривается в течение дня.</div>
+<div class="shop-hint" data-i18n="seller_status_pending">⏳ Заявка на проверке — обычно рассматривается в течение дня.</div>
 </div>
 <div id="sellerStatusRejected" style="display:none;">
-<div class="shop-hint" style="color:#e07a7a; margin-bottom:10px;">❌ Заявка отклонена. Проверь данные и подай заново.</div>
-<button type="button" id="openKycBtnAgain" class="steam-link-btn secondary" style="width:100%;">Подать заявку снова</button>
+<div class="shop-hint" style="color:#e07a7a; margin-bottom:10px;" data-i18n="seller_status_rejected">❌ Заявка отклонена. Проверь данные и подай заново.</div>
+<button type="button" id="openKycBtnAgain" class="steam-link-btn secondary" style="width:100%;" data-i18n="seller_btn_resubmit">Подать заявку снова</button>
 </div>
 <div id="sellerStatusVerified" style="display:none;">
-<div class="shop-hint" style="color:#7ec98a;">✅ Ты продавец — можешь выставлять лоты и пользоваться балансом.</div>
+<div class="shop-hint" style="color:#7ec98a;" data-i18n="seller_status_verified">✅ Ты продавец — можешь выставлять лоты и пользоваться балансом.</div>
 </div>
 </div>
 
 <div class="profile-section" id="profile2faSection" style="margin-top:10px;">
-<div class="profile-section-title">🔐 Двухэтапная защита</div>
+<div class="profile-section-title" data-i18n="totp_section_title">🔐 Двухэтапная защита</div>
 <div id="totp2faNotSetUp">
-<div class="shop-hint" style="margin-bottom:10px;">Дополнительная защита через приложение-аутентификатор (Google Authenticator, Microsoft Authenticator и любое другое). Защищает вывод средств и/или вход в админку даже если кто-то получит доступ к твоему Telegram.</div>
-<button type="button" id="setup2faBtn" class="steam-link-btn secondary" style="width:100%;">Настроить</button>
+<div class="shop-hint" style="margin-bottom:10px;" data-i18n="totp_intro_hint">Дополнительная защита через приложение-аутентификатор (Google Authenticator, Microsoft Authenticator и любое другое). Защищает вывод средств и/или вход в админку даже если кто-то получит доступ к твоему Telegram.</div>
+<button type="button" id="setup2faBtn" class="steam-link-btn secondary" style="width:100%;" data-i18n="totp_btn_setup">Настроить</button>
 </div>
 <div id="totp2faSetupBox" style="display:none;">
-<div class="shop-hint" style="margin-bottom:8px;">Открой приложение-аутентификатор → добавить аккаунт вручную (не по QR) → введи этот ключ:</div>
+<div class="shop-hint" style="margin-bottom:8px;" data-i18n="totp_setup_hint">Открой приложение-аутентификатор → добавить аккаунт вручную (не по QR) → введи этот ключ:</div>
 <div class="topup-details-box" id="totp2faSecretBox">
 <div class="topup-details-text" id="totp2faSecretText" style="font-family:'JetBrains Mono', monospace; letter-spacing:0.05em;">—</div>
 <button type="button" id="totp2faCopyBtn" class="topup-copy-btn">
@@ -2595,16 +2611,16 @@ transform="rotate(-90 100 100)"></circle>
 </button>
 </div>
 <div class="edit-field" style="margin-top:10px;">
-<label>Код из приложения</label>
+<label data-i18n="totp_label_code">Код из приложения</label>
 <input id="totp2faConfirmCode" type="text" inputmode="numeric" maxlength="6" placeholder="123456">
 </div>
-<button type="button" id="totp2faConfirmBtn" class="welcome-btn primary" style="width:100%; margin-top:8px;">Подтвердить</button>
+<button type="button" id="totp2faConfirmBtn" class="welcome-btn primary" style="width:100%; margin-top:8px;" data-i18n="totp_btn_confirm">Подтвердить</button>
 <div class="edit-status" id="totp2faSetupStatus" style="margin-top:6px;"></div>
 </div>
 <div id="totp2faToggles" style="display:none;">
-<div class="shop-hint" style="color:#7ec98a; margin-bottom:10px;">✅ Настроена и готова к использованию.</div>
-<label class="admin-perm-chip" style="display:flex; justify-content:space-between; align-items:center;">🏦 Защита вывода средств <input type="checkbox" id="totp2faToggleWithdraw"></label>
-<label class="admin-perm-chip" id="totp2faAdminToggleRow" style="display:none; justify-content:space-between; align-items:center; margin-top:6px;">🛡️ Защита входа в админку <input type="checkbox" id="totp2faToggleAdmin"></label>
+<div class="shop-hint" style="color:#7ec98a; margin-bottom:10px;" data-i18n="totp_ready_hint">✅ Настроена и готова к использованию.</div>
+<label class="admin-perm-chip" style="display:flex; justify-content:space-between; align-items:center;">🏦 <span data-i18n="totp_toggle_withdraw">Защита вывода средств</span> <input type="checkbox" id="totp2faToggleWithdraw"></label>
+<label class="admin-perm-chip" id="totp2faAdminToggleRow" style="display:none; justify-content:space-between; align-items:center; margin-top:6px;">🛡️ <span data-i18n="totp_toggle_admin">Защита входа в админку</span> <input type="checkbox" id="totp2faToggleAdmin"></label>
 </div>
 </div>
 
@@ -2644,17 +2660,6 @@ transform="rotate(-90 100 100)"></circle>
 <div class="edit-status" id="referralClaimStatus"></div>
 </div>
 
-<div class="profile-section" id="profileDealsSection" style="margin-top:10px;">
-<div class="profile-section-title" data-i18n="section_deals">Мои сделки</div>
-<div id="dealsList">
-<div class="skins-empty" style="padding:16px 4px;">Загрузка...</div>
-</div>
-<div class="profile-section-title" style="margin-top:14px;">🔄 Обмены</div>
-<div id="tradeOffersList">
-<div class="skins-empty" style="padding:16px 4px;">Загрузка...</div>
-</div>
-</div>
-
 </div>
 
 <div class="screen-profile" id="screenAuctions" style="display:none; padding:50px 16px 100px;">
@@ -2665,6 +2670,23 @@ transform="rotate(-90 100 100)"></circle>
 
 <div id="auctionsList">
 <div class="skins-empty" style="padding:16px 4px;" data-i18n="auctions_empty">Сейчас нет активных аукционов.</div>
+</div>
+
+</div>
+
+<div class="screen-profile" id="screenDeals" style="display:none; padding:50px 16px 100px;">
+
+<button type="button" class="back-btn" id="dealsBackBtn" style="margin-bottom:12px;">←</button>
+
+<div class="profile-section-title" style="font-size:16px; margin-bottom:14px;">Мои сделки</div>
+
+<div id="dealsList">
+<div class="skins-empty" style="padding:16px 4px;">Загрузка...</div>
+</div>
+
+<div class="profile-section-title" style="margin-top:18px;">🔄 Обмены</div>
+<div id="tradeOffersList">
+<div class="skins-empty" style="padding:16px 4px;">Загрузка...</div>
 </div>
 
 </div>
@@ -3011,7 +3033,7 @@ transform="rotate(-90 100 100)"></circle>
 <div class="edit-field">
 <input id="totp2faPromptCode" type="text" inputmode="numeric" maxlength="6" placeholder="123456">
 </div>
-<button type="button" id="totp2faPromptOkBtn" class="welcome-btn primary" style="width:100%; margin-top:8px;">Подтвердить</button>
+<button type="button" id="totp2faPromptOkBtn" class="welcome-btn primary" style="width:100%; margin-top:8px;" data-i18n="totp_btn_confirm">Подтвердить</button>
 <div class="edit-status" id="totp2faPromptStatus" style="margin-top:6px;"></div>
 <button type="button" id="totp2faPromptCancelBtn" style="width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_cancel">Отмена</button>
 </div>
@@ -3019,25 +3041,25 @@ transform="rotate(-90 100 100)"></circle>
 
 <div class="edit-overlay" id="kycOverlay">
 <div class="edit-sheet">
-<h2 style="margin:0 0 6px;">🪪 Заявка на роль продавца</h2>
-<div class="shop-hint" style="margin-bottom:12px;">Нужно для AML/KYC-проверки — без документа, просто данные для ручной проверки админом.</div>
+<h2 style="margin:0 0 6px;" data-i18n="kyc_title">🪪 Заявка на роль продавца</h2>
+<div class="shop-hint" style="margin-bottom:12px;" data-i18n="kyc_hint">Нужно для AML/KYC-проверки — без документа, просто данные для ручной проверки админом.</div>
 <div class="edit-field">
-<label>ФИО</label>
-<input id="kycFullName" type="text" placeholder="Иванов Иван Иванович">
+<label data-i18n="kyc_label_fullname">ФИО</label>
+<input id="kycFullName" type="text" placeholder="Иванов Иван Иванович" data-i18n-placeholder="kyc_placeholder_fullname">
 </div>
 <div class="edit-field">
-<label>Номер телефона</label>
+<label data-i18n="kyc_label_phone">Номер телефона</label>
 <input id="kycPhone" type="text" placeholder="+998 90 123 45 67">
 </div>
 <div class="edit-field">
-<label>Страна проживания</label>
-<input id="kycCountry" type="text" placeholder="Узбекистан">
+<label data-i18n="kyc_label_country">Страна проживания</label>
+<input id="kycCountry" type="text" placeholder="Узбекистан" data-i18n-placeholder="kyc_placeholder_country">
 </div>
 <div class="edit-field">
-<label>Адрес проживания</label>
-<input id="kycAddress" type="text" placeholder="Город, улица, дом">
+<label data-i18n="kyc_label_address">Адрес проживания</label>
+<input id="kycAddress" type="text" placeholder="Город, улица, дом" data-i18n-placeholder="kyc_placeholder_address">
 </div>
-<button type="button" id="kycSubmitBtn" class="welcome-btn primary" style="width:100%; margin-top:6px;">Отправить заявку</button>
+<button type="button" id="kycSubmitBtn" class="welcome-btn primary" style="width:100%; margin-top:6px;" data-i18n="kyc_btn_submit">Отправить заявку</button>
 <div class="edit-status" id="kycStatus" style="margin-top:8px;"></div>
 <button type="button" id="kycCloseBtn" style="width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_cancel">Отмена</button>
 </div>
@@ -3174,61 +3196,61 @@ transform="rotate(-90 100 100)"></circle>
 
 <div class="edit-overlay" id="tradeMakeOverlay" style="z-index:600;">
 <div class="edit-sheet">
-<h2 style="margin:0 0 6px;">🔄 Предложить обмен</h2>
+<h2 style="margin:0 0 6px;" data-i18n="trade_make_title">🔄 Предложить обмен</h2>
 <div id="tradeMakeTargetInfo" class="shop-hint" style="margin-bottom:10px;"></div>
-<div class="shop-hint" style="margin-bottom:6px;">Выбери свой лот для обмена:</div>
+<div class="shop-hint" style="margin-bottom:6px;" data-i18n="trade_make_pick_hint">Выбери свой лот для обмена:</div>
 <div id="tradeMakeMySkins" style="max-height:35vh; overflow-y:auto;"></div>
 
 <div id="tradeMakeCashRow" style="display:none; margin-top:10px;">
 <div class="shop-hint" id="tradeMakeCashHint"></div>
 <div class="edit-field" style="margin-top:6px;">
-<label>Доплата, сум</label>
+<label data-i18n="trade_make_label_cash">Доплата, сум</label>
 <input id="tradeMakeCashInput" type="number" min="0" placeholder="0">
 </div>
 <div class="edit-field">
-<label>Кто доплачивает</label>
+<label data-i18n="trade_make_label_payer">Кто доплачивает</label>
 <select id="tradeMakeCashPayer">
-<option value="from">Я (предлагающий)</option>
-<option value="to">Владелец выбранного лота</option>
+<option value="from" data-i18n="trade_make_payer_from">Я (предлагающий)</option>
+<option value="to" data-i18n="trade_make_payer_to">Владелец выбранного лота</option>
 </select>
 </div>
 </div>
 
-<button type="button" id="tradeMakeSendBtn" class="welcome-btn primary" style="width:100%; margin-top:10px;" disabled>Отправить предложение</button>
+<button type="button" id="tradeMakeSendBtn" class="welcome-btn primary" style="width:100%; margin-top:10px;" disabled data-i18n="trade_make_btn_send">Отправить предложение</button>
 <div class="edit-status" id="tradeMakeStatus" style="margin-top:6px;"></div>
-<button type="button" id="tradeMakeCloseBtn" style="width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px;">Закрыть</button>
+<button type="button" id="tradeMakeCloseBtn" style="width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_close">Закрыть</button>
 </div>
 </div>
 
 <div class="edit-overlay" id="discountOverlay" style="z-index:600;">
 <div class="edit-sheet">
-<h2 style="margin:0 0 6px;">🏷️ Скидка</h2>
+<h2 style="margin:0 0 6px;" data-i18n="discount_title">🏷️ Скидка</h2>
 <div id="discountCurrentInfo" class="shop-hint" style="margin-bottom:10px;"></div>
 
 <div class="edit-field">
-<label>Тип скидки</label>
+<label data-i18n="discount_label_type">Тип скидки</label>
 <select id="discountType">
-<option value="percent">Процент, %</option>
-<option value="fixed">Фиксированная сумма, сум</option>
+<option value="percent" data-i18n="discount_type_percent">Процент, %</option>
+<option value="fixed" data-i18n="discount_type_fixed">Фиксированная сумма, сум</option>
 </select>
 </div>
 <div class="edit-field">
-<label id="discountValueLabel">Размер скидки, %</label>
+<label id="discountValueLabel" data-i18n="discount_label_value_percent">Размер скидки, %</label>
 <input id="discountValueInput" type="number" min="1" placeholder="30">
 </div>
 <div class="edit-field">
-<label>Срок действия (не обязательно)</label>
+<label data-i18n="discount_label_expires">Срок действия (не обязательно)</label>
 <input id="discountExpiresInput" type="datetime-local">
 </div>
 
-<button type="button" id="discountApplyBtn" class="welcome-btn primary" style="width:100%; margin-top:6px;">Применить к этому лоту</button>
-<button type="button" id="discountRemoveBtn" class="steam-link-btn secondary" style="width:100%; margin-top:8px; display:none;">Убрать скидку с лота</button>
+<button type="button" id="discountApplyBtn" class="welcome-btn primary" style="width:100%; margin-top:6px;" data-i18n="discount_btn_apply">Применить к этому лоту</button>
+<button type="button" id="discountRemoveBtn" class="steam-link-btn secondary" style="width:100%; margin-top:8px; display:none;" data-i18n="discount_btn_remove">Убрать скидку с лота</button>
 
-<div class="shop-hint" style="margin-top:14px;">Или применить сразу ко всем своим активным лотам этой же модели (<span id="discountCategoryLabel">—</span>):</div>
-<button type="button" id="discountApplyCategoryBtn" class="steam-link-btn secondary" style="width:100%; margin-top:8px;">Применить ко всей категории</button>
+<div class="shop-hint" id="discountCategoryHint" style="margin-top:14px;" data-i18n="discount_category_hint">Или применить сразу ко всем своим активным лотам этой же модели ({category}):</div>
+<button type="button" id="discountApplyCategoryBtn" class="steam-link-btn secondary" style="width:100%; margin-top:8px;" data-i18n="discount_btn_apply_category">Применить ко всей категории</button>
 
 <div class="edit-status" id="discountStatus" style="margin-top:8px;"></div>
-<button type="button" id="discountCloseBtn" style="width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px;">Закрыть</button>
+<button type="button" id="discountCloseBtn" style="width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_close">Закрыть</button>
 </div>
 </div>
 
@@ -3920,6 +3942,126 @@ no_active_deals: 'Активных сделок нет',
 load_failed: 'Не удалось загрузить',
 copied_text: 'Скопировано ✓',
 referral_bonus_text: (percent) => `Приглашай друзей — с каждой их покупки на площадке ${percent}% от цены копится в твой реферальный кошелёк.`,
+header_menu_profile: 'Профиль',
+header_menu_balance: 'Баланс',
+header_menu_history: 'История сделок',
+header_menu_sell: 'Продать скин',
+header_menu_support: 'Поддержка',
+header_menu_auctions: 'Аукцион',
+header_menu_admin: 'Админка',
+kyc_title: '🪪 Заявка на роль продавца',
+kyc_hint: 'Нужно для AML/KYC-проверки — без документа, просто данные для ручной проверки админом.',
+kyc_label_fullname: 'ФИО',
+kyc_placeholder_fullname: 'Иванов Иван Иванович',
+kyc_label_phone: 'Номер телефона',
+kyc_label_country: 'Страна проживания',
+kyc_placeholder_country: 'Узбекистан',
+kyc_label_address: 'Адрес проживания',
+kyc_placeholder_address: 'Город, улица, дом',
+kyc_btn_submit: 'Отправить заявку',
+kyc_fill_all: 'Заполни все поля.',
+kyc_sending: 'Отправляю...',
+kyc_submitted_alert: 'Заявка отправлена — жди решения админа.',
+seller_section_title: '🪪 Статус продавца',
+seller_status_none_hint: 'Покупать можно всем без ограничений. Чтобы выставлять свои лоты и пользоваться балансом — нужно пройти проверку (ФИО, телефон, страна, адрес).',
+seller_btn_become: 'Стать продавцом',
+seller_status_pending: '⏳ Заявка на проверке — обычно рассматривается в течение дня.',
+seller_status_rejected: '❌ Заявка отклонена. Проверь данные и подай заново.',
+seller_btn_resubmit: 'Подать заявку снова',
+seller_status_verified: '✅ Ты продавец — можешь выставлять лоты и пользоваться балансом.',
+totp_section_title: '🔐 Двухэтапная защита',
+totp_intro_hint: 'Дополнительная защита через приложение-аутентификатор (Google Authenticator, Microsoft Authenticator и любое другое). Защищает вывод средств и/или вход в админку даже если кто-то получит доступ к твоему Telegram.',
+totp_btn_setup: 'Настроить',
+totp_setup_hint: 'Открой приложение-аутентификатор → добавить аккаунт вручную (не по QR) → введи этот ключ:',
+totp_label_code: 'Код из приложения',
+totp_btn_confirm: 'Подтвердить',
+totp_ready_hint: '✅ Настроена и готова к использованию.',
+totp_toggle_withdraw: 'Защита вывода средств',
+totp_toggle_admin: 'Защита входа в админку',
+totp_prompt_admin_login: 'Код для входа в админку',
+totp_prompt_enable: 'Введи код, чтобы включить защиту',
+totp_prompt_disable: 'Введи код, чтобы выключить защиту',
+totp_enter_code: 'Введи код из приложения.',
+totp_enter_code_short: 'Введи код.',
+totp_checking: 'Проверяю...',
+totp_bad_code: 'Неверный код, попробуй снова.',
+totp_bad_code_short: 'Неверный код.',
+totp_locked_msg: 'Слишком много неверных попыток — подождите 15 минут.',
+discount_title: '🏷️ Скидка',
+discount_label_type: 'Тип скидки',
+discount_type_percent: 'Процент, %',
+discount_type_fixed: 'Фиксированная сумма, сум',
+discount_label_value_percent: 'Размер скидки, %',
+discount_label_value_fixed: 'Размер скидки, сум',
+discount_label_expires: 'Срок действия (не обязательно)',
+discount_btn_apply: 'Применить к этому лоту',
+discount_btn_remove: 'Убрать скидку с лота',
+discount_category_hint: 'Или применить сразу ко всем своим активным лотам этой же модели ({category}):',
+discount_btn_apply_category: 'Применить ко всей категории',
+btn_close: 'Закрыть',
+discount_info_now: 'Сейчас',
+discount_info_current: 'Текущая цена',
+discount_need_value: 'Укажи размер скидки.',
+discount_saving: 'Сохраняю...',
+discount_applied_ok: 'Скидка применена ✓',
+discount_removing: 'Убираю...',
+discount_removed_ok: 'Скидка убрана ✓',
+discount_no_category: 'У этого лота не указана модель — массовая скидка недоступна.',
+discount_confirm_category: 'Применить скидку ко всем твоим активным лотам «{weapon}»?',
+discount_applying: 'Применяю...',
+discount_applied_category: 'Скидка применена к {n} лот(ам) ✓',
+trade_make_title: '🔄 Предложить обмен',
+trade_make_pick_hint: 'Выбери свой лот для обмена:',
+trade_make_label_cash: 'Доплата, сум',
+trade_make_label_payer: 'Кто доплачивает',
+trade_make_payer_from: 'Я (предлагающий)',
+trade_make_payer_to: 'Владелец выбранного лота',
+trade_make_btn_send: 'Отправить предложение',
+trade_make_target: 'Получишь: «{title}» ({price})',
+trade_make_cash_hint: 'Необязательно — можно доплатить деньгами в любую сторону, если лоты не равноценны.',
+trade_make_no_skins: 'У тебя нет других активных лотов для обмена.',
+trade_make_sending: 'Отправляю...',
+trade_make_sent_ok: 'Предложение отправлено ✓',
+trade_card_you_pay: 'Доплачиваешь',
+trade_card_they_pay: 'Тебе доплатят',
+trade_card_awaiting_you: 'Ожидает твоего решения',
+trade_card_btn_accept: 'Принять',
+trade_card_btn_decline: 'Отклонить',
+trade_card_awaiting_other: 'Ждём ответа второй стороны',
+trade_card_btn_cancel: 'Отменить',
+trade_card_accepted: 'Принято — передайте предметы через Steam',
+trade_card_partner_sent: '(партнёр уже отправил)',
+trade_card_btn_sent: 'Я отправил',
+trade_card_btn_received: 'Я получил',
+trade_card_waiting_partner: 'Ждём подтверждения от партнёра',
+trade_card_completed: 'Обмен завершён',
+trade_card_declined: 'Отклонено',
+trade_card_cancelled: 'Отменено',
+trade_card_expired: 'Истекло',
+trade_card_they_offered: 'Тебе предложили',
+trade_card_you_offered: 'Ты предложил',
+trade_none: 'Нет обменов',
+trade_mark_saved: 'Отметка сохранена — ждём вторую сторону.',
+trade_confirm_accept: 'Принять этот обмен?',
+trade_accepted_ok: 'Обмен принят ✓',
+trade_confirm_decline: 'Отклонить это предложение?',
+trade_confirm_cancel: 'Отменить своё предложение?',
+trade_marked_ok: 'Отмечено ✓',
+trade_completed_alert: 'Обмен успешно завершён!',
+trade_you: 'Ты',
+trade_seller: 'Продавец',
+trade_buyer: 'Покупатель',
+order_status_RESERVED: 'Лот зарезервирован',
+order_status_PAYMENT_CONFIRMED: 'Оплата подтверждена',
+order_status_TRADE_PENDING: 'Ожидание передачи предмета',
+order_status_DELIVERY_CONFIRMED: 'Получение подтверждено',
+order_status_COMPLETED: 'Сделка завершена',
+order_status_PAYOUT_PENDING: 'Ожидание окончания холда',
+order_status_PAYOUT_PROCESSING: 'Выплата обрабатывается',
+order_status_PAYOUT_COMPLETED: 'Средства выплачены продавцу',
+order_status_DISPUTE_OPENED: 'Открыт спор',
+order_status_REFUNDED: 'Деньги возвращены покупателю',
+order_status_ORDER_CANCELLED: 'Заказ отменён',
 },
 uz: {
 nav_timer: 'Taymer',
@@ -4188,6 +4330,126 @@ no_active_deals: "Faol bitimlar yo'q",
 load_failed: "Yuklab bo'lmadi",
 copied_text: "Nusxalandi ✓",
 referral_bonus_text: (percent) => `Do'stlaringizni taklif qiling — ularning har bir xarididan narxning ${percent}% referal hamyoningizga to'planadi.`,
+header_menu_profile: 'Profil',
+header_menu_balance: 'Balans',
+header_menu_history: 'Bitimlar tarixi',
+header_menu_sell: 'Skin sotish',
+header_menu_support: "Qo'llab-quvvatlash",
+header_menu_auctions: 'Auksion',
+header_menu_admin: 'Admin',
+kyc_title: "🪪 Sotuvchi bo'lish arizasi",
+kyc_hint: "AML/KYC-tekshiruv uchun kerak — hujjatsiz, faqat admin qo'lda tekshiradigan ma'lumotlar.",
+kyc_label_fullname: 'F.I.Sh.',
+kyc_placeholder_fullname: 'Ivanov Ivan Ivanovich',
+kyc_label_phone: 'Telefon raqami',
+kyc_label_country: "Yashash mamlakati",
+kyc_placeholder_country: "O'zbekiston",
+kyc_label_address: 'Yashash manzili',
+kyc_placeholder_address: "Shahar, ko'cha, uy",
+kyc_btn_submit: 'Arizani yuborish',
+kyc_fill_all: "Barcha maydonlarni to'ldiring.",
+kyc_sending: 'Yuborilmoqda...',
+kyc_submitted_alert: "Ariza yuborildi — admin qarorini kuting.",
+seller_section_title: "🪪 Sotuvchi holati",
+seller_status_none_hint: "Sotib olish hammaga cheklovsiz mumkin. O'z lotlaringizni qo'yish va balansdan foydalanish uchun tekshiruvdan o'tish kerak (F.I.Sh., telefon, mamlakat, manzil).",
+seller_btn_become: "Sotuvchi bo'lish",
+seller_status_pending: "⏳ Ariza tekshirilmoqda — odatda bir kun ichida ko'rib chiqiladi.",
+seller_status_rejected: "❌ Ariza rad etildi. Ma'lumotlarni tekshirib qayta yuboring.",
+seller_btn_resubmit: 'Qayta ariza yuborish',
+seller_status_verified: "✅ Siz sotuvchisiz — lot qo'yishingiz va balansdan foydalanishingiz mumkin.",
+totp_section_title: '🔐 Ikki bosqichli himoya',
+totp_intro_hint: "Autentifikator ilovasi orqali qo'shimcha himoya (Google Authenticator, Microsoft Authenticator va boshqalar). Kimdir Telegram hisobingizga kirsa ham, pul yechish va/yoki adminka kirishini himoya qiladi.",
+totp_btn_setup: "Sozlash",
+totp_setup_hint: "Autentifikator ilovasini och → hisobni qo'lda qo'sh (QR orqali emas) → shu kalitni kiriting:",
+totp_label_code: 'Ilovadagi kod',
+totp_btn_confirm: 'Tasdiqlash',
+totp_ready_hint: "✅ Sozlandi va foydalanishga tayyor.",
+totp_toggle_withdraw: 'Pul yechishni himoya qilish',
+totp_toggle_admin: 'Adminkaga kirishni himoya qilish',
+totp_prompt_admin_login: 'Adminkaga kirish uchun kod',
+totp_prompt_enable: "Himoyani yoqish uchun kodni kiriting",
+totp_prompt_disable: "Himoyani o'chirish uchun kodni kiriting",
+totp_enter_code: 'Ilovadagi kodni kiriting.',
+totp_enter_code_short: 'Kodni kiriting.',
+totp_checking: 'Tekshirilmoqda...',
+totp_bad_code: "Kod noto'g'ri, qaytadan urinib ko'ring.",
+totp_bad_code_short: "Kod noto'g'ri.",
+totp_locked_msg: "Juda ko'p noto'g'ri urinish — 15 daqiqa kuting.",
+discount_title: "🏷️ Chegirma",
+discount_label_type: 'Chegirma turi',
+discount_type_percent: 'Foiz, %',
+discount_type_fixed: "Belgilangan summa, sum",
+discount_label_value_percent: 'Chegirma miqdori, %',
+discount_label_value_fixed: 'Chegirma miqdori, sum',
+discount_label_expires: "Amal qilish muddati (ixtiyoriy)",
+discount_btn_apply: 'Shu lotga qo\'llash',
+discount_btn_remove: "Lotdan chegirmani olib tashlash",
+discount_category_hint: "Yoki shu modeldagi barcha faol lotlarga qo'llash ({category}):",
+discount_btn_apply_category: "Butun kategoriyaga qo'llash",
+btn_close: 'Yopish',
+discount_info_now: 'Hozir',
+discount_info_current: 'Joriy narx',
+discount_need_value: "Chegirma miqdorini ko'rsating.",
+discount_saving: 'Saqlanmoqda...',
+discount_applied_ok: "Chegirma qo'llandi ✓",
+discount_removing: 'Olib tashlanmoqda...',
+discount_removed_ok: 'Chegirma olib tashlandi ✓',
+discount_no_category: "Bu lot uchun model ko'rsatilmagan — ommaviy chegirma mavjud emas.",
+discount_confirm_category: "Chegirma «{weapon}» barcha faol lotlaringizga qo'llansinmi?",
+discount_applying: "Qo'llanmoqda...",
+discount_applied_category: "Chegirma {n} lotga qo'llandi ✓",
+trade_make_title: "🔄 Almashinuv taklif qilish",
+trade_make_pick_hint: "Almashinuv uchun o'z lotingizni tanlang:",
+trade_make_label_cash: "Qo'shimcha to'lov, sum",
+trade_make_label_payer: "Kim qo'shimcha to'laydi",
+trade_make_payer_from: 'Men (taklif qiluvchi)',
+trade_make_payer_to: 'Tanlangan lot egasi',
+trade_make_btn_send: 'Taklifni yuborish',
+trade_make_target: "Olasiz: «{title}» ({price})",
+trade_make_cash_hint: "Ixtiyoriy — lotlar teng bo'lmasa, pul bilan har qanday tomonga qo'shimcha to'lash mumkin.",
+trade_make_no_skins: "Almashinuv uchun boshqa faol lotlaringiz yo'q.",
+trade_make_sending: 'Yuborilmoqda...',
+trade_make_sent_ok: 'Taklif yuborildi ✓',
+trade_card_you_pay: "Qo'shimcha to'laysiz",
+trade_card_they_pay: "Sizga qo'shimcha to'lanadi",
+trade_card_awaiting_you: 'Qaroringizni kutmoqda',
+trade_card_btn_accept: 'Qabul qilish',
+trade_card_btn_decline: 'Rad etish',
+trade_card_awaiting_other: "Ikkinchi tomon javobini kutmoqdamiz",
+trade_card_btn_cancel: 'Bekor qilish',
+trade_card_accepted: "Qabul qilindi — narsalarni Steam orqali topshiring",
+trade_card_partner_sent: "(hamkor allaqachon yubordi)",
+trade_card_btn_sent: 'Men yubordim',
+trade_card_btn_received: 'Men oldim',
+trade_card_waiting_partner: "Hamkor tasdiqlashini kutmoqdamiz",
+trade_card_completed: 'Almashinuv yakunlandi',
+trade_card_declined: 'Rad etildi',
+trade_card_cancelled: 'Bekor qilindi',
+trade_card_expired: "Muddati o'tdi",
+trade_card_they_offered: 'Sizga taklif qilishdi',
+trade_card_you_offered: 'Siz taklif qildingiz',
+trade_none: "Almashinuvlar yo'q",
+trade_mark_saved: "Belgi saqlandi — ikkinchi tomonni kutmoqdamiz.",
+trade_confirm_accept: 'Shu almashinuvni qabul qilasizmi?',
+trade_accepted_ok: 'Almashinuv qabul qilindi ✓',
+trade_confirm_decline: 'Shu taklifni rad etasizmi?',
+trade_confirm_cancel: "O'z taklifingizni bekor qilasizmi?",
+trade_marked_ok: 'Belgilandi ✓',
+trade_completed_alert: 'Almashinuv muvaffaqiyatli yakunlandi!',
+trade_you: 'Siz',
+trade_seller: 'Sotuvchi',
+trade_buyer: 'Xaridor',
+order_status_RESERVED: 'Lot band qilindi',
+order_status_PAYMENT_CONFIRMED: "To'lov tasdiqlandi",
+order_status_TRADE_PENDING: 'Buyum topshirilishini kutish',
+order_status_DELIVERY_CONFIRMED: 'Qabul qilish tasdiqlandi',
+order_status_COMPLETED: 'Bitim yakunlandi',
+order_status_PAYOUT_PENDING: 'Hold tugashini kutish',
+order_status_PAYOUT_PROCESSING: "To'lov qayta ishlanmoqda",
+order_status_PAYOUT_COMPLETED: "Mablag' sotuvchiga to'landi",
+order_status_DISPUTE_OPENED: 'Nizo ochildi',
+order_status_REFUNDED: "Pul xaridorga qaytarildi",
+order_status_ORDER_CANCELLED: 'Buyurtma bekor qilindi',
 },
 };
 
@@ -4616,6 +4878,7 @@ screenShop.style.display = name === 'shop' ? 'block' : 'none';
 screenProfile.style.display = name === 'profile' ? 'block' : 'none';
 document.getElementById('screenAdmin').style.display = name === 'admin' ? 'block' : 'none';
 document.getElementById('screenAuctions').style.display = name === 'auctions' ? 'block' : 'none';
+document.getElementById('screenDeals').style.display = name === 'deals' ? 'block' : 'none';
 tabTimerBtn.classList.toggle('active', name === 'timer');
 tabShopBtn.classList.toggle('active', name === 'shop');
 tabProfileBtn.classList.toggle('active', name === 'profile');
@@ -4624,16 +4887,19 @@ document.getElementById('tabAuctionsBtn').classList.toggle('active', name === 'a
 // В каталоге лотов и в панели Admin нижняя навигация не нужна —
 // там только кнопка «Назад». На остальных экранах навигация
 // остаётся видимой как обычно.
-document.getElementById('bottomNav').style.display = (name === 'shop' || name === 'admin') ? 'none' : 'flex';
+document.getElementById('bottomNav').style.display = (name === 'shop' || name === 'admin' || name === 'deals') ? 'none' : 'flex';
 updateFabVisibility();
 if (name === 'shop'){
 loadMe();
 loadSkins();
 } else if (name === 'profile'){
 loadProfile();
+} else if (name === 'deals'){
+loadDeals();
+loadTradeOffers();
 } else if (name === 'admin'){
 if (totp2faStatus.enabled_admin){
-promptFor2faCode('Код для входа в админку').then(code => {
+promptFor2faCode((I18N[currentLang] || I18N.ru).totp_prompt_admin_login).then(code => {
 if (!code){ switchTab('shop'); return; }
 fetch(API_BASE + '/api/2fa/verify', {
 method: 'POST',
@@ -4685,8 +4951,7 @@ const action = btn.dataset.headerAction;
 if (action === 'profile' || action === 'balance'){
 switchTab('profile');
 } else if (action === 'history'){
-switchTab('profile');
-document.getElementById('historyOverlay').classList.add('show');
+switchTab('deals');
 } else if (action === 'sell'){
 switchTab('shop');
 setTimeout(() => addSkinBtn.click(), 150);
@@ -5156,10 +5421,15 @@ const roleLabel = deal.role === 'selling' ? dict.role_selling : dict.role_buying
 const counterpartyLabel = deal.role === 'selling' ? dict.detail_buyer : dict.detail_seller;
 
 const messageBtn = `<button class="deal-action secondary" data-relay="${deal.id}" type="button">${dict.btn_message}</button>`;
-const detailsBtn = `<button class="deal-action secondary" data-trade-details="${deal.id}" type="button">Подробнее</button>`;
+
+const sellerLabel = deal.role === 'selling' ? (I18N[currentLang] || I18N.ru).trade_you : (I18N[currentLang] || I18N.ru).trade_seller;
+const buyerLabel = deal.role === 'buying' ? (I18N[currentLang] || I18N.ru).trade_you : (I18N[currentLang] || I18N.ru).trade_buyer;
+const isDone = !!deal.confirmed_at;
+const lineClass = isDone ? 'trade-party-line done' : 'trade-party-line';
 
 return `
-<div class="deal-card">
+<div class="deal-card" style="flex-direction:column; align-items:stretch;">
+<div style="display:flex; gap:10px;">
 ${photo}
 <div class="deal-info">
 <div class="deal-title">${escapeHtml(deal.title)}</div>
@@ -5167,8 +5437,38 @@ ${photo}
 ${countdownHtml}
 ${statusHtml}
 </div>
-<div class="deal-actions">${actionHtml}${messageBtn}${detailsBtn}</div>
+</div>
+<div class="deal-actions" style="margin-top:8px;">${actionHtml}${messageBtn}</div>
+<div style="display:flex; align-items:center; justify-content:center; gap:8px; margin:12px 0 4px; font-family:'Inter', sans-serif; font-size:11px; color:var(--silver);">
+<div class="trade-party" style="flex:0 0 auto;"><div class="trade-party-dot">✓</div><div>${sellerLabel}</div></div>
+<div class="${lineClass}" style="max-width:60px;"></div>
+<div class="trade-party" style="flex:0 0 auto;"><div class="trade-party-dot" style="${isDone ? '' : 'background:rgba(255,255,255,0.05); border-color:var(--muted);'}">${isDone ? '✓' : ''}</div><div>${buyerLabel}</div></div>
+</div>
+<div id="dealTimeline-${deal.id}" style="font-size:11px; color:var(--muted); padding:0 4px;">Загрузка истории...</div>
 </div>`;
+}
+
+function loadDealTimelineInline(orderCode, skinId){
+if (!tg || !tg.initData) return;
+const el = document.getElementById('dealTimeline-' + skinId);
+if (!el) return;
+fetch(API_BASE + '/api/deals/' + skinId + '/history?init_data=' + encodeURIComponent(tg.initData))
+.then(r => r.json())
+.then(data => {
+const history = data.history || [];
+if (!history.length){
+el.innerHTML = '';
+return;
+}
+el.innerHTML = (data.order_code ? `<div style="font-family:'JetBrains Mono', monospace; margin-bottom:4px;">${data.order_code}</div>` : '') + history.map(h => {
+const t = h.created_at ? new Date(h.created_at).toLocaleString(currentLang === 'uz' ? 'uz-UZ' : 'ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+const label = getOrderStatusLabel(h.status);
+return `<div style="display:flex; justify-content:space-between; gap:8px; padding:2px 0;"><span>✓ ${label}</span><span>${t}</span></div>`;
+}).join('');
+})
+.catch(() => {
+el.innerHTML = '';
+});
 }
 
 let lastDeals = [];
@@ -5189,6 +5489,7 @@ dealsList.innerHTML = `<div class="skins-empty" style="padding:16px 4px;">${dict
 return;
 }
 dealsList.innerHTML = lastDeals.map(dealCardHtml).join('');
+lastDeals.forEach(deal => loadDealTimelineInline(null, deal.id));
 })
 .catch(() => {
 dealsList.innerHTML = '<div class="skins-empty" style="padding:16px 4px;">Не удалось загрузить</div>';
@@ -5198,13 +5499,14 @@ dealsList.innerHTML = '<div class="skins-empty" style="padding:16px 4px;">Не �
 // ---------------- Обмены ----------------
 
 function tradeOfferCardHtml(offer){
+const dict = I18N[currentLang] || I18N.ru;
 const isIncoming = offer.role === 'incoming';
 const myItem = isIncoming ? offer.to_skin_title : offer.from_skin_title;
 const theirItem = isIncoming ? offer.from_skin_title : offer.to_skin_title;
 let cashLine = '';
 if (offer.cash_amount){
 const iPay = (offer.cash_payer === 'from' && !isIncoming) || (offer.cash_payer === 'to' && isIncoming);
-cashLine = `<div class="deal-meta">${iPay ? 'Доплачиваешь' : 'Тебе доплатят'}: ${formatCoins(offer.cash_amount)}</div>`;
+cashLine = `<div class="deal-meta">${iPay ? dict.trade_card_you_pay : dict.trade_card_they_pay}: ${formatCoins(offer.cash_amount)}</div>`;
 }
 
 let statusLine = '';
@@ -5212,39 +5514,39 @@ let actions = '';
 
 if (offer.status === 'pending'){
 if (isIncoming){
-statusLine = '<div class="deal-meta">🔄 Ожидает твоего решения</div>';
-actions = `<button class="deal-action" data-trade-accept="${offer.id}" type="button">✅ Принять</button><button class="deal-action secondary" data-trade-decline="${offer.id}" type="button">❌ Отклонить</button>`;
+statusLine = `<div class="deal-meta">🔄 ${dict.trade_card_awaiting_you}</div>`;
+actions = `<button class="deal-action" data-trade-accept="${offer.id}" type="button">✅ ${dict.trade_card_btn_accept}</button><button class="deal-action secondary" data-trade-decline="${offer.id}" type="button">❌ ${dict.trade_card_btn_decline}</button>`;
 } else {
-statusLine = '<div class="deal-meta">⏳ Ждём ответа второй стороны</div>';
-actions = `<button class="deal-action secondary" data-trade-cancel="${offer.id}" type="button">Отменить</button>`;
+statusLine = `<div class="deal-meta">⏳ ${dict.trade_card_awaiting_other}</div>`;
+actions = `<button class="deal-action secondary" data-trade-cancel="${offer.id}" type="button">${dict.trade_card_btn_cancel}</button>`;
 }
 } else if (offer.status === 'accepted'){
 const mySent = isIncoming ? offer.to_sent_at : offer.from_sent_at;
 const theirSent = isIncoming ? offer.from_sent_at : offer.to_sent_at;
 const myConfirmed = isIncoming ? offer.to_confirmed_at : offer.from_confirmed_at;
-statusLine = `<div class="deal-meta">✅ Принято — передайте предметы через Steam${theirSent ? ' (партнёр уже отправил)' : ''}</div>`;
+statusLine = `<div class="deal-meta">✅ ${dict.trade_card_accepted}${theirSent ? ' ' + dict.trade_card_partner_sent : ''}</div>`;
 if (!mySent){
-actions = `<button class="deal-action" data-trade-sent="${offer.id}" type="button">📦 Я отправил</button>`;
+actions = `<button class="deal-action" data-trade-sent="${offer.id}" type="button">📦 ${dict.trade_card_btn_sent}</button>`;
 } else if (!myConfirmed){
-actions = `<button class="deal-action" data-trade-received="${offer.id}" type="button">✅ Я получил</button>`;
+actions = `<button class="deal-action" data-trade-received="${offer.id}" type="button">✅ ${dict.trade_card_btn_received}</button>`;
 } else {
-statusLine += '<div class="deal-meta">Ждём подтверждения от партнёра</div>';
+statusLine += `<div class="deal-meta">${dict.trade_card_waiting_partner}</div>`;
 }
 } else if (offer.status === 'completed'){
-statusLine = '<div class="deal-meta" style="color:#7ec98a;">✅ Обмен завершён</div>';
+statusLine = `<div class="deal-meta" style="color:#7ec98a;">✅ ${dict.trade_card_completed}</div>`;
 } else if (offer.status === 'declined'){
-statusLine = '<div class="deal-meta">❌ Отклонено</div>';
+statusLine = `<div class="deal-meta">❌ ${dict.trade_card_declined}</div>`;
 } else if (offer.status === 'cancelled'){
-statusLine = '<div class="deal-meta">Отменено</div>';
+statusLine = `<div class="deal-meta">${dict.trade_card_cancelled}</div>`;
 } else if (offer.status === 'expired'){
-statusLine = '<div class="deal-meta">Истекло</div>';
+statusLine = `<div class="deal-meta">${dict.trade_card_expired}</div>`;
 }
 
 return `
 <div class="deal-card">
 <div class="deal-info">
 <div class="deal-title">🔄 ${escapeHtml(theirItem || '—')} ↔ ${escapeHtml(myItem || '—')}</div>
-<div class="deal-meta">${isIncoming ? 'Тебе предложили' : 'Ты предложил'}</div>
+<div class="deal-meta">${isIncoming ? dict.trade_card_they_offered : dict.trade_card_you_offered}</div>
 ${cashLine}
 ${statusLine}
 </div>
@@ -5253,6 +5555,7 @@ ${statusLine}
 }
 
 function loadTradeOffers(){
+const dict = I18N[currentLang] || I18N.ru;
 const el = document.getElementById('tradeOffersList');
 if (!tg || !tg.initData) return;
 fetch(API_BASE + '/api/trade_offers?init_data=' + encodeURIComponent(tg.initData))
@@ -5261,17 +5564,18 @@ fetch(API_BASE + '/api/trade_offers?init_data=' + encodeURIComponent(tg.initData
 const items = (data && data.items) || [];
 const active = items.filter(o => o.status !== 'declined' && o.status !== 'cancelled' && o.status !== 'expired');
 if (!active.length){
-el.innerHTML = '<div class="skins-empty" style="padding:16px 4px;">Нет обменов</div>';
+el.innerHTML = `<div class="skins-empty" style="padding:16px 4px;">${dict.trade_none}</div>`;
 return;
 }
 el.innerHTML = active.map(tradeOfferCardHtml).join('');
 })
 .catch(() => {
-el.innerHTML = '<div class="skins-empty" style="padding:16px 4px;">Не удалось загрузить</div>';
+el.innerHTML = `<div class="skins-empty" style="padding:16px 4px;">${dict.load_failed}</div>`;
 });
 }
 
 document.getElementById('tradeOffersList').addEventListener('click', (e) => {
+const dict = I18N[currentLang] || I18N.ru;
 const acceptBtn = e.target.closest('[data-trade-accept]');
 const declineBtn = e.target.closest('[data-trade-decline]');
 const cancelBtn = e.target.closest('[data-trade-cancel]');
@@ -5293,7 +5597,7 @@ throw new Error(errorMessage(data.error));
 return r.json();
 })
 .then((data) => {
-if (successMsg) showAlert(data.completed === false ? 'Отметка сохранена — ждём вторую сторону.' : successMsg);
+if (successMsg) showAlert(data.completed === false ? dict.trade_mark_saved : successMsg);
 loadTradeOffers();
 })
 .catch(err => showAlert(friendlyErrorMessage(err)));
@@ -5305,11 +5609,11 @@ doCall();
 }
 };
 
-if (acceptBtn) callAction(acceptBtn.dataset.tradeAccept, '/accept', 'Принять этот обмен?', 'Обмен принят ✓');
-if (declineBtn) callAction(declineBtn.dataset.tradeDecline, '/decline', 'Отклонить это предложение?', null);
-if (cancelBtn) callAction(cancelBtn.dataset.tradeCancel, '/cancel', 'Отменить своё предложение?', null);
-if (sentBtn) callAction(sentBtn.dataset.tradeSent, '/mark_sent', null, 'Отмечено ✓');
-if (receivedBtn) callAction(receivedBtn.dataset.tradeReceived, '/mark_received', null, 'Обмен успешно завершён!');
+if (acceptBtn) callAction(acceptBtn.dataset.tradeAccept, '/accept', dict.trade_confirm_accept, dict.trade_accepted_ok);
+if (declineBtn) callAction(declineBtn.dataset.tradeDecline, '/decline', dict.trade_confirm_decline, null);
+if (cancelBtn) callAction(cancelBtn.dataset.tradeCancel, '/cancel', dict.trade_confirm_cancel, null);
+if (sentBtn) callAction(sentBtn.dataset.tradeSent, '/mark_sent', null, dict.trade_marked_ok);
+if (receivedBtn) callAction(receivedBtn.dataset.tradeReceived, '/mark_received', null, dict.trade_completed_alert);
 });
 
 // Раз в минуту перерисовываем отсчёт по уже загруженным сделкам —
@@ -5898,19 +6202,10 @@ document.getElementById('inspectOverlay').classList.remove('show');
 
 // ---------------- Детали сделки (Trade Details) ----------------
 
-const TRADE_STATUS_LABELS = {
-  RESERVED: 'Лот зарезервирован',
-  PAYMENT_CONFIRMED: 'Оплата подтверждена',
-  TRADE_PENDING: 'Ожидание передачи предмета',
-  DELIVERY_CONFIRMED: 'Получение подтверждено',
-  COMPLETED: 'Сделка завершена',
-  PAYOUT_PENDING: 'Ожидание окончания холда',
-  PAYOUT_PROCESSING: 'Выплата обрабатывается',
-  PAYOUT_COMPLETED: 'Средства выплачены продавцу',
-  DISPUTE_OPENED: 'Открыт спор',
-  REFUNDED: 'Деньги возвращены покупателю',
-  ORDER_CANCELLED: 'Заказ отменён',
-};
+function getOrderStatusLabel(status){
+const dict = I18N[currentLang] || I18N.ru;
+return dict['order_status_' + status] || status;
+}
 
 function openTradeDetails(skinId){
 const deal = lastDeals.find(d => d.id === skinId);
@@ -5931,8 +6226,8 @@ overlay.classList.add('show');
 const reachedCompleted = !!(deal.confirmed_at);
 const isDisputed = !!(deal.disputed_at) && !reachedCompleted;
 
-const sellerLabel = deal.role === 'selling' ? 'Ты' : 'Продавец';
-const buyerLabel = deal.role === 'buying' ? 'Ты' : 'Покупатель';
+const sellerLabel = deal.role === 'selling' ? (I18N[currentLang] || I18N.ru).trade_you : (I18N[currentLang] || I18N.ru).trade_seller;
+const buyerLabel = deal.role === 'buying' ? (I18N[currentLang] || I18N.ru).trade_you : (I18N[currentLang] || I18N.ru).trade_buyer;
 const dotIcon = (done) => done ? '✓' : '';
 const lineClass = reachedCompleted ? 'trade-party-line done' : 'trade-party-line';
 
@@ -5959,7 +6254,7 @@ return;
 }
 document.getElementById('tradeDetailsTimeline').innerHTML = history.map(h => {
 const t = h.created_at ? new Date(h.created_at).toLocaleString(currentLang === 'uz' ? 'uz-UZ' : 'ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
-const label = TRADE_STATUS_LABELS[h.status] || h.status;
+const label = getOrderStatusLabel(h.status);
 return `
 <div class="trade-timeline-item">
 <div class="trade-timeline-dot">✓</div>
@@ -6072,12 +6367,13 @@ navigator.clipboard?.writeText(text.replace(/\s/g, '')).catch(() => {});
 
 document.getElementById('totp2faConfirmBtn').addEventListener('click', () => {
 if (!tg || !tg.initData) return;
+const dict = I18N[currentLang] || I18N.ru;
 const code = document.getElementById('totp2faConfirmCode').value.trim();
 const btn = document.getElementById('totp2faConfirmBtn');
 const status = document.getElementById('totp2faSetupStatus');
-if (!code){ status.textContent = 'Введи код из приложения.'; return; }
+if (!code){ status.textContent = dict.totp_enter_code; return; }
 btn.disabled = true;
-status.textContent = 'Проверяю...';
+status.textContent = dict.totp_checking;
 fetch(API_BASE + '/api/2fa/confirm', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
@@ -6086,7 +6382,7 @@ body: JSON.stringify({ init_data: tg.initData, code: code })
 .then(async r => {
 if (!r.ok){
 const data = await r.json().catch(() => ({}));
-throw new Error(data.error === 'bad_code' ? 'Неверный код, попробуй снова.' : (data.error === 'totp_locked' ? 'Слишком много неверных попыток — подождите 15 минут.' : errorMessage(data.error)));
+throw new Error(data.error === 'bad_code' ? dict.totp_bad_code : (data.error === 'totp_locked' ? dict.totp_locked_msg : errorMessage(data.error)));
 }
 return r.json();
 })
@@ -6121,7 +6417,7 @@ resolve(result);
 }
 function onOk(){
 const code = input.value.trim();
-if (!code){ status.textContent = 'Введи код.'; return; }
+if (!code){ status.textContent = (I18N[currentLang] || I18N.ru).totp_enter_code_short; return; }
 cleanup(code);
 }
 function onCancel(){ cleanup(null); }
@@ -6131,7 +6427,8 @@ cancelBtn.addEventListener('click', onCancel);
 }
 
 function toggle2fa(purpose, enabled, checkboxEl){
-promptFor2faCode(enabled ? 'Введи код, чтобы включить защиту' : 'Введи код, чтобы выключить защиту').then(code => {
+const dict = I18N[currentLang] || I18N.ru;
+promptFor2faCode(enabled ? dict.totp_prompt_enable : dict.totp_prompt_disable).then(code => {
 if (!code){ checkboxEl.checked = !enabled; return; }
 fetch(API_BASE + '/api/2fa/toggle', {
 method: 'POST',
@@ -6141,7 +6438,7 @@ body: JSON.stringify({ init_data: tg.initData, purpose: purpose, enabled: enable
 .then(async r => {
 if (!r.ok){
 const data = await r.json().catch(() => ({}));
-throw new Error(data.error === 'bad_code' ? 'Неверный код.' : (data.error === 'totp_locked' ? 'Слишком много неверных попыток — подождите 15 минут.' : errorMessage(data.error)));
+throw new Error(data.error === 'bad_code' ? dict.totp_bad_code_short : (data.error === 'totp_locked' ? dict.totp_locked_msg : errorMessage(data.error)));
 }
 return r.json();
 })
@@ -6167,17 +6464,18 @@ kycOverlay.classList.remove('show');
 
 document.getElementById('kycSubmitBtn').addEventListener('click', () => {
 if (!tg || !tg.initData) return;
+const dict = I18N[currentLang] || I18N.ru;
 const fullName = document.getElementById('kycFullName').value.trim();
 const phone = document.getElementById('kycPhone').value.trim();
 const country = document.getElementById('kycCountry').value.trim();
 const address = document.getElementById('kycAddress').value.trim();
 if (!fullName || !phone || !country || !address){
-kycStatus.textContent = 'Заполни все поля.';
+kycStatus.textContent = dict.kyc_fill_all;
 return;
 }
 const btn = document.getElementById('kycSubmitBtn');
 btn.disabled = true;
-kycStatus.textContent = 'Отправляю...';
+kycStatus.textContent = dict.kyc_sending;
 fetch(API_BASE + '/api/kyc/submit', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
@@ -6198,7 +6496,7 @@ kycStatus.textContent = '';
 kycOverlay.classList.remove('show');
 sellerKycStatus = 'pending';
 updateSellerStatusUI('pending');
-showAlert('Заявка отправлена — жди решения админа.');
+showAlert(dict.kyc_submitted_alert);
 })
 .catch(err => {
 kycStatus.textContent = friendlyErrorMessage(err);
@@ -6716,24 +7014,26 @@ buySavePriceBtn.disabled = false;
 
 document.getElementById('buyDiscountBtn').addEventListener('click', () => {
 if (!pendingBuySkin) return;
+const dict = I18N[currentLang] || I18N.ru;
 const skin = pendingBuySkin;
 const hasDiscount = !!skin.original_price;
 document.getElementById('discountCurrentInfo').textContent = hasDiscount
-? `Сейчас: ${formatCoins(skin.original_price)} → ${formatCoins(skin.price)}`
-: `Текущая цена: ${formatCoins(skin.price)}`;
+? `${dict.discount_info_now}: ${formatCoins(skin.original_price)} → ${formatCoins(skin.price)}`
+: `${dict.discount_info_current}: ${formatCoins(skin.price)}`;
 document.getElementById('discountType').value = skin.discount_type || 'percent';
 document.getElementById('discountValueInput').value = skin.discount_value || '';
 document.getElementById('discountExpiresInput').value = '';
 document.getElementById('discountRemoveBtn').style.display = hasDiscount ? '' : 'none';
-document.getElementById('discountCategoryLabel').textContent = skin.weapon_type || skin.title || '—';
+document.getElementById('discountCategoryHint').textContent = dict.discount_category_hint.replace('{category}', skin.weapon_type || skin.title || '—');
 document.getElementById('discountStatus').textContent = '';
 document.getElementById('discountOverlay').classList.add('show');
 });
 
 document.getElementById('discountType').addEventListener('change', (e) => {
+const dict = I18N[currentLang] || I18N.ru;
 document.getElementById('discountValueLabel').textContent = e.target.value === 'percent'
-? 'Размер скидки, %'
-: 'Размер скидки, сум';
+? dict.discount_label_value_percent
+: dict.discount_label_value_fixed;
 });
 
 document.getElementById('discountCloseBtn').addEventListener('click', () => {
@@ -6741,12 +7041,13 @@ document.getElementById('discountOverlay').classList.remove('show');
 });
 
 function readDiscountForm(){
+const dict = I18N[currentLang] || I18N.ru;
 const discountType = document.getElementById('discountType').value;
 const discountValue = Number(document.getElementById('discountValueInput').value);
 const expiresRaw = document.getElementById('discountExpiresInput').value;
 const expiresAt = expiresRaw ? new Date(expiresRaw).toISOString() : null;
 if (!discountValue || discountValue <= 0){
-document.getElementById('discountStatus').textContent = 'Укажи размер скидки.';
+document.getElementById('discountStatus').textContent = dict.discount_need_value;
 return null;
 }
 return { discountType, discountValue, expiresAt };
@@ -6754,12 +7055,13 @@ return { discountType, discountValue, expiresAt };
 
 document.getElementById('discountApplyBtn').addEventListener('click', () => {
 if (!pendingBuySkin || !tg || !tg.initData) return;
+const dict = I18N[currentLang] || I18N.ru;
 const form = readDiscountForm();
 if (!form) return;
 const btn = document.getElementById('discountApplyBtn');
 const status = document.getElementById('discountStatus');
 btn.disabled = true;
-status.textContent = 'Сохраняю...';
+status.textContent = dict.discount_saving;
 fetch(API_BASE + '/api/skins/' + pendingBuySkin.id + '/discount', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
@@ -6778,7 +7080,7 @@ throw new Error(errorMessage(data.error));
 return r.json();
 })
 .then((data) => {
-status.textContent = 'Скидка применена ✓';
+status.textContent = dict.discount_applied_ok;
 Object.assign(pendingBuySkin, data.skin);
 buyPrice.textContent = formatCoins(data.skin.price);
 loadSkins();
@@ -6793,8 +7095,9 @@ btn.disabled = false;
 
 document.getElementById('discountRemoveBtn').addEventListener('click', () => {
 if (!pendingBuySkin || !tg || !tg.initData) return;
+const dict = I18N[currentLang] || I18N.ru;
 const status = document.getElementById('discountStatus');
-status.textContent = 'Убираю...';
+status.textContent = dict.discount_removing;
 fetch(API_BASE + '/api/skins/' + pendingBuySkin.id + '/discount/remove', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
@@ -6808,7 +7111,7 @@ throw new Error(errorMessage(data.error));
 return r.json();
 })
 .then((data) => {
-status.textContent = 'Скидка убрана ✓';
+status.textContent = dict.discount_removed_ok;
 Object.assign(pendingBuySkin, data.skin);
 buyPrice.textContent = formatCoins(data.skin.price);
 document.getElementById('discountRemoveBtn').style.display = 'none';
@@ -6821,18 +7124,19 @@ status.textContent = friendlyErrorMessage(err);
 
 document.getElementById('discountApplyCategoryBtn').addEventListener('click', () => {
 if (!pendingBuySkin || !tg || !tg.initData) return;
+const dict = I18N[currentLang] || I18N.ru;
 const form = readDiscountForm();
 if (!form) return;
 const weaponType = pendingBuySkin.weapon_type;
 if (!weaponType){
-document.getElementById('discountStatus').textContent = 'У этого лота не указана модель — массовая скидка недоступна.';
+document.getElementById('discountStatus').textContent = dict.discount_no_category;
 return;
 }
-showConfirm(`Применить скидку ко всем твоим активным лотам «${weaponType}»?`, () => {
+showConfirm(dict.discount_confirm_category.replace('{weapon}', weaponType), () => {
 const btn = document.getElementById('discountApplyCategoryBtn');
 const status = document.getElementById('discountStatus');
 btn.disabled = true;
-status.textContent = 'Применяю...';
+status.textContent = dict.discount_applying;
 fetch(API_BASE + '/api/skins/category_discount', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
@@ -6852,7 +7156,7 @@ throw new Error(errorMessage(data.error));
 return r.json();
 })
 .then((data) => {
-status.textContent = `Скидка применена к ${data.changed.length} лот(ам) ✓`;
+status.textContent = dict.discount_applied_category.replace('{n}', data.changed.length);
 loadSkins();
 })
 .catch(err => {
@@ -6870,18 +7174,19 @@ let tradeMakeSelectedSkinId = null;
 
 document.getElementById('buyMakeTradeBtn').addEventListener('click', () => {
 if (!pendingBuySkin || !currentUserId) return;
+const dict = I18N[currentLang] || I18N.ru;
 tradeMakeSelectedSkinId = null;
 document.getElementById('tradeMakeSendBtn').disabled = true;
-document.getElementById('tradeMakeTargetInfo').textContent = `Получишь: «${pendingBuySkin.title}» (${formatCoins(pendingBuySkin.price)})`;
+document.getElementById('tradeMakeTargetInfo').textContent = dict.trade_make_target.replace('{title}', pendingBuySkin.title).replace('{price}', formatCoins(pendingBuySkin.price));
 document.getElementById('tradeMakeCashInput').value = '';
-document.getElementById('tradeMakeCashHint').textContent = 'Необязательно — можно доплатить деньгами в любую сторону, если лоты не равноценны.';
+document.getElementById('tradeMakeCashHint').textContent = dict.trade_make_cash_hint;
 document.getElementById('tradeMakeCashRow').style.display = '';
 document.getElementById('tradeMakeStatus').textContent = '';
 
 const mySkins = lastSkins.filter(s => s.seller_id === currentUserId && s.id !== pendingBuySkin.id);
 const grid = document.getElementById('tradeMakeMySkins');
 if (!mySkins.length){
-grid.innerHTML = '<div class="shop-hint">У тебя нет других активных лотов для обмена.</div>';
+grid.innerHTML = `<div class="shop-hint">${dict.trade_make_no_skins}</div>`;
 } else {
 grid.innerHTML = mySkins.map((s, i) => `
 <div class="inv-item" data-idx="${i}" style="display:inline-block; width:31%; margin:1%; vertical-align:top;">
@@ -6909,12 +7214,13 @@ document.getElementById('tradeMakeOverlay').classList.remove('show');
 
 document.getElementById('tradeMakeSendBtn').addEventListener('click', () => {
 if (!tradeMakeSelectedSkinId || !pendingBuySkin || !tg || !tg.initData) return;
+const dict = I18N[currentLang] || I18N.ru;
 const btn = document.getElementById('tradeMakeSendBtn');
 const status = document.getElementById('tradeMakeStatus');
 const cashAmount = Number(document.getElementById('tradeMakeCashInput').value) || 0;
 const cashPayer = document.getElementById('tradeMakeCashPayer').value;
 btn.disabled = true;
-status.textContent = 'Отправляю...';
+status.textContent = dict.trade_make_sending;
 fetch(API_BASE + '/api/trade_offers', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
@@ -6934,7 +7240,7 @@ throw new Error(errorMessage(data.error));
 return r.json();
 })
 .then(() => {
-status.textContent = 'Предложение отправлено ✓';
+status.textContent = dict.trade_make_sent_ok;
 loadSkins();
 setTimeout(() => {
 document.getElementById('tradeMakeOverlay').classList.remove('show');
@@ -8233,6 +8539,7 @@ document.getElementById('shopBackBtn').addEventListener('click', () => goToScree
 document.getElementById('profileBackBtn').addEventListener('click', () => goToScreen('welcome'));
 document.getElementById('auctionsBackBtn').addEventListener('click', () => goToScreen('welcome'));
 document.getElementById('adminBackBtn').addEventListener('click', () => goToScreen('welcome'));
+document.getElementById('dealsBackBtn').addEventListener('click', () => goToScreen('welcome'));
 
 document.querySelector('.category-tile-grid').addEventListener('click', (e) => {
 const tile = e.target.closest('.category-tile');
