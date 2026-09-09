@@ -19,6 +19,16 @@
 --silver:#e8e4e2;
 }
 
+body.theme-light{
+--bg:#f6f3fa;
+--red:#9333ea;
+--red-glow:#7c22c9;
+--red-dim:#ece1fb;
+--text:#241f2b;
+--muted:#6b5d78;
+--silver:#241f2b;
+}
+
 *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
 html,body{
@@ -73,7 +83,7 @@ top:0;
 left:0;
 width:100%;
 z-index:60;
-background:#0a0708;
+background:var(--bg);
 display:none;
 flex-direction:column;
 align-items:center;
@@ -82,6 +92,18 @@ overflow:hidden;
 }
 
 .welcome-overlay.show{ display:flex; }
+
+.onboarding-dot{
+width:7px;
+height:7px;
+border-radius:50%;
+background:rgba(255,255,255,0.2);
+transition:background 0.2s;
+}
+
+.onboarding-dot.active{
+background:var(--red);
+}
 
 #categoryPickerScreen{
 justify-content:flex-start;
@@ -544,7 +566,7 @@ justify-content:center;
 .edit-sheet{
 width:100%;
 max-width:420px;
-background:#0a0708;
+background:var(--bg);
 border:1px solid var(--red-dim);
 border-bottom:none;
 border-radius:14px 14px 0 0;
@@ -1695,7 +1717,7 @@ font-size:12px;
 padding:9px 8px;
 border-radius:8px;
 border:1px solid var(--red-dim);
-background:#0a0708;
+background:var(--bg);
 color:var(--silver);
 font-family:'JetBrains Mono', monospace;
 font-size:10px;
@@ -2117,7 +2139,7 @@ width:100%;
 max-width:420px;
 max-height:82vh;
 overflow-y:auto;
-background:#0a0708;
+background:var(--bg);
 border:1px solid var(--red-dim);
 border-bottom:none;
 border-radius:14px 14px 0 0;
@@ -2254,7 +2276,7 @@ display:flex;
 flex-wrap:wrap;
 gap:10px;
 padding:12px 18px calc(env(safe-area-inset-bottom, 0px) + 12px);
-background:#0a0708;
+background:var(--bg);
 border:1px solid var(--red-dim);
 border-top:1px solid var(--red-dim);
 }
@@ -2373,6 +2395,41 @@ justify-content:center;
 <button type="button" id="mandatoryLinkBtn" class="welcome-btn primary" style="margin-top:12px; width:100%;">Привязать и продолжить</button>
 <div class="edit-status" id="mandatorySteamStatus" style="margin-top:8px;"></div>
 <div class="shop-hint" style="margin-top:14px;">Нажми кнопку выше — откроется страница Steam с твоей трейд-ссылкой, останется скопировать и вставить сюда.</div>
+</div>
+</div>
+
+<div class="welcome-overlay" id="onboardingOverlay" style="background:var(--bg); justify-content:center; padding:20px;">
+<div style="width:100%; max-width:400px;">
+<div id="onboardingSlide0" class="onboarding-slide">
+<div style="font-size:40px; text-align:center; margin-bottom:16px;">👋</div>
+<h2 data-i18n="onb_0_title" style="text-align:center;">Добро пожаловать в DGhostMarket</h2>
+<p data-i18n="onb_0_text" style="color:var(--muted); text-align:center; line-height:1.5;">Площадка для покупки и продажи скинов CS2. Покажем за пару экранов, как здесь всё устроено.</p>
+</div>
+<div id="onboardingSlide1" class="onboarding-slide" style="display:none;">
+<div style="font-size:40px; text-align:center; margin-bottom:16px;">🛒</div>
+<h2 data-i18n="onb_1_title" style="text-align:center;">Покупка</h2>
+<p data-i18n="onb_1_text" style="color:var(--muted); text-align:center; line-height:1.5;">Оплата напрямую за каждый лот — Stars, крипта или П2П картой. Внутреннего баланса для покупок нет — платишь ровно за то, что выбрал.</p>
+</div>
+<div id="onboardingSlide2" class="onboarding-slide" style="display:none;">
+<div style="font-size:40px; text-align:center; margin-bottom:16px;">🏷️</div>
+<h2 data-i18n="onb_2_title" style="text-align:center;">Продажа</h2>
+<p data-i18n="onb_2_text" style="color:var(--muted); text-align:center; line-height:1.5;">Чтобы выставлять лоты, нужно один раз пройти простую проверку (ФИО, телефон, страна, адрес). После этого доход с продаж копится на балансе, откуда можно вывести.</p>
+</div>
+<div id="onboardingSlide3" class="onboarding-slide" style="display:none;">
+<div style="font-size:40px; text-align:center; margin-bottom:16px;">🔒</div>
+<h2 data-i18n="onb_3_title" style="text-align:center;">Холд и безопасность</h2>
+<p data-i18n="onb_3_text" style="color:var(--muted); text-align:center; line-height:1.5;">После продажи деньги удерживаются 7 дней (стандартный трейд-бан Steam), потом переходят продавцу. Система следит за подозрительной активностью — площадка старается защитить обе стороны.</p>
+</div>
+<div style="display:flex; justify-content:center; gap:6px; margin:20px 0;">
+<div class="onboarding-dot active" data-dot="0"></div>
+<div class="onboarding-dot" data-dot="1"></div>
+<div class="onboarding-dot" data-dot="2"></div>
+<div class="onboarding-dot" data-dot="3"></div>
+</div>
+<div class="welcome-actions">
+<button type="button" id="onboardingSkipBtn" class="welcome-btn" data-i18n="onb_btn_skip">Пропустить</button>
+<button type="button" id="onboardingNextBtn" class="welcome-btn primary" data-i18n="onb_btn_next">Далее</button>
+</div>
 </div>
 </div>
 
@@ -2565,6 +2622,7 @@ transform="rotate(-90 100 100)"></circle>
 <div class="lang-switch">
 <button type="button" class="lang-btn" id="langBtnRu" data-lang="ru">Русский</button>
 <button type="button" class="lang-btn" id="langBtnUz" data-lang="uz">O'zbekcha</button>
+<button type="button" class="lang-btn" id="langBtnEn" data-lang="en">English</button>
 </div>
 </div>
 
@@ -2664,6 +2722,10 @@ transform="rotate(-90 100 100)"></circle>
 <button type="button" id="openHistoryBtn" class="money-btn">
 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
 <span data-i18n="btn_history_short">История</span>
+</button>
+<button type="button" id="exportSalesCsvBtn" class="money-btn">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 15V3M7 10l5 5 5-5"/><path d="M4 21h16"/></svg>
+<span data-i18n="btn_export_csv">Экспорт CSV</span>
 </button>
 </div>
 </div>
@@ -3380,6 +3442,12 @@ transform="rotate(-90 100 100)"></circle>
 </select>
 </div>
 
+<div class="edit-field">
+<label data-i18n="filters_saved_title">Сохранённые фильтры</label>
+<div id="savedFiltersList" style="margin-bottom:6px;"></div>
+<button type="button" id="saveCurrentFilterBtn" class="steam-link-btn secondary" style="width:100%;" data-i18n="filters_btn_save_current">💾 Сохранить текущий фильтр</button>
+</div>
+
 <div class="edit-actions">
 <button type="button" id="filtersCloseBtn" data-i18n="btn_cancel">Закрыть</button>
 <button type="button" id="filtersResetBtn" data-i18n="filters_reset">Сбросить</button>
@@ -3551,6 +3619,7 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 
 <div class="buy-details-table" id="buyDetailsTable"></div>
+<div id="sellerStatsBox" style="display:none; margin:10px 20px 0; font-size:12px; color:var(--muted);"></div>
 <div class="market-price-box" id="marketPriceBox" style="display:none;"></div>
 <div id="priceHistoryBox" style="display:none; margin:10px 20px 0; padding:10px; background:rgba(255,255,255,0.03); border-radius:10px;">
 <div class="shop-hint" style="margin-bottom:6px;" data-i18n="price_history_title">📈 История цены на этот предмет</div>
@@ -3675,11 +3744,20 @@ transform="rotate(-90 100 100)"></circle>
 <script>
 const tg = window.Telegram ? window.Telegram.WebApp : null;
 
+function applyTelegramTheme(){
+const isLight = tg && tg.colorScheme === 'light';
+document.body.classList.toggle('theme-light', isLight);
+if (tg){
+try { tg.setBackgroundColor(isLight ? '#f6f3fa' : '#000000'); } catch(e) {}
+try { tg.setHeaderColor(isLight ? '#f6f3fa' : '#000000'); } catch(e) {}
+}
+}
+
 if (tg) {
 tg.ready();
 tg.expand();
-try { tg.setBackgroundColor('#000000'); } catch(e) {}
-try { tg.setHeaderColor('#000000'); } catch(e) {}
+applyTelegramTheme();
+tg.onEvent('themeChanged', applyTelegramTheme);
 }
 
 // ---- read data ----
@@ -4193,6 +4271,24 @@ br_sent_ok: 'Отклик отправлен ✓',
 br_need_title: 'Укажи, что ищешь.',
 br_creating: 'Публикую...',
 br_created_ok: 'Заявка опубликована ✓',
+btn_export_csv: 'Экспорт CSV',
+filters_saved_title: 'Сохранённые фильтры',
+filters_btn_save_current: '💾 Сохранить текущий фильтр',
+filters_saved_none: 'Пока нет сохранённых фильтров.',
+filters_saved_empty_desc: 'Без параметров',
+filters_saved_ok: 'Фильтр сохранён ✓',
+onb_0_title: 'Добро пожаловать в DGhostMarket',
+onb_0_text: 'Площадка для покупки и продажи скинов CS2. Покажем за пару экранов, как здесь всё устроено.',
+onb_1_title: 'Покупка',
+onb_1_text: 'Оплата напрямую за каждый лот — Stars, крипта или П2П картой. Внутреннего баланса для покупок нет — платишь ровно за то, что выбрал.',
+onb_2_title: 'Продажа',
+onb_2_text: 'Чтобы выставлять лоты, нужно один раз пройти простую проверку (ФИО, телефон, страна, адрес). После этого доход с продаж копится на балансе, откуда можно вывести.',
+onb_3_title: 'Холд и безопасность',
+onb_3_text: 'После продажи деньги удерживаются 7 дней (стандартный трейд-бан Steam), потом переходят продавцу. Система следит за подозрительной активностью — площадка старается защитить обе стороны.',
+onb_btn_skip: 'Пропустить',
+onb_btn_next: 'Далее',
+onb_btn_done: 'Понятно, начать',
+seller_stats_line: '👤 У продавца: {trades} сделок, {disputes} споров',
 },
 uz: {
 nav_timer: 'Taymer',
@@ -4634,6 +4730,483 @@ br_sent_ok: 'Javob yuborildi ✓',
 br_need_title: "Nima izlayotganingizni ko'rsating.",
 br_creating: "E'lon qilinmoqda...",
 br_created_ok: "Ariza e'lon qilindi ✓",
+btn_export_csv: 'CSV eksport',
+filters_saved_title: 'Saqlangan filtrlar',
+filters_btn_save_current: "💾 Joriy filtrni saqlash",
+filters_saved_none: "Hozircha saqlangan filtrlar yo'q.",
+filters_saved_empty_desc: 'Parametrlarsiz',
+filters_saved_ok: 'Filtr saqlandi ✓',
+onb_0_title: "DGhostMarketga xush kelibsiz",
+onb_0_text: "CS2 skinlarini sotib olish va sotish uchun platforma. Bir necha ekranda qanday ishlashini ko'rsatamiz.",
+onb_1_title: 'Sotib olish',
+onb_1_text: "Har bir lot uchun to'g'ridan-to'g'ri to'lov — Stars, kripto yoki karta orqali P2P. Sotib olish uchun ichki balans yo'q — faqat tanlagan narsangiz uchun to'laysiz.",
+onb_2_title: 'Sotish',
+onb_2_text: "Lot qo'yish uchun bir marta oddiy tekshiruvdan o'tish kerak (F.I.Sh., telefon, mamlakat, manzil). Shundan keyin sotuvdan tushgan daromad balansda to'planadi, undan pul yechish mumkin.",
+onb_3_title: 'Hold va xavfsizlik',
+onb_3_text: "Sotuvdan keyin pul 7 kun ushlab turiladi (Steam-ning standart trade-ban muddati), keyin sotuvchiga o'tadi. Tizim shubhali faoliyatni kuzatib boradi — platforma ikki tomonni ham himoya qilishga harakat qiladi.",
+onb_btn_skip: "O'tkazib yuborish",
+onb_btn_next: 'Keyingisi',
+onb_btn_done: 'Tushunarli, boshlash',
+seller_stats_line: "👤 Sotuvchida: {trades} bitim, {disputes} nizo",
+},
+en: {
+nav_timer: 'Timer',
+nav_shop: 'Shop',
+nav_profile: 'Profile',
+section_steam: 'Steam',
+section_topup: 'Top up balance',
+section_referral: 'Invite a friend',
+section_deals: 'My deals',
+section_withdraw: 'Withdraw funds',
+section_language: 'Language',
+search_placeholder: 'Search by name or weapon...',
+btn_add_skin: '+ Skin',
+btn_add_to_cart: 'Add to cart',
+cart_title: 'Cart',
+cart_total: 'Total',
+cart_checkout: 'Buy all',
+cart_empty: 'Cart is empty.',
+loading: 'Loading...',
+btn_history_short: 'History',
+history_title: 'Transaction history',
+giveaway_registered: "You're in ✓",
+filters_btn: 'Filters',
+filters_title: 'Filters',
+filters_price_range: 'Price, sum',
+filters_float_range: 'Float',
+filters_stickers: 'Stickers',
+filters_stickers_any: "Doesn't matter",
+filters_stickers_yes: 'With stickers only',
+filters_stickers_no: 'Without stickers only',
+filters_reset: 'Reset',
+filters_apply: 'Apply',
+label_has_stickers: 'Has stickers',
+history_empty: 'No transactions yet.',
+cart_success: 'Done ✓',
+cart_partial: 'Bought, except {n} items (already sold).',
+btn_cancel: 'Cancel',
+stat_sold: 'Sold',
+stat_bought: 'Bought',
+stat_active: 'Active listings',
+hint_sell_flow: "You sold a skin — the money goes to a 7-day hold for the buyer (Steam trade ban), then it's transferred to your balance automatically.",
+sort_new: 'Newest first',
+sort_price_asc: 'Price: low to high',
+sort_price_desc: 'Price: high to low',
+steam_linked: 'Trade link linked',
+btn_change_link: 'Change link',
+btn_open_steam: 'Open Steam trade link page',
+topup_warning: '⚠️ After the transfer, be sure to send a receipt screenshot right into the chat with the bot — otherwise the request won\'t be confirmed.',
+btn_paid: 'I paid',
+btn_topup_short: 'Top up',
+btn_withdraw_short: 'Withdraw',
+welcome_greeting: 'Welcome, my king! Are we selling or buying today?',
+btn_sell_action: 'Sell',
+btn_buy_action: 'Buy',
+category_picker_title: 'What are you looking for?',
+cat_all: 'All',
+cat_pistols: 'Pistols',
+cat_rifles: 'Rifles',
+cat_smgs: 'SMGs',
+cat_snipers: 'Snipers',
+cat_heavy: 'Heavy',
+cat_knives: 'Knives',
+cat_gloves: 'Gloves',
+cat_stickers: 'Stickers',
+cat_other: 'Other',
+btn_manage: 'Manage',
+nav_admin: 'Admin',
+admin_title: 'Admin panel',
+admin_section_auction: 'Create auction',
+admin_label_lot_title: 'Lot name',
+admin_label_emoji: 'Emoji before the title (optional)',
+admin_emoji_picker_label: 'Premium emoji (optional)',
+admin_emoji_none: 'No emoji',
+admin_emoji_hint: 'The list fills up with the /emoji_id command to the bot in DM — send a premium emoji, it will appear here automatically, no copying needed.',
+admin_label_emoji_id: 'Premium emoji ID (optional)',
+admin_emoji_id_hint: "Get the ID via the /emoji_id command to the bot in DM. Important: paste the symbol into the \"Emoji\" field by copying it from the bot's reply, don't retype it — otherwise Telegram will show plain text instead of premium.",
+admin_label_start_price: 'Starting price, sum',
+admin_label_step: 'Bid step, sum',
+admin_label_minutes: 'How many minutes the auction runs',
+admin_auction_photo_hint: 'To attach a photo to the lot — send it to the bot in DM right before creating it, it will be applied automatically.',
+admin_btn_create_auction: 'Publish auction',
+admin_section_topups: 'Top-up requests',
+admin_section_withdrawals: 'Withdrawal requests',
+admin_section_topup_details: 'Top-up payment details',
+admin_label_card_number: 'Card number',
+admin_label_card_holder: 'Cardholder full name',
+admin_section_commission: 'Earned on commissions',
+admin_section_deals: 'Active deals',
+admin_deals_flat: 'As a list',
+admin_deals_by_user: 'By customer',
+admin_deals_empty: 'No active deals.',
+admin_deal_seller: 'Seller',
+admin_deal_buyer: 'Buyer',
+admin_deal_status_confirmed: '✅ Buyer confirmed',
+admin_deal_status_sent: 'Seller sent',
+admin_deal_status_pending: '⏳ Waiting to be sent',
+admin_btn_finalize: 'Pay out',
+admin_btn_refund: 'Refund buyer',
+admin_confirm_finalize: 'Pay out to the seller early?',
+admin_confirm_refund: 'Refund the buyer? The seller will not be paid.',
+admin_section_holds: 'Active holds',
+admin_chip_overview: 'Overview',
+admin_chip_auction: 'Auction',
+admin_chip_giveaway: 'Giveaway',
+admin_chip_deals: 'Deals',
+admin_chip_requests: 'Requests',
+admin_chip_finance: 'Finance',
+admin_chip_people: 'People',
+admin_chip_settings: 'Settings',
+admin_section_status: 'Summary',
+admin_section_stats: 'Statistics',
+admin_stats_total_users: 'Total users',
+admin_stats_new_today: 'New in 24h',
+admin_stats_active_today: 'Active in 24h',
+admin_stats_active_week: 'Active this week',
+admin_stats_listings: 'Active listings',
+admin_stats_sold: 'Total sold',
+admin_status_auctions: 'Active auctions',
+admin_status_proposals: 'Awaiting seller reply',
+admin_status_giveaway: 'Giveaway',
+admin_status_deals: 'Active deals',
+admin_status_topups: 'Top-up requests',
+admin_status_withdrawals: 'Withdrawal requests',
+admin_status_gw_active: 'Running',
+admin_status_gw_idle: 'Not started',
+admin_section_giveaway: 'Giveaway / timer',
+admin_gw_title: 'Title',
+admin_gw_subtitle: 'Subtitle',
+admin_gw_prize: 'Prize',
+admin_gw_minutes: 'Minutes until it ends',
+admin_gw_start: 'Start',
+admin_gw_stop: '⏹ Stop now',
+admin_gw_running_label: 'Running, remaining:',
+admin_gw_ending: 'Ending...',
+admin_gw_idle_scheduled: 'Time is set, but the giveaway hasn\'t started yet.',
+admin_gw_idle: "Giveaway isn't running.",
+admin_gw_confirm_stop: 'End the giveaway early right now?',
+admin_gw_participants: 'Participants',
+admin_gw_no_participants: 'No one has registered yet.',
+admin_gw_participants_count: 'Total participants: {n}',
+admin_gw_pick_winner: 'Pick a winner',
+admin_gw_winner_is: 'Winner:',
+admin_gw_need_minutes: 'Specify how many minutes until it ends.',
+admin_section_api_usage: 'Steamwebapi requests remaining',
+admin_btn_check: 'Check',
+admin_section_templates: 'Post templates',
+admin_template_auction: 'Auction',
+admin_template_timer: 'Timer / giveaway',
+admin_template_placeholders_auction: 'Placeholders: {title} {price} {step} {remaining} {bid_bot_url}',
+admin_template_placeholders_timer: 'Placeholders: {title} {prize} {remaining} {bid_bot_url} {join_url}',
+admin_btn_reset_default: 'Reset',
+admin_template_empty: 'Template text cannot be empty.',
+admin_holds_empty: 'No one has a hold.',
+admin_section_balance: 'Add / deduct balance',
+admin_label_balance_user_id: 'User ID',
+admin_label_amount: 'Amount, sum',
+admin_btn_add_balance: 'Add',
+admin_btn_remove_balance: 'Deduct',
+admin_balance_fill_required: 'Fill in the user ID and amount.',
+admin_commission_sale: 'From sales ({fee}%)',
+admin_commission_withdraw: 'From withdrawals ({fee}%)',
+admin_section_promo: 'Promo: commission-free sales',
+admin_label_promo_limit: 'Commission-free sales limit (total)',
+admin_section_referral_bonus: 'Referral bonus',
+admin_referral_info_text: "Accumulates automatically from each completed purchase by an invited user (after the hold clears), into a referral wallet with a cap of 200,000 sum per person.",
+admin_label_referral_percent: 'Percent of price, %',
+admin_section_people: 'Admins and auction organizers',
+admin_label_user_id: 'Telegram user_id',
+admin_btn_add_admin: '+ Admin',
+admin_btn_add_auctioneer: '+ Organizer',
+admin_btn_add_support_admin: '+ Console user',
+btn_save: 'Save',
+admin_pick_skin_hint: "Pick a lot from the list below — after your request the seller will be asked whether they agree to put it up for auction.",
+admin_btn_propose_auction: 'Send request to seller',
+admin_no_skins: 'No listings yet.',
+admin_pick_skin_first: 'Pick a lot from the list first.',
+admin_fill_all_fields: 'Fill in all fields.',
+admin_sending_request: 'Sending request...',
+admin_request_sent: 'Request sent to seller ✓',
+admin_section_active_auctions: 'Active auctions',
+admin_section_pending_proposals: 'Awaiting seller reply',
+admin_none_active: 'No active auctions.',
+admin_none_pending: 'No pending proposals.',
+admin_bids_word: 'bids',
+admin_no_bids_yet: 'No bids yet.',
+admin_btn_cancel: 'Cancel',
+admin_confirm_cancel_active: 'Cancel the auction? The lot will return to sale, the hold will be released.',
+admin_confirm_cancel_proposal: 'Cancel the request to the seller?',
+auction_live_label: 'Auction live',
+auction_current_price: 'Current price:',
+auction_btn_bid: 'Bid',
+auction_bid_title: 'Auction bid',
+auction_your_bid: 'Your bid, sum',
+auction_btn_place_bid: 'Place bid',
+auction_current_price_label: 'Current price',
+auction_min_bid: 'Minimum bid',
+auction_bid_count: 'Bids placed',
+auction_ending: 'ending...',
+nav_auctions: 'Auction',
+auctions_title: 'Auction',
+auctions_empty: 'No active auctions right now.',
+auction_bid_accepted: 'Bid accepted ✓',
+btn_buy: 'Buy',
+form_add_title: 'List a skin',
+hint_link_steam_first: 'Link your trade link in the "Profile" tab to pull items from your Steam inventory in one tap.',
+btn_pick_from_steam: 'Pick from Steam inventory',
+label_weapon_type: 'Weapon / category',
+label_skin_title: 'Skin name',
+label_rarity: 'Rarity',
+label_wear: 'Wear',
+label_float: 'Float (0.00–1.00)',
+label_pattern: 'Pattern (paint seed)',
+label_stattrak: 'StatTrak™',
+label_description: 'Description (optional)',
+label_price: 'Price, sum',
+label_photo: 'Photo link',
+skin_fill_title_price: 'Fill in the title and price.',
+skin_fill_required: 'Fill in photo, wear, float and pattern — these are required fields.',
+btn_list_skin: 'List',
+detail_seller: 'Seller',
+detail_buyer: 'Buyer',
+label_transfer_amount: 'Transfer amount, sum',
+withdraw_hint: 'Minimum — 50,000 sum. Withdrawal fee — {fee}%. Money is transferred manually to the specified details within some time.',
+label_amount_sum: 'Amount, sum',
+label_card_uzcard_humo: 'Uzcard/Humo card',
+warning_fio: "⚠️ Be sure to specify the cardholder's full name — the request won't be processed without it",
+btn_submit_withdraw: 'Submit withdrawal request',
+status_sent_waiting_hold: 'Sent, waiting for hold',
+status_waiting_buyer_confirm: "Sent, waiting for buyer's confirmation",
+status_hold_running: 'Hold is running',
+status_need_to_send: 'Needs to be sent',
+btn_sent: 'Sent',
+btn_cancel_sale: 'Cancel',
+btn_inspect_item: '🔍 Check in Steam',
+status_confirmed: 'Confirmed',
+status_seller_sent: 'Seller sent',
+btn_received: 'Received',
+btn_not_received: "Didn't receive",
+status_disputed: 'Dispute — waiting for admin decision',
+status_waiting_send: 'Waiting to be sent',
+countdown_credit: 'Credited in: ',
+countdown_hold: 'Hold clears in: ',
+role_selling: 'Selling',
+role_buying: 'Buying',
+btn_message: '✉️ Message',
+detail_wear: 'Wear',
+detail_rarity: 'Rarity',
+detail_price: 'Price',
+value_anon: 'anonymous',
+value_yes: 'Yes',
+btn_share: 'Share',
+btn_remove_listing: 'Remove from sale',
+label_new_price: 'New price, sum',
+label_your_price: 'Your price, sum',
+btn_buy_prefix: 'Buy',
+btn_make_offer: 'Make an offer',
+btn_send_offer: 'Send offer',
+btn_edit_price: 'Edit price',
+btn_save_price: 'Save price',
+btn_copy: 'Copy',
+label_invited: 'Invited:',
+referral_wallet_label: 'Referral wallet',
+btn_claim_referral: 'Move to balance',
+open_via_telegram: 'Open via Telegram',
+no_active_deals: 'No active deals',
+load_failed: 'Failed to load',
+copied_text: 'Copied ✓',
+referral_bonus_text: (percent) => `Invite friends — ${percent}% of the price from each of their purchases on the platform accumulates in your referral wallet.`,
+header_menu_profile: 'Profile',
+header_menu_balance: 'Balance',
+header_menu_history: 'Deal history',
+header_menu_sell: 'Sell a skin',
+header_menu_support: 'Support',
+header_menu_auctions: 'Auction',
+header_menu_admin: 'Admin panel',
+kyc_title: '🪪 Seller application',
+kyc_hint: 'Needed for AML/KYC verification — no documents, just data for manual review by the admin.',
+kyc_label_fullname: 'Full name',
+kyc_placeholder_fullname: 'John Smith',
+kyc_label_phone: 'Phone number',
+kyc_label_country: 'Country of residence',
+kyc_placeholder_country: 'Uzbekistan',
+kyc_label_address: 'Home address',
+kyc_placeholder_address: 'City, street, house',
+kyc_btn_submit: 'Submit application',
+kyc_fill_all: 'Fill in all fields.',
+kyc_sending: 'Sending...',
+kyc_submitted_alert: "Application sent — wait for the admin's decision.",
+seller_section_title: '🪪 Seller status',
+seller_status_none_hint: 'Anyone can buy without restrictions. To list your own items and use a balance — you need to pass verification (full name, phone, country, address).',
+seller_btn_become: 'Become a seller',
+seller_status_pending: '⏳ Application under review — usually reviewed within a day.',
+seller_status_rejected: '❌ Application rejected. Check the details and submit again.',
+seller_btn_resubmit: 'Submit again',
+seller_status_verified: '✅ You are a seller — you can list items and use the balance.',
+totp_section_title: '🔐 Two-factor protection',
+totp_intro_hint: "Extra protection via an authenticator app (Google Authenticator, Microsoft Authenticator, or any other). Protects withdrawals and/or admin panel access even if someone gains access to your Telegram.",
+totp_btn_setup: 'Set up',
+totp_setup_hint: 'Open your authenticator app → add account manually (not via QR) → enter this key:',
+totp_label_code: 'Code from the app',
+totp_btn_confirm: 'Confirm',
+totp_ready_hint: '✅ Set up and ready to use.',
+totp_toggle_withdraw: 'Protect withdrawals',
+totp_toggle_admin: 'Protect admin panel access',
+totp_prompt_admin_login: 'Code to access the admin panel',
+totp_prompt_enable: 'Enter the code to enable protection',
+totp_prompt_disable: 'Enter the code to disable protection',
+totp_enter_code: 'Enter the code from the app.',
+totp_enter_code_short: 'Enter the code.',
+totp_checking: 'Checking...',
+totp_bad_code: 'Incorrect code, try again.',
+totp_bad_code_short: 'Incorrect code.',
+totp_locked_msg: 'Too many wrong attempts — please wait 15 minutes.',
+discount_title: '🏷️ Discount',
+discount_label_type: 'Discount type',
+discount_type_percent: 'Percent, %',
+discount_type_fixed: 'Fixed amount, sum',
+discount_label_value_percent: 'Discount size, %',
+discount_label_value_fixed: 'Discount size, sum',
+discount_label_expires: 'Expiration (optional)',
+discount_btn_apply: 'Apply to this listing',
+discount_btn_remove: 'Remove discount from listing',
+discount_category_hint: 'Or apply at once to all your active listings of the same model ({category}):',
+discount_btn_apply_category: 'Apply to the whole category',
+btn_close: 'Close',
+discount_info_now: 'Now',
+discount_info_current: 'Current price',
+discount_need_value: 'Specify the discount size.',
+discount_saving: 'Saving...',
+discount_applied_ok: 'Discount applied ✓',
+discount_removing: 'Removing...',
+discount_removed_ok: 'Discount removed ✓',
+discount_no_category: "This listing has no model specified — bulk discount isn't available.",
+discount_confirm_category: 'Apply the discount to all your active "{weapon}" listings?',
+discount_applying: 'Applying...',
+discount_applied_category: 'Discount applied to {n} listing(s) ✓',
+trade_make_title: '🔄 Offer a trade',
+trade_make_pick_hint: 'Pick one of your listings to trade:',
+trade_make_label_cash: 'Extra payment, sum',
+trade_make_label_payer: 'Who pays extra',
+trade_make_payer_from: 'Me (the one offering)',
+trade_make_payer_to: 'Owner of the selected listing',
+trade_make_btn_send: 'Send offer',
+trade_make_target: 'You will get: "{title}" ({price})',
+trade_make_cash_hint: "Optional — either side can add cash if the items aren't equal in value.",
+trade_make_no_skins: "You have no other active listings to trade.",
+trade_make_sending: 'Sending...',
+trade_make_sent_ok: 'Offer sent ✓',
+trade_card_you_pay: "You're paying extra",
+trade_card_they_pay: "They'll pay you extra",
+trade_card_awaiting_you: 'Awaiting your decision',
+trade_card_btn_accept: 'Accept',
+trade_card_btn_decline: 'Decline',
+trade_card_awaiting_other: "Waiting for the other side's reply",
+trade_card_btn_cancel: 'Cancel',
+trade_card_accepted: 'Accepted — deliver the items via Steam',
+trade_card_partner_sent: '(partner already sent)',
+trade_card_btn_sent: 'I sent it',
+trade_card_btn_received: 'I received it',
+trade_card_waiting_partner: "Waiting for partner's confirmation",
+trade_card_completed: 'Trade completed',
+trade_card_declined: 'Declined',
+trade_card_cancelled: 'Cancelled',
+trade_card_expired: 'Expired',
+trade_card_they_offered: 'They offered you',
+trade_card_you_offered: 'You offered',
+trade_none: 'No trades',
+trade_mark_saved: 'Mark saved — waiting for the other side.',
+trade_confirm_accept: 'Accept this trade?',
+trade_accepted_ok: 'Trade accepted ✓',
+trade_confirm_decline: 'Decline this offer?',
+trade_confirm_cancel: 'Cancel your offer?',
+trade_marked_ok: 'Marked ✓',
+trade_completed_alert: 'Trade completed successfully!',
+trade_you: 'You',
+trade_seller: 'Seller',
+trade_buyer: 'Buyer',
+order_status_RESERVED: 'Listing reserved',
+order_status_PAYMENT_CONFIRMED: 'Payment confirmed',
+order_status_TRADE_PENDING: 'Waiting for item transfer',
+order_status_DELIVERY_CONFIRMED: 'Delivery confirmed',
+order_status_COMPLETED: 'Deal completed',
+order_status_PAYOUT_PENDING: 'Waiting for hold to end',
+order_status_PAYOUT_PROCESSING: 'Payout processing',
+order_status_PAYOUT_COMPLETED: 'Funds paid out to seller',
+order_status_DISPUTE_OPENED: 'Dispute opened',
+order_status_REFUNDED: 'Money refunded to buyer',
+order_status_ORDER_CANCELLED: 'Order cancelled',
+trust_level_new: 'New',
+trust_level_verified: 'Verified',
+trust_level_trusted: 'Trusted',
+wishlist_section_title: '⭐ Wishlist',
+wishlist_intro_hint: "Save what you're looking for — we'll notify you when a matching listing appears or drops in price.",
+wishlist_label_query: "What you're looking for (name/model)",
+wishlist_placeholder_query: 'AK-47 | Redline',
+wishlist_label_max_price: 'No more than, sum (optional)',
+wishlist_btn_add: 'Add',
+wishlist_empty: 'The list is empty.',
+wishlist_max_price_label: 'No more than',
+wishlist_need_query: "Specify what you're looking for.",
+wishlist_adding: 'Adding...',
+wishlist_added_ok: 'Added ✓',
+wishlist_too_many: 'Too many items in the list — remove something you no longer need.',
+price_history_title: '📈 Price history for this item',
+header_menu_buy_requests: 'Wanted',
+br_screen_title: '🔍 Wanted',
+br_create_title: 'Publish a request',
+br_label_title: "What you're looking for (name/model)",
+br_placeholder_title: 'AWP | Asiimov',
+br_label_max_price: 'Willing to pay up to, sum (optional)',
+br_btn_create: 'Publish',
+br_my_requests_title: 'My requests',
+br_public_list_title: "Others' requests — you can respond",
+br_respond_title: '🔍 Respond with your listing',
+br_label_price: 'Your price, sum',
+br_btn_respond: 'Respond',
+br_no_my_requests: "You don't have any requests yet.",
+br_status_open: 'Open',
+br_status_fulfilled: 'Fulfilled',
+br_status_cancelled: 'Cancelled',
+br_status_expired: 'Expired',
+br_btn_cancel: 'Cancel',
+br_no_max_price: "Price doesn't matter",
+br_max_price_label: 'Up to',
+br_btn_accept: 'Accept',
+br_btn_decline: 'Decline',
+br_resp_pending: 'Awaiting decision',
+br_resp_accepted: 'Accepted',
+br_resp_declined: 'Declined',
+br_confirm_cancel: 'Cancel this request?',
+br_confirm_accept: 'Accept this response? The listing will be reserved for you.',
+br_accepted_ok: 'Response accepted ✓',
+br_no_public_requests: 'No open requests right now.',
+br_respond_target: 'Wanted: "{title}"',
+br_no_own_skins: "You don't have any active listings to respond with.",
+br_need_price: 'Specify a price.',
+br_sending: 'Sending...',
+br_sent_ok: 'Response sent ✓',
+br_need_title: "Specify what you're looking for.",
+br_creating: 'Publishing...',
+br_created_ok: 'Request published ✓',
+btn_export_csv: 'Export CSV',
+filters_saved_title: 'Saved filters',
+filters_btn_save_current: '💾 Save current filter',
+filters_saved_none: 'No saved filters yet.',
+filters_saved_empty_desc: 'No parameters',
+filters_saved_ok: 'Filter saved ✓',
+onb_0_title: 'Welcome to DGhostMarket',
+onb_0_text: "A marketplace for buying and selling CS2 skins. We'll show you how it all works in a few screens.",
+onb_1_title: 'Buying',
+onb_1_text: "Direct payment for each listing — Stars, crypto, or P2P card. There's no internal balance for purchases — you pay exactly for what you chose.",
+onb_2_title: 'Selling',
+onb_2_text: "To list items, you need to pass a simple verification once (full name, phone, country, address). After that, income from sales accumulates on your balance, which you can withdraw.",
+onb_3_title: 'Hold and safety',
+onb_3_text: "After a sale, money is held for 7 days (the standard Steam trade ban), then it goes to the seller. The system monitors suspicious activity — the platform tries to protect both sides.",
+onb_btn_skip: 'Skip',
+onb_btn_next: 'Next',
+onb_btn_done: "Got it, let's start",
+seller_stats_line: '👤 Seller has: {trades} deals, {disputes} disputes',
 },
 };
 
@@ -4672,10 +5245,11 @@ if (dict[key]) el.setAttribute('placeholder', dict[key]);
 
 document.getElementById('langBtnRu').classList.toggle('active', currentLang === 'ru');
 document.getElementById('langBtnUz').classList.toggle('active', currentLang === 'uz');
+document.getElementById('langBtnEn').classList.toggle('active', currentLang === 'en');
 }
 
 function setLanguage(lang){
-if (lang !== 'ru' && lang !== 'uz') return;
+if (lang !== 'ru' && lang !== 'uz' && lang !== 'en') return;
 currentLang = lang;
 applyTranslations();
 applyFeePercents();
@@ -4707,6 +5281,7 @@ body: JSON.stringify({ init_data: tg.initData, language: lang })
 
 document.getElementById('langBtnRu').addEventListener('click', () => setLanguage('ru'));
 document.getElementById('langBtnUz').addEventListener('click', () => setLanguage('uz'));
+document.getElementById('langBtnEn').addEventListener('click', () => setLanguage('en'));
 
 applyTranslations();
 applyFeePercents();
@@ -5653,7 +6228,7 @@ el.innerHTML = '';
 return;
 }
 el.innerHTML = (data.order_code ? `<div style="font-family:'JetBrains Mono', monospace; margin-bottom:4px;">${data.order_code}</div>` : '') + history.map(h => {
-const t = h.created_at ? new Date(h.created_at).toLocaleString(currentLang === 'uz' ? 'uz-UZ' : 'ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+const t = h.created_at ? new Date(h.created_at).toLocaleString(currentLang === 'uz' ? 'uz-UZ' : (currentLang === 'en' ? 'en-US' : 'ru-RU'), { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
 const label = getOrderStatusLabel(h.status);
 return `<div style="display:flex; justify-content:space-between; gap:8px; padding:2px 0;"><span>✓ ${label}</span><span>${t}</span></div>`;
 }).join('');
@@ -6381,6 +6956,7 @@ document.getElementById('filterPriceMax').value = activeFilters.priceMax ?? '';
 document.getElementById('filterFloatMin').value = activeFilters.floatMin ?? '';
 document.getElementById('filterFloatMax').value = activeFilters.floatMax ?? '';
 document.getElementById('filterStickers').value = activeFilters.stickers;
+renderSavedFilters();
 document.getElementById('filtersOverlay').classList.add('show');
 });
 
@@ -6452,7 +7028,7 @@ document.getElementById('tradeDetailsTimeline').innerHTML = '<div class="shop-hi
 return;
 }
 document.getElementById('tradeDetailsTimeline').innerHTML = history.map(h => {
-const t = h.created_at ? new Date(h.created_at).toLocaleString(currentLang === 'uz' ? 'uz-UZ' : 'ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+const t = h.created_at ? new Date(h.created_at).toLocaleString(currentLang === 'uz' ? 'uz-UZ' : (currentLang === 'en' ? 'en-US' : 'ru-RU'), { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
 const label = getOrderStatusLabel(h.status);
 return `
 <div class="trade-timeline-item">
@@ -7272,6 +7848,104 @@ applyFiltersAndRender();
 document.getElementById('filtersOverlay').classList.remove('show');
 });
 
+// ---------------- Сохранённые фильтры (localStorage) ----------------
+
+const SAVED_FILTERS_KEY = 'dghost_saved_filters';
+const SAVED_FILTERS_MAX = 5;
+
+function getSavedFilters(){
+try {
+const raw = localStorage.getItem(SAVED_FILTERS_KEY);
+return raw ? JSON.parse(raw) : [];
+} catch (e) {
+return [];
+}
+}
+
+function setSavedFilters(list){
+try {
+localStorage.setItem(SAVED_FILTERS_KEY, JSON.stringify(list));
+} catch (e) {}
+}
+
+function describeFilter(f){
+const parts = [];
+if (f.category && f.category !== 'all') parts.push(f.category);
+if (f.priceMin || f.priceMax) parts.push(`${f.priceMin || 0}–${f.priceMax || '∞'}`);
+if (f.stickers && f.stickers !== 'any') parts.push(f.stickers === 'yes' ? '🎨' : '🚫🎨');
+return parts.length ? parts.join(' · ') : (I18N[currentLang] || I18N.ru).filters_saved_empty_desc;
+}
+
+function renderSavedFilters(){
+const dict = I18N[currentLang] || I18N.ru;
+const list = getSavedFilters();
+const el = document.getElementById('savedFiltersList');
+if (!list.length){
+el.innerHTML = `<div class="shop-hint" style="font-size:11px;">${dict.filters_saved_none}</div>`;
+return;
+}
+el.innerHTML = list.map((f, i) => `
+<div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.06);">
+<button type="button" data-apply-saved="${i}" style="background:none; border:none; color:var(--silver); font-size:12px; text-align:left; flex:1; cursor:pointer; padding:4px 0;">📂 ${escapeHtml(describeFilter(f))}</button>
+<button type="button" data-delete-saved="${i}" style="background:none; border:none; color:var(--muted); font-size:14px; cursor:pointer; padding:4px 8px;">✕</button>
+</div>
+`).join('');
+}
+
+document.getElementById('savedFiltersList').addEventListener('click', (e) => {
+const applyBtn = e.target.closest('[data-apply-saved]');
+const deleteBtn = e.target.closest('[data-delete-saved]');
+if (applyBtn){
+const f = getSavedFilters()[Number(applyBtn.dataset.applySaved)];
+if (!f) return;
+document.getElementById('filterPriceMin').value = f.priceMin ?? '';
+document.getElementById('filterPriceMax').value = f.priceMax ?? '';
+document.getElementById('filterFloatMin').value = f.floatMin ?? '';
+document.getElementById('filterFloatMax').value = f.floatMax ?? '';
+document.getElementById('filterStickers').value = f.stickers || 'any';
+activeFilters = {
+priceMin: f.priceMin ?? null, priceMax: f.priceMax ?? null,
+floatMin: f.floatMin ?? null, floatMax: f.floatMax ?? null,
+stickers: f.stickers || 'any',
+};
+if (f.category && typeof currentCategory !== 'undefined'){
+currentCategory = f.category;
+if (typeof renderCategoryChips === 'function') renderCategoryChips();
+}
+updateFiltersBadge();
+applyFiltersAndRender();
+document.getElementById('filtersOverlay').classList.remove('show');
+}
+if (deleteBtn){
+const list = getSavedFilters();
+list.splice(Number(deleteBtn.dataset.deleteSaved), 1);
+setSavedFilters(list);
+renderSavedFilters();
+}
+});
+
+document.getElementById('saveCurrentFilterBtn').addEventListener('click', () => {
+const dict = I18N[currentLang] || I18N.ru;
+const priceMin = document.getElementById('filterPriceMin').value;
+const priceMax = document.getElementById('filterPriceMax').value;
+const floatMin = document.getElementById('filterFloatMin').value;
+const floatMax = document.getElementById('filterFloatMax').value;
+const newFilter = {
+priceMin: priceMin !== '' ? Number(priceMin) : null,
+priceMax: priceMax !== '' ? Number(priceMax) : null,
+floatMin: floatMin !== '' ? Number(floatMin) : null,
+floatMax: floatMax !== '' ? Number(floatMax) : null,
+stickers: document.getElementById('filterStickers').value,
+category: typeof currentCategory !== 'undefined' ? currentCategory : 'all',
+};
+const list = getSavedFilters();
+list.unshift(newFilter);
+if (list.length > SAVED_FILTERS_MAX) list.length = SAVED_FILTERS_MAX;
+setSavedFilters(list);
+renderSavedFilters();
+showAlert(dict.filters_saved_ok);
+});
+
 const RARITY_LABEL_RU = {
 'Consumer Grade': 'Ширпотреб',
 'Industrial Grade': 'Промышленное',
@@ -7294,6 +7968,17 @@ const RARITY_LABEL_UZ = {
 'Extraordinary': "G'ayrioddiy",
 };
 
+const RARITY_LABEL_EN = {
+'Consumer Grade': 'Consumer Grade',
+'Industrial Grade': 'Industrial Grade',
+'Mil-Spec Grade': 'Mil-Spec Grade',
+'Restricted': 'Restricted',
+'Classified': 'Classified',
+'Covert': 'Covert',
+'Contraband': 'Contraband',
+'Extraordinary': 'Extraordinary',
+};
+
 const WEAR_LABEL_FULL = {
 FN: 'Прямо с завода',
 MW: 'Немного поношенное',
@@ -7308,6 +7993,14 @@ MW: 'Biroz eskirgan',
 FT: 'Dala sinovidan o\'tgan',
 WW: 'Eskirgan',
 BS: "Jangda toblangan",
+};
+
+const WEAR_LABEL_FULL_EN = {
+FN: 'Factory New',
+MW: 'Minimal Wear',
+FT: 'Field-Tested',
+WW: 'Well-Worn',
+BS: 'Battle-Scarred',
 };
 
 function buyDetailRow(label, value){
@@ -7372,9 +8065,20 @@ body: JSON.stringify({ init_data: tg.initData })
 
 loadPriceHistoryChart(skin.title);
 
+const sellerStatsBox = document.getElementById('sellerStatsBox');
+if (skin.seller_completed_trades !== undefined && skin.seller_id !== currentUserId){
+const statsDict = I18N[currentLang] || I18N.ru;
+sellerStatsBox.textContent = statsDict.seller_stats_line
+.replace('{trades}', skin.seller_completed_trades)
+.replace('{disputes}', skin.seller_disputes ?? 0);
+sellerStatsBox.style.display = '';
+} else {
+sellerStatsBox.style.display = 'none';
+}
+
 const dict = I18N[currentLang] || I18N.ru;
-const rarityMap = currentLang === 'uz' ? RARITY_LABEL_UZ : RARITY_LABEL_RU;
-const wearMap = currentLang === 'uz' ? WEAR_LABEL_FULL_UZ : WEAR_LABEL_FULL;
+const rarityMap = currentLang === 'uz' ? RARITY_LABEL_UZ : (currentLang === 'en' ? RARITY_LABEL_EN : RARITY_LABEL_RU);
+const wearMap = currentLang === 'uz' ? WEAR_LABEL_FULL_UZ : (currentLang === 'en' ? WEAR_LABEL_FULL_EN : WEAR_LABEL_FULL);
 
 if (skin.photo_url){
 buyPhoto.src = skin.photo_url;
@@ -8457,12 +9161,25 @@ release_hold: 'Muzlatish yechildi',
 finalize_hold: 'Yechildi (bitim yakunlandi)',
 };
 
+const HISTORY_TYPE_LABELS_EN = {
+skin_sale: 'Skin sale',
+platform_fee: 'Platform fee',
+admin_adjust: 'Admin adjustment',
+topup_manual: 'Top-up',
+topup_stars: 'Top-up (Stars)',
+admin_credit: 'Credited by admin',
+referral_bonus: 'Referral bonus',
+hold: 'Funds held',
+release_hold: 'Hold released',
+finalize_hold: 'Deducted (deal completed)',
+};
+
 function historyRowHtml(item){
-const map = currentLang === 'uz' ? HISTORY_TYPE_LABELS_UZ : HISTORY_TYPE_LABELS_RU;
+const map = currentLang === 'uz' ? HISTORY_TYPE_LABELS_UZ : (currentLang === 'en' ? HISTORY_TYPE_LABELS_EN : HISTORY_TYPE_LABELS_RU);
 const label = map[item.type] || item.type;
 const isPositive = item.amount >= 0;
 const sign = isPositive ? '+' : '';
-const date = item.created_at ? new Date(item.created_at).toLocaleString(currentLang === 'uz' ? 'uz-UZ' : 'ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+const date = item.created_at ? new Date(item.created_at).toLocaleString(currentLang === 'uz' ? 'uz-UZ' : (currentLang === 'en' ? 'en-US' : 'ru-RU'), { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
 const photo = item.photo_url
 ? `<img class="history-row-photo" src="${item.photo_url}" alt="" onerror="this.style.display='none'">`
 : '';
@@ -8502,6 +9219,16 @@ document.getElementById('openHistoryBtn').addEventListener('click', () => {
 document.getElementById('historyList').innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).loading}</div>`;
 document.getElementById('historyOverlay').classList.add('show');
 loadHistory();
+});
+
+document.getElementById('exportSalesCsvBtn').addEventListener('click', () => {
+if (!tg || !tg.initData) return;
+const url = API_BASE + '/api/export/sales_csv?init_data=' + encodeURIComponent(tg.initData);
+if (tg.openLink){
+tg.openLink(url);
+} else {
+window.open(url, '_blank');
+}
 });
 
 document.getElementById('historyCloseBtn').addEventListener('click', () => {
@@ -9092,10 +9819,61 @@ document.body.style.overflow = '';
 document.getElementById('bottomNav').classList.remove('elevated');
 }
 
+const ONBOARDING_SEEN_KEY = 'dghost_onboarding_seen';
+let onboardingSlideIndex = 0;
+const ONBOARDING_SLIDES_COUNT = 4;
+
+function startAppAfterOnboarding(){
 if (deepLinkGiveaway){
 switchTab('timer');
 } else {
 switchTab('shop');
+}
+}
+
+function showOnboardingSlide(i){
+for (let s = 0; s < ONBOARDING_SLIDES_COUNT; s++){
+document.getElementById('onboardingSlide' + s).style.display = (s === i) ? '' : 'none';
+}
+document.querySelectorAll('.onboarding-dot').forEach((dot, idx) => {
+dot.classList.toggle('active', idx === i);
+});
+document.getElementById('onboardingNextBtn').textContent = (i === ONBOARDING_SLIDES_COUNT - 1)
+? (I18N[currentLang] || I18N.ru).onb_btn_done
+: (I18N[currentLang] || I18N.ru).onb_btn_next;
+}
+
+function finishOnboarding(){
+try { localStorage.setItem(ONBOARDING_SEEN_KEY, '1'); } catch (e) {}
+document.getElementById('onboardingOverlay').classList.remove('show');
+document.body.style.overflow = '';
+startAppAfterOnboarding();
+}
+
+document.getElementById('onboardingNextBtn').addEventListener('click', () => {
+if (onboardingSlideIndex < ONBOARDING_SLIDES_COUNT - 1){
+onboardingSlideIndex++;
+showOnboardingSlide(onboardingSlideIndex);
+} else {
+finishOnboarding();
+}
+});
+
+document.getElementById('onboardingSkipBtn').addEventListener('click', finishOnboarding);
+
+let onboardingAlreadySeen = false;
+try { onboardingAlreadySeen = localStorage.getItem(ONBOARDING_SEEN_KEY) === '1'; } catch (e) {}
+
+const hasAnyDeepLink = !!deepLinkSkinId || !!deepLinkAuctionId || deepLinkGiveaway;
+
+if (!onboardingAlreadySeen && !hasAnyDeepLink){
+onboardingSlideIndex = 0;
+showOnboardingSlide(0);
+document.getElementById('onboardingOverlay').style.height = window.innerHeight + 'px';
+document.getElementById('onboardingOverlay').classList.add('show');
+document.body.style.overflow = 'hidden';
+} else {
+startAppAfterOnboarding();
 }
 
 document.getElementById('welcomeSellBtn').addEventListener('click', () => {
@@ -10215,7 +10993,7 @@ let displayValue = value;
 if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(value)){
 // ISO-дата (например, конец подписки) — показываем читаемо
 const d = new Date(value);
-if (!isNaN(d)) displayValue = d.toLocaleDateString(currentLang === 'uz' ? 'uz-UZ' : 'ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
+if (!isNaN(d)) displayValue = d.toLocaleDateString(currentLang === 'uz' ? 'uz-UZ' : (currentLang === 'en' ? 'en-US' : 'ru-RU'), { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 return `<div class="history-row" style="border-bottom:1px solid var(--red-dim);">
 <span class="history-row-note">${escapeHtml(prettyFieldLabel(key))}</span>
@@ -10634,7 +11412,7 @@ return (h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`);
 
 function auctionCardHtml(a){
 const dict = I18N[currentLang] || I18N.ru;
-const wearMap = currentLang === 'uz' ? WEAR_LABEL_FULL_UZ : WEAR_LABEL_FULL;
+const wearMap = currentLang === 'uz' ? WEAR_LABEL_FULL_UZ : (currentLang === 'en' ? WEAR_LABEL_FULL_EN : WEAR_LABEL_FULL);
 const wearLabel = a.wear ? (wearMap[a.wear] || a.wear) : null;
 const floatStr = (a.float_value !== null && a.float_value !== undefined) ? Number(a.float_value).toFixed(4) : null;
 const photo = a.photo_url ? `<img src="${a.photo_url}" class="auction-card-photo" alt="" onerror="this.style.display='none'">` : '';
@@ -10720,7 +11498,7 @@ photo.style.display = '';
 photo.style.display = 'none';
 }
 
-const wearMap = currentLang === 'uz' ? WEAR_LABEL_FULL_UZ : WEAR_LABEL_FULL;
+const wearMap = currentLang === 'uz' ? WEAR_LABEL_FULL_UZ : (currentLang === 'en' ? WEAR_LABEL_FULL_EN : WEAR_LABEL_FULL);
 
 document.getElementById('auctionBidDetails').innerHTML = [
 buyDetailRow(dict.detail_wear, a.wear ? (wearMap[a.wear] || a.wear) : null),
