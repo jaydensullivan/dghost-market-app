@@ -9693,7 +9693,13 @@ inventoryStatus.textContent = forceRefresh ? 'Обновляю...' : 'Загру
 inventoryGrid.innerHTML = '';
 let url = API_BASE + '/api/steam/inventory?init_data=' + encodeURIComponent(tg.initData);
 if (forceRefresh) url += '&refresh=1';
-fetch(url)
+// WebView Telegram (и некоторые браузеры) могут закэшировать GET по
+// этому же URL — тогда повторный клик "Обновить" покажет тот же
+// самый старый ответ вместо нового сетевого запроса. Добавляем
+// метку времени + явный запрет кэша, чтобы URL был каждый раз
+// новым и кэш точно не сработал.
+url += '&_t=' + Date.now();
+fetch(url, { cache: 'no-store' })
 .then(async r => {
 if (!r.ok){
 const data = await r.json().catch(() => ({}));
