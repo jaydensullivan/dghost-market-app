@@ -149,6 +149,29 @@ display:flex;
 gap:12px;
 }
 
+/* Тактильная отдача при нажатии — единое правило для всех основных
+   кнопок приложения (раньше было только у 5 отдельных элементов из
+   более чем сотни кнопок). transition делает эффект плавным, а не
+   резким скачком. */
+.save,
+.welcome-btn,
+.steam-link-btn,
+.deal-action,
+.money-btn,
+.filters-btn{
+transition:transform 0.1s ease, opacity 0.1s ease;
+}
+
+.save:active,
+.welcome-btn:active,
+.steam-link-btn:active,
+.deal-action:active,
+.money-btn:active,
+.filters-btn:active{
+transform:scale(0.96);
+opacity:0.85;
+}
+
 .welcome-btn{
 flex:1;
 min-height:56px;
@@ -1248,7 +1271,7 @@ opacity:0.5;
 
 .set-discount-type-btn.active{
 opacity:1;
-border-color:#a855f7;
+border-color:var(--red);
 }
 
 .market-price-box .mp-row{
@@ -2365,17 +2388,17 @@ justify-content:center;
 
 <div class="edit-overlay" id="changelogBanner" style="z-index:8000;">
 <div class="edit-sheet">
-<h2 id="changelogTitle" style="margin:0 0 14px;">📣 Что нового</h2>
+<h2 id="changelogTitle" style="margin:0 0 14px;" data-i18n="changelog_title">📣 Что нового</h2>
 <ul id="changelogList" style="margin:0 0 16px; padding-left:20px; color:var(--silver); font-size:14px; line-height:1.6;"></ul>
-<button type="button" id="changelogOkBtn" class="welcome-btn primary" style="width:100%;">Понятно</button>
+<button type="button" id="changelogOkBtn" class="welcome-btn primary" style="width:100%;" data-i18n="btn_got_it">Понятно</button>
 </div>
 </div>
 
 <div class="welcome-overlay" id="mandatoryAgreementOverlay" style="background:var(--bg); z-index:10000; justify-content:center;">
 <div class="welcome-content" style="padding:0 20px;">
-<div class="welcome-greeting" style="font-size:16px; margin-bottom:12px;">📄 Пользовательское соглашение</div>
+<div class="welcome-greeting" style="font-size:16px; margin-bottom:12px;" data-i18n="agreement_title">📄 Пользовательское соглашение</div>
 <div id="agreementTextBox" style="max-height:50vh; overflow-y:auto; text-align:left; font-size:13px; line-height:1.5; color:var(--muted); background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px; white-space:pre-wrap;">Загрузка...</div>
-<button type="button" id="mandatoryAcceptAgreementBtn" class="welcome-btn primary" style="margin-top:14px; width:100%;">Принимаю условия</button>
+<button type="button" id="mandatoryAcceptAgreementBtn" class="welcome-btn primary" style="margin-top:14px; width:100%;" data-i18n="agreement_btn_accept">Принимаю условия</button>
 <div class="edit-status" id="mandatoryAgreementStatus" style="margin-top:8px;"></div>
 </div>
 </div>
@@ -2383,18 +2406,18 @@ justify-content:center;
 <div class="welcome-overlay" id="mandatorySteamOverlay" style="background:var(--bg); z-index:9999; justify-content:center;">
 <div class="welcome-content" style="padding:0 20px;">
 <video src="promo.mp4" autoplay loop muted playsinline disablepictureinpicture style="width:100%; max-width:260px; border-radius:16px; margin-bottom:16px; display:block; margin-left:auto; margin-right:auto;" onerror="this.style.display='none'"></video>
-<div class="welcome-greeting" style="font-size:16px;">🔗 Для работы с площадкой нужно привязать трейд-ссылку Steam — без неё нельзя ни купить, ни продать.</div>
+<div class="welcome-greeting" style="font-size:16px;" data-i18n="mandatory_steam_greeting">🔗 Для работы с площадкой нужно привязать трейд-ссылку Steam — без неё нельзя ни купить, ни продать.</div>
 <button type="button" id="mandatoryOpenSteamBtn" class="steam-link-btn secondary" style="margin-top:16px; width:100%;">
 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="vertical-align:-3px;margin-right:5px"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>
-Открыть страницу Steam с трейд-ссылкой
+<span data-i18n="btn_open_steam">Открыть страницу Steam с трейд-ссылкой</span>
 </button>
 <div class="edit-field" style="margin-top:16px; text-align:left;">
-<label for="mandatoryTradeLink">Трейд-ссылка Steam</label>
+<label for="mandatoryTradeLink" data-i18n="mandatory_steam_label">Трейд-ссылка Steam</label>
 <input id="mandatoryTradeLink" type="text" placeholder="https://steamcommunity.com/tradeoffer/new/?partner=...&token=...">
 </div>
-<button type="button" id="mandatoryLinkBtn" class="welcome-btn primary" style="margin-top:12px; width:100%;">Привязать и продолжить</button>
+<button type="button" id="mandatoryLinkBtn" class="welcome-btn primary" style="margin-top:12px; width:100%;" data-i18n="mandatory_steam_link_btn">Привязать и продолжить</button>
 <div class="edit-status" id="mandatorySteamStatus" style="margin-top:8px;"></div>
-<div class="shop-hint" style="margin-top:14px;">Нажми кнопку выше — откроется страница Steam с твоей трейд-ссылкой, останется скопировать и вставить сюда.</div>
+<div class="shop-hint" style="margin-top:14px;" data-i18n="mandatory_steam_hint">Нажми кнопку выше — откроется страница Steam с твоей трейд-ссылкой, останется скопировать и вставить сюда.</div>
 <button type="button" id="mandatorySteamLaterBtn" style="width:100%; margin-top:14px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="mandatory_steam_later">Добавить позже</button>
 </div>
 </div>
@@ -2527,18 +2550,18 @@ transform="rotate(-90 100 100)"></circle>
 <div class="digits">
 <div class="time-row" id="clock">00:00:00</div>
 <div class="time-labels">
-<span id="labelDays" style="display:none">дни</span>
-<span>часы</span><span>мин</span><span>сек</span>
+<span id="labelDays" style="display:none" data-i18n="timer_label_days">дни</span>
+<span data-i18n="timer_label_hours">часы</span><span data-i18n="timer_label_min">мин</span><span data-i18n="timer_label_sec">сек</span>
 </div>
-<div class="started-badge" id="startedBadge">СТАРТ!</div>
+<div class="started-badge" id="startedBadge" data-i18n="timer_started_badge">СТАРТ!</div>
 </div>
 </div>
 
 <div class="cta-frame">
-<button class="cta" id="ctaBtn">Участвовать</button>
+<button class="cta" id="ctaBtn" data-i18n="timer_cta_btn">Участвовать</button>
 </div>
 
-<div class="footer-note">Кто успел — <b>тот забрал</b></div>
+<div class="footer-note" data-i18n="timer_footer_note">Кто успел — тот забрал</div>
 
 </div>
 
@@ -2573,11 +2596,11 @@ transform="rotate(-90 100 100)"></circle>
 <span id="filtersActiveCount" class="filters-count" style="display:none;">0</span>
 </button>
 
-<button type="button" id="openSetsBtn" class="filters-btn" style="margin-top:6px; border-color:#a855f7;">
+<button type="button" id="openSetsBtn" class="filters-btn" style="margin-top:6px; border-color:var(--red);">
 <span data-i18n="sets_btn">Сеты оружия</span>
 </button>
 
-<button type="button" id="openBuilderBtn" class="filters-btn" style="margin-top:6px; border-color:#a855f7;">
+<button type="button" id="openBuilderBtn" class="filters-btn" style="margin-top:6px; border-color:var(--red);">
 <span data-i18n="builder_btn">🎯 Билдер под бюджет</span>
 </button>
 
@@ -2638,11 +2661,11 @@ transform="rotate(-90 100 100)"></circle>
 <button type="button" id="profileRelinkBtn" class="steam-link-btn secondary" data-i18n="btn_change_link">Изменить ссылку</button>
 </div>
 <div id="profileSteamUnlinked">
-<div class="shop-hint" style="margin-bottom:10px;">Нажми кнопку выше — откроется страница Steam с твоей трейд-ссылкой, останется скопировать и вставить сюда. Это разовая настройка, потом делать это не придётся.</div>
+<div class="shop-hint" style="margin-bottom:10px;" data-i18n="steam_link_profile_hint">Нажми кнопку выше — откроется страница Steam с твоей трейд-ссылкой, останется скопировать и вставить сюда. Это разовая настройка, потом делать это не придётся.</div>
 <div class="edit-field">
 <input id="pTradeLink" type="text" placeholder="https://steamcommunity.com/tradeoffer/new/?partner=...&token=...">
 </div>
-<button type="button" id="profileLinkBtn" class="steam-link-btn">Привязать трейд-ссылку</button>
+<button type="button" id="profileLinkBtn" class="steam-link-btn" data-i18n="steam_link_btn_link">Привязать трейд-ссылку</button>
 </div>
 <div class="edit-status" id="profileSteamStatus"></div>
 </div>
@@ -3072,55 +3095,55 @@ transform="rotate(-90 100 100)"></circle>
 
 <div class="profile-section admin-group" id="adminFeatureTogglesSection" data-group="finance" style="margin-top:10px; display:none;">
 <div class="profile-section-title">Доступность функций</div>
-<div style="font-size:12px; color:var(--muted); margin-bottom:4px;">Пополнение</div>
+<div style="font-size:12px; color:var(--muted); margin-bottom:4px;" data-i18n="admin_label_topup">Пополнение</div>
 <div class="admin-perm-chips">
-<label class="admin-perm-chip"><input type="checkbox" id="toggleTopupCard"> П2П (карта)</label>
-<label class="admin-perm-chip"><input type="checkbox" id="toggleTopupCrypto"> Крипто</label>
+<label class="admin-perm-chip"><input type="checkbox" id="toggleTopupCard"> <span data-i18n="admin_method_p2p_card">П2П (карта)</span></label>
+<label class="admin-perm-chip"><input type="checkbox" id="toggleTopupCrypto"> <span data-i18n="admin_method_crypto">Крипто</span></label>
 <label class="admin-perm-chip"><input type="checkbox" id="toggleTopupStars"> ⭐ Stars</label>
 </div>
-<div style="font-size:12px; color:var(--muted); margin:10px 0 4px;">Вывод</div>
+<div style="font-size:12px; color:var(--muted); margin:10px 0 4px;" data-i18n="section_withdraw">Вывод</div>
 <div class="admin-perm-chips">
-<label class="admin-perm-chip"><input type="checkbox" id="toggleWithdrawCard"> П2П (карта)</label>
-<label class="admin-perm-chip"><input type="checkbox" id="toggleWithdrawCrypto"> Крипто</label>
+<label class="admin-perm-chip"><input type="checkbox" id="toggleWithdrawCard"> <span data-i18n="admin_method_p2p_card">П2П (карта)</span></label>
+<label class="admin-perm-chip"><input type="checkbox" id="toggleWithdrawCrypto"> <span data-i18n="admin_method_crypto">Крипто</span></label>
 </div>
-<div class="shop-hint" style="margin-top:8px;">Видно и настраивается только владельцу. Выключенный способ пропадает у клиента из выбора при пополнении/выводе.</div>
+<div class="shop-hint" style="margin-top:8px;" data-i18n="admin_payment_methods_hint">Видно и настраивается только владельцу. Выключенный способ пропадает у клиента из выбора при пополнении/выводе.</div>
 <div class="edit-field" style="margin-top:10px;">
-<label for="adminStarsRate">Курс: сум за 1 ★</label>
+<label for="adminStarsRate" data-i18n="admin_stars_rate_label">Курс: сум за 1 ★</label>
 <input id="adminStarsRate" type="number" min="1" placeholder="200">
 </div>
-<button type="button" id="adminSaveStarsRateBtn" class="steam-link-btn secondary">Сохранить курс</button>
+<button type="button" id="adminSaveStarsRateBtn" class="steam-link-btn secondary" data-i18n="admin_btn_save_rate">Сохранить курс</button>
 <div class="edit-status" id="adminStarsRateStatus"></div>
-<div style="font-size:12px; color:var(--muted); margin:14px 0 4px;">Прямая оплата за лот</div>
+<div style="font-size:12px; color:var(--muted); margin:14px 0 4px;" data-i18n="admin_direct_payment_title">Прямая оплата за лот</div>
 <div class="admin-perm-chips">
-<label class="admin-perm-chip"><input type="checkbox" id="toggleDirectStarsPurchase"> ⭐ Оплата лота напрямую через Stars</label>
-<label class="admin-perm-chip"><input type="checkbox" id="toggleDirectCryptoPurchase"> 💳 Оплата лота напрямую криптой</label>
-<label class="admin-perm-chip"><input type="checkbox" id="toggleDirectP2pPurchase"> 🏦 Оплата лота напрямую П2П (карта, ручное подтверждение)</label>
+<label class="admin-perm-chip"><input type="checkbox" id="toggleDirectStarsPurchase"> ⭐ <span data-i18n="admin_direct_stars">Оплата лота напрямую через Stars</span></label>
+<label class="admin-perm-chip"><input type="checkbox" id="toggleDirectCryptoPurchase"> 💳 <span data-i18n="admin_direct_crypto">Оплата лота напрямую криптой</span></label>
+<label class="admin-perm-chip"><input type="checkbox" id="toggleDirectP2pPurchase"> 🏦 <span data-i18n="admin_direct_p2p">Оплата лота напрямую П2П (карта, ручное подтверждение)</span></label>
 </div>
-<div class="shop-hint" style="margin-top:8px;">Покупатель всегда сам выбирает способ оплаты на карточке лота — с баланса, Stars или криптой. Здесь включаются/выключаются именно варианты Stars/крипта; оплата с баланса доступна всегда.</div>
+<div class="shop-hint" style="margin-top:8px;" data-i18n="admin_direct_payment_hint">Покупатель всегда сам выбирает способ оплаты на карточке лота — Stars, крипта или П2П. Здесь включаются/выключаются конкретные варианты; оплаты с баланса у покупателя больше нет.</div>
 </div>
 
 <div class="profile-section admin-group" id="adminFinanceSummarySection" data-group="finance" style="margin-top:10px; display:none;">
-<div class="profile-section-title">Пополнения и выводы (всего)</div>
+<div class="profile-section-title" data-i18n="admin_topups_withdrawals_total">Пополнения и выводы (всего)</div>
 <div class="money-btn-row">
 <div class="admin-commission-box">
-<div class="admin-commission-label">Всего пополнено</div>
+<div class="admin-commission-label" data-i18n="admin_total_topped">Всего пополнено</div>
 <div class="admin-commission-value" id="adminTotalTopped">—</div>
 </div>
 <div class="admin-commission-box">
-<div class="admin-commission-label">Всего выведено</div>
+<div class="admin-commission-label" data-i18n="admin_total_withdrawn">Всего выведено</div>
 <div class="admin-commission-value" id="adminTotalWithdrawn">—</div>
 </div>
 </div>
 
-<div class="profile-section-title" style="font-size:12px; margin-top:16px;">Топ-10 по пополнениям</div>
-<div id="adminTopTopupersList"><div class="skins-empty" style="padding:12px 4px;">Загрузка...</div></div>
+<div class="profile-section-title" style="font-size:12px; margin-top:16px;" data-i18n="admin_top10_toppers">Топ-10 по пополнениям</div>
+<div id="adminTopTopupersList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
 
-<div class="profile-section-title" style="font-size:12px; margin-top:16px;">История клиента</div>
+<div class="profile-section-title" style="font-size:12px; margin-top:16px;" data-i18n="admin_client_history">История клиента</div>
 <div class="edit-field">
 <label for="adminClientHistoryId">Telegram user_id</label>
 <input id="adminClientHistoryId" type="number" placeholder="123456789">
 </div>
-<button type="button" id="adminClientHistoryBtn" class="steam-link-btn secondary">Показать</button>
+<button type="button" id="adminClientHistoryBtn" class="steam-link-btn secondary" data-i18n="admin_btn_show">Показать</button>
 <div id="adminClientHistoryResult" style="margin-top:10px;"></div>
 </div>
 
@@ -3157,7 +3180,7 @@ transform="rotate(-90 100 100)"></circle>
 <button type="button" id="adminAddAdminBtn" class="money-btn" data-i18n="admin_btn_add_admin">+ Админ</button>
 <button type="button" id="adminAddAuctioneerBtn" class="money-btn" data-i18n="admin_btn_add_auctioneer">+ Организатор</button>
 <button type="button" id="adminAddSupportAdminBtn" class="money-btn" data-i18n="admin_btn_add_support_admin">+ Пультовый</button>
-<button type="button" id="adminBlockUserBtn" class="money-btn" style="background:rgba(224,85,90,0.15); border-color:#e0555a;">🚫 Заблокировать</button>
+<button type="button" id="adminBlockUserBtn" class="money-btn" style="background:rgba(224,85,90,0.15); border-color:#e0555a;">🚫 <span data-i18n="admin_btn_block">Заблокировать</span></button>
 </div>
 <div class="edit-status" id="adminPeopleStatus"></div>
 </div>
@@ -3204,7 +3227,7 @@ transform="rotate(-90 100 100)"></circle>
 
 <div class="edit-overlay" id="p2pSkinOverlay">
 <div class="edit-sheet">
-<h2 style="margin:0 0 14px;">🏦 Оплата П2П</h2>
+<h2 style="margin:0 0 14px;" data-i18n="p2p_skin_title">🏦 Оплата П2П</h2>
 <div class="topup-details-box" id="p2pSkinDetailsBox">
 <div class="topup-details-text" id="p2pSkinDetailsText">Загрузка реквизитов...</div>
 <button type="button" id="p2pSkinCopyBtn" class="topup-copy-btn">
@@ -3213,16 +3236,16 @@ transform="rotate(-90 100 100)"></circle>
 </button>
 </div>
 <div class="edit-field">
-<label>Сумма к переводу</label>
+<label data-i18n="p2p_skin_amount_label">Сумма к переводу</label>
 <div id="p2pSkinAmount" style="font-size:20px; font-weight:700; color:var(--silver);">—</div>
 </div>
 <div class="edit-field">
-<label>Скриншот чека</label>
+<label data-i18n="p2p_skin_receipt_label">Скриншот чека</label>
 <input type="file" id="p2pSkinReceiptInput" accept="image/*" style="color:var(--silver);">
 <img id="p2pSkinReceiptPreview" style="display:none; max-width:100%; max-height:180px; margin-top:8px; border-radius:8px;">
 </div>
-<div class="topup-warning">⚠️ Переведи ровно эту сумму на реквизиты выше, приложи скриншот чека и нажми «Отправил, подтверждаю».</div>
-<button type="button" id="p2pSkinSentBtn" class="welcome-btn primary" style="width:100%; margin-top:12px;" disabled>Отправил, подтверждаю</button>
+<div class="topup-warning" data-i18n="p2p_skin_warning">⚠️ Переведи ровно эту сумму на реквизиты выше, приложи скриншот чека и нажми «Отправил, подтверждаю».</div>
+<button type="button" id="p2pSkinSentBtn" class="welcome-btn primary" style="width:100%; margin-top:12px;" disabled data-i18n="p2p_skin_sent_btn">Отправил, подтверждаю</button>
 <div class="edit-status" id="p2pSkinStatus" style="margin-top:8px;"></div>
 <button type="button" id="p2pSkinCloseBtn" style="width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_cancel">Отмена</button>
 </div>
@@ -3233,8 +3256,8 @@ transform="rotate(-90 100 100)"></circle>
 <div style="margin:-20px -20px 16px; padding:20px; border-radius:14px 14px 0 0; background-image:linear-gradient(180deg, rgba(10,7,16,0.55), rgba(10,7,16,0.92)), url('https://jaydensullivan.github.io/dghost-market-app/coins-scattered.png'); background-size:cover; background-position:center 25%;">
 <h2 data-i18n="section_topup" style="margin:0;">Пополнить баланс</h2>
 </div>
-<button type="button" id="topupCryptoBtn" class="steam-link-btn" style="margin-bottom:12px; display:none;">💳 Оплатить криптовалютой</button>
-<button type="button" id="topupStarsBtn" class="steam-link-btn" style="margin-bottom:12px; display:none;">⭐ Оплатить Stars</button>
+<button type="button" id="topupCryptoBtn" class="steam-link-btn" style="margin-bottom:12px; display:none;" data-i18n="topup_btn_crypto">💳 Оплатить криптовалютой</button>
+<button type="button" id="topupStarsBtn" class="steam-link-btn" style="margin-bottom:12px; display:none;" data-i18n="topup_btn_stars">⭐ Оплатить Stars</button>
 <div class="topup-details-box" id="topupDetailsBox">
 <div class="topup-details-text" id="topupDetailsText">Загрузка реквизитов...</div>
 <button type="button" id="topupCopyBtn" class="topup-copy-btn">
@@ -3268,8 +3291,8 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 <div class="shop-hint" style="margin-bottom:10px;" data-i18n="withdraw_hint">Минимум — <span id="withdrawMinLabel">50,000</span> сум. Комиссия за вывод — <span id="withdrawFeeLabel">2.5</span>%. Деньги переводятся вручную на указанные реквизиты в течение некоторого времени.</div>
 <div class="btn-row" style="margin-bottom:10px;">
-<button type="button" class="steam-link-btn secondary withdraw-method-btn active" data-method="card" id="withdrawCardMethodBtn" style="flex:1;">На карту</button>
-<button type="button" class="steam-link-btn secondary withdraw-method-btn" data-method="crypto" id="withdrawCryptoMethodBtn" style="flex:1; display:none;">В крипту (USDT)</button>
+<button type="button" class="steam-link-btn secondary withdraw-method-btn active" data-method="card" id="withdrawCardMethodBtn" style="flex:1;" data-i18n="withdraw_method_card">На карту</button>
+<button type="button" class="steam-link-btn secondary withdraw-method-btn" data-method="crypto" id="withdrawCryptoMethodBtn" style="flex:1; display:none;" data-i18n="withdraw_method_crypto">В крипту (USDT)</button>
 </div>
 <div class="edit-field">
 <label for="wAmount" data-i18n="label_amount_sum">Сумма, сум</label>
@@ -3282,12 +3305,12 @@ transform="rotate(-90 100 100)"></circle>
 <input id="wDetails" type="text" placeholder="8600 1234 5678 9012, Иванов И.И.">
 </div>
 <div class="edit-field" id="withdrawCryptoField" style="display:none;">
-<label for="wCryptoAddress">Адрес кошелька USDT (сеть TRC20)</label>
-<div class="shop-hint" style="margin-bottom:6px;">Отправь только адрес в сети TRC20 (Tron) — на другую сеть деньги потеряются безвозвратно.</div>
+<label for="wCryptoAddress" data-i18n="withdraw_crypto_address_label">Адрес кошелька USDT (сеть TRC20)</label>
+<div class="shop-hint" style="margin-bottom:6px;" data-i18n="withdraw_crypto_address_hint">Отправь только адрес в сети TRC20 (Tron) — на другую сеть деньги потеряются безвозвратно.</div>
 <input id="wCryptoAddress" type="text" placeholder="TXYZ...">
 </div>
 <div class="edit-field" id="withdrawTotpField" style="display:none;">
-<label>Код 2FA</label>
+<label data-i18n="withdraw_totp_label">Код 2FA</label>
 <input id="wTotpCode" type="text" inputmode="numeric" maxlength="6" placeholder="123456">
 </div>
 <div class="edit-actions">
@@ -3647,18 +3670,18 @@ transform="rotate(-90 100 100)"></circle>
 <div class="buy-sticky-bar">
 <button type="button" id="buyCancel" data-i18n="btn_cancel">Отмена</button>
 <div id="buyPaymentMethods" style="display:flex; flex-direction:column; gap:8px; flex:1;">
-<div id="buyNoPaymentHint" class="shop-hint" style="display:none; text-align:center;">Сейчас нет доступного способа оплаты — напиши в поддержку.</div>
+<div id="buyNoPaymentHint" class="shop-hint" style="display:none; text-align:center;" data-i18n="buy_no_payment_hint">Сейчас нет доступного способа оплаты — напиши в поддержку.</div>
 <button type="button" id="buyConfirmBalance" class="save" style="display:none;">💰 <span data-i18n="btn_buy_prefix">Купить</span> · <span id="buyPrice">—</span></button>
-<button type="button" id="buyConfirmStars" class="save" style="display:none;">⭐ Оплатить Stars</button>
-<button type="button" id="buyConfirmCrypto" class="save" style="display:none;">💳 Оплатить криптой</button>
-<button type="button" id="buyConfirmP2P" class="save" style="display:none;">🏦 Оплатить П2П (карта)</button>
+<button type="button" id="buyConfirmStars" class="save" style="display:none;" data-i18n="buy_pay_stars">⭐ Оплатить Stars</button>
+<button type="button" id="buyConfirmCrypto" class="save" style="display:none;" data-i18n="buy_pay_crypto">💳 Оплатить криптой</button>
+<button type="button" id="buyConfirmP2P" class="save" style="display:none;" data-i18n="buy_pay_p2p">🏦 Оплатить П2П (карта)</button>
 </div>
 <button type="button" id="buyMakeOfferBtn" class="steam-link-btn secondary" data-i18n="btn_make_offer">Предложить цену</button>
-<button type="button" id="buyMakeTradeBtn" class="steam-link-btn secondary" style="display:none;">🔄 Предложить обмен</button>
+<button type="button" id="buyMakeTradeBtn" class="steam-link-btn secondary" style="display:none;" data-i18n="buy_make_trade">🔄 Предложить обмен</button>
 <button type="button" id="buySendOfferBtn" class="save" style="display:none;" data-i18n="btn_send_offer">Отправить предложение</button>
 <button type="button" id="buyEditPriceBtn" class="save" style="display:none;" data-i18n="btn_edit_price">Изменить цену</button>
 <button type="button" id="buySavePriceBtn" class="save" style="display:none;" data-i18n="btn_save_price">Сохранить цену</button>
-<button type="button" id="buyDiscountBtn" class="steam-link-btn secondary" style="display:none;">🏷️ Скидка</button>
+<button type="button" id="buyDiscountBtn" class="steam-link-btn secondary" style="display:none;" data-i18n="buy_discount_btn">🏷️ Скидка</button>
 </div>
 </div>
 
@@ -4094,7 +4117,7 @@ btn_copy: 'Скопировать',
 label_invited: 'Приглашено:',
 referral_wallet_label: 'Реферальный кошелёк',
 btn_claim_referral: 'Перевести на баланс',
-open_via_telegram: 'Открой через Telegram',
+open_via_telegram: (I18N[currentLang] || I18N.ru).open_via_telegram,
 no_active_deals: 'Активных сделок нет',
 load_failed: 'Не удалось загрузить',
 copied_text: 'Скопировано ✓',
@@ -4159,7 +4182,7 @@ btn_close: 'Закрыть',
 discount_info_now: 'Сейчас',
 discount_info_current: 'Текущая цена',
 discount_need_value: 'Укажи размер скидки.',
-discount_saving: 'Сохраняю...',
+discount_saving: (I18N[currentLang] || I18N.ru).discount_saving,
 discount_applied_ok: 'Скидка применена ✓',
 discount_removing: 'Убираю...',
 discount_removed_ok: 'Скидка убрана ✓',
@@ -4270,7 +4293,7 @@ br_need_price: 'Укажи цену.',
 br_sending: 'Отправляю...',
 br_sent_ok: 'Отклик отправлен ✓',
 br_need_title: 'Укажи, что ищешь.',
-br_creating: 'Публикую...',
+br_creating: (I18N[currentLang] || I18N.ru).addskin_publishing,
 br_created_ok: 'Заявка опубликована ✓',
 btn_export_csv: 'Экспорт CSV',
 filters_saved_title: 'Сохранённые фильтры',
@@ -4291,6 +4314,139 @@ onb_btn_next: 'Далее',
 onb_btn_done: 'Понятно, начать',
 seller_stats_line: '👤 У продавца: {trades} сделок, {disputes} споров',
 mandatory_steam_later: 'Добавить позже',
+changelog_title: '📣 Что нового',
+changelog_fallback_title: 'Что нового',
+buy_no_payment_hint: 'Сейчас нет доступного способа оплаты — напиши в поддержку.',
+buy_pay_stars: '⭐ Оплатить Stars',
+buy_pay_crypto: '💳 Оплатить криптой',
+buy_pay_p2p: '🏦 Оплатить П2П (карта)',
+buy_make_trade: '🔄 Предложить обмен',
+buy_discount_btn: '🏷️ Скидка',
+timer_label_days: 'дни',
+timer_label_hours: 'часы',
+timer_label_min: 'мин',
+timer_label_sec: 'сек',
+timer_started_badge: 'СТАРТ!',
+timer_cta_btn: 'Участвовать',
+timer_cta_open_channel: 'Открыть канал',
+timer_footer_note: 'Кто успел — тот забрал',
+p2p_skin_title: '🏦 Оплата П2П',
+p2p_skin_amount_label: 'Сумма к переводу',
+p2p_skin_receipt_label: 'Скриншот чека',
+p2p_skin_warning: '⚠️ Переведи ровно эту сумму на реквизиты выше, приложи скриншот чека и нажми «Отправил, подтверждаю».',
+p2p_skin_sent_btn: 'Отправил, подтверждаю',
+topup_btn_crypto: '💳 Оплатить криптовалютой',
+topup_btn_stars: '⭐ Оплатить Stars',
+withdraw_method_card: 'На карту',
+withdraw_method_crypto: 'В крипту (USDT)',
+withdraw_crypto_address_label: 'Адрес кошелька USDT (сеть TRC20)',
+withdraw_crypto_address_hint: 'Отправь только адрес в сети TRC20 (Tron) — на другую сеть деньги потеряются безвозвратно.',
+withdraw_totp_label: 'Код 2FA',
+p2p_skin_sending: 'Отправляю...',
+p2p_skin_sent_alert: 'Заявка отправлена админу на проверку — как только подтвердят, лот станет твоим.',
+withdraw_need_amount: (I18N[currentLang] || I18N.ru).withdraw_need_amount,
+withdraw_need_totp: 'Введи код 2FA.',
+withdraw_need_wallet: 'Укажи адрес кошелька.',
+withdraw_need_card: 'Укажи карту и Ф.И.О. владельца карты.',
+withdraw_need_fio: 'Не забудь указать Ф.И.О. владельца карты рядом с номером.',
+withdraw_sending: (I18N[currentLang] || I18N.ru).withdraw_sending,
+withdraw_will_arrive: 'Придёт {amount}.',
+withdraw_submitted: 'Заявка #{id} отправлена ✓ Ожидай перевод.',
+status_open_via_telegram_full: 'Открой мини-апп из Telegram, не в браузере.',
+status_saved_ok: 'Сохранено ✓',
+agreement_load_failed: 'Не удалось загрузить текст соглашения — попробуй закрыть и открыть мини-апп заново.',
+combo_loading_preview: 'Загрузка превью...',
+combo_preview_failed: 'Не удалось загрузить превью. Попробуй ещё раз чуть позже.',
+combo_need_budget: 'Укажи бюджет.',
+combo_assembling: 'Собираю...',
+combo_assemble_failed: 'Не удалось собрать набор, попробуй ещё раз.',
+status_need_valid_price: 'Укажи корректную цену.',
+status_price_updated: 'Цена обновлена ✓',
+status_offer_sent: 'Предложение отправлено продавцу ✓',
+status_buying: 'Покупаю...',
+status_bought_ok: 'Куплено ✓',
+status_creating_invoice: 'Выставляю счёт...',
+status_paid_ok: 'Оплачено ✓',
+status_payment_failed: 'Оплата не прошла, попробуй ещё раз.',
+status_invoice_created_buy: 'Счёт создан — открой ссылку для оплаты. Покупка завершится автоматически.',
+status_reserving: 'Резервирую лот...',
+status_processing_photo: 'Обрабатываю фото...',
+status_photo_failed: 'Не удалось обработать фото, попробуй другое.',
+status_file_read_failed: 'Не удалось прочитать файл, попробуй другой.',
+status_details_load_failed: 'Не удалось загрузить реквизиты.',
+topup_need_amount: 'Укажи сумму пополнения (минимум 1000 сум).',
+status_creating_invoice_short: 'Создаю счёт...',
+status_invoice_created: 'Счёт создан — открой ссылку для оплаты.',
+status_topup_paid_ok: 'Оплата прошла ✓ Баланс обновится через пару секунд...',
+inventory_empty: 'В инвентаре нет предметов CS2 (или они не отображаются).',
+addskin_need_pick: 'Выбери предмет из инвентаря Steam — вручную заполнять нельзя.',
+addskin_publishing: 'Публикую...',
+addskin_published_ok: 'Выставлено ✓',
+inventory_refreshing: 'Обновляю...',
+unit_hours_short: 'ч',
+unit_minutes_short: 'мин',
+profile_held_label: 'В холде:',
+admin_need_title: 'Укажи название',
+admin_need_min_2_lots: 'Выбери минимум 2 лота',
+admin_need_discount: 'Укажи скидку',
+admin_need_auction_post: 'Напиши текст поста — без него аукцион не создать',
+status_done_ok: 'Готово ✓',
+admin_need_giveaway_post: 'Напиши текст поста — без него розыгрыш не запустить',
+admin_declining: 'Отклоняю...',
+admin_need_valid_rate: 'Курс должен быть больше нуля.',
+admin_need_card_number: 'Укажи номер карты.',
+admin_need_valid_percent: 'Процент должен быть от 0 до 100.',
+admin_need_user_id: 'Укажи user_id.',
+admin_promo_used_label: 'Использовано:',
+admin_promo_of: 'из',
+admin_no_lots: 'Нет доступных лотов',
+admin_no_sets: 'Сетов пока нет',
+admin_set_deactivated: 'расформирован',
+admin_btn_deactivate_set: 'Расформировать',
+admin_empty: 'Пока пусто',
+admin_no_requests: 'Заявок нет',
+admin_btn_approve: 'Принять',
+admin_btn_reject: 'Отклонить',
+admin_owner_label: 'Владелец:',
+admin_organizer_label: 'Организатор ·',
+admin_pult_label: 'Пультовый ·',
+admin_confirm_deactivate_set: 'Расформировать сет? Лоты вернутся в обычный каталог.',
+admin_confirm_reject_withdraw: 'Отклонить заявку на вывод?',
+admin_confirm_withdraw_approve: 'Подтвердить вывод? (переведи деньги вручную ДО подтверждения)',
+admin_change_failed: 'Не удалось изменить.',
+admin_change_right_failed: 'Не удалось изменить право.',
+admin_confirm_block_user: 'Заблокировать этого пользователя? Он не сможет писать в саппорт и покупать.',
+admin_label_topup: 'Пополнение',
+admin_method_p2p_card: 'П2П (карта)',
+admin_method_crypto: 'Крипто',
+admin_payment_methods_hint: 'Видно и настраивается только владельцу. Выключенный способ пропадает у клиента из выбора при пополнении/выводе.',
+admin_stars_rate_label: 'Курс: сум за 1 ★',
+admin_btn_save_rate: 'Сохранить курс',
+admin_direct_payment_title: 'Прямая оплата за лот',
+admin_direct_stars: 'Оплата лота напрямую через Stars',
+admin_direct_crypto: 'Оплата лота напрямую криптой',
+admin_direct_p2p: 'Оплата лота напрямую П2П (карта, ручное подтверждение)',
+admin_direct_payment_hint: 'Покупатель всегда сам выбирает способ оплаты на карточке лота — Stars, крипта или П2П. Здесь включаются/выключаются конкретные варианты; оплаты с баланса у покупателя больше нет.',
+admin_topups_withdrawals_total: 'Пополнения и выводы (всего)',
+admin_total_topped: 'Всего пополнено',
+admin_total_withdrawn: 'Всего выведено',
+admin_top10_toppers: 'Топ-10 по пополнениям',
+admin_client_history: 'История клиента',
+admin_btn_show: 'Показать',
+admin_btn_block: 'Заблокировать',
+btn_got_it: 'Понятно',
+agreement_title: '📄 Пользовательское соглашение',
+agreement_btn_accept: 'Принимаю условия',
+agreement_saving: (I18N[currentLang] || I18N.ru).discount_saving,
+mandatory_steam_greeting: '🔗 Для работы с площадкой нужно привязать трейд-ссылку Steam — без неё нельзя ни купить, ни продать.',
+mandatory_steam_label: 'Трейд-ссылка Steam',
+mandatory_steam_link_btn: 'Привязать и продолжить',
+mandatory_steam_hint: 'Нажми кнопку выше — откроется страница Steam с твоей трейд-ссылкой, останется скопировать и вставить сюда.',
+steam_link_profile_hint: 'Нажми кнопку выше — откроется страница Steam с твоей трейд-ссылкой, останется скопировать и вставить сюда. Это разовая настройка, потом делать это не придётся.',
+steam_link_btn_link: 'Привязать трейд-ссылку',
+steam_link_need_link: 'Вставь трейд-ссылку.',
+steam_link_linking: 'Привязываю...',
+steam_link_linked_ok: 'Привязано ✓',
 },
 uz: {
 nav_timer: 'Taymer',
@@ -4751,6 +4907,139 @@ onb_btn_next: 'Keyingisi',
 onb_btn_done: 'Tushunarli, boshlash',
 seller_stats_line: "👤 Sotuvchida: {trades} bitim, {disputes} nizo",
 mandatory_steam_later: "Keyinroq qo'shish",
+changelog_title: '📣 Yangiliklar',
+changelog_fallback_title: 'Yangiliklar',
+buy_no_payment_hint: "Hozircha to'lov usuli mavjud emas — qo'llab-quvvatlash xizmatiga yozing.",
+buy_pay_stars: "⭐ Stars orqali to'lash",
+buy_pay_crypto: "💳 Kripto orqali to'lash",
+buy_pay_p2p: "🏦 P2P orqali to'lash (karta)",
+buy_make_trade: '🔄 Almashinuv taklif qilish',
+buy_discount_btn: '🏷️ Chegirma',
+timer_label_days: 'kun',
+timer_label_hours: 'soat',
+timer_label_min: 'daq',
+timer_label_sec: 'son',
+timer_started_badge: 'BOSHLANDI!',
+timer_cta_btn: 'Qatnashish',
+timer_cta_open_channel: 'Kanalni ochish',
+timer_footer_note: "Kim ulgurdi — o'sha oldi",
+p2p_skin_title: "🏦 P2P to'lov",
+p2p_skin_amount_label: "O'tkazish summasi",
+p2p_skin_receipt_label: 'Chek skrinshoti',
+p2p_skin_warning: "⚠️ Yuqoridagi rekvizitlarga aynan shu summani o'tkazing, chek skrinshotini biriktiring va «Yubordim, tasdiqlayman» tugmasini bosing.",
+p2p_skin_sent_btn: 'Yubordim, tasdiqlayman',
+topup_btn_crypto: "💳 Kriptovalyuta bilan to'lash",
+topup_btn_stars: "⭐ Stars orqali to'lash",
+withdraw_method_card: 'Kartaga',
+withdraw_method_crypto: 'Kriptoga (USDT)',
+withdraw_crypto_address_label: 'USDT hamyon manzili (TRC20 tarmog\'i)',
+withdraw_crypto_address_hint: "Faqat TRC20 (Tron) tarmog'idagi manzilni yuboring — boshqa tarmoqqa yuborilgan pul qaytarib bo'lmaydi.",
+withdraw_totp_label: '2FA kodi',
+p2p_skin_sending: 'Yuborilmoqda...',
+p2p_skin_sent_alert: "Ariza tekshirish uchun adminga yuborildi — tasdiqlangach, lot sizniki bo'ladi.",
+withdraw_need_amount: "Summani ko'rsating.",
+withdraw_need_totp: '2FA kodini kiriting.',
+withdraw_need_wallet: 'Hamyon manzilini kiriting.',
+withdraw_need_card: "Karta va karta egasining F.I.Sh.ni ko'rsating.",
+withdraw_need_fio: "Karta raqami yonida egasining F.I.Sh.ni ko'rsatishni unutmang.",
+withdraw_sending: "Ariza yuborilmoqda...",
+withdraw_will_arrive: '{amount} keladi.',
+withdraw_submitted: "Ariza #{id} yuborildi ✓ Pul o'tkazilishini kuting.",
+status_open_via_telegram_full: "Mini-appni Telegram orqali oching, brauzerda emas.",
+status_saved_ok: 'Saqlandi ✓',
+agreement_load_failed: "Shartnoma matnini yuklab bo'lmadi — mini-appni yopib qayta oching.",
+combo_loading_preview: 'Ko\'rinish yuklanmoqda...',
+combo_preview_failed: "Ko'rinishni yuklab bo'lmadi. Birozdan keyin qayta urinib ko'ring.",
+combo_need_budget: "Byudjetni ko'rsating.",
+combo_assembling: "Yig'ilmoqda...",
+combo_assemble_failed: "To'plamni yig'ib bo'lmadi, qayta urinib ko'ring.",
+status_need_valid_price: "To'g'ri narxni ko'rsating.",
+status_price_updated: 'Narx yangilandi ✓',
+status_offer_sent: 'Taklif sotuvchiga yuborildi ✓',
+status_buying: 'Sotib olinmoqda...',
+status_bought_ok: 'Sotib olindi ✓',
+status_creating_invoice: "Hisob-faktura chiqarilmoqda...",
+status_paid_ok: "To'landi ✓",
+status_payment_failed: "To'lov o'tmadi, qayta urinib ko'ring.",
+status_invoice_created_buy: "Hisob-faktura yaratildi — to'lov uchun havolani oching. Xarid avtomatik yakunlanadi.",
+status_reserving: 'Lot band qilinmoqda...',
+status_processing_photo: 'Rasm qayta ishlanmoqda...',
+status_photo_failed: "Rasmni qayta ishlab bo'lmadi, boshqasini sinab ko'ring.",
+status_file_read_failed: "Faylni o'qib bo'lmadi, boshqasini sinab ko'ring.",
+status_details_load_failed: "Rekvizitlarni yuklab bo'lmadi.",
+topup_need_amount: "To'ldirish summasini ko'rsating (kamida 1000 sum).",
+status_creating_invoice_short: "Hisob-faktura chiqarilmoqda...",
+status_invoice_created: "Hisob-faktura yaratildi — to'lov uchun havolani oching.",
+status_topup_paid_ok: "To'lov o'tdi ✓ Balans bir necha soniyada yangilanadi...",
+inventory_empty: "Inventarda CS2 buyumlari yo'q (yoki ular ko'rinmayapti).",
+addskin_need_pick: "Steam inventaridan buyum tanlang — qo'lda to'ldirib bo'lmaydi.",
+addskin_publishing: "E'lon qilinmoqda...",
+addskin_published_ok: "Qo'yildi ✓",
+inventory_refreshing: 'Yangilanmoqda...',
+unit_hours_short: 's',
+unit_minutes_short: 'daq',
+profile_held_label: 'Holdda:',
+admin_need_title: "Nomini ko'rsating",
+admin_need_min_2_lots: "Kamida 2 ta lot tanlang",
+admin_need_discount: "Chegirmani ko'rsating",
+admin_need_auction_post: "Post matnini yozing — usiz auksion yaratib bo'lmaydi",
+status_done_ok: 'Tayyor ✓',
+admin_need_giveaway_post: "Post matnini yozing — usiz sovg'a-lotereya boshlanmaydi",
+admin_declining: 'Rad etilmoqda...',
+admin_need_valid_rate: "Kurs noldan katta bo'lishi kerak.",
+admin_need_card_number: "Karta raqamini ko'rsating.",
+admin_need_valid_percent: "Foiz 0 dan 100 gacha bo'lishi kerak.",
+admin_need_user_id: "user_id ni ko'rsating.",
+admin_promo_used_label: 'Ishlatilgan:',
+admin_promo_of: 'dan',
+admin_no_lots: "Mavjud lotlar yo'q",
+admin_no_sets: "Hozircha to'plamlar yo'q",
+admin_set_deactivated: 'bekor qilingan',
+admin_btn_deactivate_set: "To'plamni bekor qilish",
+admin_empty: "Hozircha bo'sh",
+admin_no_requests: "Arizalar yo'q",
+admin_btn_approve: 'Qabul qilish',
+admin_btn_reject: 'Rad etish',
+admin_owner_label: 'Egasi:',
+admin_organizer_label: 'Tashkilotchi ·',
+admin_pult_label: 'Pult ·',
+admin_confirm_deactivate_set: "To'plam bekor qilinsinmi? Lotlar oddiy katalogga qaytadi.",
+admin_confirm_reject_withdraw: "Pul yechish arizasi rad etilsinmi?",
+admin_confirm_withdraw_approve: "Pul yechish tasdiqlansinmi? (pulni tasdiqlashdan OLDIN qo'lda o'tkazing)",
+admin_change_failed: "O'zgartirib bo'lmadi.",
+admin_change_right_failed: "Huquqni o'zgartirib bo'lmadi.",
+admin_confirm_block_user: "Bu foydalanuvchi bloklansinmi? U qo'llab-quvvatlashga yoza olmaydi va sotib ololmaydi.",
+admin_label_topup: "To'ldirish",
+admin_method_p2p_card: 'P2P (karta)',
+admin_method_crypto: 'Kripto',
+admin_payment_methods_hint: "Faqat egasiga ko'rinadi va sozlanadi. O'chirilgan usul mijozda to'ldirish/yechishda tanlovdan yo'qoladi.",
+admin_stars_rate_label: 'Kurs: 1 ★ uchun sum',
+admin_btn_save_rate: 'Kursni saqlash',
+admin_direct_payment_title: "Lot uchun to'g'ridan-to'g'ri to'lov",
+admin_direct_stars: "Lot uchun to'g'ridan-to'g'ri Stars orqali to'lov",
+admin_direct_crypto: "Lot uchun to'g'ridan-to'g'ri kripto orqali to'lov",
+admin_direct_p2p: "Lot uchun to'g'ridan-to'g'ri P2P orqali to'lov (karta, qo'lda tasdiqlash)",
+admin_direct_payment_hint: "Xaridor har doim lot kartochkasida to'lov usulini o'zi tanlaydi — Stars, kripto yoki P2P. Bu yerda aniq variantlar yoqiladi/o'chiriladi; xaridorda balansdan to'lov endi yo'q.",
+admin_topups_withdrawals_total: "To'ldirishlar va yechishlar (jami)",
+admin_total_topped: "Jami to'ldirilgan",
+admin_total_withdrawn: 'Jami yechilgan',
+admin_top10_toppers: "To'ldirish bo'yicha TOP-10",
+admin_client_history: 'Mijoz tarixi',
+admin_btn_show: "Ko'rsatish",
+admin_btn_block: 'Bloklash',
+btn_got_it: 'Tushunarli',
+agreement_title: '📄 Foydalanuvchi shartnomasi',
+agreement_btn_accept: 'Shartlarni qabul qilaman',
+agreement_saving: 'Saqlanmoqda...',
+mandatory_steam_greeting: "🔗 Platformada ishlash uchun Steam trade-havolasini bog'lash kerak — usiz sotib olish ham, sotish ham mumkin emas.",
+mandatory_steam_label: 'Steam trade-havolasi',
+mandatory_steam_link_btn: "Bog'lash va davom etish",
+mandatory_steam_hint: "Yuqoridagi tugmani bosing — Steam trade-havolangiz bilan sahifa ochiladi, uni ko'chirib shu yerga qo'yish qoladi.",
+steam_link_profile_hint: "Yuqoridagi tugmani bosing — Steam trade-havolangiz bilan sahifa ochiladi, uni ko'chirib shu yerga qo'yish qoladi. Bu bir martalik sozlash, keyin buni qilish shart bo'lmaydi.",
+steam_link_btn_link: "Trade-havolani bog'lash",
+steam_link_need_link: "Trade-havolani joylashtiring.",
+steam_link_linking: "Bog'lanmoqda...",
+steam_link_linked_ok: "Bog'landi ✓",
 },
 en: {
 nav_timer: 'Timer',
@@ -5211,6 +5500,139 @@ onb_btn_next: 'Next',
 onb_btn_done: "Got it, let's start",
 seller_stats_line: '👤 Seller has: {trades} deals, {disputes} disputes',
 mandatory_steam_later: 'Add later',
+changelog_title: "📣 What's new",
+changelog_fallback_title: "What's new",
+buy_no_payment_hint: 'No payment method available right now — contact support.',
+buy_pay_stars: '⭐ Pay with Stars',
+buy_pay_crypto: '💳 Pay with crypto',
+buy_pay_p2p: '🏦 Pay via P2P (card)',
+buy_make_trade: '🔄 Offer a trade',
+buy_discount_btn: '🏷️ Discount',
+timer_label_days: 'days',
+timer_label_hours: 'hrs',
+timer_label_min: 'min',
+timer_label_sec: 'sec',
+timer_started_badge: 'STARTED!',
+timer_cta_btn: 'Join',
+timer_cta_open_channel: 'Open channel',
+timer_footer_note: 'First come, first served',
+p2p_skin_title: '🏦 P2P Payment',
+p2p_skin_amount_label: 'Amount to transfer',
+p2p_skin_receipt_label: 'Receipt screenshot',
+p2p_skin_warning: '⚠️ Transfer exactly this amount to the details above, attach a receipt screenshot, and tap "Sent, confirming".',
+p2p_skin_sent_btn: 'Sent, confirming',
+topup_btn_crypto: '💳 Pay with crypto',
+topup_btn_stars: '⭐ Pay with Stars',
+withdraw_method_card: 'To card',
+withdraw_method_crypto: 'To crypto (USDT)',
+withdraw_crypto_address_label: 'USDT wallet address (TRC20 network)',
+withdraw_crypto_address_hint: "Send only a TRC20 (Tron) network address — funds sent to another network will be lost permanently.",
+withdraw_totp_label: '2FA code',
+p2p_skin_sending: 'Sending...',
+p2p_skin_sent_alert: "Request sent to the admin for review — the listing will be yours once confirmed.",
+withdraw_need_amount: 'Enter an amount.',
+withdraw_need_totp: 'Enter the 2FA code.',
+withdraw_need_wallet: 'Enter a wallet address.',
+withdraw_need_card: "Enter the card number and cardholder's full name.",
+withdraw_need_fio: "Don't forget to add the cardholder's full name next to the card number.",
+withdraw_sending: 'Sending request...',
+withdraw_will_arrive: 'You will receive {amount}.',
+withdraw_submitted: 'Request #{id} sent ✓ Awaiting transfer.',
+status_open_via_telegram_full: 'Open the mini-app from Telegram, not in a browser.',
+status_saved_ok: 'Saved ✓',
+agreement_load_failed: 'Failed to load the agreement text — try closing and reopening the mini-app.',
+combo_loading_preview: 'Loading preview...',
+combo_preview_failed: 'Failed to load preview. Try again in a bit.',
+combo_need_budget: 'Enter a budget.',
+combo_assembling: 'Assembling...',
+combo_assemble_failed: 'Failed to assemble the set, try again.',
+status_need_valid_price: 'Enter a valid price.',
+status_price_updated: 'Price updated ✓',
+status_offer_sent: 'Offer sent to the seller ✓',
+status_buying: 'Buying...',
+status_bought_ok: 'Bought ✓',
+status_creating_invoice: 'Creating invoice...',
+status_paid_ok: 'Paid ✓',
+status_payment_failed: 'Payment failed, try again.',
+status_invoice_created_buy: 'Invoice created — open the link to pay. The purchase will complete automatically.',
+status_reserving: 'Reserving listing...',
+status_processing_photo: 'Processing photo...',
+status_photo_failed: 'Failed to process the photo, try another one.',
+status_file_read_failed: 'Failed to read the file, try another one.',
+status_details_load_failed: 'Failed to load payment details.',
+topup_need_amount: 'Enter a top-up amount (minimum 1000 sum).',
+status_creating_invoice_short: 'Creating invoice...',
+status_invoice_created: 'Invoice created — open the link to pay.',
+status_topup_paid_ok: 'Payment successful ✓ Balance will update in a few seconds...',
+inventory_empty: "There are no CS2 items in the inventory (or they're not showing).",
+addskin_need_pick: "Pick an item from your Steam inventory — manual entry isn't allowed.",
+addskin_publishing: 'Publishing...',
+addskin_published_ok: 'Listed ✓',
+inventory_refreshing: 'Refreshing...',
+unit_hours_short: 'h',
+unit_minutes_short: 'min',
+profile_held_label: 'On hold:',
+admin_need_title: 'Enter a name',
+admin_need_min_2_lots: 'Pick at least 2 listings',
+admin_need_discount: 'Enter a discount',
+admin_need_auction_post: "Write the post text — an auction can't be created without it",
+status_done_ok: 'Done ✓',
+admin_need_giveaway_post: "Write the post text — the giveaway can't start without it",
+admin_declining: 'Declining...',
+admin_need_valid_rate: 'The rate must be greater than zero.',
+admin_need_card_number: 'Enter the card number.',
+admin_need_valid_percent: 'The percentage must be between 0 and 100.',
+admin_need_user_id: 'Enter a user_id.',
+admin_promo_used_label: 'Used:',
+admin_promo_of: 'of',
+admin_no_lots: 'No listings available',
+admin_no_sets: 'No sets yet',
+admin_set_deactivated: 'deactivated',
+admin_btn_deactivate_set: 'Deactivate',
+admin_empty: 'Nothing here yet',
+admin_no_requests: 'No requests',
+admin_btn_approve: 'Approve',
+admin_btn_reject: 'Reject',
+admin_owner_label: 'Owner:',
+admin_organizer_label: 'Organizer ·',
+admin_pult_label: 'Console ·',
+admin_confirm_deactivate_set: 'Deactivate this set? The listings will return to the regular catalog.',
+admin_confirm_reject_withdraw: 'Reject this withdrawal request?',
+admin_confirm_withdraw_approve: 'Confirm the withdrawal? (transfer the money manually BEFORE confirming)',
+admin_change_failed: 'Failed to change.',
+admin_change_right_failed: 'Failed to change the permission.',
+admin_confirm_block_user: "Block this user? They won't be able to message support or buy.",
+admin_label_topup: 'Top-up',
+admin_method_p2p_card: 'P2P (card)',
+admin_method_crypto: 'Crypto',
+admin_payment_methods_hint: 'Visible and configurable to the owner only. A disabled method disappears from the customer\'s choice when topping up/withdrawing.',
+admin_stars_rate_label: 'Rate: sum per 1 ★',
+admin_btn_save_rate: 'Save rate',
+admin_direct_payment_title: 'Direct payment for a listing',
+admin_direct_stars: 'Direct payment for a listing via Stars',
+admin_direct_crypto: 'Direct payment for a listing via crypto',
+admin_direct_p2p: 'Direct payment for a listing via P2P (card, manual confirmation)',
+admin_direct_payment_hint: 'The buyer always picks the payment method on the listing card themselves — Stars, crypto, or P2P. This toggles the specific options; buyers no longer have balance-based payment at all.',
+admin_topups_withdrawals_total: 'Top-ups and withdrawals (total)',
+admin_total_topped: 'Total topped up',
+admin_total_withdrawn: 'Total withdrawn',
+admin_top10_toppers: 'Top 10 by top-ups',
+admin_client_history: 'Customer history',
+admin_btn_show: 'Show',
+admin_btn_block: 'Block',
+btn_got_it: 'Got it',
+agreement_title: '📄 Terms of Service',
+agreement_btn_accept: 'I accept the terms',
+agreement_saving: 'Saving...',
+mandatory_steam_greeting: "🔗 You need to link your Steam trade link to use the platform — you can't buy or sell without it.",
+mandatory_steam_label: 'Steam trade link',
+mandatory_steam_link_btn: 'Link and continue',
+mandatory_steam_hint: "Tap the button above — the Steam trade link page will open, then just copy and paste it here.",
+steam_link_profile_hint: "Tap the button above — the Steam trade link page will open, then just copy and paste it here. This is a one-time setup, you won't need to do it again.",
+steam_link_btn_link: 'Link trade link',
+steam_link_need_link: 'Paste your trade link.',
+steam_link_linking: 'Linking...',
+steam_link_linked_ok: 'Linked ✓',
 },
 };
 
@@ -5308,7 +5730,7 @@ clockEl.style.display = 'none';
 document.querySelector('.time-labels').style.display = 'none';
 startedBadge.style.display = 'block';
 ringEl.setAttribute('stroke-dashoffset', '0');
-ctaBtn.textContent = 'Открыть канал';
+ctaBtn.textContent = (I18N[currentLang] || I18N.ru).timer_cta_open_channel;
 ctaBtn.classList.add('live');
 clearInterval(timerId);
 return;
@@ -5472,7 +5894,7 @@ if (endTime - Date.now() > 0){
 clockEl.style.display = '';
 document.querySelector('.time-labels').style.display = '';
 startedBadge.style.display = 'none';
-ctaBtn.textContent = 'Участвовать';
+ctaBtn.textContent = (I18N[currentLang] || I18N.ru).timer_cta_btn;
 ctaBtn.classList.remove('live');
 if (typeof timerId !== 'undefined') clearInterval(timerId);
 window.timerId = setInterval(render, 1000);
@@ -5505,12 +5927,12 @@ editOverlay.classList.remove('show');
 editSave.addEventListener('click', () => {
 
 if (!tg || !tg.initData){
-editStatus.textContent = 'Открой мини-апп из Telegram, не в браузере.';
+editStatus.textContent = (I18N[currentLang] || I18N.ru).status_open_via_telegram_full;
 return;
 }
 
 editSave.disabled = true;
-editStatus.textContent = 'Сохраняю...';
+editStatus.textContent = (I18N[currentLang] || I18N.ru).discount_saving;
 
 fetch(API_BASE + '/api/giveaway', {
 method: 'POST',
@@ -5534,7 +5956,7 @@ return r.json();
 })
 .then(data => {
 applyGiveawayState(data);
-editStatus.textContent = 'Сохранено ✓';
+editStatus.textContent = (I18N[currentLang] || I18N.ru).status_saved_ok;
 setTimeout(() => { editOverlay.classList.remove('show'); }, 600);
 })
 .catch(err => {
@@ -5864,7 +6286,7 @@ not_found: 'Лот не найден.',
 items_unavailable: 'Один или несколько лотов из этого сета уже проданы — сет больше недоступен целиком.',
 set_not_found: 'Этот сет больше не существует.',
 invalid: 'Проверь название и цену.',
-bad_price: 'Укажи корректную цену.',
+bad_price: (I18N[currentLang] || I18N.ru).status_need_valid_price,
 too_low: 'Ставка слишком маленькая — кто-то уже успел поставить больше.',
 not_active: 'Аукцион уже завершился.',
 already_running: 'Розыгрыш уже запущен.',
@@ -5909,7 +6331,7 @@ document.getElementById('agreementTextBox').textContent = data.text;
 agreementTextLoaded = true;
 })
 .catch(() => {
-document.getElementById('agreementTextBox').textContent = 'Не удалось загрузить текст соглашения — попробуй закрыть и открыть мини-апп заново.';
+document.getElementById('agreementTextBox').textContent = (I18N[currentLang] || I18N.ru).agreement_load_failed;
 });
 }
 
@@ -5946,10 +6368,11 @@ let changelogSeen = true;
 
 function maybeShowChangelogBanner(){
 if (!currentUserId || changelogSeen) return;
+const dict = I18N[currentLang] || I18N.ru;
 fetch(API_BASE + '/api/changelog')
 .then(r => r.json())
 .then(data => {
-document.getElementById('changelogTitle').textContent = '📣 ' + (data.title || 'Что нового');
+document.getElementById('changelogTitle').textContent = '📣 ' + (data.title || dict.changelog_fallback_title);
 const list = document.getElementById('changelogList');
 list.innerHTML = (data.items || []).map(t => `<li style="margin-bottom:6px;">${t}</li>`).join('');
 document.getElementById('changelogBanner').classList.add('show');
@@ -6055,7 +6478,7 @@ profileAvatar.innerHTML = `<img src="${tg.initDataUnsafe.user.photo_url}" alt=""
 }
 
 if (!tg || !tg.initData){
-profileName.textContent = 'Открой через Telegram';
+profileName.textContent = (I18N[currentLang] || I18N.ru).open_via_telegram;
 profileBalanceAmount.textContent = '—';
 return;
 }
@@ -6113,7 +6536,7 @@ updateProfileSteamBlock();
 profileName.textContent = data.username || ('ID ' + data.user_id);
 profileBalanceAmount.textContent = formatCoins(data.available);
 profileHeld.innerHTML = data.held > 0
-? (LOCK_ICON + ' В холде: ' + formatCoins(data.held))
+? (LOCK_ICON + ' ' + (I18N[currentLang] || I18N.ru).profile_held_label + ' ' + formatCoins(data.held))
 : '';
 
 document.getElementById('statSold').textContent = data.sold_count;
@@ -6121,7 +6544,7 @@ document.getElementById('statBought').textContent = data.bought_count;
 document.getElementById('statActive').textContent = data.active_count;
 })
 .catch(() => {
-profileName.textContent = 'Не удалось загрузить';
+profileName.textContent = (I18N[currentLang] || I18N.ru).load_failed;
 profileBalanceAmount.textContent = '—';
 });
 
@@ -6418,7 +6841,7 @@ const status = document.getElementById('inspectStatus');
 const img = document.getElementById('inspectImage');
 img.style.display = 'none';
 status.style.display = '';
-status.textContent = 'Загрузка превью...';
+status.textContent = (I18N[currentLang] || I18N.ru).combo_loading_preview;
 overlay.classList.add('show');
 fetch(API_BASE + '/api/skins/' + id + '/inspect_screenshot')
 .then(r => { if (!r.ok) throw new Error(); return r.blob(); })
@@ -6427,7 +6850,7 @@ img.src = URL.createObjectURL(blob);
 img.style.display = '';
 status.style.display = 'none';
 })
-.catch(() => { status.textContent = 'Не удалось загрузить превью. Попробуй ещё раз чуть позже.'; });
+.catch(() => { status.textContent = (I18N[currentLang] || I18N.ru).combo_preview_failed; });
 return;
 }
 
@@ -7733,10 +8156,10 @@ const status = document.getElementById('builderStatus');
 const result = document.getElementById('builderResult');
 const budget = Number(document.getElementById('builderBudget').value);
 if (!budget || budget <= 0){
-status.textContent = 'Укажи бюджет.';
+status.textContent = (I18N[currentLang] || I18N.ru).combo_need_budget;
 return;
 }
-status.textContent = 'Собираю...';
+status.textContent = (I18N[currentLang] || I18N.ru).combo_assembling;
 result.innerHTML = '';
 builderResultItems = {};
 const url = builderMode === 'combo'
@@ -7749,7 +8172,7 @@ status.textContent = '';
 renderBuilderResult(result, data, builderMode);
 })
 .catch(() => {
-status.textContent = 'Не удалось собрать набор, попробуй ещё раз.';
+status.textContent = (I18N[currentLang] || I18N.ru).combo_assemble_failed;
 });
 });
 
@@ -8290,12 +8713,12 @@ if (!pendingBuySkin || !tg || !tg.initData) return;
 const newPrice = Number(buyNewPriceInput.value);
 
 if (!newPrice || newPrice <= 0){
-buyStatus.textContent = 'Укажи корректную цену.';
+buyStatus.textContent = (I18N[currentLang] || I18N.ru).status_need_valid_price;
 return;
 }
 
 buySavePriceBtn.disabled = true;
-buyStatus.textContent = 'Сохраняю...';
+buyStatus.textContent = (I18N[currentLang] || I18N.ru).discount_saving;
 
 fetch(API_BASE + '/api/skins/' + pendingBuySkin.id + '/update_price', {
 method: 'POST',
@@ -8310,7 +8733,7 @@ throw new Error(errorMessage(data.error));
 return r.json();
 })
 .then((data) => {
-buyStatus.textContent = 'Цена обновлена ✓';
+buyStatus.textContent = (I18N[currentLang] || I18N.ru).status_price_updated;
 pendingBuySkin.price = data.price;
 buyPrice.textContent = formatCoins(data.price);
 buyDetailsTable.innerHTML = buyDetailsTable.innerHTML.replace(/Цена<\/div><div class="buy-detail-value">[^<]*/, 'Цена</div><div class="buy-detail-value">' + formatCoins(data.price));
@@ -8583,12 +9006,12 @@ if (!pendingBuySkin || !tg || !tg.initData) return;
 const offerPrice = Number(buyOfferInput.value);
 
 if (!offerPrice || offerPrice <= 0){
-buyStatus.textContent = 'Укажи корректную цену.';
+buyStatus.textContent = (I18N[currentLang] || I18N.ru).status_need_valid_price;
 return;
 }
 
 buySendOfferBtn.disabled = true;
-buyStatus.textContent = 'Отправляю...';
+buyStatus.textContent = (I18N[currentLang] || I18N.ru).p2p_skin_sending;
 
 fetch(API_BASE + '/api/skins/' + pendingBuySkin.id + '/offer', {
 method: 'POST',
@@ -8603,7 +9026,7 @@ throw new Error(errorMessage(data.error));
 return r.json();
 })
 .then(() => {
-buyStatus.textContent = 'Предложение отправлено продавцу ✓';
+buyStatus.textContent = (I18N[currentLang] || I18N.ru).status_offer_sent;
 buyOfferEdit.style.display = 'none';
 buySendOfferBtn.style.display = 'none';
 buyMakeOfferBtn.style.display = '';
@@ -8621,7 +9044,7 @@ if (!pendingBuySkin || !tg || !tg.initData) return;
 
 const skinId = pendingBuySkin.id;
 buyConfirmBalance.disabled = true;
-buyStatus.textContent = 'Покупаю...';
+buyStatus.textContent = (I18N[currentLang] || I18N.ru).status_buying;
 
 fetch(API_BASE + '/api/skins/' + skinId + '/buy', {
 method: 'POST',
@@ -8636,7 +9059,7 @@ throw new Error(purchaseTrustLimitMessage(data) || errorMessage(data.error));
 return r.json();
 })
 .then(() => {
-buyStatus.textContent = 'Куплено ✓';
+buyStatus.textContent = (I18N[currentLang] || I18N.ru).status_bought_ok;
 loadMe();
 loadSkins();
 setTimeout(() => {
@@ -8657,7 +9080,7 @@ if (!pendingBuySkin || !tg || !tg.initData) return;
 
 const skinId = pendingBuySkin.id;
 buyConfirmStars.disabled = true;
-buyStatus.textContent = 'Выставляю счёт...';
+buyStatus.textContent = (I18N[currentLang] || I18N.ru).status_creating_invoice;
 
 fetch(API_BASE + '/api/skins/' + skinId + '/buy_stars_invoice', {
 method: 'POST',
@@ -8676,7 +9099,7 @@ buyStatus.textContent = '';
 if (tg && tg.openInvoice){
 tg.openInvoice(data.link, (status) => {
 if (status === 'paid'){
-buyStatus.textContent = 'Оплачено ✓';
+buyStatus.textContent = (I18N[currentLang] || I18N.ru).status_paid_ok;
 loadMe();
 loadSkins();
 setTimeout(() => {
@@ -8686,7 +9109,7 @@ pendingBuySkin = null;
 } else if (status === 'cancelled'){
 buyStatus.textContent = '';
 } else {
-buyStatus.textContent = 'Оплата не прошла, попробуй ещё раз.';
+buyStatus.textContent = (I18N[currentLang] || I18N.ru).status_payment_failed;
 }
 });
 } else {
@@ -8706,7 +9129,7 @@ if (!pendingBuySkin || !tg || !tg.initData) return;
 
 const skinId = pendingBuySkin.id;
 buyConfirmCrypto.disabled = true;
-buyStatus.textContent = 'Выставляю счёт...';
+buyStatus.textContent = (I18N[currentLang] || I18N.ru).status_creating_invoice;
 
 fetch(API_BASE + '/api/skins/' + skinId + '/buy_crypto_invoice', {
 method: 'POST',
@@ -8721,7 +9144,7 @@ throw new Error(purchaseTrustLimitMessage(data) || (data.error === 'feature_disa
 return r.json();
 })
 .then(data => {
-buyStatus.textContent = 'Счёт создан — открой ссылку для оплаты. Покупка завершится автоматически.';
+buyStatus.textContent = (I18N[currentLang] || I18N.ru).status_invoice_created_buy;
 const link = data.tg_deeplink || data.url;
 if (tg && tg.openTelegramLink && data.tg_deeplink){
 tg.openTelegramLink(data.tg_deeplink);
@@ -8758,7 +9181,7 @@ if (!pendingBuySkin || !tg || !tg.initData) return;
 
 const skinId = pendingBuySkin.id;
 buyConfirmP2P.disabled = true;
-buyStatus.textContent = 'Резервирую лот...';
+buyStatus.textContent = (I18N[currentLang] || I18N.ru).status_reserving;
 
 fetch(API_BASE + '/api/skins/' + skinId + '/buy_p2p_reserve', {
 method: 'POST',
@@ -8816,7 +9239,7 @@ p2pSkinReceiptPreview.style.display = 'none';
 p2pSkinSentBtn.disabled = true;
 return;
 }
-p2pSkinStatus.textContent = 'Обрабатываю фото...';
+p2pSkinStatus.textContent = (I18N[currentLang] || I18N.ru).status_processing_photo;
 const reader = new FileReader();
 reader.onload = () => {
 const img = new Image();
@@ -8843,13 +9266,13 @@ p2pSkinSentBtn.disabled = false;
 p2pSkinStatus.textContent = '';
 };
 img.onerror = () => {
-p2pSkinStatus.textContent = 'Не удалось обработать фото, попробуй другое.';
+p2pSkinStatus.textContent = (I18N[currentLang] || I18N.ru).status_photo_failed;
 p2pSkinSentBtn.disabled = true;
 };
 img.src = reader.result;
 };
 reader.onerror = () => {
-p2pSkinStatus.textContent = 'Не удалось прочитать файл, попробуй другой.';
+p2pSkinStatus.textContent = (I18N[currentLang] || I18N.ru).status_file_read_failed;
 p2pSkinSentBtn.disabled = true;
 };
 reader.readAsDataURL(file);
@@ -8858,8 +9281,9 @@ reader.readAsDataURL(file);
 p2pSkinSentBtn.addEventListener('click', () => {
 if (!pendingP2pOrderId || !tg || !tg.initData || !p2pReceiptBase64) return;
 
+const dict = I18N[currentLang] || I18N.ru;
 p2pSkinSentBtn.disabled = true;
-p2pSkinStatus.textContent = 'Отправляю...';
+p2pSkinStatus.textContent = dict.p2p_skin_sending;
 
 fetch(API_BASE + '/api/p2p_skin_orders/' + pendingP2pOrderId + '/mark_sent', {
 method: 'POST',
@@ -8877,7 +9301,7 @@ return r.json();
 p2pSkinStatus.textContent = '';
 p2pSkinOverlay.classList.remove('show');
 pendingP2pOrderId = null;
-showAlert('Заявка отправлена админу на проверку — как только подтвердят, лот станет твоим.');
+showAlert(dict.p2p_skin_sent_alert);
 })
 .catch(err => {
 p2pSkinStatus.textContent = friendlyErrorMessage(err);
@@ -8960,6 +9384,7 @@ profileSteamUnlinked.style.display = hasSteamLink ? 'none' : 'block';
 
 function submitTradeLink(opts){
 opts = opts || {};
+const dict = I18N[currentLang] || I18N.ru;
 const inputEl = opts.inputEl || pTradeLink;
 const statusEl = opts.statusEl || profileSteamStatus;
 const btnEl = opts.btnEl || profileLinkBtn;
@@ -8970,11 +9395,11 @@ return;
 }
 const link = inputEl.value.trim();
 if (!link){
-statusEl.textContent = 'Вставь трейд-ссылку.';
+statusEl.textContent = dict.steam_link_need_link;
 return;
 }
 btnEl.disabled = true;
-statusEl.textContent = 'Привязываю...';
+statusEl.textContent = dict.steam_link_linking;
 fetch(API_BASE + '/api/steam/link', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
@@ -8989,7 +9414,7 @@ return r.json();
 })
 .then(() => {
 hasSteamLink = true;
-statusEl.textContent = 'Привязано ✓';
+statusEl.textContent = dict.steam_link_linked_ok;
 inputEl.value = '';
 setTimeout(() => {
 updateProfileSteamBlock();
@@ -9028,10 +9453,11 @@ window.open(url, '_blank');
 
 document.getElementById('mandatoryAcceptAgreementBtn').addEventListener('click', () => {
 if (!tg || !tg.initData) return;
+const dict = I18N[currentLang] || I18N.ru;
 const btn = document.getElementById('mandatoryAcceptAgreementBtn');
 const status = document.getElementById('mandatoryAgreementStatus');
 btn.disabled = true;
-status.textContent = 'Сохраняю...';
+status.textContent = dict.agreement_saving;
 fetch(API_BASE + '/api/agreement/accept', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
@@ -9105,7 +9531,7 @@ topupDetailsText.textContent = topupDetailsRaw;
 if (data.min_amount) tAmount.placeholder = String(data.min_amount);
 })
 .catch(() => {
-topupDetailsText.textContent = 'Не удалось загрузить реквизиты.';
+topupDetailsText.textContent = (I18N[currentLang] || I18N.ru).status_details_load_failed;
 });
 }
 
@@ -9378,12 +9804,12 @@ return;
 }
 const amount = Number(tAmount.value);
 if (!amount || amount < 1000){
-topupStatus.textContent = 'Укажи сумму пополнения (минимум 1000 сум).';
+topupStatus.textContent = (I18N[currentLang] || I18N.ru).topup_need_amount;
 return;
 }
 const btn = document.getElementById('topupCryptoBtn');
 btn.disabled = true;
-topupStatus.textContent = 'Создаю счёт...';
+topupStatus.textContent = (I18N[currentLang] || I18N.ru).status_creating_invoice_short;
 fetch(API_BASE + '/api/topup/crypto', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
@@ -9397,7 +9823,7 @@ throw new Error(data.error === 'not_configured' ? 'Оплата криптой �
 return r.json();
 })
 .then(data => {
-topupStatus.textContent = 'Счёт создан — открой ссылку для оплаты.';
+topupStatus.textContent = (I18N[currentLang] || I18N.ru).status_invoice_created;
 const link = data.tg_deeplink || data.url;
 if (tg && tg.openTelegramLink && data.tg_deeplink){
 tg.openTelegramLink(data.tg_deeplink);
@@ -9427,7 +9853,7 @@ return;
 }
 const btn = document.getElementById('topupStarsBtn');
 btn.disabled = true;
-topupStatus.textContent = 'Выставляю счёт...';
+topupStatus.textContent = (I18N[currentLang] || I18N.ru).status_creating_invoice;
 fetch(API_BASE + '/api/topup/stars', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
@@ -9444,12 +9870,12 @@ return r.json();
 if (tg && tg.openInvoice){
 tg.openInvoice(data.link, (status) => {
 if (status === 'paid'){
-topupStatus.textContent = 'Оплата прошла ✓ Баланс обновится через пару секунд...';
+topupStatus.textContent = (I18N[currentLang] || I18N.ru).status_topup_paid_ok;
 setTimeout(() => { loadMe(); loadProfile(); }, 2500);
 } else if (status === 'cancelled'){
 topupStatus.textContent = '';
 } else {
-topupStatus.textContent = 'Оплата не прошла, попробуй ещё раз.';
+topupStatus.textContent = (I18N[currentLang] || I18N.ru).status_payment_failed;
 }
 });
 } else {
@@ -9473,12 +9899,12 @@ return;
 const amount = Number(tAmount.value);
 
 if (!amount || amount <= 0){
-topupStatus.textContent = 'Укажи сумму.';
+topupStatus.textContent = (I18N[currentLang] || I18N.ru).withdraw_need_amount;
 return;
 }
 
 topupSubmitBtn.disabled = true;
-topupStatus.textContent = 'Отправляю заявку...';
+topupStatus.textContent = (I18N[currentLang] || I18N.ru).withdraw_sending;
 
 fetch(API_BASE + '/api/topup', {
 method: 'POST',
@@ -9584,10 +10010,11 @@ withdrawStatus.textContent = errorMessage('unauthorized');
 return;
 }
 
+const dict = I18N[currentLang] || I18N.ru;
 const amount = Number(wAmount.value);
 
 if (!amount || amount <= 0){
-withdrawStatus.textContent = 'Укажи сумму.';
+withdrawStatus.textContent = dict.withdraw_need_amount;
 return;
 }
 
@@ -9596,7 +10023,7 @@ let payload = { init_data: tg.initData, amount: amount, method: withdrawMethod }
 if (totp2faStatus.enabled_withdraw){
 const totpCode = document.getElementById('wTotpCode').value.trim();
 if (!totpCode){
-withdrawStatus.textContent = 'Введи код 2FA.';
+withdrawStatus.textContent = dict.withdraw_need_totp;
 return;
 }
 payload.totp_code = totpCode;
@@ -9605,25 +10032,25 @@ payload.totp_code = totpCode;
 if (withdrawMethod === 'crypto'){
 const address = document.getElementById('wCryptoAddress').value.trim();
 if (!address){
-withdrawStatus.textContent = 'Укажи адрес кошелька.';
+withdrawStatus.textContent = dict.withdraw_need_wallet;
 return;
 }
 payload.crypto_address = address;
 } else {
 const details = wDetails.value.trim();
 if (!details){
-withdrawStatus.textContent = 'Укажи карту и Ф.И.О. владельца карты.';
+withdrawStatus.textContent = dict.withdraw_need_card;
 return;
 }
 if (details.length < 10){
-withdrawStatus.textContent = 'Не забудь указать Ф.И.О. владельца карты рядом с номером.';
+withdrawStatus.textContent = dict.withdraw_need_fio;
 return;
 }
 payload.payment_details = details;
 }
 
 withdrawSubmitBtn.disabled = true;
-withdrawStatus.textContent = 'Отправляю заявку...';
+withdrawStatus.textContent = dict.withdraw_sending;
 
 fetch(API_BASE + '/api/withdraw', {
 method: 'POST',
@@ -9638,8 +10065,8 @@ throw new Error(withdrawTrustLimitMessage(data) || WITHDRAW_ERROR_MESSAGES[data.
 return r.json();
 })
 .then(data => {
-const payoutText = data.payout ? ` Придёт ${formatCoins(data.payout)}.` : '';
-withdrawStatus.textContent = `Заявка #${data.id} отправлена ✓ Ожидай перевод.${payoutText}`;
+const payoutText = data.payout ? ` ${dict.withdraw_will_arrive.replace('{amount}', formatCoins(data.payout))}` : '';
+withdrawStatus.textContent = dict.withdraw_submitted.replace('{id}', data.id) + payoutText;
 wAmount.value = '';
 wDetails.value = '';
 document.getElementById('wCryptoAddress').value = '';
@@ -9656,7 +10083,7 @@ withdrawSubmitBtn.disabled = false;
 
 function renderInventory(items){
 if (!items || !items.length){
-inventoryStatus.textContent = 'В инвентаре нет предметов CS2 (или они не отображаются).';
+inventoryStatus.textContent = (I18N[currentLang] || I18N.ru).inventory_empty;
 inventoryGrid.innerHTML = '';
 return;
 }
@@ -9684,12 +10111,14 @@ let pendingSkinAssetId = null;
 let pendingSkinInspectLink = null;
 
 function formatWaitHours(hours){
-if (hours >= 1) return `${Math.ceil(hours)} ч`;
-return `${Math.max(1, Math.ceil(hours * 60))} мин`;
+const dict = I18N[currentLang] || I18N.ru;
+if (hours >= 1) return `${Math.ceil(hours)} ${dict.unit_hours_short}`;
+return `${Math.max(1, Math.ceil(hours * 60))} ${dict.unit_minutes_short}`;
 }
 
 function loadInventory(forceRefresh){
-inventoryStatus.textContent = forceRefresh ? 'Обновляю...' : 'Загрузка...';
+const dict = I18N[currentLang] || I18N.ru;
+inventoryStatus.textContent = forceRefresh ? dict.inventory_refreshing : dict.loading;
 inventoryGrid.innerHTML = '';
 let url = API_BASE + '/api/steam/inventory?init_data=' + encodeURIComponent(tg.initData);
 if (forceRefresh) url += '&refresh=1';
@@ -9963,7 +10392,7 @@ return;
 }
 
 if (!pendingSkinAssetId){
-addSkinStatus.textContent = 'Выбери предмет из инвентаря Steam — вручную заполнять нельзя.';
+addSkinStatus.textContent = (I18N[currentLang] || I18N.ru).addskin_need_pick;
 return;
 }
 
@@ -9985,7 +10414,7 @@ return;
 }
 
 addSkinSave.disabled = true;
-addSkinStatus.textContent = 'Публикую...';
+addSkinStatus.textContent = (I18N[currentLang] || I18N.ru).addskin_publishing;
 
 fetch(API_BASE + '/api/skins', {
 method: 'POST',
@@ -10018,7 +10447,7 @@ throw new Error(errorMessage(data.error));
 return r.json();
 })
 .then(() => {
-addSkinStatus.textContent = 'Выставлено ✓';
+addSkinStatus.textContent = (I18N[currentLang] || I18N.ru).addskin_published_ok;
 sTitle.value = '';
 sDescription.value = '';
 sPrice.value = '';
@@ -10138,7 +10567,7 @@ adminApiFetch('/api/admin/skins_for_sets')
 .then(data => {
 adminSetSkinsPool = data.items || [];
 if (!adminSetSkinsPool.length){
-picker.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">Нет доступных лотов</div>`;
+picker.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).admin_no_lots}</div>`;
 return;
 }
 picker.innerHTML = adminSetSkinsPool.map(s => {
@@ -10152,7 +10581,7 @@ ${photo}
 }).join('');
 })
 .catch(() => {
-picker.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">Не удалось загрузить</div>`;
+picker.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).load_failed}</div>`;
 });
 }
 
@@ -10185,9 +10614,9 @@ const description = document.getElementById('setDescription').value.trim();
 const discountValue = Number(document.getElementById('setDiscountValue').value);
 const skinIds = Array.from(adminSetSelectedSkinIds);
 
-if (!title){ status.textContent = 'Укажи название'; return; }
-if (skinIds.length < 2){ status.textContent = 'Выбери минимум 2 лота'; return; }
-if (!discountValue || discountValue < 0){ status.textContent = 'Укажи скидку'; return; }
+if (!title){ status.textContent = (I18N[currentLang] || I18N.ru).admin_need_title; return; }
+if (skinIds.length < 2){ status.textContent = (I18N[currentLang] || I18N.ru).admin_need_min_2_lots; return; }
+if (!discountValue || discountValue < 0){ status.textContent = (I18N[currentLang] || I18N.ru).admin_need_discount; return; }
 
 status.textContent = '...';
 
@@ -10219,27 +10648,27 @@ adminApiFetch('/api/admin/sets')
 .then(data => {
 const items = data.items || [];
 if (!items.length){
-list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">Сетов пока нет</div>`;
+list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).admin_no_sets}</div>`;
 return;
 }
 list.innerHTML = items.map(it => `
 <div class="deal-card" style="flex-direction:column; align-items:stretch;">
 <div class="deal-info">
-<div class="deal-title">${escapeHtml(it.title)} ${it.is_active ? '' : '(расформирован)'}</div>
+<div class="deal-title">${escapeHtml(it.title)} ${it.is_active ? '' : `(${(I18N[currentLang] || I18N.ru).admin_set_deactivated})`}</div>
 <div class="deal-meta">${formatCoins(it.set_price)} вместо ${formatCoins(it.individual_total)} (-${it.discount_percent}%)</div>
 </div>
-${it.is_active ? `<div class="deal-actions"><button class="deal-action secondary" data-deactivate-set="${it.id}" type="button">Расформировать</button></div>` : ''}
+${it.is_active ? `<div class="deal-actions"><button class="deal-action secondary" data-deactivate-set="${it.id}" type="button">${(I18N[currentLang] || I18N.ru).admin_btn_deactivate_set}</button></div>` : ''}
 </div>`).join('');
 })
 .catch(() => {
-list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">Не удалось загрузить</div>`;
+list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).load_failed}</div>`;
 });
 }
 
 document.getElementById('adminSetsList').addEventListener('click', (e) => {
 const btn = e.target.closest('[data-deactivate-set]');
 if (!btn) return;
-showConfirm('Расформировать сет? Лоты вернутся в обычный каталог.', () => {
+showConfirm((I18N[currentLang] || I18N.ru).admin_confirm_deactivate_set, () => {
 adminApiFetch('/api/admin/sets/' + btn.dataset.deactivateSet + '/deactivate', { method: 'POST' })
 .then(() => { loadAdminSetsList(); loadAdminSetSkinPicker(); loadSkins(); })
 .catch(err => showAlert(friendlyErrorMessage(err)));
@@ -10269,7 +10698,7 @@ return d.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-di
 
 function renderHistoryList(items){
 if (!items.length){
-return `<div class="skins-empty" style="padding:12px 4px;">Пока пусто</div>`;
+return `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).admin_empty}</div>`;
 }
 return items.map(it => `
 <div class="deal-card" style="flex-direction:column; align-items:stretch;">
@@ -10415,7 +10844,7 @@ return;
 const aCustomText = document.getElementById('aCustomPostText').value.trim();
 
 if (!aCustomText){
-status.textContent = 'Напиши текст поста — без него аукцион не создать';
+status.textContent = (I18N[currentLang] || I18N.ru).admin_need_auction_post;
 return;
 }
 
@@ -10879,7 +11308,7 @@ emoji_char: gwEmojiSave.emoji_char,
 custom_post_text: gwCustomTextSave,
 }
 })
-.then(() => { status.textContent = 'Готово ✓'; loadAdminGiveawayPanel(); })
+.then(() => { status.textContent = (I18N[currentLang] || I18N.ru).status_done_ok; loadAdminGiveawayPanel(); })
 .catch(err => { status.textContent = friendlyErrorMessage(err); });
 });
 
@@ -10898,7 +11327,7 @@ return;
 const gwCustomTextStart = document.getElementById('adminGwCustomPostText').value.trim();
 
 if (!gwCustomTextStart){
-status.textContent = 'Напиши текст поста — без него розыгрыш не запустить';
+status.textContent = (I18N[currentLang] || I18N.ru).admin_need_giveaway_post;
 return;
 }
 
@@ -10922,7 +11351,7 @@ custom_post_text: gwCustomTextStart,
 }
 })
 .then(() => adminApiFetch('/api/admin/giveaway/start', { method: 'POST' }))
-.then(() => { status.textContent = 'Готово ✓'; loadAdminGiveawayPanel(); loadAdminStatus(); })
+.then(() => { status.textContent = (I18N[currentLang] || I18N.ru).status_done_ok; loadAdminGiveawayPanel(); loadAdminStatus(); })
 .catch(err => { status.textContent = friendlyErrorMessage(err); });
 });
 
@@ -10931,7 +11360,7 @@ const status = document.getElementById('adminGwStatus');
 showConfirm((I18N[currentLang] || I18N.ru).admin_gw_confirm_stop, () => {
 status.textContent = '...';
 adminApiFetch('/api/admin/giveaway/stop', { method: 'POST' })
-.then(() => { status.textContent = 'Готово ✓'; setTimeout(loadAdminGiveawayPanel, 1500); loadAdminStatus(); })
+.then(() => { status.textContent = (I18N[currentLang] || I18N.ru).status_done_ok; setTimeout(loadAdminGiveawayPanel, 1500); loadAdminStatus(); })
 .catch(err => { status.textContent = friendlyErrorMessage(err); });
 });
 });
@@ -10988,7 +11417,7 @@ method: 'POST',
 body: { user_id: Number(userId), amount: amount, direction: direction }
 })
 .then(() => {
-status.textContent = 'Готово ✓';
+status.textContent = (I18N[currentLang] || I18N.ru).status_done_ok;
 document.getElementById('adminBalanceAmount').value = '';
 loadAdminHolds();
 })
@@ -11050,7 +11479,7 @@ adminApiFetch('/api/admin/topups')
 .then(data => {
 const items = data.items || [];
 if (!items.length){
-list.innerHTML = '<div class="skins-empty" style="padding:12px 4px;">Заявок нет</div>';
+list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).admin_no_requests}</div>`;
 return;
 }
 list.innerHTML = items.map(t => `
@@ -11060,8 +11489,8 @@ list.innerHTML = items.map(t => `
 <div class="deal-meta">${formatCoins(t.amount)}${t.photo_file_id ? ' · 📎 чек есть' : ' · ⚠️ чека нет'}</div>
 </div>
 <div class="deal-actions">
-<button class="deal-action" data-topup-approve="${t.id}" type="button">Принять</button>
-<button class="deal-action secondary" data-topup-reject="${t.id}" data-has-receipt="${t.photo_file_id ? '1' : '0'}" type="button">Отклонить</button>
+<button class="deal-action" data-topup-approve="${t.id}" type="button">${(I18N[currentLang] || I18N.ru).admin_btn_approve}</button>
+<button class="deal-action secondary" data-topup-reject="${t.id}" data-has-receipt="${t.photo_file_id ? '1' : '0'}" type="button">${(I18N[currentLang] || I18N.ru).admin_btn_reject}</button>
 </div>
 </div>`).join('');
 })
@@ -11096,7 +11525,7 @@ const overlay = document.getElementById('topupRejectOverlay');
 const topupId = overlay.dataset.topupId;
 const comment = document.getElementById('topupRejectComment').value.trim();
 const status = document.getElementById('topupRejectStatus');
-status.textContent = 'Отклоняю...';
+status.textContent = (I18N[currentLang] || I18N.ru).admin_declining;
 adminApiFetch('/api/admin/topups/' + topupId + '/reject', { method: 'POST', body: { comment: comment } })
 .then(() => {
 overlay.classList.remove('show');
@@ -11113,7 +11542,7 @@ adminApiFetch('/api/admin/withdrawals')
 .then(data => {
 const items = data.items || [];
 if (!items.length){
-list.innerHTML = '<div class="skins-empty" style="padding:12px 4px;">Заявок нет</div>';
+list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).admin_no_requests}</div>`;
 return;
 }
 list.innerHTML = items.map(w => `
@@ -11124,8 +11553,8 @@ list.innerHTML = items.map(w => `
 <div class="deal-meta">${escapeHtml(w.payment_details)}</div>
 </div>
 <div class="deal-actions">
-<button class="deal-action" data-w-approve="${w.id}" type="button">Принять</button>
-<button class="deal-action secondary" data-w-reject="${w.id}" type="button">Отклонить</button>
+<button class="deal-action" data-w-approve="${w.id}" type="button">${(I18N[currentLang] || I18N.ru).admin_btn_approve}</button>
+<button class="deal-action secondary" data-w-reject="${w.id}" type="button">${(I18N[currentLang] || I18N.ru).admin_btn_reject}</button>
 </div>
 </div>`).join('');
 })
@@ -11136,14 +11565,14 @@ document.getElementById('adminWithdrawalsList').addEventListener('click', (e) =>
 const approveBtn = e.target.closest('[data-w-approve]');
 const rejectBtn = e.target.closest('[data-w-reject]');
 if (approveBtn){
-showConfirm('Подтвердить вывод? (переведи деньги вручную ДО подтверждения)', () => {
+showConfirm((I18N[currentLang] || I18N.ru).admin_confirm_withdraw_approve, () => {
 adminApiFetch('/api/admin/withdrawals/' + approveBtn.dataset.wApprove + '/approve', { method: 'POST' })
 .then(loadAdminWithdrawals)
 .catch(err => showAlert(friendlyErrorMessage(err)));
 });
 }
 if (rejectBtn){
-showConfirm('Отклонить заявку на вывод?', () => {
+showConfirm((I18N[currentLang] || I18N.ru).admin_confirm_reject_withdraw, () => {
 adminApiFetch('/api/admin/withdrawals/' + rejectBtn.dataset.wReject + '/reject', { method: 'POST' })
 .then(loadAdminWithdrawals)
 .catch(err => showAlert(friendlyErrorMessage(err)));
@@ -11160,7 +11589,7 @@ const parts = (data.topup_details || '').split(' ');
 document.getElementById('adminCardHolder').value = '';
 document.getElementById('adminCardNumber').value = data.topup_details || '';
 document.getElementById('adminPromoLimit').value = data.promo_limit || 0;
-document.getElementById('adminPromoStatus2').textContent = `Использовано: ${data.promo_used || 0} из ${data.promo_limit || 0}`;
+document.getElementById('adminPromoStatus2').textContent = `${(I18N[currentLang] || I18N.ru).admin_promo_used_label} ${data.promo_used || 0} ${(I18N[currentLang] || I18N.ru).admin_promo_of} ${data.promo_limit || 0}`;
 document.getElementById('adminReferralPercent').value = data.referral_bonus_percent || 0;
 document.getElementById('adminCommissionSale').textContent = formatCoins(data.commission_sale_total || 0);
 document.getElementById('adminCommissionWithdraw').textContent = formatCoins(data.commission_withdraw_total || 0);
@@ -11192,7 +11621,7 @@ document.getElementById(elId).addEventListener('change', (e) => {
 const checkbox = e.target;
 adminApiFetch('/api/admin/toggle_feature', { method: 'POST', body: { feature: feature, enabled: checkbox.checked } })
 .then(() => { loadProfile(); })
-.catch(() => { checkbox.checked = !checkbox.checked; showAlert('Не удалось изменить.'); });
+.catch(() => { checkbox.checked = !checkbox.checked; showAlert((I18N[currentLang] || I18N.ru).admin_change_failed); });
 });
 });
 
@@ -11200,12 +11629,12 @@ document.getElementById('adminSaveStarsRateBtn').addEventListener('click', () =>
 const status = document.getElementById('adminStarsRateStatus');
 const rate = Number(document.getElementById('adminStarsRate').value);
 if (!rate || rate <= 0){
-status.textContent = 'Курс должен быть больше нуля.';
+status.textContent = (I18N[currentLang] || I18N.ru).admin_need_valid_rate;
 return;
 }
-status.textContent = 'Сохраняю...';
+status.textContent = (I18N[currentLang] || I18N.ru).discount_saving;
 adminApiFetch('/api/admin/stars_rate', { method: 'POST', body: { rate: rate } })
-.then(() => { status.textContent = 'Сохранено ✓'; loadAdminSettings(); })
+.then(() => { status.textContent = (I18N[currentLang] || I18N.ru).status_saved_ok; loadAdminSettings(); })
 .catch(err => { status.textContent = friendlyErrorMessage(err); });
 });
 
@@ -11227,7 +11656,7 @@ adminApiFetch('/api/admin/finance/top_topupers')
 .then(data => {
 const items = data.items || [];
 if (!items.length){
-list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">Пока пусто</div>`;
+list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).admin_empty}</div>`;
 return;
 }
 list.innerHTML = items.map((it, i) => `
@@ -11238,7 +11667,7 @@ list.innerHTML = items.map((it, i) => `
 </div>
 </div>`).join('');
 })
-.catch(() => { list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">Не удалось загрузить</div>`; });
+.catch(() => { list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).load_failed}</div>`; });
 }
 
 document.getElementById('adminClientHistoryBtn').addEventListener('click', () => {
@@ -11270,19 +11699,19 @@ document.getElementById('adminSaveTopupDetailsBtn').addEventListener('click', ()
 const status = document.getElementById('adminTopupDetailsStatus');
 const cardNumber = document.getElementById('adminCardNumber').value.trim();
 const holder = document.getElementById('adminCardHolder').value.trim();
-if (!cardNumber){ status.textContent = 'Укажи номер карты.'; return; }
-status.textContent = 'Сохраняю...';
+if (!cardNumber){ status.textContent = (I18N[currentLang] || I18N.ru).admin_need_card_number; return; }
+status.textContent = (I18N[currentLang] || I18N.ru).discount_saving;
 adminApiFetch('/api/admin/topup_details', { method: 'POST', body: { card_number: cardNumber, holder: holder } })
-.then(() => { status.textContent = 'Сохранено ✓'; loadAdminSettings(); })
+.then(() => { status.textContent = (I18N[currentLang] || I18N.ru).status_saved_ok; loadAdminSettings(); })
 .catch(err => { status.textContent = friendlyErrorMessage(err); });
 });
 
 document.getElementById('adminSavePromoBtn').addEventListener('click', () => {
 const status = document.getElementById('adminPromoStatus');
 const limit = Number(document.getElementById('adminPromoLimit').value);
-status.textContent = 'Сохраняю...';
+status.textContent = (I18N[currentLang] || I18N.ru).discount_saving;
 adminApiFetch('/api/admin/promo_limit', { method: 'POST', body: { limit: limit } })
-.then(() => { status.textContent = 'Сохранено ✓'; loadAdminSettings(); })
+.then(() => { status.textContent = (I18N[currentLang] || I18N.ru).status_saved_ok; loadAdminSettings(); })
 .catch(err => { status.textContent = friendlyErrorMessage(err); });
 });
 
@@ -11290,12 +11719,12 @@ document.getElementById('adminSaveReferralPercentBtn').addEventListener('click',
 const status = document.getElementById('adminReferralPercentStatus');
 const percent = Number(document.getElementById('adminReferralPercent').value);
 if (percent < 0 || percent > 100 || Number.isNaN(percent)){
-status.textContent = 'Процент должен быть от 0 до 100.';
+status.textContent = (I18N[currentLang] || I18N.ru).admin_need_valid_percent;
 return;
 }
-status.textContent = 'Сохраняю...';
+status.textContent = (I18N[currentLang] || I18N.ru).discount_saving;
 adminApiFetch('/api/admin/referral_percent', { method: 'POST', body: { percent: percent } })
-.then(() => { status.textContent = 'Сохранено ✓'; loadAdminSettings(); })
+.then(() => { status.textContent = (I18N[currentLang] || I18N.ru).status_saved_ok; loadAdminSettings(); })
 .catch(err => { status.textContent = friendlyErrorMessage(err); });
 });
 
@@ -11306,7 +11735,7 @@ const list = document.getElementById('adminPeopleList');
 adminApiFetch('/api/admin/people')
 .then(data => {
 const rows = [];
-rows.push(`<div class="deal-meta" style="margin-bottom:8px;">Владелец: ${data.owner_id}</div>`);
+rows.push(`<div class="deal-meta" style="margin-bottom:8px;">${(I18N[currentLang] || I18N.ru).admin_owner_label} ${data.owner_id}</div>`);
 const chipLabels = data.chip_labels || {};
 const permsMap = data.permissions || {};
 (data.admins || []).forEach(id => {
@@ -11323,10 +11752,10 @@ return `<label class="admin-perm-chip"><input type="checkbox" data-perm-user="${
 rows.push(`<div class="deal-card" style="padding:8px 12px; flex-direction:column; align-items:stretch;"><div style="display:flex; justify-content:space-between; align-items:center;"><div class="deal-info"><div class="deal-title" style="font-size:13px;">Админ · ${id}</div></div>${data.is_owner ? `<div class="deal-actions"><button class="deal-action secondary" data-remove-admin="${id}" type="button">Снять</button></div>` : ''}</div>${chipsHtml}</div>`);
 });
 (data.auctioneers || []).forEach(id => {
-rows.push(`<div class="deal-card" style="padding:8px 12px;"><div class="deal-info"><div class="deal-title" style="font-size:13px;">Организатор · ${id}</div></div>${data.is_owner ? `<div class="deal-actions"><button class="deal-action secondary" data-remove-auctioneer="${id}" type="button">Снять</button></div>` : ''}</div>`);
+rows.push(`<div class="deal-card" style="padding:8px 12px;"><div class="deal-info"><div class="deal-title" style="font-size:13px;">${(I18N[currentLang] || I18N.ru).admin_organizer_label} ${id}</div></div>${data.is_owner ? `<div class="deal-actions"><button class="deal-action secondary" data-remove-auctioneer="${id}" type="button">Снять</button></div>` : ''}</div>`);
 });
 (data.support_admins || []).forEach(id => {
-rows.push(`<div class="deal-card" style="padding:8px 12px;"><div class="deal-info"><div class="deal-title" style="font-size:13px;">Пультовый · ${id}</div></div>${data.is_owner ? `<div class="deal-actions"><button class="deal-action secondary" data-remove-support-admin="${id}" type="button">Снять</button></div>` : ''}</div>`);
+rows.push(`<div class="deal-card" style="padding:8px 12px;"><div class="deal-info"><div class="deal-title" style="font-size:13px;">${(I18N[currentLang] || I18N.ru).admin_pult_label} ${id}</div></div>${data.is_owner ? `<div class="deal-actions"><button class="deal-action secondary" data-remove-support-admin="${id}" type="button">Снять</button></div>` : ''}</div>`);
 });
 (data.blocked_users || []).forEach(id => {
 rows.push(`<div class="deal-card" style="padding:8px 12px;"><div class="deal-info"><div class="deal-title" style="font-size:13px; color:#e0555a;">🚫 Заблокирован · ${id}</div></div><div class="deal-actions"><button class="deal-action secondary" data-unblock-user="${id}" type="button">Разблокировать</button></div></div>`);
@@ -11350,7 +11779,7 @@ chip: checkbox.dataset.permChip,
 enabled: checkbox.checked,
 }
 })
-.catch(() => { checkbox.checked = !checkbox.checked; showAlert('Не удалось изменить право.'); });
+.catch(() => { checkbox.checked = !checkbox.checked; showAlert((I18N[currentLang] || I18N.ru).admin_change_right_failed); });
 });
 
 document.getElementById('adminPeopleList').addEventListener('click', (e) => {
@@ -11383,37 +11812,37 @@ adminApiFetch('/api/admin/people/unblock_user', { method: 'POST', body: { user_i
 document.getElementById('adminAddAdminBtn').addEventListener('click', () => {
 const status = document.getElementById('adminPeopleStatus');
 const id = Number(document.getElementById('adminNewPersonId').value);
-if (!id){ status.textContent = 'Укажи user_id.'; return; }
+if (!id){ status.textContent = (I18N[currentLang] || I18N.ru).admin_need_user_id; return; }
 adminApiFetch('/api/admin/people/add_admin', { method: 'POST', body: { user_id: id } })
-.then(() => { status.textContent = 'Готово ✓'; document.getElementById('adminNewPersonId').value = ''; loadAdminPeople(); })
+.then(() => { status.textContent = (I18N[currentLang] || I18N.ru).status_done_ok; document.getElementById('adminNewPersonId').value = ''; loadAdminPeople(); })
 .catch(err => { status.textContent = friendlyErrorMessage(err); });
 });
 
 document.getElementById('adminAddAuctioneerBtn').addEventListener('click', () => {
 const status = document.getElementById('adminPeopleStatus');
 const id = Number(document.getElementById('adminNewPersonId').value);
-if (!id){ status.textContent = 'Укажи user_id.'; return; }
+if (!id){ status.textContent = (I18N[currentLang] || I18N.ru).admin_need_user_id; return; }
 adminApiFetch('/api/admin/people/add_auctioneer', { method: 'POST', body: { user_id: id } })
-.then(() => { status.textContent = 'Готово ✓'; document.getElementById('adminNewPersonId').value = ''; loadAdminPeople(); })
+.then(() => { status.textContent = (I18N[currentLang] || I18N.ru).status_done_ok; document.getElementById('adminNewPersonId').value = ''; loadAdminPeople(); })
 .catch(err => { status.textContent = friendlyErrorMessage(err); });
 });
 
 document.getElementById('adminAddSupportAdminBtn').addEventListener('click', () => {
 const status = document.getElementById('adminPeopleStatus');
 const id = Number(document.getElementById('adminNewPersonId').value);
-if (!id){ status.textContent = 'Укажи user_id.'; return; }
+if (!id){ status.textContent = (I18N[currentLang] || I18N.ru).admin_need_user_id; return; }
 adminApiFetch('/api/admin/people/add_support_admin', { method: 'POST', body: { user_id: id } })
-.then(() => { status.textContent = 'Готово ✓'; document.getElementById('adminNewPersonId').value = ''; loadAdminPeople(); })
+.then(() => { status.textContent = (I18N[currentLang] || I18N.ru).status_done_ok; document.getElementById('adminNewPersonId').value = ''; loadAdminPeople(); })
 .catch(err => { status.textContent = friendlyErrorMessage(err); });
 });
 
 document.getElementById('adminBlockUserBtn').addEventListener('click', () => {
 const status = document.getElementById('adminPeopleStatus');
 const id = Number(document.getElementById('adminNewPersonId').value);
-if (!id){ status.textContent = 'Укажи user_id.'; return; }
-showConfirm('Заблокировать этого пользователя? Он не сможет писать в саппорт и покупать.', () => {
+if (!id){ status.textContent = (I18N[currentLang] || I18N.ru).admin_need_user_id; return; }
+showConfirm((I18N[currentLang] || I18N.ru).admin_confirm_block_user, () => {
 adminApiFetch('/api/admin/people/block_user', { method: 'POST', body: { user_id: id } })
-.then(() => { status.textContent = 'Готово ✓'; document.getElementById('adminNewPersonId').value = ''; loadAdminPeople(); })
+.then(() => { status.textContent = (I18N[currentLang] || I18N.ru).status_done_ok; document.getElementById('adminNewPersonId').value = ''; loadAdminPeople(); })
 .catch(err => { status.textContent = friendlyErrorMessage(err); });
 });
 });
