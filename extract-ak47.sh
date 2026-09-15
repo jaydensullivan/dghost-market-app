@@ -1,106 +1,137 @@
 #!/usr/bin/env bash
 #
-# Этап 0 — достать одну модель оружия из CS2 и экспортнуть в glTF.
-# Запускать в GitHub Codespaces (Linux), ПК не нужен.
-#
-# Цепочка:
-#   DepotDownloader  — скачивает файлы игры напрямую из Steam
-#   Source2Viewer-CLI — распаковывает VPK и декомпилирует .vmdl_c в glTF
-#
-# Оба инструмента на .NET и работают под Linux.
+# Этап 0 — достать модель AK-47 из CS2 и экспортнуть в glTF.
+# Запускать в GitHub Codespaces, ПК не нужен.
 #
 #   chmod +x extract-ak47.sh && ./extract-ak47.sh
 #
+# Работает в два захода, чтобы не выкачивать всю игру:
+#   1) качаем только pak01_dir.vpk — это индекс архива, он небольшой
+#   2) по индексу смотрим, в каких кусках лежат файлы AK-47,
+#      и докачиваем только их
+#
 set -euo pipefail
 
-WORK="$HOME/cs2-assets"
+# Качаем в /tmp: там 38 ГБ свободно против 16 ГБ в /workspaces.
+# ВНИМАНИЕ: /tmp чистится при перезапуске Codespace — готовый .glb
+# сразу копируй в репозиторий.
+WORK="${WORK:-/tmp/cs2-assets}"
 TOOLS="$WORK/tools"
 GAME="$WORK/game"
 OUT="$WORK/export"
 
 mkdir -p "$TOOLS" "$GAME" "$OUT"
 
-echo "==> 1/5 Проверяю .NET"
+# Что ищем. Поменяй, если нужен другой ствол.
+WEAPON="${WEAPON:-ak47}"
+
+echo "==> 1/6 Проверяю .NET"
 if ! command -v dotnet >/dev/null 2>&1; then
-    echo "Ставлю .NET 8 SDK..."
     curl -sSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh
     bash /tmp/dotnet-install.sh --channel 8.0
     export PATH="$HOME/.dotnet:$PATH"
-    echo 'export PATH="$HOME/.dotnet:$PATH"' >> ~/.bashrc
 fi
 dotnet --version
 
-echo "==> 2/5 Ставлю DepotDownloader"
-# Скачивает файлы игры из Steam по аккаунту. CS2 бесплатная,
-# поэтому подойдёт любой аккаунт — можно тот же, что у инспект-бота.
+echo "==> 2/6 Проверяю инструменты"
 if [ ! -f "$TOOLS/DepotDownloader.dll" ]; then
     cd "$TOOLS"
     DD_URL=$(curl -s https://api.github.com/repos/SteamRE/DepotDownloader/releases/latest \
         | grep -o 'https://[^"]*DepotDownloader-framework.zip' | head -1)
-    echo "Беру: $DD_URL"
-    curl -sSL "$DD_URL" -o dd.zip
-    unzip -oq dd.zip && rm dd.zip
+    curl -sSL "$DD_URL" -o dd.zip && unzip -oq dd.zip && rm dd.zip
 fi
 
-echo "==> 3/5 Ставлю Source2Viewer-CLI"
-# Кроссплатформенный декомпилятор Source 2. Умеет читать VPK и
-# экспортировать модели сразу в glTF вместе с материалами.
 if [ ! -f "$TOOLS/Source2Viewer-CLI" ]; then
     cd "$TOOLS"
     S2V_URL=$(curl -s https://api.github.com/repos/ValveResourceFormat/ValveResourceFormat/releases/latest \
         | grep -o 'https://[^"]*cli-linux-x64.zip' | head -1)
-    echo "Беру: $S2V_URL"
-    curl -sSL "$S2V_URL" -o s2v.zip
-    unzip -oq s2v.zip && rm s2v.zip
+    curl -sSL "$S2V_URL" -o s2v.zip && unzip -oq s2v.zip && rm s2v.zip
     chmod +x Source2Viewer-CLI
 fi
+echo "Инструменты на месте."
 
-echo "==> 4/5 Качаю файлы CS2"
-# ВАЖНО: целиком игра — это десятки гигабайт, в Codespaces она не
-# влезет и не нужна. Берём только архив с моделями оружия.
-# Список файлов задаётся регулярками.
-cat > "$WORK/filelist.txt" <<'EOF'
-regex:^game/csgo/pak01_dir\.vpk$
-regex:^game/csgo/pak01_[0-9]+\.vpk$
-EOF
-
-cd "$TOOLS"
-if [ ! -f "$GAME/game/csgo/pak01_dir.vpk" ]; then
-    echo
-    echo "Сейчас спросит логин Steam и код Guard."
-    echo "Аккаунт нужен только для скачивания — ничего не изменится."
-    echo
-    dotnet DepotDownloader.dll \
-        -app 730 \
-        -filelist "$WORK/filelist.txt" \
-        -dir "$GAME" \
-        -username "${STEAM_USERNAME:-}" \
-        ${STEAM_PASSWORD:+-password "$STEAM_PASSWORD"}
+# --- логин ---------------------------------------------------------
+# Прошлая версия молча подставляла пустой логин, и Steam отвечал
+# "requires a username and password" — теперь спрашиваем явно.
+STEAM_USER="${STEAM_USERNAME:-}"
+if [ -z "$STEAM_USER" ]; then
+    read -rp "Логин Steam: " STEAM_USER
+fi
+if [ -z "$STEAM_USER" ]; then
+    echo "❌ Без логина скачать нельзя."
+    exit 1
 fi
 
-VPK=$(find "$GAME" -name 'pak01_dir.vpk' | head -1)
+# Пароль спрашивает сам DepotDownloader — он не показывает его при
+# вводе и не оставляет в истории терминала.
+dd_run() {
+    cd "$TOOLS"
+    dotnet DepotDownloader.dll -app 730 -username "$STEAM_USER" "$@"
+}
+
+echo "==> 3/6 Качаю индекс архива (pak01_dir.vpk)"
+if [ -z "$(find "$GAME" -name 'pak01_dir.vpk' 2>/dev/null | head -1)" ]; then
+    printf 'regex:^game/csgo/pak01_dir\\.vpk$\n' > "$WORK/filelist-dir.txt"
+    dd_run -filelist "$WORK/filelist-dir.txt" -dir "$GAME"
+fi
+
+VPK=$(find "$GAME" -name 'pak01_dir.vpk' 2>/dev/null | head -1)
 if [ -z "$VPK" ]; then
-    echo "❌ pak01_dir.vpk не найден. Проверь, что скачивание прошло."
+    echo "❌ pak01_dir.vpk не скачался."
     exit 1
 fi
-echo "Архив: $VPK ($(du -h "$VPK" | cut -f1))"
+echo "Индекс: $VPK ($(du -h "$VPK" | cut -f1))"
 
-echo "==> 5/5 Экспортирую AK-47 в glTF"
-# Сначала смотрим, как путь называется в этой версии игры —
-# Valve их периодически двигает, хардкодить нельзя.
-echo "Ищу модель в архиве..."
-"$TOOLS/Source2Viewer-CLI" -i "$VPK" --vpk_list \
-    | grep -i 'weapons/models.*ak47.*vmdl' | head -5 || true
+echo "==> 4/6 Смотрю, в каких кусках лежит $WEAPON"
+"$TOOLS/Source2Viewer-CLI" -i "$VPK" --vpk_dir > "$WORK/vpk_dir.txt" 2>/dev/null || true
 
-AK_PATH=$("$TOOLS/Source2Viewer-CLI" -i "$VPK" --vpk_list \
-    | grep -i 'weapons/models.*ak47.*\.vmdl_c$' | head -1 | tr -d '\r')
-
-if [ -z "$AK_PATH" ]; then
-    echo "❌ Модель AK-47 не нашлась. Посмотри список выше и укажи путь руками."
+if [ ! -s "$WORK/vpk_dir.txt" ]; then
+    echo "❌ Не удалось прочитать индекс. Покажи вывод команды:"
+    echo "   $TOOLS/Source2Viewer-CLI -i $VPK --vpk_dir | head -20"
     exit 1
 fi
 
-echo "Нашёл: $AK_PATH"
+grep -i "$WEAPON" "$WORK/vpk_dir.txt" | head -20
+echo "   ..."
+
+# Номера кусков из строк индекса. Формат вывода между версиями
+# отличается — если ничего не распозналось, покажем сырые строки.
+INDICES=$(grep -i "$WEAPON" "$WORK/vpk_dir.txt" \
+    | grep -oi 'archive *index[:= ]*[0-9]*' \
+    | grep -o '[0-9]*$' | sort -un | tr '\n' ' ')
+
+if [ -z "$INDICES" ]; then
+    echo
+    echo "⚠️ Номера кусков не распознались. Вот как выглядят строки:"
+    grep -i "$WEAPON" "$WORK/vpk_dir.txt" | head -3
+    echo
+    echo "Скинь эти строки в чат — поправим разбор."
+    exit 1
+fi
+
+echo "Нужные куски: $INDICES"
+
+echo "==> 5/6 Качаю только эти куски"
+: > "$WORK/filelist-chunks.txt"
+for i in $INDICES; do
+    printf 'regex:^game/csgo/pak01_%03d\\.vpk$\n' "$i" >> "$WORK/filelist-chunks.txt"
+done
+cat "$WORK/filelist-chunks.txt"
+
+dd_run -filelist "$WORK/filelist-chunks.txt" -dir "$GAME"
+
+echo "Скачано:"
+du -sh "$GAME"
+df -h /tmp | tail -1
+
+echo "==> 6/6 Экспортирую в glTF"
+MODEL_PATH=$(grep -io "[^ ]*${WEAPON}[^ ]*\.vmdl_c" "$WORK/vpk_dir.txt" | head -1 | tr -d '\r')
+
+if [ -z "$MODEL_PATH" ]; then
+    echo "❌ Путь к модели не найден. Посмотри $WORK/vpk_dir.txt"
+    exit 1
+fi
+echo "Модель: $MODEL_PATH"
 
 "$TOOLS/Source2Viewer-CLI" \
     -i "$VPK" \
@@ -109,13 +140,12 @@ echo "Нашёл: $AK_PATH"
     --gltf_export_format glb \
     --gltf_export_materials \
     --gltf_textures_adapt \
-    --vpk_filepath "$AK_PATH"
+    --vpk_filepath "$MODEL_PATH"
 
 echo
 echo "================================================"
-echo "Готово. Результат:"
 find "$OUT" -name '*.glb' -exec ls -lh {} \;
 echo
-echo "Дальше: залей .glb в репозиторий мини-аппа и открой стенд"
-echo "  https://app.dghostmarket.com/viewer-test.html?model=<ссылка на glb>"
+echo "Скопируй .glb в репозиторий (/tmp чистится при перезапуске):"
+echo "  cp \$(find $OUT -name '*.glb' | head -1) /workspaces/dghost-market-app/ak47.glb"
 echo "================================================"
