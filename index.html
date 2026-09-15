@@ -1788,7 +1788,10 @@ width:100%;
 aspect-ratio:1/1;
 border-radius:8px;
 overflow:hidden;
-background:rgba(123,44,255,0.08);
+background-color:rgba(123,44,255,0.08);
+background-size:cover;
+background-position:center;
+background-repeat:no-repeat;
 margin-bottom:8px;
 }
 
@@ -2192,7 +2195,8 @@ text-align:center;
 border-radius:14px 14px 0 0;
 background:
 radial-gradient(ellipse at 50% 0%, var(--rarity-glow-strong, rgba(235,75,75,0.55)) 0%, rgba(10,10,12,0) 75%),
-linear-gradient(180deg, var(--rarity-glow, rgba(235,75,75,0.35)) 0%, rgba(10,10,12,0) 100%);
+linear-gradient(180deg, var(--rarity-glow, rgba(235,75,75,0.35)) 0%, rgba(10,10,12,0.45) 100%),
+var(--rarity-bg, none) center/cover no-repeat;
 position:relative;
 }
 
@@ -7014,6 +7018,19 @@ const RARITY_CLASS = {
 'Covert': 'rarity-covert',
 'Contraband': 'rarity-contraband',
 'Extraordinary': 'rarity-extraordinary',
+// Кейсы и капсулы.
+'Base Grade': 'rarity-consumer',
+'Stock': 'rarity-consumer',
+// Наклейки, брелоки, граффити — своя лестница названий, цвета
+// те же, что у оружейных редкостей.
+'High Grade': 'rarity-milspec',
+'Remarkable': 'rarity-restricted',
+'Exotic': 'rarity-classified',
+// Агенты — синий/фиолетовый/розовый/красный.
+'Distinguished': 'rarity-milspec',
+'Exceptional': 'rarity-restricted',
+'Superior': 'rarity-classified',
+'Master': 'rarity-covert',
 };
 
 const RARITY_GLOW = {
@@ -7025,6 +7042,15 @@ const RARITY_GLOW = {
 'Covert': 'rgba(216,84,84,0.26)',
 'Contraband': 'rgba(219,184,79,0.26)',
 'Extraordinary': 'rgba(219,184,79,0.26)',
+'Base Grade': 'rgba(174,194,209,0.26)',
+'Stock': 'rgba(174,194,209,0.26)',
+'High Grade': 'rgba(90,111,214,0.26)',
+'Remarkable': 'rgba(140,95,214,0.26)',
+'Exotic': 'rgba(193,91,201,0.26)',
+'Distinguished': 'rgba(90,111,214,0.26)',
+'Exceptional': 'rgba(140,95,214,0.26)',
+'Superior': 'rgba(193,91,201,0.26)',
+'Master': 'rgba(216,84,84,0.26)',
 };
 
 const RARITY_GLOW_STRONG = {
@@ -7036,6 +7062,39 @@ const RARITY_GLOW_STRONG = {
 'Covert': 'rgba(216,84,84,0.6)',
 'Contraband': 'rgba(219,184,79,0.6)',
 'Extraordinary': 'rgba(219,184,79,0.6)',
+'Base Grade': 'rgba(174,194,209,0.6)',
+'Stock': 'rgba(174,194,209,0.6)',
+'High Grade': 'rgba(90,111,214,0.6)',
+'Remarkable': 'rgba(140,95,214,0.6)',
+'Exotic': 'rgba(193,91,201,0.6)',
+'Distinguished': 'rgba(90,111,214,0.6)',
+'Exceptional': 'rgba(140,95,214,0.6)',
+'Superior': 'rgba(193,91,201,0.6)',
+'Master': 'rgba(216,84,84,0.6)',
+};
+
+// Те же самые фоны, что бот подставляет в посты канала
+// (RARITY_BACKGROUND_URLS в bot.py) — чтобы лот в мини-аппе и лот в
+// канале выглядели одинаково. Файлы лежат рядом с index.html в том
+// же репозитории GitHub Pages, поэтому путь относительный.
+const RARITY_BG = {
+'Consumer Grade': 'bg-consumer.png',
+'Base Grade': 'bg-consumer.png',
+'Stock': 'bg-consumer.png',
+'Industrial Grade': 'bg-industrial.png',
+'Mil-Spec Grade': 'bg-mil-spec.png',
+'High Grade': 'bg-mil-spec.png',
+'Distinguished': 'bg-mil-spec.png',
+'Restricted': 'bg-restricted.png',
+'Remarkable': 'bg-restricted.png',
+'Exceptional': 'bg-restricted.png',
+'Classified': 'bg-classified.png',
+'Exotic': 'bg-classified.png',
+'Superior': 'bg-classified.png',
+'Covert': 'bg-covert.png',
+'Master': 'bg-covert.png',
+'Contraband': 'bg-contraband.png',
+'Extraordinary': 'bg-contraband.png',
 };
 
 function skinCardHtml(skin){
@@ -7058,6 +7117,11 @@ const sellerTrustBadge = skin.seller_trust_level
 : '';
 
 const rarityClass = RARITY_CLASS[skin.rarity] || '';
+
+// Фон под предметом — тот же файл, что уходит в пост канала.
+const rarityBg = RARITY_BG[skin.rarity]
+? ` style="background-image:url('${RARITY_BG[skin.rarity]}')"`
+: '';
 
 const isOwn = currentUserId && skin.seller_id === currentUserId;
 
@@ -7085,7 +7149,7 @@ const priceHtml = skin.original_price
 
 return `
 <div class="skin-card ${rarityClass}">
-<div class="skin-photo-wrap">
+<div class="skin-photo-wrap"${rarityBg}>
 ${photo}
 ${wearBadge}
 ${stBadge}
@@ -8536,6 +8600,7 @@ buySubtitle.textContent = skin.weapon_type || 'CS2 SKIN';
 
 buyHero.style.setProperty('--rarity-glow', RARITY_GLOW[skin.rarity] || 'rgba(235,75,75,0.35)');
 buyHero.style.setProperty('--rarity-glow-strong', RARITY_GLOW_STRONG[skin.rarity] || 'rgba(235,75,75,0.55)');
+buyHero.style.setProperty('--rarity-bg', RARITY_BG[skin.rarity] ? `url('${RARITY_BG[skin.rarity]}')` : 'none');
 
 const rarityBadge = document.getElementById('buyRarityBadge');
 if (skin.rarity){
@@ -10201,6 +10266,50 @@ pendingSkinAssetId = item.asset_id || null;
 pendingSkinInspectLink = item.inspect_link || null;
 
 sDescription.value = '';
+
+// Float и паттерн приходят только из Game Coordinator, а инспект
+// там идёт по одному предмету за раз (секунда-две каждый) — гнать
+// через него весь инвентарь при открытии нельзя, это минуты
+// ожидания. Поэтому инспектируем ровно выбранный предмет, уже
+// после того, как форма заполнена всем остальным: продавец сразу
+// видит карточку, а float с паттерном подставляются через
+// мгновение. Если инспект-бот недоступен — просто оставляем поля
+// пустыми, продавец заполнит руками (не блокируем выставление).
+if (item.inspect_link){
+const inspectDict = I18N[currentLang] || I18N.ru;
+addSkinStatus.textContent = inspectDict.loading;
+
+fetch(API_BASE + '/api/steam/inspect'
++ '?init_data=' + encodeURIComponent(tg.initData)
++ '&inspect_link=' + encodeURIComponent(item.inspect_link)
++ '&_t=' + Date.now(), { cache: 'no-store' })
+.then(r => r.ok ? r.json() : null)
+.then(data => {
+addSkinStatus.textContent = '';
+
+if (!data || !data.ok) return;
+
+// Не затираем то, что продавец успел вписать руками, пока
+// шёл запрос — подставляем только в пустые поля.
+if (sFloat.value === '' && data.float_value !== null && data.float_value !== undefined){
+sFloat.value = data.float_value;
+}
+
+if (sPattern.value === '' && data.pattern !== null && data.pattern !== undefined){
+sPattern.value = data.pattern;
+}
+
+if (!sRarity.value && data.rarity){
+sRarity.value = data.rarity;
+}
+
+if (data.stattrak) sStattrak.checked = true;
+if (data.has_stickers) sHasStickers.checked = true;
+})
+.catch(() => {
+addSkinStatus.textContent = '';
+});
+}
 
 scheduleSellMarketPreview();
 
