@@ -135,25 +135,53 @@ if [ ! -s "$WORK/vpk_dir.txt" ]; then
     exit 1
 fi
 
-grep -i "$WEAPON" "$WORK/vpk_dir.txt" | head -20
+ALL_HITS=$(grep -ci "$WEAPON" "$WORK/vpk_dir.txt" || true)
+echo "Всего файлов со словом '$WEAPON': $ALL_HITS"
+
+# Под общий фильтр попадают ВСЕ раскраски скинов (weapons/paints/...),
+# а они разбросаны по десяткам кусков — качать их значит вытянуть
+# половину игры. Для рендера нужна только сама модель и её базовые
+# текстуры, поэтому раскраски отсекаем.
+grep -i "$WEAPON" "$WORK/vpk_dir.txt" \
+    | grep -iv '/paints/' \
+    | grep -iE 'model' > "$WORK/hits.txt" || true
+
+if [ ! -s "$WORK/hits.txt" ]; then
+    echo "⚠️ Файлы модели не нашлись. Вот все .vmdl_c со словом $WEAPON:"
+    grep -i "$WEAPON" "$WORK/vpk_dir.txt" | grep -i 'vmdl_c' | head -10
+    echo "Скинь эти строки в чат."
+    exit 1
+fi
+
+echo "Из них относятся к модели: $(wc -l < "$WORK/hits.txt")"
+head -8 "$WORK/hits.txt"
 echo "   ..."
 
-# Номера кусков из строк индекса. Формат вывода между версиями
-# отличается — если ничего не распозналось, покажем сырые строки.
-INDICES=$(grep -i "$WEAPON" "$WORK/vpk_dir.txt" \
-    | grep -oi 'archive *index[:= ]*[0-9]*' \
-    | grep -o '[0-9]*$' | sort -un | tr '\n' ' ')
+# Source2Viewer пишет номер куска как fnumber=124; в старых версиях
+# поле называлось "archive index" — принимаем оба варианта.
+INDICES=$(grep -oiE 'fnumber=[0-9]+|archive *index[:= ]*[0-9]+' "$WORK/hits.txt" \
+    | grep -oE '[0-9]+$' | sort -un | tr '\n' ' ')
 
 if [ -z "$INDICES" ]; then
     echo
     echo "⚠️ Номера кусков не распознались. Вот как выглядят строки:"
-    grep -i "$WEAPON" "$WORK/vpk_dir.txt" | head -3
+    head -3 "$WORK/hits.txt"
     echo
     echo "Скинь эти строки в чат — поправим разбор."
     exit 1
 fi
 
-echo "Нужные куски: $INDICES"
+COUNT=$(echo "$INDICES" | wc -w)
+echo "Нужные куски ($COUNT шт.): $INDICES"
+
+# Каждый кусок — сотни мегабайт. Если их набралось много, значит
+# фильтр всё ещё широкий: лучше остановиться, чем забить диск.
+if [ "$COUNT" -gt 8 ]; then
+    echo
+    echo "⚠️ Кусков многовато — качать их рискованно для диска."
+    echo "Останавливаюсь. Скинь эту строку в чат, сузим фильтр."
+    exit 1
+fi
 
 echo "==> 5/6 Качаю только эти куски"
 : > "$WORK/filelist-chunks.txt"
@@ -169,7 +197,7 @@ du -sh "$GAME"
 df -h /tmp | tail -1
 
 echo "==> 6/6 Экспортирую в glTF"
-MODEL_PATH=$(grep -io "[^ ]*${WEAPON}[^ ]*\.vmdl_c" "$WORK/vpk_dir.txt" | head -1 | tr -d '\r')
+MODEL_PATH=$(grep -io "[^ ]*${WEAPON}[^ ]*\.vmdl_c" "$WORK/hits.txt" | head -1 | tr -d '\r')
 
 if [ -z "$MODEL_PATH" ]; then
     echo "❌ Путь к модели не найден. Посмотри $WORK/vpk_dir.txt"
