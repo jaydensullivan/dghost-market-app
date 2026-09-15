@@ -34,19 +34,63 @@ fi
 dotnet --version
 
 echo "==> 2/6 Проверяю инструменты"
-if [ ! -f "$TOOLS/DepotDownloader.dll" ]; then
+
+# Инструменты могли остаться от прошлого запуска в домашней папке —
+# переносим, чтобы не качать заново.
+OLD_TOOLS="$HOME/cs2-assets/tools"
+if [ -d "$OLD_TOOLS" ]; then
+    cp -n "$OLD_TOOLS"/* "$TOOLS/" 2>/dev/null || true
+    [ -f "$TOOLS/Source2Viewer-CLI" ] && chmod +x "$TOOLS/Source2Viewer-CLI"
+fi
+
+# Ссылку берём из GitHub API, но он ограничивает число запросов без
+# ключа. Раньше скрипт в этом случае выходил молча — теперь честно
+# говорит и откатывается на проверенную ссылку.
+fetch_tool() {
+    local name="$1" api="$2" pattern="$3" fallback="$4" zipname="$5"
+
     cd "$TOOLS"
-    DD_URL=$(curl -s https://api.github.com/repos/SteamRE/DepotDownloader/releases/latest \
-        | grep -o 'https://[^"]*DepotDownloader-framework.zip' | head -1)
-    curl -sSL "$DD_URL" -o dd.zip && unzip -oq dd.zip && rm dd.zip
+    echo "  $name: качаю..."
+
+    local url
+    url=$(curl -s "$api" | grep -o "$pattern" | head -1 || true)
+
+    if [ -z "$url" ]; then
+        echo "  $name: GitHub API не ответил ссылкой (лимит запросов?), беру запасную."
+        url="$fallback"
+    fi
+
+    echo "  $name: $url"
+
+    if ! curl -fsSL "$url" -o "$zipname"; then
+        echo "❌ $name не скачался. Проверь: curl -I $url"
+        exit 1
+    fi
+
+    unzip -oq "$zipname" && rm "$zipname"
+}
+
+if [ ! -f "$TOOLS/DepotDownloader.dll" ]; then
+    fetch_tool "DepotDownloader" \
+        "https://api.github.com/repos/SteamRE/DepotDownloader/releases/latest" \
+        'https://[^"]*DepotDownloader-framework.zip' \
+        "https://github.com/SteamRE/DepotDownloader/releases/download/DepotDownloader_3.4.0/DepotDownloader-framework.zip" \
+        "dd.zip"
 fi
 
 if [ ! -f "$TOOLS/Source2Viewer-CLI" ]; then
-    cd "$TOOLS"
-    S2V_URL=$(curl -s https://api.github.com/repos/ValveResourceFormat/ValveResourceFormat/releases/latest \
-        | grep -o 'https://[^"]*cli-linux-x64.zip' | head -1)
-    curl -sSL "$S2V_URL" -o s2v.zip && unzip -oq s2v.zip && rm s2v.zip
-    chmod +x Source2Viewer-CLI
+    fetch_tool "Source2Viewer" \
+        "https://api.github.com/repos/ValveResourceFormat/ValveResourceFormat/releases/latest" \
+        'https://[^"]*cli-linux-x64.zip' \
+        "https://github.com/ValveResourceFormat/ValveResourceFormat/releases/download/20.0/cli-linux-x64.zip" \
+        "s2v.zip"
+    chmod +x "$TOOLS/Source2Viewer-CLI"
+fi
+
+if [ ! -f "$TOOLS/DepotDownloader.dll" ] || [ ! -f "$TOOLS/Source2Viewer-CLI" ]; then
+    echo "❌ Инструменты на месте не оказались. Содержимое $TOOLS:"
+    ls -la "$TOOLS"
+    exit 1
 fi
 echo "Инструменты на месте."
 
