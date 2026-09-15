@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>DGhostMarket — стенд рендера</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+--bg:#08070D;
+--surface:#171022;
+--accent:#7B2CFF;
+--accent2:#FF2BD6;
+--text:#FFFFFF;
+--muted:#A8A4B3;
+--ok:#4ade80;
+--warn:#fbbf24;
+--bad:#f87171;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);
+font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow:hidden;}
+#stage{position:fixed;inset:0;touch-action:none;}
+#panel{
+position:fixed;left:0;right:0;bottom:0;
+background:rgba(23,16,34,0.94);
+backdrop-filter:blur(12px);
+border-top:1px solid rgba(123,44,255,0.35);
+border-radius:14px 14px 0 0;
+padding:12px 14px calc(12px + env(safe-area-inset-bottom));
+max-height:62vh;overflow-y:auto;
+font-size:13px;line-height:1.5;
+}
+#panel.collapsed{transform:translateY(calc(100% - 46px));}
+#panel{transition:transform .25s ease;}
+.head{display:flex;align-items:center;justify-content:space-between;height:22px;margin-bottom:10px;}
+.head b{font-size:14px;}
+.toggle{background:none;border:none;color:var(--muted);font-size:13px;padding:4px 8px;cursor:pointer;}
+.row{display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+.row span:first-child{color:var(--muted);}
+.row span:last-child{font-variant-numeric:tabular-nums;text-align:right;}
+.verdict{margin-top:10px;padding:10px;border-radius:10px;background:rgba(0,0,0,0.3);}
+.v-line{display:flex;gap:8px;align-items:flex-start;padding:2px 0;}
+.v-mark{width:16px;flex:0 0 16px;}
+.ok{color:var(--ok);} .warn{color:var(--warn);} .bad{color:var(--bad);}
+.btns{display:flex;gap:8px;margin-top:10px;}
+button.act{
+flex:1;padding:10px;border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:600;
+background:linear-gradient(90deg,var(--accent),var(--accent2));cursor:pointer;
+}
+button.act.ghost{background:rgba(255,255,255,0.08);}
+#hint{position:fixed;top:12px;left:12px;right:12px;text-align:center;color:var(--muted);font-size:12px;pointer-events:none;}
+#err{position:fixed;top:40%;left:16px;right:16px;text-align:center;color:var(--bad);font-size:14px;display:none;}
+</style>
+</head>
+<body>
+
+<div id="stage"></div>
+<div id="hint">Крути пальцем · щипок — зум</div>
+<div id="err"></div>
+
+<div id="panel">
+<div class="head">
+<b>Стенд этапа 0</b>
+<button class="toggle" id="toggle">свернуть</button>
+</div>
+
+<div id="metrics"></div>
+
+<div class="verdict" id="verdict"></div>
+
+<div class="btns">
+<button class="act" id="copy">Скопировать отчёт</button>
+<button class="act ghost" id="stress">Нагрузка ×2</button>
+</div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+// ---------------------------------------------------------------
+// Стенд этапа 0. Задача одна: понять, тянет ли WebView Telegram
+// сцену уровня "оружие CS2 с текстурами" на реальных телефонах.
+// Модель берётся из ?model=<url>. Без параметра грузится
+// синтетическая сетка сопоставимой тяжести — так можно померить
+// железо ещё до того, как ассеты вообще выдраны из игры.
+// ---------------------------------------------------------------
+
+const tg = window.Telegram && window.Telegram.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
+
+const params = new URLSearchParams(location.search);
+const MODEL_URL = params.get('model');
+// Ориентир по треугольникам: модель ствола в CS2 — порядка 15-30к.
+let SYNTH_TRIANGLES = Number(params.get('tris') || 40000);
+
+const stage = document.getElementById('stage');
+const errBox = document.getElementById('err');
+
+const t0 = performance.now();
+let tFirstFrame = null;
+let tModelLoaded = null;
+let modelBytes = 0;
+
+// --- рендерер ---------------------------------------------------
+
+let renderer, scene, camera;
+
+try {
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+} catch (e) {
+  showError('WebGL недоступен в этом WebView. Рендер тут работать не будет.');
+  throw e;
+}
+
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+stage.appendChild(renderer.domElement);
+
+scene = new THREE.Scene();
+camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.05, 100);
+camera.position.set(0, 0, 3.2);
+
+// Свет — три источника, как в обычной витрине предмета.
+scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+const key = new THREE.DirectionalLight(0xffffff, 2.2);
+key.position.set(3, 4, 5);
+scene.add(key);
+const rim = new THREE.DirectionalLight(0x9b5cff, 1.6);
+rim.position.set(-4, -1, -3);
+scene.add(rim);
+
+const root = new THREE.Group();
+scene.add(root);
+
+// --- загрузка модели или синтетики -------------------------------
+
+if (MODEL_URL) {
+  loadModel(MODEL_URL);
+} else {
+  buildSynthetic(SYNTH_TRIANGLES);
+  tModelLoaded = performance.now();
+}
+
+function loadModel(url){
+  // Сначала качаем сами, чтобы честно померить вес файла.
+  fetch(url, { cache: 'no-store' })
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.arrayBuffer();
+    })
+    .then(buf => {
+      modelBytes = buf.byteLength;
+      const loader = new GLTFLoader();
+      loader.parse(buf, url.substring(0, url.lastIndexOf('/') + 1), (gltf) => {
+        fitToView(gltf.scene);
+        root.add(gltf.scene);
+        tModelLoaded = performance.now();
+      }, (e) => showError('glTF не разобрался: ' + (e.message || e)));
+    })
+    .catch(e => showError('Модель не загрузилась: ' + (e.message || e)));
+}
+
+// Подгоняем модель под кадр — из игры она приходит в своих
+// единицах и своём положении.
+function fitToView(obj){
+  const box = new THREE.Box3().setFromObject(obj);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  const maxDim = Math.max(size.x, size.y, size.z) || 1;
+  obj.scale.setScalar(1.8 / maxDim);
+  obj.position.sub(center.multiplyScalar(1.8 / maxDim));
+}
+
+// Синтетическая нагрузка: вытянутая сетка примерно тех же
+// пропорций, что ствол, с процедурной текстурой — чтобы нагрузить
+// и вершины, и фрагментный шейдер.
+function buildSynthetic(triangles){
+  const seg = Math.max(8, Math.round(Math.sqrt(triangles / 2)));
+  const geo = new THREE.TorusKnotGeometry(0.7, 0.24, seg, Math.max(8, Math.round(seg / 3)));
+  const mat = new THREE.MeshStandardMaterial({
+    map: proceduralTexture(1024),
+    roughnessMap: proceduralTexture(512),
+    metalness: 0.75,
+    roughness: 0.4,
+  });
+  root.add(new THREE.Mesh(geo, mat));
+}
+
+function proceduralTexture(size){
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const ctx = c.getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, size, size);
+  grad.addColorStop(0, '#7B2CFF');
+  grad.addColorStop(1, '#FF2BD6');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, size, size);
+  for (let i = 0; i < size * 4; i++){
+    ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.25})`;
+    ctx.fillRect(Math.random() * size, Math.random() * size, 3, 3);
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+// --- управление пальцем ------------------------------------------
+
+let rotX = 0, rotY = 0, dist = 3.2;
+let dragging = false, lastX = 0, lastY = 0, pinchStart = 0, distStart = 0;
+
+stage.addEventListener('pointerdown', (e) => {
+  dragging = true; lastX = e.clientX; lastY = e.clientY;
+});
+stage.addEventListener('pointermove', (e) => {
+  if (!dragging) return;
+  rotY += (e.clientX - lastX) * 0.008;
+  rotX += (e.clientY - lastY) * 0.008;
+  rotX = Math.max(-1.4, Math.min(1.4, rotX));
+  lastX = e.clientX; lastY = e.clientY;
+});
+stage.addEventListener('pointerup', () => { dragging = false; });
+stage.addEventListener('pointercancel', () => { dragging = false; });
+
+stage.addEventListener('touchstart', (e) => {
+  if (e.touches.length === 2){
+    pinchStart = touchDist(e);
+    distStart = dist;
+  }
+}, { passive: true });
+
+stage.addEventListener('touchmove', (e) => {
+  if (e.touches.length === 2 && pinchStart){
+    dist = Math.max(1.4, Math.min(8, distStart * (pinchStart / touchDist(e))));
+  }
+}, { passive: true });
+
+function touchDist(e){
+  const dx = e.touches[0].clientX - e.touches[1].clientX;
+  const dy = e.touches[0].clientY - e.touches[1].clientY;
+  return Math.hypot(dx, dy) || 1;
+}
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// --- измерения ----------------------------------------------------
+
+const frames = [];      // длительности последних кадров, мс
+let minFps = Infinity;
+let frameCount = 0;
+
+function animate(now){
+  requestAnimationFrame(animate);
+
+  if (tFirstFrame === null) tFirstFrame = performance.now();
+
+  root.rotation.x = rotX;
+  root.rotation.y = rotY;
+  if (!dragging) rotY += 0.004;   // лёгкое автовращение
+  camera.position.z = dist;
+
+  renderer.render(scene, camera);
+
+  frameCount += 1;
+  frames.push(now);
+  while (frames.length > 2 && now - frames[0] > 3000) frames.shift();
+
+  // Первые 60 кадров не считаем — там прогрев шейдеров.
+  if (frameCount > 60 && frames.length > 10){
+    const fps = (frames.length - 1) / ((now - frames[0]) / 1000);
+    if (fps < minFps) minFps = fps;
+  }
+}
+requestAnimationFrame(animate);
+
+// --- панель --------------------------------------------------------
+
+const metricsBox = document.getElementById('metrics');
+const verdictBox = document.getElementById('verdict');
+
+function gpuInfo(){
+  try {
+    const gl = renderer.getContext();
+    const ext = gl.getExtension('WEBGL_debug_renderer_info');
+    return ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : 'скрыт браузером';
+  } catch (e) { return 'неизвестно'; }
+}
+
+function currentFps(){
+  if (frames.length < 2) return 0;
+  return (frames.length - 1) / ((frames[frames.length - 1] - frames[0]) / 1000);
+}
+
+function snapshot(){
+  const info = renderer.info;
+  return {
+    'Источник': MODEL_URL ? 'модель glTF' : `синтетика ${SYNTH_TRIANGLES.toLocaleString('ru')} тр.`,
+    'Вес файла': modelBytes ? (modelBytes / 1048576).toFixed(2) + ' МБ' : '—',
+    'Первый кадр': tFirstFrame ? Math.round(tFirstFrame - t0) + ' мс' : '—',
+    'Модель готова': tModelLoaded ? Math.round(tModelLoaded - t0) + ' мс' : 'грузится',
+    'Треугольников': info.render.triangles.toLocaleString('ru'),
+    'Вызовов отрисовки': info.render.calls,
+    'Текстур в памяти': info.memory.textures,
+    'FPS сейчас': currentFps().toFixed(0),
+    'FPS минимум': minFps === Infinity ? '—' : minFps.toFixed(0),
+    'Плотность пикселей': window.devicePixelRatio.toFixed(1),
+    'Экран': `${window.innerWidth}×${window.innerHeight}`,
+    'GPU': gpuInfo(),
+    'Платформа': tg ? (tg.platform || 'telegram') : 'браузер',
+  };
+}
+
+function render(){
+  const data = snapshot();
+  metricsBox.innerHTML = Object.entries(data)
+    .map(([k, v]) => `<div class="row"><span>${k}</span><span>${v}</span></div>`)
+    .join('');
+
+  const firstFrameMs = tFirstFrame ? tFirstFrame - t0 : null;
+  const readyMs = tModelLoaded ? tModelLoaded - t0 : null;
+  const fpsMin = minFps === Infinity ? null : minFps;
+
+  const checks = [
+    check(readyMs !== null && readyMs < 2000, readyMs === null,
+      'Готовность сцены быстрее 2 с'),
+    check(fpsMin !== null && fpsMin >= 30, fpsMin === null,
+      'Просадки FPS не ниже 30'),
+    check(modelBytes === 0 || modelBytes < 2 * 1048576, false,
+      'Вес модели до 2 МБ'),
+  ];
+
+  verdictBox.innerHTML = checks.join('');
+}
+
+function check(pass, pending, label){
+  const cls = pending ? 'warn' : (pass ? 'ok' : 'bad');
+  const mark = pending ? '•' : (pass ? '✓' : '✗');
+  return `<div class="v-line ${cls}"><span class="v-mark">${mark}</span><span>${label}</span></div>`;
+}
+
+setInterval(render, 500);
+render();
+
+document.getElementById('toggle').addEventListener('click', (e) => {
+  const p = document.getElementById('panel');
+  p.classList.toggle('collapsed');
+  e.target.textContent = p.classList.contains('collapsed') ? 'показать' : 'свернуть';
+});
+
+document.getElementById('stress').addEventListener('click', () => {
+  // Удваиваем нагрузку — смотрим, где телефон сдаётся.
+  SYNTH_TRIANGLES *= 2;
+  root.clear();
+  buildSynthetic(SYNTH_TRIANGLES);
+  minFps = Infinity;
+  frameCount = 0;
+});
+
+document.getElementById('copy').addEventListener('click', () => {
+  const data = snapshot();
+  const text = 'Стенд рендера DGhostMarket\n' +
+    Object.entries(data).map(([k, v]) => `${k}: ${v}`).join('\n');
+
+  navigator.clipboard.writeText(text)
+    .then(() => { document.getElementById('copy').textContent = 'Скопировано'; })
+    .catch(() => { document.getElementById('copy').textContent = 'Не вышло — сделай скриншот'; });
+});
+
+function showError(msg){
+  errBox.textContent = msg;
+  errBox.style.display = 'block';
+}
+</script>
+</body>
+</html>
