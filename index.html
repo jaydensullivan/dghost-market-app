@@ -2193,6 +2193,51 @@ color:var(--muted, #a8a4b3);
 line-height:1.4;
 }
 
+/* Компактное окно "Выставить лот" — фото/название/износ/полоска
+   переиспользуют те же стили, что и карточка в пикере инвентаря,
+   только крупнее: это одна карточка на весь экран, а не сетка. */
+.qs-photo{
+width:150px;
+height:150px;
+margin:4px auto 10px;
+border-radius:12px;
+overflow:hidden;
+background-color:rgba(123,44,255,0.08);
+background-size:cover;
+background-position:center;
+background-repeat:no-repeat;
+}
+.qs-photo img{
+width:100%;
+height:100%;
+object-fit:contain;
+}
+.qs-name{
+text-align:center;
+font-weight:600;
+font-size:15px;
+color:var(--text, #ece7e6);
+}
+.qs-name.stattrak{ color:#cf6a32; }
+.qs-sub{
+text-align:center;
+color:var(--muted, #a8a4b3);
+font-size:12px;
+margin-bottom:8px;
+}
+#quickSellOverlay .inv-item-wearbar{ max-width:260px; margin:0 auto 2px; }
+#quickSellOverlay .inv-item-floatrow{ max-width:260px; margin:0 auto 10px; font-size:12px; }
+.qs-advanced-link{
+display:block;
+width:100%;
+background:none;
+border:none;
+color:var(--red, #a855f7);
+font-size:13px;
+padding:8px;
+text-align:center;
+}
+
 .inv-item-name{
 font-family:'Inter', sans-serif;
 font-size:9px;
@@ -3795,6 +3840,36 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 </div>
 
+<div class="edit-overlay" id="quickSellOverlay">
+<div class="edit-sheet">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+<h2 style="margin:0;" data-i18n="quicksell_title">Выставить лот</h2>
+<button type="button" id="quickSellCloseBtn" class="buy-close-btn" style="position:static;">✕</button>
+</div>
+
+<div class="qs-photo" id="qsPhoto"></div>
+<div class="qs-name" id="qsName"></div>
+<div class="qs-sub" id="qsSub"></div>
+<div class="inv-item-wearbar" id="qsWearBar" style="display:none;"><div class="inv-item-wearbar-mark" id="qsWearMark"></div></div>
+<div class="inv-item-floatrow" id="qsFloatRow" style="display:none;"></div>
+
+<div id="qsMarketPricePreview" class="market-price-box" style="display:none;"></div>
+
+<div class="edit-field">
+<label for="qsPrice" data-i18n="label_price_sum">Цена, сум</label>
+<input id="qsPrice" type="number" min="1" placeholder="5000">
+</div>
+
+<div class="edit-actions">
+<button type="button" id="quickSellCancel" data-i18n="btn_cancel">Отмена</button>
+<button type="button" id="quickSellConfirm" class="save" data-i18n="btn_list_skin">Выставить</button>
+</div>
+
+<button type="button" id="quickSellAdvanced" class="qs-advanced-link" data-i18n="quicksell_advanced">Подробные настройки</button>
+<div class="edit-status" id="quickSellStatus"></div>
+</div>
+</div>
+
 <div class="edit-overlay" id="topupRejectOverlay">
 <div class="edit-sheet">
 <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
@@ -4143,6 +4218,9 @@ label_photo: 'Ссылка на фото',
 skin_fill_title_price: 'Заполни название и цену.',
 skin_fill_required: 'Заполни фото, износ, float и паттерн — это обязательные поля.',
 btn_list_skin: 'Выставить',
+quicksell_title: 'Выставить лот',
+quicksell_advanced: 'Подробные настройки',
+label_price_sum: 'Цена, сум',
 detail_seller: 'Продавец',
 detail_buyer: 'Покупатель',
 label_transfer_amount: 'Сумма перевода, сум',
@@ -4736,6 +4814,9 @@ label_photo: "Foto havolasi",
 skin_fill_title_price: "Nomi va narxini to'ldiring.",
 skin_fill_required: "Foto, eskirish darajasi, float va pattern — bu majburiy maydonlar.",
 btn_list_skin: "Sotuvga qo'yish",
+quicksell_title: "Lotni sotuvga qo'yish",
+quicksell_advanced: "Batafsil sozlamalar",
+label_price_sum: "Narxi, so'm",
 detail_seller: 'Sotuvchi',
 detail_buyer: 'Xaridor',
 label_transfer_amount: "O'tkazma summasi, sum",
@@ -5329,6 +5410,9 @@ label_photo: 'Photo link',
 skin_fill_title_price: 'Fill in the title and price.',
 skin_fill_required: 'Fill in photo, wear, float and pattern — these are required fields.',
 btn_list_skin: 'List',
+quicksell_title: 'List item',
+quicksell_advanced: 'Advanced settings',
+label_price_sum: 'Price, sum',
 detail_seller: 'Seller',
 detail_buyer: 'Buyer',
 label_transfer_amount: 'Transfer amount, sum',
@@ -8759,9 +8843,16 @@ renderMarketPriceBox(data);
 let sMarketPreviewTimer = null;
 
 function renderSellMarketPreview(data){
-const box = document.getElementById('sMarketPricePreview');
+// Два места показа одного и того же ориентира по рынку: полная
+// форма (sMarketPricePreview) и компактное окно быстрой продажи
+// (qsMarketPricePreview) — оба обновляем одинаково, второй элемент
+// может отсутствовать в DOM на старых кэшах, поэтому необязателен.
+const boxes = ['sMarketPricePreview', 'qsMarketPricePreview']
+.map(id => document.getElementById(id))
+.filter(Boolean);
+
 if (!data || !data.available){
-box.style.display = 'none';
+boxes.forEach(box => { box.style.display = 'none'; });
 return;
 }
 let extra = '';
@@ -8769,8 +8860,8 @@ if (typeof data.diff_percent === 'number'){
 const cheaper = data.diff_percent >= 0;
 extra = `<div class="mp-diff ${cheaper ? 'cheaper' : 'pricier'}">${cheaper ? 'Дешевле рынка' : '⚠️ Дороже рынка'} на ${Math.abs(data.diff_percent)}%</div>`;
 }
-box.innerHTML = `<div class="mp-row"><span>Ориентир по рынку</span><span>${formatCoins(data.market_price_uzs)}</span></div>${extra}`;
-box.style.display = '';
+const html = `<div class="mp-row"><span>Ориентир по рынку</span><span>${formatCoins(data.market_price_uzs)}</span></div>${extra}`;
+boxes.forEach(box => { box.innerHTML = html; box.style.display = ''; });
 }
 
 function refreshSellMarketPreview(){
@@ -10404,7 +10495,86 @@ addSkinStatus.textContent = '';
 
 scheduleSellMarketPreview();
 
+// Раньше здесь сразу открывалась большая форма редактирования —
+// но у выбранного предмета уже известно всё (фото, название, износ,
+// float, паттерн, редкость), продавцу нужно решить только цену.
+// Поэтому вместо формы показываем компактное окно "Выставить лот"
+// с готовой карточкой и одним полем — ценой. Полная форма
+// (addSkinOverlay) никуда не делась: она открывается по ссылке
+// "Подробные настройки", если авто-данные надо поправить руками.
 inventoryOverlay.classList.remove('show');
+openQuickSell(item);
+});
+
+// ---------------- Компактное окно "Выставить лот" ----------------
+
+const quickSellOverlay = document.getElementById('quickSellOverlay');
+const qsPhoto = document.getElementById('qsPhoto');
+const qsName = document.getElementById('qsName');
+const qsSub = document.getElementById('qsSub');
+const qsWearBar = document.getElementById('qsWearBar');
+const qsWearMark = document.getElementById('qsWearMark');
+const qsFloatRow = document.getElementById('qsFloatRow');
+const qsPrice = document.getElementById('qsPrice');
+const qsStatus = document.getElementById('quickSellStatus');
+
+function openQuickSell(item){
+const rarityBg = RARITY_BG[item.rarity]
+? `url('${RARITY_BG[item.rarity]}')`
+: 'none';
+qsPhoto.style.backgroundImage = rarityBg;
+qsPhoto.innerHTML = item.photo_url ? `<img src="${item.photo_url}" alt="">` : '';
+
+qsName.textContent = (item.stattrak ? 'ST™ ' : '') + (item.title || '');
+qsName.className = 'qs-name' + (item.stattrak ? ' stattrak' : '');
+
+const wearText = item.wear ? WEAR_LABELS[item.wear] || '' : '';
+const subParts = [wearText, item.weapon_type].filter(Boolean);
+qsSub.textContent = subParts.join(' · ');
+
+const hasFloat = item.float_value !== null && item.float_value !== undefined;
+if (hasFloat){
+qsWearBar.style.display = '';
+qsWearMark.style.left = (Math.min(1, Math.max(0, item.float_value)) * 100).toFixed(2) + '%';
+qsFloatRow.style.display = 'flex';
+qsFloatRow.innerHTML = `<span>${Number(item.float_value).toFixed(4)}</span>${item.pattern ? `<span>#${escapeHtml(String(item.pattern))}</span>` : ''}`;
+} else {
+qsWearBar.style.display = 'none';
+qsFloatRow.style.display = 'none';
+}
+
+qsPrice.value = '';
+qsStatus.textContent = '';
+document.getElementById('qsMarketPricePreview').style.display = 'none';
+
+quickSellOverlay.classList.add('show');
+}
+
+function closeQuickSell(){
+quickSellOverlay.classList.remove('show');
+}
+
+document.getElementById('quickSellCloseBtn').addEventListener('click', closeQuickSell);
+document.getElementById('quickSellCancel').addEventListener('click', closeQuickSell);
+
+// Цена вводится в компактном окне, но публикует её та же самая
+// функция publishSkin, что читает sPrice — держим их синхронно.
+qsPrice.addEventListener('input', () => {
+sPrice.value = qsPrice.value;
+scheduleSellMarketPreview();
+});
+
+document.getElementById('quickSellConfirm').addEventListener('click', () => {
+sPrice.value = qsPrice.value;
+publishSkin(document.getElementById('quickSellConfirm'), qsStatus, quickSellOverlay);
+});
+
+// Escape-люк для редких случаев, когда авто-подставленные данные
+// нужно поправить руками (например, инспект-бот ошибся с редкостью
+// у нестандартного предмета) — открывает ту же большую форму, что
+// была тут раньше, уже с теми же данными внутри.
+document.getElementById('quickSellAdvanced').addEventListener('click', () => {
+closeQuickSell();
 addSkinOverlay.classList.add('show');
 });
 
@@ -10585,14 +10755,19 @@ addSkinCancel.addEventListener('click', () => {
 addSkinOverlay.classList.remove('show');
 });
 
-addSkinSave.addEventListener('click', () => {
+// Общая публикация лота — раньше жила только внутри обработчика
+// клика на большую форму. Вынесена в функцию, чтобы её же вызывало
+// компактное окно быстрой продажи: оба пути шлют один и тот же
+// набор полей на /api/skins, разница только в том, откуда куда
+// пишутся статус и куда убирается оверлей по завершении.
+function publishSkin(triggerBtn, statusEl, overlayEl){
 if (!tg || !tg.initData){
-addSkinStatus.textContent = errorMessage('unauthorized');
+statusEl.textContent = errorMessage('unauthorized');
 return;
 }
 
 if (!pendingSkinAssetId){
-addSkinStatus.textContent = (I18N[currentLang] || I18N.ru).addskin_need_pick;
+statusEl.textContent = (I18N[currentLang] || I18N.ru).addskin_need_pick;
 return;
 }
 
@@ -10604,17 +10779,17 @@ const floatStr = sFloat.value;
 const pattern = sPattern.value.trim();
 
 if (!title || !price || price <= 0){
-addSkinStatus.textContent = (I18N[currentLang] || I18N.ru).skin_fill_title_price;
+statusEl.textContent = (I18N[currentLang] || I18N.ru).skin_fill_title_price;
 return;
 }
 
 if (!photo){
-addSkinStatus.textContent = (I18N[currentLang] || I18N.ru).skin_fill_required;
+statusEl.textContent = (I18N[currentLang] || I18N.ru).skin_fill_required;
 return;
 }
 
-addSkinSave.disabled = true;
-addSkinStatus.textContent = (I18N[currentLang] || I18N.ru).addskin_publishing;
+triggerBtn.disabled = true;
+statusEl.textContent = (I18N[currentLang] || I18N.ru).addskin_publishing;
 
 fetch(API_BASE + '/api/skins', {
 method: 'POST',
@@ -10647,7 +10822,7 @@ throw new Error(errorMessage(data.error));
 return r.json();
 })
 .then(() => {
-addSkinStatus.textContent = (I18N[currentLang] || I18N.ru).addskin_published_ok;
+statusEl.textContent = (I18N[currentLang] || I18N.ru).addskin_published_ok;
 sTitle.value = '';
 sDescription.value = '';
 sPrice.value = '';
@@ -10662,18 +10837,24 @@ sHasStickers.checked = false;
 pendingSkinAssetId = null;
 pendingSkinInspectLink = null;
 document.getElementById('sMarketPricePreview').style.display = 'none';
+const qsBox = document.getElementById('qsMarketPricePreview');
+if (qsBox) qsBox.style.display = 'none';
 loadSkins();
 setTimeout(() => {
-addSkinOverlay.classList.remove('show');
-addSkinStatus.textContent = '';
+overlayEl.classList.remove('show');
+statusEl.textContent = '';
 }, 600);
 })
 .catch(err => {
-addSkinStatus.textContent = friendlyErrorMessage(err);
+statusEl.textContent = friendlyErrorMessage(err);
 })
 .finally(() => {
-addSkinSave.disabled = false;
+triggerBtn.disabled = false;
 });
+}
+
+addSkinSave.addEventListener('click', () => {
+publishSkin(addSkinSave, addSkinStatus, addSkinOverlay);
 });
 
 // ============================================================
