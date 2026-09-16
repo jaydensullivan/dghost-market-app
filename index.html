@@ -1773,14 +1773,14 @@ background:rgba(10,7,8,0.94);
 text-align:left;
 }
 
-.skin-card.rarity-consumer{ border-top-color:#aec2d1; }
-.skin-card.rarity-industrial{ border-top-color:#5f93c7; }
-.skin-card.rarity-milspec{ border-top-color:#5a6fd6; }
-.skin-card.rarity-restricted{ border-top-color:#8c5fd6; }
-.skin-card.rarity-classified{ border-top-color:#c15bc9; }
-.skin-card.rarity-covert{ border-top-color:#d85454; }
-.skin-card.rarity-contraband{ border-top-color:#dbb84f; }
-.skin-card.rarity-extraordinary{ border-top-color:#dbb84f; }
+.skin-card.rarity-consumer, .inv-item.rarity-consumer{ border-top-color:#aec2d1; }
+.skin-card.rarity-industrial, .inv-item.rarity-industrial{ border-top-color:#5f93c7; }
+.skin-card.rarity-milspec, .inv-item.rarity-milspec{ border-top-color:#5a6fd6; }
+.skin-card.rarity-restricted, .inv-item.rarity-restricted{ border-top-color:#8c5fd6; }
+.skin-card.rarity-classified, .inv-item.rarity-classified{ border-top-color:#c15bc9; }
+.skin-card.rarity-covert, .inv-item.rarity-covert{ border-top-color:#d85454; }
+.skin-card.rarity-contraband, .inv-item.rarity-contraband{ border-top-color:#dbb84f; }
+.skin-card.rarity-extraordinary, .inv-item.rarity-extraordinary{ border-top-color:#dbb84f; }
 
 .skin-photo-wrap{
 position:relative;
@@ -2101,10 +2101,27 @@ align-items:center;
 padding:6px;
 border-radius:8px;
 border:1px solid var(--red-dim);
+border-top-width:3px;
 background:rgba(10,7,8,0.94);
 cursor:pointer;
 text-align:center;
 position:relative;
+}
+
+/* Фото предмета в пикере инвентаря — тот же фон по редкости, что
+   и в карточках уже выставленных лотов (RARITY_BG), просто здесь
+   применяется классом ".inv-item", а не ".skin-card". */
+.inv-item-photo{
+position:relative;
+width:100%;
+aspect-ratio:1/1;
+border-radius:6px;
+overflow:hidden;
+background-color:rgba(123,44,255,0.08);
+background-size:cover;
+background-position:center;
+background-repeat:no-repeat;
+margin-bottom:4px;
 }
 
 .inv-item-banned{
@@ -2120,11 +2137,10 @@ color:#e07a7a;
 margin-top:2px;
 }
 
-.inv-item img{
+.inv-item-photo img{
 width:100%;
-aspect-ratio:1/1;
+height:100%;
 object-fit:contain;
-margin-bottom:4px;
 }
 
 .inv-item-name{
@@ -10161,9 +10177,15 @@ const wearText = item.wear ? WEAR_LABELS[item.wear] || '' : '';
 const stText = item.stattrak ? 'ST™ ' : '';
 const isTradable = item.tradable !== false;
 const bannedClass = isTradable ? '' : ' inv-item-banned';
+// Тот же фон по редкости, что уже есть у карточек выставленных
+// лотов — товар в инвентаре выглядит так же, как товар в продаже.
+const rarityClass = RARITY_CLASS[item.rarity] || '';
+const rarityBg = RARITY_BG[item.rarity]
+? ` style="background-image:url('${RARITY_BG[item.rarity]}')"`
+: '';
 return `
-<div class="inv-item${bannedClass}" data-idx="${i}" data-tradable="${isTradable ? '1' : '0'}">
-${photo}
+<div class="inv-item${bannedClass}${rarityClass ? ' ' + rarityClass : ''}" data-idx="${i}" data-tradable="${isTradable ? '1' : '0'}">
+<div class="inv-item-photo"${rarityBg}>${photo}</div>
 <div class="inv-item-name">${stText}${escapeHtml(item.title)}</div>
 ${wearText ? `<div class="inv-item-wear">${wearText}</div>` : ''}
 ${!isTradable ? '<div class="inv-item-ban-label">🔒 Трейд-бан</div>' : ''}
