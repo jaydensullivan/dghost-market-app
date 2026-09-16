@@ -2143,6 +2143,56 @@ height:100%;
 object-fit:contain;
 }
 
+/* Бейдж количества стикеров — верхний левый угол фото, как у
+   CSFloat. Только число, без иконок: под иконки нужны отдельные
+   URL картинок стикеров, которых пока не отдаёт бэкенд. */
+.inv-item-stickers{
+position:absolute;
+top:4px;
+left:4px;
+background:rgba(0,0,0,0.6);
+border-radius:6px;
+padding:1px 5px;
+font-size:10px;
+line-height:1.5;
+color:#fff;
+}
+
+.inv-item-name.stattrak{ color:#cf6a32; }
+
+/* Полоска износа с меткой точного float — воспроизводит вид
+   CSFloat: градиент FN→BS слева направо, точка на месте float. */
+.inv-item-wearbar{
+position:relative;
+width:100%;
+height:4px;
+border-radius:2px;
+margin:3px 0 2px;
+background:linear-gradient(90deg,
+#5cd65c 0%, #5cd65c 7%,
+#b8d65c 7%, #b8d65c 15%,
+#d6c15c 15%, #d6c15c 38%,
+#d6935c 38%, #d6935c 45%,
+#d65c5c 45%, #d65c5c 100%);
+}
+.inv-item-wearbar-mark{
+position:absolute;
+top:50%;
+width:6px;
+height:6px;
+border-radius:50%;
+background:#fff;
+border:1px solid rgba(0,0,0,0.5);
+transform:translate(-50%,-50%);
+}
+.inv-item-floatrow{
+display:flex;
+justify-content:space-between;
+font-size:10px;
+color:var(--muted, #a8a4b3);
+line-height:1.4;
+}
+
 .inv-item-name{
 font-family:'Inter', sans-serif;
 font-size:9px;
@@ -10174,7 +10224,6 @@ const photo = item.photo_url
 ? `<img src="${item.photo_url}" alt="">`
 : '';
 const wearText = item.wear ? WEAR_LABELS[item.wear] || '' : '';
-const stText = item.stattrak ? 'ST™ ' : '';
 const isTradable = item.tradable !== false;
 const bannedClass = isTradable ? '' : ' inv-item-banned';
 // Тот же фон по редкости, что уже есть у карточек выставленных
@@ -10183,11 +10232,31 @@ const rarityClass = RARITY_CLASS[item.rarity] || '';
 const rarityBg = RARITY_BG[item.rarity]
 ? ` style="background-image:url('${RARITY_BG[item.rarity]}')"`
 : '';
+
+const hasFloat = item.float_value !== null && item.float_value !== undefined;
+
+// Полоска износа с меткой на месте точного float — как в CSFloat.
+// Показываем, только если float уже подтянулся (инспект-бот мог
+// не успеть его расшифровать к моменту показа списка — тогда
+// просто не рисуем полоску вместо пустой/нулевой).
+const wearBar = hasFloat
+? `<div class="inv-item-wearbar"><div class="inv-item-wearbar-mark" style="left:${(Math.min(1, Math.max(0, item.float_value)) * 100).toFixed(2)}%"></div></div>
+<div class="inv-item-floatrow"><span>${Number(item.float_value).toFixed(4)}</span>${item.pattern ? `<span>#${escapeHtml(String(item.pattern))}</span>` : ''}</div>`
+: '';
+
+const stickerBadge = item.stickers_count
+? `<div class="inv-item-stickers">🏷️ ${item.stickers_count}</div>`
+: '';
+
+const nameClass = item.stattrak ? ' stattrak' : '';
+const stText = item.stattrak ? 'ST™ ' : '';
+
 return `
 <div class="inv-item${bannedClass}${rarityClass ? ' ' + rarityClass : ''}" data-idx="${i}" data-tradable="${isTradable ? '1' : '0'}">
-<div class="inv-item-photo"${rarityBg}>${photo}</div>
-<div class="inv-item-name">${stText}${escapeHtml(item.title)}</div>
+<div class="inv-item-photo"${rarityBg}>${photo}${stickerBadge}</div>
+<div class="inv-item-name${nameClass}">${stText}${escapeHtml(item.title)}</div>
 ${wearText ? `<div class="inv-item-wear">${wearText}</div>` : ''}
+${wearBar}
 ${!isTradable ? '<div class="inv-item-ban-label">🔒 Трейд-бан</div>' : ''}
 </div>`;
 }).join('');
