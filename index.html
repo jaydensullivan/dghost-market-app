@@ -7268,10 +7268,12 @@ const sellerTrustBadge = skin.seller_trust_level
 
 const rarityClass = RARITY_CLASS[skin.rarity] || '';
 
-// Фон под предметом — тот же файл, что уходит в пост канала.
-const rarityBg = RARITY_BG[skin.rarity]
-? ` style="background-image:url('${RARITY_BG[skin.rarity]}')"`
-: '';
+// В плотной сетке карточек цветная рамка сверху уже говорит о
+// редкости — фоновая картинка поверх неё дублирует тот же сигнал
+// и только добавляет визуального шума (плюс сами файлы тяжёлые).
+// Фон-атмосфера остаётся там, где предмет один на весь экран —
+// buyHero и компактное окно "Выставить лот".
+const rarityBg = '';
 
 const isOwn = currentUserId && skin.seller_id === currentUserId;
 
@@ -10317,12 +10319,12 @@ const photo = item.photo_url
 const wearText = item.wear ? WEAR_LABELS[item.wear] || '' : '';
 const isTradable = item.tradable !== false;
 const bannedClass = isTradable ? '' : ' inv-item-banned';
-// Тот же фон по редкости, что уже есть у карточек выставленных
-// лотов — товар в инвентаре выглядит так же, как товар в продаже.
+// Цветная рамка сверху уже показывает редкость — фон-картинка тут
+// была бы тем же сигналом дважды, только тяжелее и незаметнее в
+// плотной сетке. Фон остаётся в окне "Выставить лот", где карточка
+// одна на экран.
 const rarityClass = RARITY_CLASS[item.rarity] || '';
-const rarityBg = RARITY_BG[item.rarity]
-? ` style="background-image:url('${RARITY_BG[item.rarity]}')"`
-: '';
+const rarityBg = '';
 
 const hasFloat = item.float_value !== null && item.float_value !== undefined;
 
