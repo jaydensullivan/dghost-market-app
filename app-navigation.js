@@ -64,6 +64,31 @@ if (tg && tg.showAlert){ tg.showAlert(message); }
 else { alert(message); }
 }
 
+// Скелетоны загрузки — заглушки той же формы, что и настоящие
+// карточки. kind: 'lot' — карточка лота в каталоге (с кнопкой),
+// 'inv' — предмет в инвентаре (без кнопки).
+function skeletonCardsHtml(count, kind){
+const btn = kind === 'lot' ? '<div class="skel-block skel-line tall"></div>' : '';
+const one = `<div class="skel-card" aria-hidden="true">
+<div class="skel-block skel-photo"></div>
+<div class="skel-block skel-line w80"></div>
+<div class="skel-block skel-line w35"></div>
+${btn}
+</div>`;
+return one.repeat(count);
+}
+
+function skeletonRowsHtml(count){
+const one = `<div class="skel-row" aria-hidden="true">
+<div class="skel-block skel-dot"></div>
+<div class="skel-col">
+<div class="skel-block skel-line w80"></div>
+<div class="skel-block skel-line w50"></div>
+</div>
+</div>`;
+return one.repeat(count);
+}
+
 function friendlyErrorMessage(err){
 // Вызывается каждый раз, когда ошибка показывается пользователю —
 // удобная точка для вибрации ошибки (haptic из app-telegram.js).

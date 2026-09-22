@@ -206,8 +206,10 @@ return `${Math.max(1, Math.ceil(hours * 60))} ${dict.unit_minutes_short}`;
 
 function loadInventory(forceRefresh){
 const dict = I18N[currentLang] || I18N.ru;
-inventoryStatus.textContent = forceRefresh ? dict.inventory_refreshing : dict.loading;
-inventoryGrid.innerHTML = '';
+// Скелетоны вместо пустой сетки; текст оставляем только для
+// ручного обновления — там полезно знать, что идёт запрос к Steam.
+inventoryStatus.textContent = forceRefresh ? dict.inventory_refreshing : '';
+inventoryGrid.innerHTML = skeletonCardsHtml(6, 'inv');
 let url = API_BASE + '/api/steam/inventory?init_data=' + encodeURIComponent(tg.initData);
 if (forceRefresh) url += '&refresh=1';
 // WebView Telegram (и некоторые браузеры) могут закэшировать GET по

@@ -83,7 +83,7 @@ list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[cur
 }
 
 document.getElementById('openHistoryBtn').addEventListener('click', () => {
-document.getElementById('historyList').innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).loading}</div>`;
+document.getElementById('historyList').innerHTML = skeletonRowsHtml(6);
 document.getElementById('historyOverlay').classList.add('show');
 loadHistory();
 });
