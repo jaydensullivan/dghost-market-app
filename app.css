@@ -2859,3 +2859,48 @@ font-size:34px; line-height:1; color:rgba(255,255,255,0.15); transition:color .1
 body.theme-light .rv-stars button{ color:rgba(0,0,0,0.15); }
 body.theme-light .rv-stars button.on{ color:#f5a623; }
 .deal-my-review{ font-family:'Inter', sans-serif; font-size:12px; color:#f5c542; padding:6px 2px; }
+
+/* ---------- фильтры истории операций ---------- */
+.h-chips{ display:flex; gap:6px; overflow-x:auto; padding-bottom:6px; -webkit-overflow-scrolling:touch; }
+.h-chip, .h-period{
+flex:none;
+padding:6px 11px;
+border-radius:14px;
+border:1px solid var(--red-dim);
+background:transparent;
+color:var(--muted);
+font-family:'Inter', sans-serif;
+font-size:12px;
+cursor:pointer;
+white-space:nowrap;
+}
+.h-chip.on{ background:var(--red); border-color:var(--red); color:#fff; }
+.h-periods{ display:flex; gap:6px; margin:4px 0 10px; }
+.h-period{ flex:1; border-radius:8px; padding:6px 4px; }
+.h-period.on{ border-color:var(--red); color:var(--silver); background:rgba(168,85,247,0.12); }
+.h-summary{ display:flex; gap:8px; margin-bottom:6px; }
+.h-summary > div{
+flex:1; padding:8px 10px; border-radius:10px;
+border:1px solid var(--red-dim); background:rgba(255,255,255,0.03);
+display:flex; flex-direction:column; gap:2px;
+font-family:'Inter', sans-serif; font-size:11px; color:var(--muted);
+}
+.h-summary b{ font-family:'JetBrains Mono', monospace; font-size:13px; }
+.h-summary b.positive{ color:#4ad880; }
+.h-summary b.negative{ color:#e0555a; }
+.h-day{
+margin:12px 0 2px;
+font-family:'JetBrains Mono', monospace;
+font-size:10px;
+letter-spacing:0.08em;
+text-transform:uppercase;
+color:var(--muted);
+}
+.h-status{
+display:inline-block; margin-top:3px; padding:2px 7px; border-radius:8px;
+font-family:'Inter', sans-serif; font-size:10px; font-weight:600;
+background:rgba(255,255,255,0.06); color:var(--muted);
+}
+.h-status.pending{ background:rgba(245,197,66,0.15); color:#f5c542; }
+.h-status.approved{ background:rgba(74,216,128,0.15); color:#4ad880; }
+.h-status.rejected{ background:rgba(224,85,90,0.15); color:#e0555a; }
