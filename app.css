@@ -2904,3 +2904,26 @@ background:rgba(255,255,255,0.06); color:var(--muted);
 .h-status.pending{ background:rgba(245,197,66,0.15); color:#f5c542; }
 .h-status.approved{ background:rgba(74,216,128,0.15); color:#4ad880; }
 .h-status.rejected{ background:rgba(224,85,90,0.15); color:#e0555a; }
+
+/* ---------- живые аукционы ---------- */
+.au-badge{
+display:inline-block; margin:2px 0 6px; padding:3px 9px; border-radius:10px;
+font-family:'Inter', sans-serif; font-size:11px; font-weight:600;
+}
+.au-badge.lead{ background:rgba(245,197,66,0.15); color:#f5c542; }
+.au-badge.outbid{ background:rgba(224,85,90,0.15); color:#e0555a; }
+.au-bids{ margin-left:6px; font-size:11px; color:var(--muted); }
+.auction-card.au-flash{ animation:au-flash 1s ease-out; }
+@keyframes au-flash{
+0%{ box-shadow:0 0 0 2px rgba(168,85,247,0.9), 0 0 24px rgba(168,85,247,0.5); }
+100%{ box-shadow:0 0 0 0 rgba(168,85,247,0), 0 0 0 rgba(168,85,247,0); }
+}
+@media (prefers-reduced-motion: reduce){ .auction-card.au-flash{ animation:none; } }
+.au-quick{ display:flex; gap:6px; margin-top:8px; }
+.au-quick-btn{
+flex:1; display:flex; flex-direction:column; align-items:center; gap:2px;
+padding:7px 4px; border-radius:8px; border:1px solid var(--red-dim);
+background:rgba(255,255,255,0.03); color:var(--muted); cursor:pointer;
+font-family:'Inter', sans-serif; font-size:10px;
+}
+.au-quick-btn b{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--silver); }
