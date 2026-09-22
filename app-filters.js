@@ -264,7 +264,7 @@ throw new Error(errorMessage(data.error));
 showAlert(dict.br_accepted_ok);
 loadMyBuyRequests();
 })
-.catch(err => showAlert(friendlyErrorMessage(err)));
+.catch(err => showErrorToast(err));
 });
 }
 
@@ -550,7 +550,7 @@ document.getElementById('totp2faNotSetUp').style.display = 'none';
 document.getElementById('totp2faSetupBox').style.display = '';
 })
 .catch(err => {
-showAlert(friendlyErrorMessage(err));
+showErrorToast(err);
 })
 .finally(() => { btn.disabled = false; });
 });
@@ -640,7 +640,7 @@ return r.json();
 .then(() => { loadTotpStatus(); })
 .catch(err => {
 checkboxEl.checked = !enabled;
-showAlert(friendlyErrorMessage(err));
+showErrorToast(err);
 });
 });
 }
@@ -1978,7 +1978,7 @@ buyOverlay.classList.remove('show');
 pendingBuySkin = null;
 loadSkins();
 })
-.catch(err => showAlert(friendlyErrorMessage(err)));
+.catch(err => showErrorToast(err));
 });
 }
 

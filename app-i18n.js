@@ -276,6 +276,8 @@ btn_claim_referral: 'Перевести на баланс',
 open_via_telegram: 'Открой через Telegram',
 no_active_deals: 'Активных сделок нет',
 load_failed: 'Не удалось загрузить',
+btn_retry: 'Повторить',
+catalog_load_failed: 'Не удалось загрузить каталог.',
 copied_text: 'Скопировано ✓',
 referral_bonus_text: (percent) => `Приглашай друзей — с каждой их покупки на площадке ${percent}% от цены копится в твой реферальный кошелёк.`,
 header_menu_profile: 'Профиль',
@@ -872,6 +874,8 @@ btn_claim_referral: "Balansga o'tkazish",
 open_via_telegram: 'Telegram orqali oching',
 no_active_deals: "Faol bitimlar yo'q",
 load_failed: "Yuklab bo'lmadi",
+btn_retry: 'Qayta urinish',
+catalog_load_failed: "Katalogni yuklab bo'lmadi.",
 copied_text: "Nusxalandi ✓",
 referral_bonus_text: (percent) => `Do'stlaringizni taklif qiling — ularning har bir xarididan narxning ${percent}% referal hamyoningizga to'planadi.`,
 header_menu_profile: 'Profil',
@@ -1468,6 +1472,8 @@ btn_claim_referral: 'Move to balance',
 open_via_telegram: 'Open via Telegram',
 no_active_deals: 'No active deals',
 load_failed: 'Failed to load',
+btn_retry: 'Retry',
+catalog_load_failed: 'Failed to load the catalog.',
 copied_text: 'Copied ✓',
 referral_bonus_text: (percent) => `Invite friends — ${percent}% of the price from each of their purchases on the platform accumulates in your referral wallet.`,
 header_menu_profile: 'Profile',
@@ -1956,7 +1962,7 @@ ctaBtn.textContent = (I18N[currentLang] || I18N.ru).giveaway_registered;
 ctaBtn.classList.add('registered');
 })
 .catch(err => {
-showAlert(friendlyErrorMessage(err));
+showErrorToast(err);
 ctaBtn.disabled = false;
 });
 });

@@ -242,7 +242,7 @@ return r.json();
 if (successMsg) showAlert(data.completed === false ? dict.trade_mark_saved : successMsg);
 loadTradeOffers();
 })
-.catch(err => showAlert(friendlyErrorMessage(err)));
+.catch(err => showErrorToast(err));
 };
 if (confirmMsg){
 showConfirm(confirmMsg, doCall);
@@ -310,7 +310,7 @@ body: JSON.stringify({ init_data: tg.initData })
 })
 .then(r => { if (!r.ok) throw new Error(); return r.json(); })
 .then(() => loadDeals())
-.catch(() => showAlert('Не удалось обновить статус.'));
+.catch(() => showErrorToast(new Error('Не удалось обновить статус.')));
 });
 }
 
@@ -324,7 +324,7 @@ body: JSON.stringify({ init_data: tg.initData })
 })
 .then(r => { if (!r.ok) throw new Error(); return r.json(); })
 .then(() => loadDeals())
-.catch(() => showAlert('Не удалось обновить статус.'));
+.catch(() => showErrorToast(new Error('Не удалось обновить статус.')));
 });
 }
 
@@ -343,8 +343,8 @@ throw new Error(errorMessage(data.error));
 }
 return r.json();
 })
-.then(() => { showAlert('Спор создан, админ разберётся.'); loadDeals(); })
-.catch(err => showAlert(err.message || 'Не удалось создать спор.'));
+.then(() => { showToast('Спор создан, админ разберётся.', { type: 'success' }); loadDeals(); })
+.catch(err => showErrorToast(err.message ? err : new Error('Не удалось создать спор.')));
 });
 }
 
@@ -365,7 +365,7 @@ throw new Error('Не удалось отменить продажу.');
 return r.json();
 })
 .then(() => loadDeals())
-.catch(err => showAlert(friendlyErrorMessage(err)));
+.catch(err => showErrorToast(err));
 });
 }
 
@@ -386,7 +386,7 @@ return r.json();
 .then((data) => {
 showAlert(`Открой чат с ботом и напиши сообщение следующим — оно уйдёт ${data.role_label} анонимно, без обмена личными контактами.`);
 })
-.catch(err => showAlert(friendlyErrorMessage(err)));
+.catch(err => showErrorToast(err));
 }
 });
 

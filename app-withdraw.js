@@ -223,7 +223,9 @@ fetch(url, { cache: 'no-store' })
 if (!r.ok){
 const data = await r.json().catch(() => ({}));
 if (data.error === 'refresh_limited'){
-throw new Error(`Обновлять инвентарь можно не больше 3 раз в сутки. Попробуй ещё раз через ${formatWaitHours(data.wait_hours)}.`);
+const limitErr = new Error(`Обновлять инвентарь можно не больше 3 раз в сутки. Попробуй ещё раз через ${formatWaitHours(data.wait_hours)}.`);
+limitErr.noRetry = true;
+throw limitErr;
 }
 throw new Error(steamErrorMessage(data.error));
 }
@@ -234,7 +236,18 @@ lastInventoryItems = data.items || [];
 renderInventory(lastInventoryItems);
 })
 .catch(err => {
-inventoryStatus.textContent = friendlyErrorMessage(err);
+const msg = friendlyErrorMessage(err);
+// Лимит обновлений — повтор бесполезен: возвращаем уже
+// загруженный ранее инвентарь и показываем причину тостом.
+if (err.noRetry){
+inventoryStatus.textContent = '';
+if (lastInventoryItems.length) renderInventory(lastInventoryItems);
+else renderErrorState(inventoryGrid, msg, null);
+showToast(msg, { type: 'error' });
+return;
+}
+inventoryStatus.textContent = '';
+renderErrorState(inventoryGrid, msg, () => loadInventory(forceRefresh));
 });
 }
 

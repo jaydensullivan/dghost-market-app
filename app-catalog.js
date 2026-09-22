@@ -326,7 +326,19 @@ fetch(API_BASE + '/api/skins')
 .then(r => r.json())
 .then(renderSkins)
 .catch(() => {
-skinsList.innerHTML = '<div class="skins-empty">Не удалось загрузить каталог.</div>';
+// Если каталог уже был показан (повторная подгрузка упала) —
+// оставляем старые лоты на месте и сообщаем тостом, а не
+// затираем экран ошибкой.
+if (lastSkins.length){
+showErrorToast(new TypeError('network'), loadSkins);
+return;
+}
+const dict = I18N[currentLang] || I18N.ru;
+if (typeof haptic === 'function') haptic('error');
+renderErrorState(skinsList, dict.catalog_load_failed, () => {
+skinsList.innerHTML = skeletonCardsHtml(6, 'lot');
+loadSkins();
+});
 });
 }
 

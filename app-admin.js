@@ -193,7 +193,7 @@ if (!btn) return;
 showConfirm((I18N[currentLang] || I18N.ru).admin_confirm_deactivate_set, () => {
 adminApiFetch('/api/admin/sets/' + btn.dataset.deactivateSet + '/deactivate', { method: 'POST' })
 .then(() => { loadAdminSetsList(); loadAdminSetSkinPicker(); loadSkins(); })
-.catch(err => showAlert(friendlyErrorMessage(err)));
+.catch(err => showErrorToast(err));
 });
 });
 
@@ -465,7 +465,7 @@ if (!btn) return;
 showConfirm((I18N[currentLang] || I18N.ru).admin_confirm_cancel_active, () => {
 adminApiFetch('/api/admin/auction/' + btn.dataset.cancelActive + '/cancel', { method: 'POST' })
 .then(() => { loadAdminActiveAuctions(); loadAuctionsList(); loadAdminSkinPicker(); loadAdminEventsHistory(); })
-.catch(err => showAlert(friendlyErrorMessage(err)));
+.catch(err => showErrorToast(err));
 });
 });
 
@@ -475,7 +475,7 @@ if (!btn) return;
 showConfirm((I18N[currentLang] || I18N.ru).admin_confirm_cancel_proposal, () => {
 adminApiFetch('/api/admin/auction/proposal/' + btn.dataset.cancelProposal + '/cancel', { method: 'POST' })
 .then(() => { loadAdminActiveAuctions(); loadAdminSkinPicker(); })
-.catch(err => showAlert(friendlyErrorMessage(err)));
+.catch(err => showErrorToast(err));
 });
 });
 
@@ -566,7 +566,7 @@ if (finalizeBtn){
 showConfirm(dict.admin_confirm_finalize, () => {
 adminApiFetch('/api/admin/deals/' + finalizeBtn.dataset.finalizeDeal + '/finalize', { method: 'POST' })
 .then(() => loadAdminDeals())
-.catch(err => showAlert(friendlyErrorMessage(err)));
+.catch(err => showErrorToast(err));
 });
 return;
 }
@@ -576,7 +576,7 @@ if (refundBtn){
 showConfirm(dict.admin_confirm_refund, () => {
 adminApiFetch('/api/admin/deals/' + refundBtn.dataset.refundDeal + '/refund', { method: 'POST' })
 .then(() => loadAdminDeals())
-.catch(err => showAlert(friendlyErrorMessage(err)));
+.catch(err => showErrorToast(err));
 });
 }
 });
@@ -1025,7 +1025,7 @@ const rejectBtn = e.target.closest('[data-topup-reject]');
 if (approveBtn){
 adminApiFetch('/api/admin/topups/' + approveBtn.dataset.topupApprove + '/approve', { method: 'POST' })
 .then(loadAdminTopups)
-.catch(err => showAlert(friendlyErrorMessage(err)));
+.catch(err => showErrorToast(err));
 }
 if (rejectBtn){
 const hasReceipt = rejectBtn.dataset.hasReceipt === '1';
@@ -1090,14 +1090,14 @@ if (approveBtn){
 showConfirm((I18N[currentLang] || I18N.ru).admin_confirm_withdraw_approve, () => {
 adminApiFetch('/api/admin/withdrawals/' + approveBtn.dataset.wApprove + '/approve', { method: 'POST' })
 .then(loadAdminWithdrawals)
-.catch(err => showAlert(friendlyErrorMessage(err)));
+.catch(err => showErrorToast(err));
 });
 }
 if (rejectBtn){
 showConfirm((I18N[currentLang] || I18N.ru).admin_confirm_reject_withdraw, () => {
 adminApiFetch('/api/admin/withdrawals/' + rejectBtn.dataset.wReject + '/reject', { method: 'POST' })
 .then(loadAdminWithdrawals)
-.catch(err => showAlert(friendlyErrorMessage(err)));
+.catch(err => showErrorToast(err));
 });
 }
 });
@@ -1310,24 +1310,24 @@ const removeAuctBtn = e.target.closest('[data-remove-auctioneer]');
 if (removeAdminBtn){
 adminApiFetch('/api/admin/people/remove_admin', { method: 'POST', body: { user_id: Number(removeAdminBtn.dataset.removeAdmin) } })
 .then(loadAdminPeople)
-.catch(err => showAlert(friendlyErrorMessage(err)));
+.catch(err => showErrorToast(err));
 }
 if (removeAuctBtn){
 adminApiFetch('/api/admin/people/remove_auctioneer', { method: 'POST', body: { user_id: Number(removeAuctBtn.dataset.removeAuctioneer) } })
 .then(loadAdminPeople)
-.catch(err => showAlert(friendlyErrorMessage(err)));
+.catch(err => showErrorToast(err));
 }
 const removeSupportBtn = e.target.closest('[data-remove-support-admin]');
 if (removeSupportBtn){
 adminApiFetch('/api/admin/people/remove_support_admin', { method: 'POST', body: { user_id: Number(removeSupportBtn.dataset.removeSupportAdmin) } })
 .then(loadAdminPeople)
-.catch(err => showAlert(friendlyErrorMessage(err)));
+.catch(err => showErrorToast(err));
 }
 const unblockBtn = e.target.closest('[data-unblock-user]');
 if (unblockBtn){
 adminApiFetch('/api/admin/people/unblock_user', { method: 'POST', body: { user_id: Number(unblockBtn.dataset.unblockUser) } })
 .then(loadAdminPeople)
-.catch(err => showAlert(friendlyErrorMessage(err)));
+.catch(err => showErrorToast(err));
 }
 });
 

@@ -89,6 +89,91 @@ const one = `<div class="skel-row" aria-hidden="true">
 return one.repeat(count);
 }
 
+// ---------- тосты ----------
+// Короткое уведомление снизу, которое само исчезает. Для ошибок
+// сети вместо модального окна — не блокирует экран. opts:
+// type: 'error' | 'success' | 'info', actionLabel + onAction —
+// кнопка в тосте (например «Повторить»), duration в мс.
+function showToast(message, opts){
+opts = opts || {};
+let stack = document.getElementById('toastStack');
+if (!stack){
+stack = document.createElement('div');
+stack.id = 'toastStack';
+stack.className = 'toast-stack';
+document.body.appendChild(stack);
+}
+// Не больше двух одновременно — старые уходят первыми.
+while (stack.children.length >= 2) stack.firstChild.remove();
+
+const type = opts.type || 'info';
+const icon = type === 'error' ? '⚠️' : type === 'success' ? '✅' : 'ℹ️';
+const toast = document.createElement('div');
+toast.className = 'toast toast-' + type;
+toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+
+const iconEl = document.createElement('span');
+iconEl.className = 'toast-icon';
+iconEl.textContent = icon;
+const textEl = document.createElement('span');
+textEl.className = 'toast-text';
+textEl.textContent = message;
+toast.append(iconEl, textEl);
+
+const close = () => {
+toast.classList.remove('show');
+setTimeout(() => toast.remove(), 220);
+};
+
+if (opts.actionLabel && opts.onAction){
+const btn = document.createElement('button');
+btn.className = 'toast-action';
+btn.textContent = opts.actionLabel;
+btn.addEventListener('click', () => { close(); opts.onAction(); });
+toast.appendChild(btn);
+}
+
+toast.addEventListener('click', (e) => { if (!e.target.closest('.toast-action')) close(); });
+stack.appendChild(toast);
+requestAnimationFrame(() => toast.classList.add('show'));
+if (type === 'success' && typeof haptic === 'function') haptic('success');
+setTimeout(close, opts.duration || (opts.onAction ? 6000 : 3500));
+}
+
+// Ошибка запроса одной строкой: текст через friendlyErrorMessage
+// (он же даёт вибрацию ошибки), при желании — кнопка «Повторить».
+function showErrorToast(err, onRetry){
+const dict = I18N[currentLang] || I18N.ru;
+showToast(friendlyErrorMessage(err), {
+type: 'error',
+actionLabel: onRetry ? dict.btn_retry : null,
+onAction: onRetry || null,
+});
+}
+
+// Экран ошибки прямо на месте списка — с кнопкой «Повторить».
+// onRetry не передан — только текст (например, лимит обновлений).
+function renderErrorState(container, message, onRetry){
+const dict = I18N[currentLang] || I18N.ru;
+container.innerHTML = '';
+const box = document.createElement('div');
+box.className = 'error-state';
+const icon = document.createElement('div');
+icon.className = 'error-state-icon';
+icon.textContent = '📡';
+const text = document.createElement('div');
+text.textContent = message;
+box.append(icon, text);
+if (onRetry){
+const btn = document.createElement('button');
+btn.className = 'retry-btn';
+btn.textContent = dict.btn_retry;
+btn.addEventListener('click', onRetry);
+box.appendChild(btn);
+}
+container.appendChild(box);
+}
+
 function friendlyErrorMessage(err){
 // Вызывается каждый раз, когда ошибка показывается пользователю —
 // удобная точка для вибрации ошибки (haptic из app-telegram.js).

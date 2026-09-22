@@ -78,7 +78,11 @@ return;
 list.innerHTML = items.map(historyRowHtml).join('');
 })
 .catch(() => {
-list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).load_failed}</div>`;
+if (typeof haptic === 'function') haptic('error');
+renderErrorState(list, (I18N[currentLang] || I18N.ru).load_failed, () => {
+list.innerHTML = skeletonRowsHtml(6);
+loadHistory();
+});
 });
 }
 
