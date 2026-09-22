@@ -1191,6 +1191,29 @@ buyStatus.textContent = '';
 buyOverlay.classList.add('show');
 
 loadMarketPriceComparison(skin.id);
+renderSimilarSkins(skin);
+}
+
+// Мини-график по дневным снимкам цены (history: [{day, price_uzs}]).
+function marketSparklineHtml(history){
+if (!history || history.length < 2) return '';
+const prices = history.map(h => h.price_uzs);
+const min = Math.min(...prices);
+const max = Math.max(...prices);
+const range = max - min || 1;
+const w = 280, h = 44, pad = 3;
+const step = (w - pad * 2) / (prices.length - 1);
+const points = prices.map((p, i) => {
+const x = pad + i * step;
+const y = pad + (1 - (p - min) / range) * (h - pad * 2);
+return `${x.toFixed(1)},${y.toFixed(1)}`;
+}).join(' ');
+const dict = I18N[currentLang] || I18N.ru;
+return `<div class="mp-spark">
+<div class="mp-spark-title">${dict.mp_history}</div>
+<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline points="${points}" fill="none" stroke="var(--red)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>
+<div class="mp-spark-range"><span>${formatCoins(min)}</span><span>${formatCoins(max)}</span></div>
+</div>`;
 }
 
 function renderMarketPriceBox(data){
@@ -1199,16 +1222,72 @@ if (!data || !data.available){
 box.style.display = 'none';
 return;
 }
+const dict = I18N[currentLang] || I18N.ru;
+const isCsfloat = data.source === 'csfloat';
 const cheaper = data.diff_percent >= 0;
-const diffLabel = cheaper
-? `Выгоднее рынка на ${Math.abs(data.diff_percent)}%`
-: `⚠️ Дороже рынка на ${Math.abs(data.diff_percent)}%`;
+const pct = Math.abs(data.diff_percent);
+const diffLabel = (cheaper
+? (isCsfloat ? dict.mp_cheaper : dict.mp_cheaper_generic)
+: (isCsfloat ? dict.mp_pricier : dict.mp_pricier_generic)).replace('{p}', pct);
+const label = isCsfloat ? dict.mp_csfloat : dict.mp_market;
+const usd = (isCsfloat && data.price_usd) ? `<span class="mp-usd">${dict.mp_from} $${Number(data.price_usd).toFixed(2)}</span>` : '';
 box.innerHTML = `
-<div class="mp-row"><span>Рыночная цена</span><span>${formatCoins(data.market_price_uzs)}</span></div>
+<div class="mp-row"><span>${label} ${usd}</span><span>${formatCoins(data.market_price_uzs)}</span></div>
 <div class="mp-diff ${cheaper ? 'cheaper' : 'pricier'}">${diffLabel}</div>
+${marketSparklineHtml(data.history)}
 `;
 box.style.display = '';
 }
+
+// ---------- похожие лоты ----------
+// Считаются на телефоне из уже загруженного каталога: сначала то же
+// оружие (часть названия до « | »), затем тот же тип оружия; внутри —
+// ближе по цене к текущему лоту.
+function findSimilarSkins(skin, limit){
+const weaponOf = (s) => String(s.title || '').split('|')[0].trim().toLowerCase();
+const weapon = weaponOf(skin);
+const scored = [];
+for (const s of lastSkins){
+if (s.id === skin.id) continue;
+let score = 0;
+if (weapon && weaponOf(s) === weapon) score = 2;
+else if (skin.weapon_type && s.weapon_type === skin.weapon_type) score = 1;
+if (!score) continue;
+scored.push({ s, score, gap: Math.abs((s.price || 0) - (skin.price || 0)) });
+}
+scored.sort((a, b) => (b.score - a.score) || (a.gap - b.gap));
+return scored.slice(0, limit).map(x => x.s);
+}
+
+function renderSimilarSkins(skin){
+const box = document.getElementById('similarLotsBox');
+if (!box) return;
+const similar = findSimilarSkins(skin, 8);
+if (!similar.length){
+box.style.display = 'none';
+box.innerHTML = '';
+return;
+}
+const dict = I18N[currentLang] || I18N.ru;
+box.innerHTML = `<div class="similar-title">${dict.similar_title}</div>
+<div class="similar-row">${similar.map(s => `
+<button type="button" class="similar-card" data-similar-id="${s.id}">
+<div class="similar-photo">${s.photo_url ? `<img src="${s.photo_url}" alt="" loading="lazy">` : ''}</div>
+<div class="similar-name">${escapeHtml(s.title || '')}</div>
+<div class="similar-price">${formatCoins(s.price)}</div>
+</button>`).join('')}</div>`;
+box.style.display = '';
+}
+
+document.addEventListener('click', (e) => {
+const card = e.target.closest('[data-similar-id]');
+if (!card) return;
+const skin = lastSkins.find(s => s.id === Number(card.dataset.similarId));
+if (!skin) return;
+openBuySheet(skin);
+const sheet = document.querySelector('#buyOverlay .buy-sheet');
+if (sheet) sheet.scrollTop = 0;
+});
 
 function loadMarketPriceComparison(skinId){
 const box = document.getElementById('marketPriceBox');
