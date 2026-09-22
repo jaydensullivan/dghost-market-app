@@ -65,6 +65,9 @@ else { alert(message); }
 }
 
 function friendlyErrorMessage(err){
+// Вызывается каждый раз, когда ошибка показывается пользователю —
+// удобная точка для вибрации ошибки (haptic из app-telegram.js).
+if (typeof haptic === 'function') haptic('error');
 // fetch() кидает TypeError с техническим текстом вроде "Load failed"
 // или "Failed to fetch", если запрос вообще не дошёл до сервера
 // (обрыв связи и т.п.) — показываем понятную фразу вместо этого.
