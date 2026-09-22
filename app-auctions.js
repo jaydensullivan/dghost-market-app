@@ -44,6 +44,7 @@ ${photo}
 <div class="auction-card-price">${dict.auction_current_price} <span class="auction-card-price-value" id="auctionPrice_${a.auction_id}">${formatCoins(a.current_price)}</span>
 <span class="au-bids" id="auctionBids_${a.auction_id}">${dict.au_bids.replace('{n}', a.bid_count)}</span></div>
 <div class="auction-card-time" id="auctionTime_${a.auction_id}">${formatAuctionCountdown(a.end_time)}</div>
+<div class="au-extended" id="auctionExt_${a.auction_id}"${a.extensions ? '' : ' style="display:none;"'}>${dict.au_extended}</div>
 <button type="button" class="auction-card-bid-btn" data-bid-auction="${a.auction_id}">${dict.auction_btn_place_bid}</button>
 </div>`;
 }
@@ -94,6 +95,19 @@ const card = document.getElementById('auctionCard_' + a.auction_id);
 card.classList.remove('au-flash');
 void card.offsetWidth; // перезапуск анимации
 card.classList.add('au-flash');
+}
+// Аукцион продлили (антиснайпинг) — показываем метку и подсвечиваем таймер.
+const extEl = document.getElementById('auctionExt_' + a.auction_id);
+if (extEl){
+extEl.style.display = a.extensions ? '' : 'none';
+if (a.end_time > prev.end_time){
+const timeEl = document.getElementById('auctionTime_' + a.auction_id);
+if (timeEl){
+timeEl.classList.remove('au-time-flash');
+void timeEl.offsetWidth;
+timeEl.classList.add('au-time-flash');
+}
+}
 }
 const bidsEl = document.getElementById('auctionBids_' + a.auction_id);
 if (bidsEl) bidsEl.textContent = dict.au_bids.replace('{n}', a.bid_count);

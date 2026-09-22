@@ -2951,3 +2951,14 @@ color:var(--silver); font-family:'Inter', sans-serif; font-size:13px;
 padding:1px 7px; border-radius:8px; background:rgba(255,255,255,0.06);
 font-family:'Inter', sans-serif; font-size:10px; color:var(--muted);
 }
+
+/* антиснайпинг — метка «Продлён» и вспышка таймера */
+.au-extended{
+display:inline-block; margin:-6px 0 10px; padding:2px 8px; border-radius:8px;
+background:rgba(168,85,247,0.15); color:#c89bff;
+font-family:'Inter', sans-serif; font-size:11px; font-weight:600;
+}
+.auction-card-time.au-time-flash{ animation:au-time-flash 1.2s ease-out; }
+@keyframes au-time-flash{ 0%{ color:#c89bff; transform:scale(1.08); } 100%{ transform:none; } }
+@media (prefers-reduced-motion: reduce){ .auction-card-time.au-time-flash{ animation:none; } }
+.au-snipe-hint{ margin-top:8px; font-size:11px; line-height:1.4; }
