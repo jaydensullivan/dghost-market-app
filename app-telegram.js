@@ -73,6 +73,7 @@ notificationsOverlay: 'notificationsCloseBtn',
 disputeOverlay: 'disputeCancelBtn',
 sellerProfileOverlay: 'sellerProfileCloseBtn',
 reviewOverlay: 'reviewCancelBtn',
+watchOverlay: 'watchCancelBtn',
 };
 
 // Экранные «назад» внутри приложения — сначала более глубокие.

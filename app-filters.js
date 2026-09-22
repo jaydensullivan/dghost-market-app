@@ -389,6 +389,18 @@ btn.disabled = false;
 });
 });
 
+// Условия записи каталога желаний одной строкой-чипсами.
+function wishlistChipsHtml(item){
+const dict = I18N[currentLang] || I18N.ru;
+const chips = [];
+if (item.max_price) chips.push(`${dict.wishlist_max_price_label} ${formatCoins(item.max_price)}`);
+if (item.wear) chips.push(item.wear);
+if (item.stattrak === 1) chips.push('StatTrak™');
+if (item.stattrak === 0) chips.push(dict.wl_st_no);
+if (item.max_float) chips.push(`float ≤ ${item.max_float}`);
+return chips.length ? `<div class="wl-chips">${chips.map(c => `<span>${escapeHtml(c)}</span>`).join('')}</div>` : '';
+}
+
 function loadWishlist(){
 if (!tg || !tg.initData) return;
 const dict = I18N[currentLang] || I18N.ru;
@@ -405,7 +417,7 @@ el.innerHTML = items.map(item => `
 <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.06);">
 <div>
 <div style="font-size:13px; color:var(--silver);">${escapeHtml(item.query)}</div>
-${item.max_price ? `<div style="font-size:11px; color:var(--muted);">${dict.wishlist_max_price_label} ${formatCoins(item.max_price)}</div>` : ''}
+${wishlistChipsHtml(item)}
 </div>
 <button type="button" data-wishlist-remove="${item.id}" style="background:none; border:none; color:var(--muted); font-size:16px; cursor:pointer; padding:4px 8px;">✕</button>
 </div>
@@ -445,7 +457,13 @@ status.textContent = dict.wishlist_adding;
 fetch(API_BASE + '/api/wishlist', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ init_data: tg.initData, query: query, max_price: maxPrice })
+body: JSON.stringify({
+init_data: tg.initData,
+query: query,
+max_price: maxPrice,
+wear: document.getElementById('wishlistWearSelect').value || null,
+stattrak: document.getElementById('wishlistStSelect').value,
+})
 })
 .then(async r => {
 if (!r.ok){
@@ -458,6 +476,8 @@ return r.json();
 status.textContent = dict.wishlist_added_ok;
 document.getElementById('wishlistQueryInput').value = '';
 document.getElementById('wishlistMaxPriceInput').value = '';
+document.getElementById('wishlistWearSelect').value = '';
+document.getElementById('wishlistStSelect').value = '';
 loadWishlist();
 })
 .catch(err => {
@@ -1175,6 +1195,7 @@ buyDetailsTable.innerHTML = rows;
 // (принудительная отмена — спам/обман), но не видит "Изменить цену"
 // и "Предложить цену" на чужом.
 buyRemoveBtn.style.display = (isOwn || isAdmin) ? '' : 'none';
+document.getElementById('buyWatchBtn').style.display = isOwn ? 'none' : '';
 document.getElementById('buyPaymentMethods').style.display = isOwn ? 'none' : 'flex';
 buyConfirmBalance.style.display = 'none'; // Оплата с баланса покупателем убрана полностью
 buyConfirmStars.style.display = (!isOwn && directStarsPurchaseEnabled) ? '' : 'none';
@@ -2037,3 +2058,75 @@ loadSkins();
 });
 }
 
+
+
+// ============================================================
+// «СЛЕДИТЬ» ИЗ КАРТОЧКИ ЛОТА — БЫСТРОЕ ДОБАВЛЕНИЕ В КАТАЛОГ ЖЕЛАНИЙ
+//
+// Название, износ и StatTrak берутся из лота — пользователю нужно
+// только (по желанию) указать цену. Повторное «Следить» по тому же
+// скину не создаёт дубль, а обновляет порог цены на сервере.
+// ============================================================
+
+const watchOverlay = document.getElementById('watchOverlay');
+let watchSkin = null;
+
+function openWatchSheet(skin){
+if (!tg || !tg.initData){
+showAlert(errorMessage('unauthorized'));
+return;
+}
+const dict = I18N[currentLang] || I18N.ru;
+watchSkin = skin;
+document.getElementById('watchSkinTitle').textContent = (skin.stattrak ? 'StatTrak™ ' : '') + skin.title;
+const wearRow = document.getElementById('watchWearRow');
+wearRow.style.display = skin.wear ? '' : 'none';
+document.getElementById('watchWearCheck').checked = !!skin.wear;
+document.getElementById('watchWearLabel').textContent = dict.watch_only_wear.replace('{wear}', skin.wear || '');
+document.getElementById('watchStCheck').checked = true;
+document.getElementById('watchStLabel').textContent = skin.stattrak ? dict.watch_only_st : dict.watch_no_st;
+const priceInput = document.getElementById('watchPriceInput');
+priceInput.value = '';
+priceInput.placeholder = dict.watch_price_ph.replace('{price}', Math.round((skin.price || 0) * 0.9));
+document.getElementById('watchStatus').textContent = '';
+watchOverlay.classList.add('show');
+}
+
+document.getElementById('buyWatchBtn').addEventListener('click', () => {
+if (pendingBuySkin) openWatchSheet(pendingBuySkin);
+});
+
+document.getElementById('watchCancelBtn').addEventListener('click', () => {
+watchOverlay.classList.remove('show');
+});
+
+document.getElementById('watchSubmitBtn').addEventListener('click', () => {
+if (!watchSkin || !tg || !tg.initData) return;
+const dict = I18N[currentLang] || I18N.ru;
+const btn = document.getElementById('watchSubmitBtn');
+const status = document.getElementById('watchStatus');
+btn.disabled = true;
+fetch(API_BASE + '/api/wishlist', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+init_data: tg.initData,
+query: watchSkin.title,
+max_price: Number(document.getElementById('watchPriceInput').value) || null,
+wear: (watchSkin.wear && document.getElementById('watchWearCheck').checked) ? watchSkin.wear : null,
+stattrak: document.getElementById('watchStCheck').checked ? (watchSkin.stattrak ? 1 : 0) : '',
+})
+})
+.then(async r => {
+const data = await r.json().catch(() => ({}));
+if (!r.ok) throw new Error(data.error === 'too_many_items' ? dict.wishlist_too_many : errorMessage(data.error));
+return data;
+})
+.then(data => {
+watchOverlay.classList.remove('show');
+showToast(data.updated ? dict.watch_updated : dict.watch_ok, { type: 'success' });
+if (typeof loadWishlist === 'function') loadWishlist();
+})
+.catch(err => { status.textContent = friendlyErrorMessage(err); })
+.finally(() => { btn.disabled = false; });
+});

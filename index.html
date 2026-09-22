@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="stylesheet" href="app.css?v=10">
+<link rel="stylesheet" href="app.css?v=11">
 </head>
 <body>
 
@@ -383,6 +383,23 @@ transform="rotate(-90 100 100)"></circle>
 <div class="edit-field">
 <label data-i18n="wishlist_label_max_price">Не дороже, сум (не обязательно)</label>
 <input id="wishlistMaxPriceInput" type="number" min="0" placeholder="500000">
+</div>
+<div class="wl-row">
+<div class="edit-field">
+<label data-i18n="wl_label_wear">Износ</label>
+<select id="wishlistWearSelect" class="wl-select">
+<option value="" data-i18n="wl_any_wear">Любой износ</option>
+<option value="FN">Factory New</option><option value="MW">Minimal Wear</option><option value="FT">Field-Tested</option><option value="WW">Well-Worn</option><option value="BS">Battle-Scarred</option>
+</select>
+</div>
+<div class="edit-field">
+<label data-i18n="wl_label_st">StatTrak</label>
+<select id="wishlistStSelect" class="wl-select">
+<option value="" data-i18n="wl_st_any">StatTrak — неважно</option>
+<option value="1" data-i18n="wl_st_only">Только StatTrak™</option>
+<option value="0" data-i18n="wl_st_no">Без StatTrak™</option>
+</select>
+</div>
 </div>
 <button type="button" id="wishlistAddBtn" class="steam-link-btn secondary" style="width:100%;" data-i18n="wishlist_btn_add">Добавить</button>
 <div class="edit-status" id="wishlistStatus" style="margin-top:6px;"></div>
@@ -1136,6 +1153,25 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 </div>
 
+<div class="edit-overlay" id="watchOverlay" style="z-index:20;">
+<div class="edit-sheet">
+<h2 data-i18n="watch_title">Следить за скином</h2>
+<div class="shop-hint" data-i18n="watch_hint" style="margin-bottom:10px;"></div>
+<div class="watch-skin" id="watchSkinTitle"></div>
+<label class="watch-check" id="watchWearRow"><input type="checkbox" id="watchWearCheck" checked> <span id="watchWearLabel"></span></label>
+<label class="watch-check" id="watchStRow"><input type="checkbox" id="watchStCheck" checked> <span id="watchStLabel"></span></label>
+<div class="edit-field" style="margin-top:10px;">
+<label data-i18n="watch_price_label">Уведомить, если цена не выше, сум</label>
+<input type="number" id="watchPriceInput" inputmode="numeric" min="0">
+</div>
+<div class="shop-hint" id="watchStatus" style="min-height:16px;"></div>
+<div class="edit-actions">
+<button type="button" id="watchCancelBtn" data-i18n="btn_cancel">Закрыть</button>
+<button type="button" id="watchSubmitBtn" class="save" data-i18n="watch_submit">Следить</button>
+</div>
+</div>
+</div>
+
 <div class="edit-overlay" id="notificationsOverlay">
 <div class="edit-sheet" style="max-height:80vh; overflow-y:auto;">
 <h2 data-i18n="notif_title">Уведомления</h2>
@@ -1355,6 +1391,10 @@ transform="rotate(-90 100 100)"></circle>
 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
 <span data-i18n="btn_share">Поделиться</span>
 </button>
+<button type="button" id="buyWatchBtn" class="buy-action-btn">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+<span data-i18n="watch_btn">Следить</span>
+</button>
 <button type="button" id="buyRemoveBtn" class="buy-action-btn" style="display:none;">
 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>
 <span data-i18n="btn_remove_listing">Снять с продажи</span>
@@ -1516,14 +1556,14 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 
 <script src="app-core.js?v=1"></script>
-<script src="app-i18n.js?v=9"></script>
+<script src="app-i18n.js?v=10"></script>
 <script src="app-giveaway.js?v=1"></script>
 <script src="app-navigation.js?v=4"></script>
 <script src="app-shop.js?v=3"></script>
 <script src="app-deals.js?v=5"></script>
 <script src="app-catalog.js?v=2"></script>
 <script src="app-cart.js?v=1"></script>
-<script src="app-filters.js?v=5"></script>
+<script src="app-filters.js?v=6"></script>
 <script src="app-steam.js?v=1"></script>
 <script src="app-topup.js?v=1"></script>
 <script src="app-history.js?v=4"></script>
@@ -1533,6 +1573,6 @@ transform="rotate(-90 100 100)"></circle>
 <script src="app-auctions.js?v=2"></script>
 <script src="app-reviews.js?v=1"></script>
 <script src="app-notifications.js?v=1"></script>
-<script src="app-telegram.js?v=4"></script>
+<script src="app-telegram.js?v=5"></script>
 </body>
 </html>

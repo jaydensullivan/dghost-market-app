@@ -2927,3 +2927,27 @@ background:rgba(255,255,255,0.03); color:var(--muted); cursor:pointer;
 font-family:'Inter', sans-serif; font-size:10px;
 }
 .au-quick-btn b{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--silver); }
+
+/* ---------- «Следить» и уточнения каталога желаний ---------- */
+.watch-skin{
+padding:10px 12px; margin-bottom:10px; border-radius:10px;
+border:1px solid var(--red-dim); background:rgba(255,255,255,0.03);
+font-family:'Inter', sans-serif; font-size:14px; font-weight:600; color:var(--silver);
+}
+.watch-check{
+display:flex; align-items:center; gap:10px; padding:8px 2px;
+font-family:'Inter', sans-serif; font-size:13px; color:var(--silver); cursor:pointer;
+}
+.watch-check input{ width:18px; height:18px; accent-color:var(--red); }
+.wl-row{ display:flex; gap:8px; }
+.wl-row .edit-field{ flex:1; min-width:0; }
+.wl-select{
+width:100%; padding:10px 8px; border-radius:4px;
+border:1px solid var(--red-dim); background:rgba(255,255,255,0.03);
+color:var(--silver); font-family:'Inter', sans-serif; font-size:13px;
+}
+.wl-chips{ display:flex; flex-wrap:wrap; gap:4px; margin-top:3px; }
+.wl-chips span{
+padding:1px 7px; border-radius:8px; background:rgba(255,255,255,0.06);
+font-family:'Inter', sans-serif; font-size:10px; color:var(--muted);
+}
