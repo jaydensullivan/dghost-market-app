@@ -2737,3 +2737,19 @@ color:var(--muted);
 }
 .notif-open{ color:#c89bff; font-family:'Inter', sans-serif; font-weight:600; }
 .notif-dot{ width:7px; height:7px; border-radius:50%; background:var(--red); flex:none; margin-top:6px; }
+
+/* поле описания в форме спора — в стиле обычных полей ввода */
+.edit-field textarea{
+width:100%;
+box-sizing:border-box;
+padding:10px 12px;
+border-radius:4px;
+border:1px solid var(--red-dim);
+background:rgba(255,255,255,0.03);
+color:var(--silver);
+font-family:'Inter', sans-serif;
+font-size:14px;
+line-height:1.4;
+resize:vertical;
+}
+.edit-field textarea:focus{ outline:none; border-color:var(--red); }

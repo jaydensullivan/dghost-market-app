@@ -148,6 +148,7 @@ if (deal.confirmed_at){
 statusHtml = `<div class="deal-status done">${dict.status_confirmed}</div>`;
 } else if (deal.disputed_at){
 statusHtml = `<div class="deal-status pending" style="color:#e0555a;">${dict.status_disputed}</div>`;
+actionHtml = `<button class="deal-action secondary" data-add-evidence="${deal.id}" type="button">${dict.btn_add_evidence}</button>`;
 } else if (deal.sent_at){
 statusHtml = `<div class="deal-status sent">${dict.status_seller_sent}</div>`;
 actionHtml = `<button class="deal-action" data-mark-received="${deal.id}" type="button">${dict.btn_received}</button>
@@ -358,6 +359,11 @@ document.getElementById('dealsList').addEventListener('click', (e) => {
 const sentBtn = e.target.closest('[data-mark-sent]');
 const receivedBtn = e.target.closest('[data-mark-received]');
 const disputedBtn = e.target.closest('[data-mark-disputed]');
+const evidenceBtn = e.target.closest('[data-add-evidence]');
+if (evidenceBtn){
+openDisputeForm(Number(evidenceBtn.dataset.addEvidence), 'add');
+return;
+}
 const cancelBtn = e.target.closest('[data-cancel-sale]');
 const relayBtn = e.target.closest('[data-relay]');
 const inspectBtn = e.target.closest('[data-inspect-skin]');
@@ -417,23 +423,7 @@ body: JSON.stringify({ init_data: tg.initData })
 }
 
 if (disputedBtn){
-const id = disputedBtn.dataset.markDisputed;
-showConfirm('Продавец отметил «Отправил», но предмет не пришёл? Админ получит уведомление и разберётся в споре.', () => {
-fetch(API_BASE + '/api/skins/' + id + '/mark_disputed', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ init_data: tg.initData })
-})
-.then(async r => {
-if (!r.ok){
-const data = await r.json().catch(() => ({}));
-throw new Error(errorMessage(data.error));
-}
-return r.json();
-})
-.then(() => { showToast('Спор создан, админ разберётся.', { type: 'success' }); loadDeals(); })
-.catch(err => showErrorToast(err.message ? err : new Error('Не удалось создать спор.')));
-});
+openDisputeForm(Number(disputedBtn.dataset.markDisputed), 'open');
 }
 
 if (cancelBtn){
@@ -478,3 +468,142 @@ showAlert(`Открой чат с ботом и напиши сообщение 
 }
 });
 
+
+
+// ============================================================
+// СПОР С ДОКАЗАТЕЛЬСТВАМИ
+//
+// mode 'open' — покупатель открывает спор («Не получил»):
+// описание обязательно, Trade ID и скриншот по желанию.
+// mode 'add' — дополнительные доказательства по уже открытому
+// спору, доступно и покупателю, и продавцу.
+// ============================================================
+
+const disputeOverlay = document.getElementById('disputeOverlay');
+const disputeReason = document.getElementById('disputeReason');
+const disputeTradeId = document.getElementById('disputeTradeId');
+const disputePhotoInput = document.getElementById('disputePhotoInput');
+const disputePhotoPreview = document.getElementById('disputePhotoPreview');
+const disputeStatus = document.getElementById('disputeStatus');
+const disputeSubmitBtn = document.getElementById('disputeSubmitBtn');
+
+let disputeSkinId = null;
+let disputeMode = 'open';
+let disputePhotoBase64 = null;
+
+function openDisputeForm(skinId, mode){
+const dict = I18N[currentLang] || I18N.ru;
+disputeSkinId = skinId;
+disputeMode = mode;
+disputePhotoBase64 = null;
+disputeReason.value = '';
+disputeTradeId.value = '';
+disputePhotoInput.value = '';
+disputePhotoPreview.style.display = 'none';
+disputeStatus.textContent = '';
+disputeSubmitBtn.disabled = false;
+
+document.getElementById('disputeTitle').textContent = mode === 'open' ? dict.dispute_title_open : dict.dispute_title_add;
+document.getElementById('disputeIntro').textContent = mode === 'open' ? dict.dispute_intro_open : dict.dispute_intro_add;
+document.getElementById('disputeReasonLabel').textContent = dict.dispute_reason_label;
+disputeReason.placeholder = dict.dispute_reason_ph;
+document.getElementById('disputeTradeLabel').textContent = dict.dispute_trade_label;
+document.getElementById('disputeTradeHint').textContent = dict.dispute_trade_hint;
+document.getElementById('disputePhotoLabel').textContent = dict.dispute_photo_label;
+disputeSubmitBtn.textContent = mode === 'open' ? dict.dispute_submit_open : dict.dispute_submit_add;
+
+disputeOverlay.classList.add('show');
+}
+
+// Сжатие фото — как у чека P2P: телефонные снимки весят мегабайты.
+disputePhotoInput.addEventListener('change', () => {
+const dict = I18N[currentLang] || I18N.ru;
+const file = disputePhotoInput.files[0];
+disputePhotoBase64 = null;
+disputePhotoPreview.style.display = 'none';
+if (!file) return;
+disputeStatus.textContent = dict.status_processing_photo;
+const reader = new FileReader();
+reader.onload = () => {
+const img = new Image();
+img.onload = () => {
+const MAX_SIDE = 1600;
+let { width, height } = img;
+if (width > MAX_SIDE || height > MAX_SIDE){
+const scale = MAX_SIDE / Math.max(width, height);
+width = Math.round(width * scale);
+height = Math.round(height * scale);
+}
+const canvas = document.createElement('canvas');
+canvas.width = width;
+canvas.height = height;
+canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+disputePhotoBase64 = canvas.toDataURL('image/jpeg', 0.82);
+disputePhotoPreview.src = disputePhotoBase64;
+disputePhotoPreview.style.display = 'block';
+disputeStatus.textContent = '';
+};
+img.onerror = () => { disputeStatus.textContent = dict.status_photo_failed; };
+img.src = reader.result;
+};
+reader.readAsDataURL(file);
+});
+
+disputeTradeId.addEventListener('input', () => {
+disputeTradeId.value = disputeTradeId.value.replace(/\D/g, '');
+});
+
+disputeSubmitBtn.addEventListener('click', () => {
+const dict = I18N[currentLang] || I18N.ru;
+if (!disputeSkinId || !tg || !tg.initData) return;
+const reason = disputeReason.value.trim();
+const tradeId = disputeTradeId.value.trim();
+
+if (disputeMode === 'open' && reason.length < 10){
+disputeStatus.textContent = dict.dispute_reason_short;
+haptic('error');
+return;
+}
+if (disputeMode === 'add' && !reason && !tradeId && !disputePhotoBase64){
+disputeStatus.textContent = errorMessage('evidence_empty');
+haptic('error');
+return;
+}
+
+const endpoint = disputeMode === 'open' ? 'mark_disputed' : 'dispute_evidence';
+disputeSubmitBtn.disabled = true;
+disputeStatus.textContent = '';
+
+fetch(API_BASE + '/api/skins/' + disputeSkinId + '/' + endpoint, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+init_data: tg.initData,
+reason,
+trade_id: tradeId,
+photo_base64: disputePhotoBase64,
+})
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(errorMessage(data.error));
+}
+return r.json();
+})
+.then(() => {
+disputeOverlay.classList.remove('show');
+showToast(disputeMode === 'open' ? dict.dispute_opened_ok : dict.dispute_evidence_ok, { type: 'success' });
+loadDeals();
+})
+.catch(err => {
+disputeStatus.textContent = friendlyErrorMessage(err);
+})
+.finally(() => {
+disputeSubmitBtn.disabled = false;
+});
+});
+
+document.getElementById('disputeCancelBtn').addEventListener('click', () => {
+disputeOverlay.classList.remove('show');
+});

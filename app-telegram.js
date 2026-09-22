@@ -70,6 +70,7 @@ topupRejectOverlay: 'topupRejectCloseBtn',
 inspectOverlay: 'inspectCloseBtn',
 inventoryOverlay: 'inventoryCancel',
 notificationsOverlay: 'notificationsCloseBtn',
+disputeOverlay: 'disputeCancelBtn',
 };
 
 // Экранные «назад» внутри приложения — сначала более глубокие.
