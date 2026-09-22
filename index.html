@@ -2187,6 +2187,7 @@ transform:translate(-50%,-50%);
 }
 .inv-item-floatrow{
 display:flex;
+width:100%;
 justify-content:space-between;
 font-size:10px;
 color:var(--muted, #a8a4b3);
@@ -10320,7 +10321,7 @@ inventoryGrid.innerHTML = items.map((item, i) => {
 // прогрузится (сеть, кэш ещё не заполнился) — onerror откатывает
 // на исходную иконку Steam, картинка не пропадает совсем.
 const renderUrl = item.photo_url
-? `${API_BASE}/api/steam/icon_render?icon=${encodeURIComponent(item.photo_url)}&rarity=${encodeURIComponent(item.rarity || '')}`
+? `${API_BASE}/api/steam/icon_render?icon=${encodeURIComponent(item.photo_url)}&rarity=${encodeURIComponent(item.rarity || '')}&v=3`
 : '';
 const photo = item.photo_url
 ? `<img src="${renderUrl}" alt="" onerror="this.onerror=null;this.src='${item.photo_url}';">`
