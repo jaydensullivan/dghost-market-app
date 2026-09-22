@@ -68,54 +68,23 @@ ${deal.photo_url ? `<img src="${deal.photo_url}" style="width:48px;height:48px;o
 <div style="font-size:12px; color:var(--muted);">${formatCoins(deal.price)}</div>
 </div>
 `;
-document.getElementById('tradeDetailsTimeline').innerHTML = '<div class="shop-hint">Загрузка...</div>';
 overlay.classList.add('show');
 
-const reachedCompleted = !!(deal.confirmed_at);
-const isDisputed = !!(deal.disputed_at) && !reachedCompleted;
-
-const sellerLabel = deal.role === 'selling' ? (I18N[currentLang] || I18N.ru).trade_you : (I18N[currentLang] || I18N.ru).trade_seller;
-const buyerLabel = deal.role === 'buying' ? (I18N[currentLang] || I18N.ru).trade_you : (I18N[currentLang] || I18N.ru).trade_buyer;
-const dotIcon = (done) => done ? '✓' : '';
-const lineClass = reachedCompleted ? 'trade-party-line done' : 'trade-party-line';
-
-document.getElementById('tradeDetailsPartiesLine').innerHTML = `
-<div class="trade-party">
-<div class="trade-party-dot">${dotIcon(true)}</div>
-<div>${sellerLabel}</div>
-</div>
-<div class="${lineClass}"></div>
-<div class="trade-party">
-<div class="trade-party-dot" style="${reachedCompleted ? '' : 'background:rgba(255,255,255,0.05); border-color:var(--muted);'}">${dotIcon(reachedCompleted)}</div>
-<div>${buyerLabel}</div>
-</div>
-`;
+// Пока история грузится — таймлайн по полям сделки (или по уже
+// закэшированной истории), потом уточняем точным временем.
+document.getElementById('tradeDetailsPartiesLine').innerHTML = '';
+document.getElementById('tradeDetailsPartiesLine').style.display = 'none';
+document.getElementById('tradeDetailsTimeline').innerHTML = dealStepperHtml(deal, dealHistoryCache[deal.id]);
 
 fetch(API_BASE + '/api/deals/' + skinId + '/history?init_data=' + encodeURIComponent(tg.initData))
 .then(r => r.json())
 .then(data => {
 document.getElementById('tradeDetailsCode').textContent = data.order_code || '';
-const history = data.history || [];
-if (!history.length){
-document.getElementById('tradeDetailsTimeline').innerHTML = '<div class="shop-hint">История пока пуста.</div>';
-return;
-}
-document.getElementById('tradeDetailsTimeline').innerHTML = history.map(h => {
-const t = h.created_at ? new Date(h.created_at).toLocaleString(currentLang === 'uz' ? 'uz-UZ' : (currentLang === 'en' ? 'en-US' : 'ru-RU'), { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
-const label = getOrderStatusLabel(h.status);
-return `
-<div class="trade-timeline-item">
-<div class="trade-timeline-dot">✓</div>
-<div>
-<div class="trade-timeline-text">${label}</div>
-<div class="trade-timeline-time">${t}</div>
-</div>
-</div>
-`;
-}).join('');
+dealHistoryCache[deal.id] = data.history || [];
+document.getElementById('tradeDetailsTimeline').innerHTML = dealStepperHtml(deal, dealHistoryCache[deal.id]);
 })
 .catch(() => {
-document.getElementById('tradeDetailsTimeline').innerHTML = '<div class="shop-hint">Не удалось загрузить историю.</div>';
+document.getElementById('tradeDetailsCode').textContent = '';
 });
 }
 

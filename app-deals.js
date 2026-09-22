@@ -15,6 +15,111 @@ if (hours > 0) return `${hours}ч ${minutes}м`;
 return `${minutes}м`;
 }
 
+// ============================================================
+// ТАЙМЛАЙН СДЕЛКИ — ПЯТЬ ШАГОВ ОТ ОПЛАТЫ ДО ВЫПЛАТЫ
+//
+// Шаги считаются из полей сделки (sent_at, confirmed_at,
+// release_at, disputed_at), а точное время и финальные статусы
+// (выплата, возврат, отмена) уточняются историей из
+// order_status_history, когда она подгрузится.
+// ============================================================
+
+const DEAL_STEP_KEYS = ['paid', 'transfer', 'receive', 'hold', 'payout'];
+
+// История статусов по сделкам — чтобы ежеминутная перерисовка
+// карточек не теряла уже загруженные данные.
+const dealHistoryCache = {};
+
+function dealDateLabel(iso){
+if (!iso) return '';
+const locale = currentLang === 'uz' ? 'uz-UZ' : (currentLang === 'en' ? 'en-US' : 'ru-RU');
+return new Date(iso).toLocaleString(locale, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
+function computeDealSteps(deal, history){
+const dict = I18N[currentLang] || I18N.ru;
+const hist = history || [];
+const at = (status) => {
+const row = hist.find(h => h.status === status);
+return row ? row.created_at : null;
+};
+const has = (status) => hist.some(h => h.status === status);
+
+const releasePassed = deal.release_at && new Date(deal.release_at).getTime() <= Date.now();
+const payoutDone = has('PAYOUT_COMPLETED');
+
+// Время завершения каждого шага (null — шаг ещё не пройден).
+const doneAt = {
+paid: at('PAYMENT_CONFIRMED') || at('RESERVED') || deal.sold_at || true,
+transfer: deal.sent_at || null,
+receive: deal.confirmed_at || at('DELIVERY_CONFIRMED') || null,
+hold: (deal.confirmed_at && (releasePassed || payoutDone))
+? (at('PAYOUT_PROCESSING') || at('PAYOUT_COMPLETED') || deal.release_at || true) : null,
+payout: payoutDone ? at('PAYOUT_COMPLETED') : null,
+};
+// Подтверждение получения без отметки «Отправил» — передача тоже пройдена.
+if (doneAt.receive && !doneAt.transfer) doneAt.transfer = true;
+
+let currentIdx = DEAL_STEP_KEYS.findIndex(k => !doneAt[k]);
+const allDone = currentIdx === -1;
+
+// Ветки, которые обрывают обычный путь.
+let failed = null;
+if (has('REFUNDED')) failed = 'refunded';
+else if (has('ORDER_CANCELLED')) failed = 'cancelled';
+else if (deal.disputed_at && !deal.confirmed_at) failed = 'dispute';
+
+const steps = DEAL_STEP_KEYS.map((key, i) => {
+let state = 'upcoming';
+if (allDone || i < currentIdx) state = 'done';
+else if (i === currentIdx) state = failed ? 'failed' : 'current';
+let label = dict['step_' + key];
+if (state === 'failed') label = dict['step_' + failed];
+const t = doneAt[key];
+return { key, label, state, time: (state === 'done' && typeof t === 'string') ? t : null };
+});
+
+// Подсказка «что сейчас происходит» — своя для продавца и покупателя.
+const selling = deal.role === 'selling';
+const timeLeft = formatDealCountdown(deal.release_at);
+let hint = '';
+if (failed) hint = dict['hint_' + failed];
+else if (allDone) hint = dict.hint_done;
+else {
+const key = DEAL_STEP_KEYS[currentIdx];
+if (key === 'transfer') hint = selling ? dict.hint_seller_send : dict.hint_buyer_wait_send;
+else if (key === 'receive') hint = selling ? dict.hint_seller_wait_confirm : dict.hint_buyer_confirm;
+else if (key === 'hold') hint = (selling ? dict.hint_hold_seller : dict.hint_hold_buyer).replace('{time}', timeLeft);
+else if (key === 'payout') hint = dict.hint_payout_wait;
+}
+
+return { steps, currentIdx: allDone ? DEAL_STEP_KEYS.length - 1 : currentIdx, allDone, failed, hint };
+}
+
+// Компактный вид для карточки: полоска из 5 сегментов,
+// «Шаг N из 5 · название» и подсказка.
+function dealProgressHtml(deal){
+const dict = I18N[currentLang] || I18N.ru;
+const info = computeDealSteps(deal, dealHistoryCache[deal.id]);
+const segs = info.steps.map(s => `<div class="deal-progress-seg ${s.state}"></div>`).join('');
+const cur = info.steps[info.currentIdx];
+const count = dict.step_of.replace('{n}', info.currentIdx + 1).replace('{total}', info.steps.length);
+return `<div class="deal-progress">${segs}</div>
+<div class="deal-step-summary${info.failed ? ' failed' : ''}"><span>${escapeHtml(cur.label)}</span><span class="deal-step-count">${info.allDone ? '✓' : count}</span></div>
+<div class="deal-hint">${escapeHtml(info.hint)}</div>`;
+}
+
+// Полный вертикальный таймлайн — для окна «Детали сделки».
+function dealStepperHtml(deal, history){
+const info = computeDealSteps(deal, history);
+return '<div class="dstep-list">' + info.steps.map(s => {
+const icon = s.state === 'done' ? '✓' : (s.state === 'failed' ? '!' : '');
+const hint = (s.state === 'current' || s.state === 'failed') ? `<div class="dstep-hint">${escapeHtml(info.hint)}</div>` : '';
+const time = s.time ? `<div class="dstep-time">${dealDateLabel(s.time)}</div>` : '';
+return `<div class="dstep ${s.state}"><div class="dstep-dot">${icon}</div><div class="dstep-body"><div class="dstep-title">${escapeHtml(s.label)}</div>${time}${hint}</div></div>`;
+}).join('') + '</div>';
+}
+
 function dealCardHtml(deal){
 const dict = I18N[currentLang] || I18N.ru;
 
@@ -76,41 +181,24 @@ ${photo}
 <div class="deal-info">
 <div class="deal-title">${escapeHtml(deal.title)}</div>
 <div class="deal-meta">${roleLabel} · ${escapeHtml(counterpartyLabel)} · ${formatCoins(deal.price)}</div>
-${countdownHtml}
-${statusHtml}
 </div>
 </div>
-<div class="deal-actions" style="margin-top:8px;">${actionHtml}${messageBtn}</div>
-<div style="display:flex; align-items:center; justify-content:center; gap:8px; margin:12px 0 4px; font-family:'Inter', sans-serif; font-size:11px; color:var(--silver);">
-<div class="trade-party" style="flex:0 0 auto;"><div class="trade-party-dot">✓</div><div>${sellerLabel}</div></div>
-<div class="${lineClass}" style="max-width:60px;"></div>
-<div class="trade-party" style="flex:0 0 auto;"><div class="trade-party-dot" style="${isDone ? '' : 'background:rgba(255,255,255,0.05); border-color:var(--muted);'}">${isDone ? '✓' : ''}</div><div>${buyerLabel}</div></div>
-</div>
-<div id="dealTimeline-${deal.id}" style="font-size:11px; color:var(--muted); padding:0 4px;">Загрузка истории...</div>
+<div id="dealProgress-${deal.id}">${dealProgressHtml(deal)}</div>
+<div class="deal-actions" style="margin-top:8px;">${actionHtml}${messageBtn}<button class="deal-action secondary" data-trade-details="${deal.id}" type="button">${dict.btn_deal_details}</button></div>
 </div>`;
 }
 
 function loadDealTimelineInline(orderCode, skinId){
 if (!tg || !tg.initData) return;
-const el = document.getElementById('dealTimeline-' + skinId);
-if (!el) return;
 fetch(API_BASE + '/api/deals/' + skinId + '/history?init_data=' + encodeURIComponent(tg.initData))
 .then(r => r.json())
 .then(data => {
-const history = data.history || [];
-if (!history.length){
-el.innerHTML = '';
-return;
-}
-el.innerHTML = (data.order_code ? `<div style="font-family:'JetBrains Mono', monospace; margin-bottom:4px;">${data.order_code}</div>` : '') + history.map(h => {
-const t = h.created_at ? new Date(h.created_at).toLocaleString(currentLang === 'uz' ? 'uz-UZ' : (currentLang === 'en' ? 'en-US' : 'ru-RU'), { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
-const label = getOrderStatusLabel(h.status);
-return `<div style="display:flex; justify-content:space-between; gap:8px; padding:2px 0;"><span>✓ ${label}</span><span>${t}</span></div>`;
-}).join('');
+dealHistoryCache[skinId] = data.history || [];
+const deal = lastDeals.find(d => d.id === skinId);
+const el = document.getElementById('dealProgress-' + skinId);
+if (deal && el) el.innerHTML = dealProgressHtml(deal);
 })
-.catch(() => {
-el.innerHTML = '';
-});
+.catch(() => {});
 }
 
 let lastDeals = [];

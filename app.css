@@ -2587,3 +2587,83 @@ font-size:13px;
 font-weight:600;
 padding:9px 18px;
 }
+
+/* ---------- прогресс сделки ---------- */
+.deal-progress{
+display:flex;
+gap:4px;
+margin:10px 0 6px;
+}
+.deal-progress-seg{
+flex:1;
+height:4px;
+border-radius:2px;
+background:rgba(255,255,255,0.08);
+}
+.deal-progress-seg.done{ background:var(--red); }
+.deal-progress-seg.current{ background:linear-gradient(90deg, var(--red), rgba(168,85,247,0.25)); animation:dstep-pulse 1.6s ease-in-out infinite; }
+.deal-progress-seg.failed{ background:#d65c5c; }
+.deal-step-summary{
+display:flex;
+justify-content:space-between;
+gap:8px;
+font-family:'Inter', sans-serif;
+font-size:12px;
+font-weight:600;
+color:var(--silver);
+}
+.deal-step-summary .deal-step-count{ color:var(--muted); font-weight:500; font-size:11px; white-space:nowrap; }
+.deal-step-summary.failed{ color:#e07a7a; }
+.deal-hint{
+font-family:'Inter', sans-serif;
+font-size:11px;
+line-height:1.4;
+color:var(--muted);
+margin-top:4px;
+}
+body.theme-light .deal-progress-seg{ background:rgba(0,0,0,0.08); }
+
+.dstep-list{ position:relative; padding:4px 0; }
+.dstep{
+position:relative;
+display:flex;
+gap:12px;
+padding-bottom:16px;
+}
+.dstep:last-child{ padding-bottom:0; }
+.dstep::before{
+content:'';
+position:absolute;
+left:9px;
+top:22px;
+bottom:2px;
+width:2px;
+background:rgba(255,255,255,0.08);
+}
+.dstep:last-child::before{ display:none; }
+.dstep.done::before{ background:var(--red); }
+.dstep-dot{
+flex:none;
+width:20px;
+height:20px;
+border-radius:50%;
+border:2px solid rgba(255,255,255,0.15);
+background:transparent;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:10px;
+color:#fff;
+}
+.dstep.done .dstep-dot{ background:var(--red); border-color:var(--red); }
+.dstep.current .dstep-dot{ border-color:var(--red); box-shadow:0 0 0 4px rgba(168,85,247,0.18); animation:dstep-pulse 1.6s ease-in-out infinite; }
+.dstep.current .dstep-dot::after{ content:''; width:8px; height:8px; border-radius:50%; background:var(--red); }
+.dstep.failed .dstep-dot{ background:#d65c5c; border-color:#d65c5c; }
+.dstep-body{ flex:1; min-width:0; }
+.dstep-title{ font-family:'Inter', sans-serif; font-size:13px; color:var(--muted); }
+.dstep.done .dstep-title, .dstep.current .dstep-title{ color:var(--silver); font-weight:600; }
+.dstep.failed .dstep-title{ color:#e07a7a; font-weight:600; }
+.dstep-time{ font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--muted); margin-top:2px; }
+.dstep-hint{ font-family:'Inter', sans-serif; font-size:11px; line-height:1.4; color:var(--muted); margin-top:4px; }
+@keyframes dstep-pulse{ 50%{ opacity:.55; } }
+@media (prefers-reduced-motion: reduce){ .deal-progress-seg.current, .dstep.current .dstep-dot{ animation:none; } }
