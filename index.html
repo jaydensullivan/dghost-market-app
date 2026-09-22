@@ -10313,8 +10313,17 @@ return;
 }
 inventoryStatus.textContent = '';
 inventoryGrid.innerHTML = items.map((item, i) => {
+// Лёгкий рендер (иконка + свечение по редкости) вместо плоской
+// иконки Steam — тот же генератор, что уже собирает картинку для
+// постов в канале, просто без текстовой панели (она тут не нужна,
+// wear/float/паттерн и так показаны текстом ниже). Если рендер не
+// прогрузится (сеть, кэш ещё не заполнился) — onerror откатывает
+// на исходную иконку Steam, картинка не пропадает совсем.
+const renderUrl = item.photo_url
+? `${API_BASE}/api/steam/icon_render?icon=${encodeURIComponent(item.photo_url)}&rarity=${encodeURIComponent(item.rarity || '')}`
+: '';
 const photo = item.photo_url
-? `<img src="${item.photo_url}" alt="">`
+? `<img src="${renderUrl}" alt="" onerror="this.onerror=null;this.src='${item.photo_url}';">`
 : '';
 const wearText = item.wear ? WEAR_LABELS[item.wear] || '' : '';
 const isTradable = item.tradable !== false;
