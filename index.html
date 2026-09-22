@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="stylesheet" href="app.css?v=5">
+<link rel="stylesheet" href="app.css?v=6">
 </head>
 <body>
 
@@ -1082,6 +1082,32 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 </div>
 
+<div class="edit-overlay" id="disputeOverlay">
+<div class="edit-sheet" style="max-height:85vh; overflow-y:auto;">
+<h2 id="disputeTitle">Открыть спор</h2>
+<div class="shop-hint" id="disputeIntro" style="margin-bottom:12px;"></div>
+<div class="edit-field">
+<label id="disputeReasonLabel"></label>
+<textarea id="disputeReason" rows="3" maxlength="1000"></textarea>
+</div>
+<div class="edit-field">
+<label id="disputeTradeLabel"></label>
+<input type="text" id="disputeTradeId" inputmode="numeric" maxlength="30" autocomplete="off">
+<div class="shop-hint" id="disputeTradeHint" style="margin-top:4px;"></div>
+</div>
+<div class="edit-field">
+<label id="disputePhotoLabel"></label>
+<input type="file" id="disputePhotoInput" accept="image/*" style="color:var(--silver);">
+<img id="disputePhotoPreview" alt="" style="display:none; max-width:100%; max-height:180px; margin-top:8px; border-radius:8px;">
+</div>
+<div class="shop-hint" id="disputeStatus" style="min-height:16px; color:#e07a7a;"></div>
+<div class="edit-actions">
+<button type="button" id="disputeCancelBtn" data-i18n="btn_cancel">Закрыть</button>
+<button type="button" id="disputeSubmitBtn" class="save"></button>
+</div>
+</div>
+</div>
+
 <div class="edit-overlay" id="notificationsOverlay">
 <div class="edit-sheet" style="max-height:80vh; overflow-y:auto;">
 <h2 data-i18n="notif_title">Уведомления</h2>
@@ -1461,11 +1487,11 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 
 <script src="app-core.js?v=1"></script>
-<script src="app-i18n.js?v=4"></script>
+<script src="app-i18n.js?v=5"></script>
 <script src="app-giveaway.js?v=1"></script>
 <script src="app-navigation.js?v=4"></script>
-<script src="app-shop.js?v=1"></script>
-<script src="app-deals.js?v=3"></script>
+<script src="app-shop.js?v=2"></script>
+<script src="app-deals.js?v=4"></script>
 <script src="app-catalog.js?v=2"></script>
 <script src="app-cart.js?v=1"></script>
 <script src="app-filters.js?v=3"></script>
@@ -1477,6 +1503,6 @@ transform="rotate(-90 100 100)"></circle>
 <script src="app-admin.js?v=2"></script>
 <script src="app-auctions.js?v=1"></script>
 <script src="app-notifications.js?v=1"></script>
-<script src="app-telegram.js?v=2"></script>
+<script src="app-telegram.js?v=3"></script>
 </body>
 </html>
