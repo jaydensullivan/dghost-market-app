@@ -2667,3 +2667,73 @@ color:#fff;
 .dstep-hint{ font-family:'Inter', sans-serif; font-size:11px; line-height:1.4; color:var(--muted); margin-top:4px; }
 @keyframes dstep-pulse{ 50%{ opacity:.55; } }
 @media (prefers-reduced-motion: reduce){ .deal-progress-seg.current, .dstep.current .dstep-dot{ animation:none; } }
+
+/* ---------- центр уведомлений ---------- */
+.notif-bell{
+position:relative;
+background:var(--red-dim);
+padding:0;
+cursor:pointer;
+display:flex;
+align-items:center;
+justify-content:center;
+color:var(--silver);
+overflow:visible;
+}
+.notif-badge{
+position:absolute;
+top:-3px;
+right:-3px;
+min-width:18px;
+height:18px;
+padding:0 5px;
+border-radius:9px;
+background:#e0555a;
+color:#fff;
+font-family:'Inter', sans-serif;
+font-size:10px;
+font-weight:700;
+line-height:18px;
+text-align:center;
+box-shadow:0 0 0 2px #0a0708;
+}
+.notif-item{
+display:flex;
+gap:10px;
+padding:11px 4px;
+border-bottom:1px solid var(--red-dim);
+}
+.notif-item:last-child{ border-bottom:none; }
+.notif-item.clickable{ cursor:pointer; }
+.notif-item.unread{ background:rgba(168,85,247,0.07); border-radius:8px; }
+.notif-icon{
+flex:none;
+width:32px;
+height:32px;
+border-radius:50%;
+background:rgba(255,255,255,0.05);
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:15px;
+}
+.notif-body{ flex:1; min-width:0; }
+.notif-text{
+font-family:'Inter', sans-serif;
+font-size:13px;
+line-height:1.4;
+color:var(--silver);
+white-space:pre-line;
+word-break:break-word;
+}
+.notif-meta{
+display:flex;
+justify-content:space-between;
+gap:8px;
+margin-top:4px;
+font-family:'JetBrains Mono', monospace;
+font-size:10px;
+color:var(--muted);
+}
+.notif-open{ color:#c89bff; font-family:'Inter', sans-serif; font-weight:600; }
+.notif-dot{ width:7px; height:7px; border-radius:50%; background:var(--red); flex:none; margin-top:6px; }

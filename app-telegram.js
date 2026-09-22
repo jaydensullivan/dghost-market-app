@@ -69,6 +69,7 @@ quickSellOverlay: 'quickSellCloseBtn',
 topupRejectOverlay: 'topupRejectCloseBtn',
 inspectOverlay: 'inspectCloseBtn',
 inventoryOverlay: 'inventoryCancel',
+notificationsOverlay: 'notificationsCloseBtn',
 };
 
 // Экранные «назад» внутри приложения — сначала более глубокие.
