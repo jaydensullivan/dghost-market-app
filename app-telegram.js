@@ -71,6 +71,8 @@ inspectOverlay: 'inspectCloseBtn',
 inventoryOverlay: 'inventoryCancel',
 notificationsOverlay: 'notificationsCloseBtn',
 disputeOverlay: 'disputeCancelBtn',
+sellerProfileOverlay: 'sellerProfileCloseBtn',
+reviewOverlay: 'reviewCancelBtn',
 };
 
 // Экранные «назад» внутри приложения — сначала более глубокие.

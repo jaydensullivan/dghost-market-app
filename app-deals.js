@@ -146,6 +146,9 @@ actionHtml += `<button class="deal-action secondary" data-inspect-skin="${deal.i
 } else {
 if (deal.confirmed_at){
 statusHtml = `<div class="deal-status done">${dict.status_confirmed}</div>`;
+actionHtml = deal.my_review
+? `<div class="deal-my-review">${dict.rv_yours}: ${'★'.repeat(deal.my_review.rating)}${'☆'.repeat(5 - deal.my_review.rating)}</div>`
+: `<button class="deal-action" data-rate-seller="${deal.id}" type="button">${dict.btn_rate_seller}</button>`;
 } else if (deal.disputed_at){
 statusHtml = `<div class="deal-status pending" style="color:#e0555a;">${dict.status_disputed}</div>`;
 actionHtml = `<button class="deal-action secondary" data-add-evidence="${deal.id}" type="button">${dict.btn_add_evidence}</button>`;
@@ -360,6 +363,11 @@ const sentBtn = e.target.closest('[data-mark-sent]');
 const receivedBtn = e.target.closest('[data-mark-received]');
 const disputedBtn = e.target.closest('[data-mark-disputed]');
 const evidenceBtn = e.target.closest('[data-add-evidence]');
+const rateBtn = e.target.closest('[data-rate-seller]');
+if (rateBtn){
+openReviewForm(Number(rateBtn.dataset.rateSeller));
+return;
+}
 if (evidenceBtn){
 openDisputeForm(Number(evidenceBtn.dataset.addEvidence), 'add');
 return;

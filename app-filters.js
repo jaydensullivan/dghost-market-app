@@ -1110,9 +1110,16 @@ loadPriceHistoryChart(skin.title);
 const sellerStatsBox = document.getElementById('sellerStatsBox');
 if (skin.seller_completed_trades !== undefined && skin.seller_id !== currentUserId){
 const statsDict = I18N[currentLang] || I18N.ru;
-sellerStatsBox.textContent = statsDict.seller_stats_line
+const rating = skin.seller_rating_avg
+? ` · ⭐ ${skin.seller_rating_avg} (${skin.seller_rating_count})` : '';
+// Строка продавца кликабельна — открывает его публичный профиль.
+sellerStatsBox.innerHTML = `<button type="button" class="seller-line" data-seller-profile="${skin.seller_id}">
+<span>${escapeHtml(statsDict.seller_line
+.replace('{rating}', rating)
 .replace('{trades}', skin.seller_completed_trades)
-.replace('{disputes}', skin.seller_disputes ?? 0);
+.replace('{disputes}', skin.seller_disputes ?? 0))}</span>
+<span class="seller-line-open">${statsDict.seller_open}</span>
+</button>`;
 sellerStatsBox.style.display = '';
 } else {
 sellerStatsBox.style.display = 'none';

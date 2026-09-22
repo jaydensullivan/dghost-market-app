@@ -54,6 +54,9 @@ let pendingBuySkin = null;
 const WEAR_LABELS = { FN: 'FN', MW: 'MW', FT: 'FT', WW: 'WW', BS: 'BS' };
 
 const ERROR_MESSAGES = {
+bad_rating: 'Выбери оценку от 1 до 5.',
+review_too_early: 'Оставить отзыв можно после подтверждения получения предмета.',
+already_reviewed: 'Ты уже оставил отзыв по этой сделке.',
 bad_photo: 'Не удалось прочитать фото — попробуй другое.',
 evidence_empty: 'Добавь описание, Trade ID или скриншот.',
 evidence_limit: 'Ты уже отправил максимум доказательств по этому спору. Админ свяжется с тобой в боте.',
