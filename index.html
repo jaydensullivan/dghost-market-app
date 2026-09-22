@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="stylesheet" href="app.css?v=12">
+<link rel="stylesheet" href="app.css?v=13">
 </head>
 <body>
 
@@ -436,7 +436,9 @@ transform="rotate(-90 100 100)"></circle>
 <span data-i18n="btn_copy">Скопировать</span>
 </button>
 </div>
-<div class="shop-hint" style="margin-top:10px;"><span data-i18n="label_invited">Приглашено:</span> <span id="referralInvitedCount">—</span></div>
+<button type="button" id="referralShareBtn" class="steam-link-btn" style="margin-top:10px;" data-i18n="rd_share">Поделиться ссылкой</button>
+<div class="shop-hint" style="display:none;"><span data-i18n="label_invited">Приглашено:</span> <span id="referralInvitedCount">—</span></div>
+<div id="referralDashboard" style="margin-top:12px;"></div>
 <div class="admin-commission-box" style="margin-top:12px;">
 <div class="admin-commission-label" data-i18n="referral_wallet_label">Реферальный кошелёк</div>
 <div class="admin-commission-value" id="referralWalletValue">—</div>
@@ -1557,7 +1559,7 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 
 <script src="app-core.js?v=1"></script>
-<script src="app-i18n.js?v=11"></script>
+<script src="app-i18n.js?v=12"></script>
 <script src="app-giveaway.js?v=1"></script>
 <script src="app-navigation.js?v=4"></script>
 <script src="app-shop.js?v=3"></script>
@@ -1568,7 +1570,7 @@ transform="rotate(-90 100 100)"></circle>
 <script src="app-steam.js?v=1"></script>
 <script src="app-topup.js?v=1"></script>
 <script src="app-history.js?v=4"></script>
-<script src="app-referral.js?v=1"></script>
+<script src="app-referral.js?v=2"></script>
 <script src="app-withdraw.js?v=3"></script>
 <script src="app-admin.js?v=2"></script>
 <script src="app-auctions.js?v=3"></script>

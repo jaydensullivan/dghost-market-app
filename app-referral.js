@@ -13,6 +13,72 @@ const referralClaimStatus = document.getElementById('referralClaimStatus');
 
 let referralLinkRaw = '';
 
+// ---------- дашборд рефералов ----------
+// Друзья показываются без имён — «Друг №N», как и везде на площадке.
+let referralFriendsExpanded = false;
+let lastReferralDashboard = null;
+
+function renderReferralDashboard(d){
+lastReferralDashboard = d;
+const dict = I18N[currentLang] || I18N.ru;
+const box = document.getElementById('referralDashboard');
+const locale = currentLang === 'uz' ? 'uz-UZ' : (currentLang === 'en' ? 'en-US' : 'ru-RU');
+const conv = d.invited ? Math.round(d.active / d.invited * 100) : 0;
+
+const grid = `<div class="sp-grid">
+<div class="sp-cell"><div class="sp-val">${d.invited}</div><div class="sp-sub">${dict.rd_invited}${d.new_30d ? ` · <span class="rd-up">${dict.rd_new.replace('{n}', d.new_30d)}</span>` : ''}</div></div>
+<div class="sp-cell"><div class="sp-val">${d.active}</div><div class="sp-sub">${dict.rd_active}</div></div>
+<div class="sp-cell"><div class="sp-val rd-money">${formatCoins(d.earned_total)}</div><div class="sp-sub">${dict.rd_earned}</div></div>
+<div class="sp-cell"><div class="sp-val rd-money">${formatCoins(d.earned_30d)}</div><div class="sp-sub">${dict.rd_30d}</div></div>
+</div>`;
+
+if (!d.invited){
+box.innerHTML = grid + `<div class="shop-hint" style="margin-top:10px;">${dict.rd_empty}</div>`;
+return;
+}
+
+const convBar = `<div class="rd-conv">
+<div class="rd-conv-bar"><div style="width:${conv}%;"></div></div>
+<div class="sp-sub">${dict.rd_conv.replace('{p}', conv)}</div>
+</div>`;
+
+const rows = referralFriendsExpanded ? d.friends : d.friends.slice(0, 5);
+const friends = rows.map(f => {
+const date = f.joined_at ? new Date(f.joined_at).toLocaleDateString(locale, { day: 'numeric', month: 'short' }) : '';
+const status = f.purchases ? dict.rd_bought.replace('{n}', f.purchases) : dict.rd_not_bought;
+return `<div class="rd-friend">
+<div class="rd-friend-dot ${f.purchases ? 'on' : ''}"></div>
+<div class="rd-friend-info">
+<div class="rd-friend-name">${dict.rd_friend.replace('{n}', f.n)}</div>
+<div class="sp-sub">${date ? dict.rd_joined.replace('{date}', date) + ' · ' : ''}${status}</div>
+</div>
+${f.earned ? `<div class="rd-friend-earned">+${formatCoins(f.earned)}</div>` : ''}
+</div>`;
+}).join('');
+const more = (!referralFriendsExpanded && d.friends.length > 5)
+? `<button type="button" class="rd-more" id="referralShowAll">${dict.rd_show_all.replace('{n}', d.friends.length)}</button>` : '';
+
+box.innerHTML = grid + convBar
++ `<div class="similar-title" style="margin-top:14px;">${dict.rd_friends}</div>${friends}${more}`
++ `<div class="shop-hint" style="margin-top:8px;">${dict.rd_note}</div>`;
+}
+
+document.getElementById('referralDashboard').addEventListener('click', (e) => {
+if (e.target.closest('#referralShowAll') && lastReferralDashboard){
+referralFriendsExpanded = true;
+renderReferralDashboard(lastReferralDashboard);
+}
+});
+
+// Поделиться — родное окно выбора чата Telegram.
+document.getElementById('referralShareBtn').addEventListener('click', () => {
+if (!referralLinkRaw) return;
+const dict = I18N[currentLang] || I18N.ru;
+const url = 'https://t.me/share/url?url=' + encodeURIComponent(referralLinkRaw) + '&text=' + encodeURIComponent(dict.rd_share_text);
+if (tg && tg.openTelegramLink) tg.openTelegramLink(url);
+else window.open(url, '_blank');
+});
+
 function loadReferralInfo(){
 const dict = I18N[currentLang] || I18N.ru;
 if (!tg || !tg.initData){
@@ -29,6 +95,7 @@ referralInvitedCount.textContent = data.invited_count;
 referralBonusText.textContent = dict.referral_bonus_text(data.bonus_percent);
 referralWalletValue.textContent = `${formatCoins(data.wallet)} / ${formatCoins(data.wallet_cap)}`;
 referralClaimBtn.style.display = data.wallet > 0 ? '' : 'none';
+if (data.dashboard) renderReferralDashboard(data.dashboard);
 })
 .catch(() => {
 referralLinkText.textContent = dict.load_failed;

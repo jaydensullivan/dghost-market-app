@@ -2962,3 +2962,22 @@ font-family:'Inter', sans-serif; font-size:11px; font-weight:600;
 @keyframes au-time-flash{ 0%{ color:#c89bff; transform:scale(1.08); } 100%{ transform:none; } }
 @media (prefers-reduced-motion: reduce){ .auction-card-time.au-time-flash{ animation:none; } }
 .au-snipe-hint{ margin-top:8px; font-size:11px; line-height:1.4; }
+
+/* ---------- дашборд рефералов ---------- */
+.rd-money{ font-size:13px; }
+.rd-up{ color:#4ad880; }
+.rd-conv{ margin-top:10px; }
+.rd-conv-bar{ height:6px; border-radius:3px; background:rgba(255,255,255,0.08); overflow:hidden; margin-bottom:4px; }
+.rd-conv-bar > div{ height:100%; background:linear-gradient(90deg, #7B2CFF, #FF2BD6); border-radius:3px; }
+.rd-friend{ display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--red-dim); }
+.rd-friend:last-of-type{ border-bottom:none; }
+.rd-friend-dot{ width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); flex:none; }
+.rd-friend-dot.on{ background:#4ad880; }
+.rd-friend-info{ flex:1; min-width:0; }
+.rd-friend-name{ font-family:'Inter', sans-serif; font-size:13px; color:var(--silver); }
+.rd-friend-earned{ font-family:'JetBrains Mono', monospace; font-size:12px; color:#4ad880; font-weight:600; }
+.rd-more{
+width:100%; margin-top:6px; padding:8px; border-radius:8px;
+border:1px solid var(--red-dim); background:transparent; color:#c89bff;
+font-family:'Inter', sans-serif; font-size:12px; cursor:pointer;
+}
