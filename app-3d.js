@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 12;
+const APP3D_VERSION = 13;
 
 let threeLoading = null;
 
@@ -452,6 +452,8 @@ uPatternScale: { value: skin.params.pattern_scale || 1 },
 uColorBrightness: { value: skin.params.color_brightness || 1 },
 };
 
+// Ошибку компиляции шейдера WebGL сообщает молча — ловим её и
+// показываем, иначе модель просто исчезает без объяснений.
 object.traverse(node => {
 if (!node.isMesh) return;
 
@@ -465,6 +467,15 @@ if (skin.rough) material.roughnessMap = skin.rough;
 material.onBeforeCompile = (shader) => {
 Object.assign(shader.uniforms, uniforms);
 
+// Своя UV-переменная: в three r152+ общий vUv убрали, у каждой
+// текстуры теперь своя (vMapUv, vRoughnessMapUv…), и ссылка на
+// vUv роняла компиляцию шейдера — меш просто исчезал.
+shader.vertexShader = shader.vertexShader
+.replace('#include <common>', `#include <common>
+varying vec2 vSkinUv;`)
+.replace('#include <begin_vertex>', `#include <begin_vertex>
+vSkinUv = uv;`);
+
 shader.fragmentShader = shader.fragmentShader
 .replace('#include <common>', `#include <common>
 uniform sampler2D uPattern;
@@ -472,19 +483,20 @@ uniform sampler2D uWearMask;
 uniform sampler2D uGrunge;
 uniform float uWearAmount;
 uniform float uPatternScale;
-uniform float uColorBrightness;`)
+uniform float uColorBrightness;
+varying vec2 vSkinUv;`)
 .replace('#include <color_fragment>', `#include <color_fragment>
 {
-vec2 skinUv = vUv * uPatternScale;
+vec2 skinUv = vSkinUv * uPatternScale;
 vec3 pattern = texture2D(uPattern, skinUv).rgb * uColorBrightness;
 
 // Маска износа: чем меньше её значение, тем раньше краска
 // сотрётся в этом месте (грани, выступы).
-float wearMask = texture2D(uWearMask, vUv).r;
+float wearMask = texture2D(uWearMask, vSkinUv).r;
 float painted = smoothstep(uWearAmount - 0.08, uWearAmount + 0.08, wearMask);
 
 // Грязь и царапины — общий слой поверх всего.
-float grunge = texture2D(uGrunge, vUv).r;
+float grunge = texture2D(uGrunge, vSkinUv).r;
 
 vec3 bareMetal = vec3(0.32, 0.31, 0.30);
 vec3 skinColor = mix(bareMetal, pattern, painted);
@@ -583,6 +595,7 @@ renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
 // В three r152+ цвета по умолчанию в линейном пространстве —
 // без этого металл выглядит блёклым. В r128 свойства нет, и
 // присваивание просто игнорируется.
+if (renderer.debug) renderer.debug.checkShaderErrors = true;
 if ('outputColorSpace' in renderer) renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.1;
