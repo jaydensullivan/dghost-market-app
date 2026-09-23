@@ -279,9 +279,13 @@ status.textContent = dict.v3_size.replace('{mb}', (buffer.byteLength / 1048576).
 return buffer;
 })
 .then(buffer => new Promise((resolve, reject) => {
-new THREE.GLTFLoader().parse(buffer, '', resolve, () => {
+new THREE.GLTFLoader().parse(buffer, '', resolve, (loaderError) => {
+// Настоящий текст ошибки от three.js — по нему видно, чего
+// не хватает: неизвестного расширения glTF, текстуры и т.п.
+const real = (loaderError && (loaderError.message || String(loaderError))) || '';
+console.error('3D: GLTFLoader не смог разобрать файл —', loaderError);
 const err = new Error(dict.v3_err_parse);
-err.detail = magicWarning;
+err.detail = [real, magicWarning].filter(Boolean).join(' · ');
 reject(err);
 });
 }))
@@ -373,7 +377,7 @@ setTimeout(() => { status.textContent = ''; }, 2500);
 .catch(err => {
 // Путь показываем рядом с причиной — чаще всего ошибка именно в нём.
 status.innerHTML = `${escapeHtml(err.message || dict.v3_failed)}<br><span style="opacity:.7;">${escapeHtml(modelUrl)}</span>`
-+ (err.detail ? `<br><span style="opacity:.7;">${escapeHtml(err.detail)}</span>` : '');
++ (err.detail ? `<br><span class="v3-detail">${escapeHtml(err.detail)}</span>` : '');
 });
 }
 
