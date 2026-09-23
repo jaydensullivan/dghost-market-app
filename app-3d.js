@@ -264,7 +264,16 @@ const buffer = await response.arrayBuffer();
 // напрямую, без TextDecoder (его нет в части старых WebView).
 const head = new Uint8Array(buffer, 0, Math.min(4, buffer.byteLength));
 const magic = String.fromCharCode.apply(null, head);
-if (magic !== 'glTF') throw new Error(dict.v3_err_parse);
+if (magic !== 'glTF'){
+// Показываем, что реально пришло: размер и начало файла. По ним
+// видно, это HTML-страница, указатель Git LFS или битый экспорт.
+const preview = String.fromCharCode.apply(
+null, new Uint8Array(buffer, 0, Math.min(60, buffer.byteLength))
+).replace(/[^\x20-\x7e]/g, '.');
+const err = new Error(dict.v3_err_parse);
+err.detail = `${(buffer.byteLength / 1024).toFixed(0)} КБ · начало: ${preview}`;
+throw err;
+}
 status.textContent = dict.v3_size.replace('{mb}', (buffer.byteLength / 1048576).toFixed(1));
 return buffer;
 })
@@ -358,7 +367,8 @@ setTimeout(() => { status.textContent = ''; }, 2500);
 })
 .catch(err => {
 // Путь показываем рядом с причиной — чаще всего ошибка именно в нём.
-status.innerHTML = `${escapeHtml(err.message || dict.v3_failed)}<br><span style="opacity:.7;">${escapeHtml(modelUrl)}</span>`;
+status.innerHTML = `${escapeHtml(err.message || dict.v3_failed)}<br><span style="opacity:.7;">${escapeHtml(modelUrl)}</span>`
++ (err.detail ? `<br><span style="opacity:.7;">${escapeHtml(err.detail)}</span>` : '');
 });
 }
 
