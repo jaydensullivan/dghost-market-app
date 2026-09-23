@@ -108,9 +108,19 @@ fi
 
 # Пароль спрашивает сам DepotDownloader — он не показывает его при
 # вводе и не оставляет в истории терминала.
+#
+# -no-mobile: вход подтверждается ПЯТИЗНАЧНЫМ КОДОМ из приложения
+#   Steam Guard, а не кнопкой "подтвердить" в приложении. В
+#   Codespaces соединение со Steam нередко рвётся, и пока идёт
+#   переподключение, сессия подтверждения протухает — именно так
+#   появляется "Failed to poll status with result FileNotFound".
+#   Ввод кода такой проблемы не имеет.
+# -remember-password: после первого успешного входа токен
+#   сохраняется, и следующие запуски идут без пароля и кода.
 dd_run() {
     cd "$TOOLS"
-    dotnet DepotDownloader.dll -app 730 -username "$STEAM_USER" "$@"
+    dotnet DepotDownloader.dll -app 730 -username "$STEAM_USER" \
+        -no-mobile -remember-password "$@"
 }
 
 echo "==> 3/6 Качаю индекс архива (pak01_dir.vpk)"
