@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 9;
+const APP3D_VERSION = 10;
 
 let threeLoading = null;
 
@@ -58,8 +58,10 @@ return Promise.all([
 dynamicImport('three'),
 dynamicImport(THREE_ADDONS + 'loaders/GLTFLoader.js'),
 ]).then(([three, gltf]) => {
-window.THREE = three;
-window.THREE.GLTFLoader = gltf.GLTFLoader;
+// Объект модуля доступен только для чтения — дописать в него
+// GLTFLoader нельзя, присваивание молча роняло всю загрузку.
+// Поэтому копируем экспорты в обычный объект.
+window.THREE = Object.assign({}, three, { GLTFLoader: gltf.GLTFLoader });
 console.log('3D: three.js', three.REVISION);
 return window.THREE;
 });
@@ -87,8 +89,15 @@ return threeLoading;
 // Загрузчик .glb теперь приезжает вместе с библиотекой.
 function loadGltfLoader(){
 return load3DLibrary().then(() => {
-if (!window.THREE || !window.THREE.GLTFLoader){
-throw new Error('GLTFLoader недоступен');
+if (!window.THREE){
+throw new Error('three.js не загрузилась');
+}
+if (!window.THREE.GLTFLoader){
+// Библиотека есть, а загрузчика нет — такое бывает при откате
+// на старую сборку: дотягиваем его отдельным скриптом.
+return loadScript(THREE_LEGACY_GLTF).then(() => {
+if (!window.THREE.GLTFLoader) throw new Error('GLTFLoader недоступен');
+});
 }
 });
 }
