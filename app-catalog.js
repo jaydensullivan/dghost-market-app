@@ -210,9 +210,34 @@ ${weaponType}
 ${sellerTrustBadge}
 <div class="skin-title">${title}</div>
 ${floatLine}
+${stickersHtml(skin.stickers, 'mini')}
 ${priceHtml}
 ${actionBtn}
 </div>`;
+}
+
+// ---------- наклейки ----------
+// Картинки приходят с бэкенда (stickers: [{name, image, wear}]).
+// size: 'mini' — полоска в карточке каталога, 'full' — ряд с
+// названиями в окне покупки и в инвентаре.
+function stickersHtml(stickers, size){
+const list = (stickers || []).filter(st => st && st.image).slice(0, 5);
+if (!list.length) return '';
+const dict = I18N[currentLang] || I18N.ru;
+
+if (size === 'mini'){
+return `<div class="st-strip">${list.map(st => `
+<img class="st-mini" src="${st.image}" alt="" loading="lazy" title="${escapeHtml(st.name || '')}">`).join('')}</div>`;
+}
+
+return `<div class="st-row">${list.map(st => {
+const wear = st.wear ? dict.st_wear.replace('{p}', Math.round(st.wear * 100)) : dict.st_fresh;
+return `<div class="st-item">
+<div class="st-img"><img src="${st.image}" alt="" loading="lazy"></div>
+<div class="st-name">${escapeHtml(st.name || '')}</div>
+<div class="st-wear">${wear}</div>
+</div>`;
+}).join('')}</div>`;
 }
 
 function escapeHtml(str){

@@ -1190,6 +1190,16 @@ buyDetailRow(dict.detail_price, formatCoins(skin.price)),
 
 buyDetailsTable.innerHTML = rows;
 
+const stickersBox = document.getElementById('buyStickers');
+const stickersMarkup = stickersHtml(skin.stickers, 'full');
+if (stickersMarkup){
+stickersBox.innerHTML = `<div class="similar-title">${dict.st_title}</div>${stickersMarkup}`;
+stickersBox.style.display = '';
+} else {
+stickersBox.innerHTML = '';
+stickersBox.style.display = 'none';
+}
+
 // Переключаем набор кнопок: свой лот — управление, чужой — покупка.
 // Админ дополнительно видит "Снять с продажи" и на чужих лотах
 // (принудительная отмена — спам/обман), но не видит "Изменить цену"

@@ -176,9 +176,12 @@ const wearBar = hasFloat
 <div class="inv-item-floatrow"><span>${Number(item.float_value).toFixed(4)}</span>${item.pattern ? `<span>#${escapeHtml(String(item.pattern))}</span>` : ''}</div>`
 : '';
 
-const stickerBadge = item.stickers_count
+// Бейдж «🏷️ N» заменён на сами картинки наклеек (если их отдал
+// инспект-бот); счётчик остаётся запасным вариантом.
+const stickerBadge = (!item.stickers || !item.stickers.length) && item.stickers_count
 ? `<div class="inv-item-stickers">🏷️ ${item.stickers_count}</div>`
 : '';
+const stickerStrip = stickersHtml(item.stickers, 'mini');
 
 const nameClass = item.stattrak ? ' stattrak' : '';
 const stText = item.stattrak ? 'ST™ ' : '';
@@ -189,6 +192,7 @@ return `
 <div class="inv-item-name${nameClass}">${stText}${escapeHtml(item.title)}</div>
 ${wearText ? `<div class="inv-item-wear">${wearText}</div>` : ''}
 ${wearBar}
+${stickerStrip}
 ${!isTradable ? '<div class="inv-item-ban-label">🔒 Трейд-бан</div>' : ''}
 </div>`;
 }).join('');
