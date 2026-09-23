@@ -207,14 +207,26 @@ if [ "$COUNT" -gt "${CHUNK_LIMIT:-20}" ]; then
     exit 1
 fi
 
-echo "==> 5/6 Качаю только эти куски"
-: > "$WORK/filelist-chunks.txt"
-for i in $INDICES; do
-    printf 'regex:^game/csgo/pak01_%03d\\.vpk$\n' "$i" >> "$WORK/filelist-chunks.txt"
-done
-cat "$WORK/filelist-chunks.txt"
+# Скачивает перечисленные куски архива (номера через пробел).
+download_chunks() {
+    : > "$WORK/filelist-chunks.txt"
+    for i in $1; do
+        printf 'regex:^game/csgo/pak01_%03d\\.vpk$\n' "$i" >> "$WORK/filelist-chunks.txt"
+    done
+    cat "$WORK/filelist-chunks.txt"
 
-dd_run -filelist "$WORK/filelist-chunks.txt" -dir "$GAME"
+    dd_run -filelist "$WORK/filelist-chunks.txt" -dir "$GAME"
+}
+
+echo "==> 5/6 Качаю только эти куски"
+
+# Можно добавить куски руками: EXTRA_CHUNKS="409 410" ./extract-ak47.sh
+if [ -n "${EXTRA_CHUNKS:-}" ]; then
+    echo "Добавлены вручную: $EXTRA_CHUNKS"
+    INDICES="$INDICES $EXTRA_CHUNKS"
+fi
+
+download_chunks "$INDICES"
 
 echo "Скачано:"
 du -sh "$GAME"
@@ -229,19 +241,64 @@ if [ -z "$MODEL_PATH" ]; then
 fi
 echo "Модель: $MODEL_PATH"
 
-"$TOOLS/Source2Viewer-CLI" \
-    -i "$VPK" \
-    -o "$OUT" \
-    -d \
-    --gltf_export_format glb \
-    --gltf_export_materials \
-    --gltf_textures_adapt \
-    --vpk_filepath "$MODEL_PATH"
+# Модель ссылается на текстуры и материалы, которые лежат в других
+# кусках архива — по индексу их не видно, они всплывают только при
+# экспорте ("pak01_409.vpk not found"). Номер куска зависит от
+# версии игры, поэтому не зашиваем его в скрипт: ловим из ошибки,
+# докачиваем и повторяем экспорт. До 5 попыток.
+run_export() {
+    "$TOOLS/Source2Viewer-CLI" \
+        -i "$VPK" \
+        -o "$OUT" \
+        -d \
+        --gltf_export_format glb \
+        --gltf_export_materials \
+        --gltf_textures_adapt \
+        --vpk_filepath "$MODEL_PATH" 2>&1 | tee "$WORK/export.log"
+
+    # Код возврата берём у самого экспортёра, а не у tee.
+    return "${PIPESTATUS[0]}"
+}
+
+GOT_CHUNKS=" $INDICES "
+
+for attempt in 1 2 3 4 5; do
+    echo "--- Экспорт, попытка $attempt ---"
+
+    if run_export; then
+        break
+    fi
+
+    # Ищем в логе номера недостающих кусков.
+    # || true — иначе пустой grep при set -e уронит скрипт.
+    MISSING=$(grep -oE 'pak01_[0-9]{3}\.vpk' "$WORK/export.log" \
+        | grep -oE '[0-9]{3}' | sort -un | tr '\n' ' ' || true)
+
+    NEW=""
+    for i in $MISSING; do
+        case "$GOT_CHUNKS" in
+            *" $i "*) ;;
+            *) NEW="$NEW $i" ;;
+        esac
+    done
+
+    if [ -z "$NEW" ]; then
+        echo "❌ Экспорт не удался, и недостающих кусков в логе нет."
+        echo "Последние строки лога:"
+        tail -20 "$WORK/export.log"
+        exit 1
+    fi
+
+    echo "Не хватает кусков:$NEW — докачиваю."
+    download_chunks "$NEW"
+    GOT_CHUNKS="$GOT_CHUNKS$NEW "
+done
 
 echo
 echo "================================================"
 find "$OUT" -name '*.glb' -exec ls -lh {} \;
 echo
 echo "Скопируй .glb в репозиторий (/tmp чистится при перезапуске):"
-echo "  cp \$(find $OUT -name '*.glb' | head -1) /workspaces/dghost-market-app/ak47.glb"
+echo "  mkdir -p /workspaces/dghost-market-app/models"
+echo "  cp \$(find $OUT -name '*.glb' | head -1) /workspaces/dghost-market-app/models/ak47.glb"
 echo "================================================"
