@@ -3096,3 +3096,25 @@ font-family:'Inter', sans-serif; font-size:12px; color:var(--muted);
 }
 .d3-row:last-child{ border-bottom:none; }
 .d3-row b{ font-family:'JetBrains Mono', monospace; color:var(--silver); font-weight:600; text-align:right; word-break:break-word; }
+
+/* ---------- просмотрщик 3D ---------- */
+.viewer3d-sheet{ padding-top:14px; }
+.viewer3d-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+.viewer3d-title{ font-family:'Inter', sans-serif; font-size:15px; font-weight:700; color:var(--silver); }
+.viewer3d-mode{ font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--muted); }
+.viewer3d-stage{
+position:relative;
+width:100%;
+height:52vh;
+border-radius:12px;
+border:1px solid var(--red-dim);
+background:radial-gradient(ellipse at 50% 45%, rgba(123,44,255,0.22), rgba(8,7,13,0) 70%), var(--surface);
+overflow:hidden;
+touch-action:none;
+}
+.viewer3d-stage canvas{ width:100%; height:100%; display:block; }
+.viewer3d-status{
+position:absolute; left:0; right:0; bottom:10px; text-align:center;
+font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted);
+pointer-events:none;
+}
