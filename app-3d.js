@@ -242,14 +242,34 @@ function open3DViewer(modelUrl, title){
 const dict = I18N[currentLang] || I18N.ru;
 const mode = get3DMode() || 'full';
 const status = document.getElementById('viewer3dStatus');
+status.innerHTML = '';
 document.getElementById('viewer3dTitle').textContent = title || dict.v3_title;
 document.getElementById('viewer3dMode').textContent = mode === 'light' ? dict.v3_mode_light : dict.v3_mode_full;
 status.textContent = dict.v3_loading;
 viewer3dOverlay.classList.add('show');
 
+// Сначала качаем файл сами — так видно настоящую причину: нет
+// файла (404), отдаётся HTML вместо модели (неверный путь) или
+// файл битый. GLTFLoader на все эти случаи даёт одну ошибку.
 loadGltfLoader()
-.then(() => new Promise((resolve, reject) => {
-new THREE.GLTFLoader().load(modelUrl, resolve, undefined, reject);
+.catch(() => { throw new Error(dict.v3_err_lib); })
+.then(() => fetch(modelUrl, { cache: 'no-store' }).catch(() => { throw new Error(dict.v3_err_net); }))
+.then(async response => {
+if (response.status === 404) throw new Error(dict.v3_err_404);
+if (!response.ok) throw new Error(dict.v3_err_net + ' (HTTP ' + response.status + ')');
+const type = (response.headers.get('content-type') || '').toLowerCase();
+if (type.includes('text/html')) throw new Error(dict.v3_err_html);
+const buffer = await response.arrayBuffer();
+// Каждый .glb начинается с сигнатуры "glTF" — читаем байты
+// напрямую, без TextDecoder (его нет в части старых WebView).
+const head = new Uint8Array(buffer, 0, Math.min(4, buffer.byteLength));
+const magic = String.fromCharCode.apply(null, head);
+if (magic !== 'glTF') throw new Error(dict.v3_err_parse);
+status.textContent = dict.v3_size.replace('{mb}', (buffer.byteLength / 1048576).toFixed(1));
+return buffer;
+})
+.then(buffer => new Promise((resolve, reject) => {
+new THREE.GLTFLoader().parse(buffer, '', resolve, () => reject(new Error(dict.v3_err_parse)));
 }))
 .then(gltf => {
 dispose3DViewer();
@@ -336,8 +356,9 @@ animate();
 status.textContent = `${dict.v3_triangles}: ${countTriangles(THREE, object).toLocaleString('ru-RU')}`;
 setTimeout(() => { status.textContent = ''; }, 2500);
 })
-.catch(() => {
-status.textContent = dict.v3_failed;
+.catch(err => {
+// Путь показываем рядом с причиной — чаще всего ошибка именно в нём.
+status.innerHTML = `${escapeHtml(err.message || dict.v3_failed)}<br><span style="opacity:.7;">${escapeHtml(modelUrl)}</span>`;
 });
 }
 
