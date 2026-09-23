@@ -159,17 +159,41 @@ if [ ! -s "$WORK/vpk_dir.txt" ]; then
     exit 1
 fi
 
-# Раскраски лежат в weapons/paints/. Берём только текстуры самой
-# раскраски: .vtex_c (картинки) и .vmat_c (описание материала).
-grep -i 'weapons/paints/' "$WORK/vpk_dir.txt" \
-    | grep -i "$FINISH" \
-    | grep -iE '\.(vtex_c|vmat_c)' > "$WORK/skin-hits.txt" || true
+# Где лежат раскраски, зависит от версии игры: в CS:GO это было
+# materials/models/weapons/customization/paints/, в CS2 путь мог
+# поменяться. Поэтому ищем по общему куску пути "paints/", а не по
+# точному каталогу.
+# По умолчанию — раскраски оружия. Для перчаток:
+# PAINTS_FILTER=gloves/paints/ bash extract-skin.sh <имя>
+PAINTS_FILTER="${PAINTS_FILTER:-weapons/paints/}"
+
+grep -i "$PAINTS_FILTER" "$WORK/vpk_dir.txt" > "$WORK/paints-all.txt" || true
+
+if [ ! -s "$WORK/paints-all.txt" ]; then
+    echo "⚠️ В индексе вообще нет путей с '$PAINTS_FILTER'."
+    echo "Вот как выглядят строки индекса (первые 5):"
+    head -5 "$WORK/vpk_dir.txt"
+    echo "А вот строки со словом paint (первые 10):"
+    grep -i 'paint' "$WORK/vpk_dir.txt" | head -10
+    echo "Скинь это в чат — поправлю фильтр."
+    exit 1
+fi
+
+echo "Файлов раскрасок всего: $(wc -l < "$WORK/paints-all.txt")"
+
+# В CS2 раскраска — это композитный материал .vcompmat_c, рядом
+# лежат её текстуры .vtex_c и обычные материалы .vmat_c. Ищем все
+# три вида: раньше фильтр знал только про два последних и поэтому
+# не находил ничего.
+grep -i "$FINISH" "$WORK/paints-all.txt" \
+    | grep -iE '\.(vcompmat_c|vtex_c|vmat_c)' > "$WORK/skin-hits.txt" || true
 
 if [ ! -s "$WORK/skin-hits.txt" ]; then
-    echo "⚠️ Ничего не нашлось по '$FINISH'. Похожие раскраски:"
-    grep -i 'weapons/paints/' "$WORK/vpk_dir.txt" \
-        | grep -oiE '[a-z0-9_]*'"${FINISH:0:4}"'[a-z0-9_]*' \
-        | sort -u | head -20
+    echo "⚠️ Ничего не нашлось по '$FINISH'. Доступные раскраски (имена файлов):"
+    grep -oiE '[a-z0-9_]+\.(vcompmat_c|vmat_c|vtex_c)' "$WORK/paints-all.txt" \
+        | sed 's/\.[a-z_]*$//' | sort -u | head -40
+    echo
+    echo "Полный список: grep -i paints/ $WORK/vpk_dir.txt | less"
     echo "Возьми имя из списка и запусти: bash extract-skin.sh <имя>"
     exit 1
 fi
@@ -199,7 +223,7 @@ dd_run -filelist "$WORK/filelist-skin.txt" -dir "$GAME"
 # Каждый найденный файл вынимаем отдельно: текстуры экспортируются
 # в PNG, материалы — как есть.
 while read -r line; do
-    FILE=$(echo "$line" | grep -oiE '[^ ]*weapons/paints/[^ ]*\.(vtex_c|vmat_c)' | head -1 | tr -d '\r')
+    FILE=$(echo "$line" | grep -oiE '[^ ]*paints/[^ ]*\.(vcompmat_c|vtex_c|vmat_c)' | head -1 | tr -d '\r')
     [ -z "$FILE" ] && continue
     echo "  → $FILE"
     "$TOOLS/Source2Viewer-CLI" -i "$VPK" -o "$OUT" -d --vpk_filepath "$FILE" >/dev/null 2>&1 || true
