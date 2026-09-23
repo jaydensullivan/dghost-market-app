@@ -159,79 +159,88 @@ if [ ! -s "$WORK/vpk_dir.txt" ]; then
     exit 1
 fi
 
-# Где лежат раскраски, зависит от версии игры: в CS:GO это было
-# materials/models/weapons/customization/paints/, в CS2 путь мог
-# поменяться. Поэтому ищем по общему куску пути "paints/", а не по
-# точному каталогу.
-# По умолчанию — раскраски оружия. Для перчаток:
-# PAINTS_FILTER=gloves/paints/ bash extract-skin.sh <имя>
-PAINTS_FILTER="${PAINTS_FILTER:-weapons/paints/}"
-
-grep -i "$PAINTS_FILTER" "$WORK/vpk_dir.txt" > "$WORK/paints-all.txt" || true
-
-if [ ! -s "$WORK/paints-all.txt" ]; then
-    echo "⚠️ В индексе вообще нет путей с '$PAINTS_FILTER'."
-    echo "Вот как выглядят строки индекса (первые 5):"
-    head -5 "$WORK/vpk_dir.txt"
-    echo "А вот строки со словом paint (первые 10):"
-    grep -i 'paint' "$WORK/vpk_dir.txt" | head -10
-    echo "Скинь это в чат — поправлю фильтр."
-    exit 1
-fi
-
-echo "Файлов раскрасок всего: $(wc -l < "$WORK/paints-all.txt")"
-
-# В CS2 раскраска — это композитный материал .vcompmat_c, рядом
-# лежат её текстуры .vtex_c и обычные материалы .vmat_c. Ищем все
-# три вида: раньше фильтр знал только про два последних и поэтому
-# не находил ничего.
-grep -i "$FINISH" "$WORK/paints-all.txt" \
-    | grep -iE '\.(vcompmat_c|vtex_c|vmat_c)' > "$WORK/skin-hits.txt" || true
+# Раскраска в CS2 собрана из трёх частей, и лежат они в разных местах:
+#   1) рецепт      weapons/paints/.../<имя>.vcompmat_c — 1-2 КБ текста
+#   2) материал    materials/.../paints/vmats/<имя>.vmat_c — ссылки на текстуры
+#   3) превью      panorama/images/econ/default_generated/...<имя>...vtex_c —
+#      готовая картинка скина, та же, что в инвентаре Steam
+grep -i "$FINISH" "$WORK/vpk_dir.txt" \
+    | grep -iE '\.(vcompmat_c|vmat_c|vtex_c)' > "$WORK/skin-hits.txt" || true
 
 if [ ! -s "$WORK/skin-hits.txt" ]; then
-    echo "⚠️ Ничего не нашлось по '$FINISH'. Доступные раскраски (имена файлов):"
-    grep -oiE '[a-z0-9_]+\.(vcompmat_c|vmat_c|vtex_c)' "$WORK/paints-all.txt" \
-        | sed 's/\.[a-z_]*$//' | sort -u | head -40
-    echo
-    echo "Полный список: grep -i paints/ $WORK/vpk_dir.txt | less"
-    echo "Возьми имя из списка и запусти: bash extract-skin.sh <имя>"
+    echo "⚠️ Ничего не нашлось по '$FINISH'. Доступные раскраски оружия:"
+    grep -i 'weapons/paints/' "$WORK/vpk_dir.txt" \
+        | grep -oiE '[a-z0-9_]+\.vcompmat_c' | sed 's/\.[a-z_]*$//' \
+        | sort -u | head -40
+    echo "Имена в игре не совпадают с магазинными: Redline — это cu_ak47_cobra."
     exit 1
 fi
 
 echo "Найдено файлов: $(wc -l < "$WORK/skin-hits.txt")"
-head -8 "$WORK/skin-hits.txt"
+sed 's/ crc=.*//' "$WORK/skin-hits.txt" | head -10
 
-INDICES=$(grep -oiE 'fnumber=[0-9]+|archive *index[:= ]*[0-9]+' "$WORK/skin-hits.txt" \
-    | grep -oE '[0-9]+$' | sort -un | tr '\n' ' ')
+# Вынимает перечисленные в файле $1 записи индекса: качает нужные
+# куски архива и экспортирует каждый файл.
+extract_hits() {
+    local hits="$1"
 
-if [ -z "$INDICES" ]; then
-    echo "❌ Не удалось понять, в каких кусках лежат файлы."
-    exit 1
+    local indices
+    indices=$(grep -oiE 'fnumber=[0-9]+' "$hits" | grep -oE '[0-9]+$' | sort -un | tr '\n' ' ')
+
+    if [ -z "$indices" ]; then
+        echo "  (не понял, в каких кусках лежат файлы)"
+        return
+    fi
+
+    echo "  Нужные куски: $indices"
+
+    : > "$WORK/filelist-skin.txt"
+    for i in $indices; do
+        printf 'regex:^game/csgo/pak01_%03d\\.vpk$\n' "$i" >> "$WORK/filelist-skin.txt"
+    done
+
+    dd_run -filelist "$WORK/filelist-skin.txt" -dir "$GAME"
+
+    while read -r line; do
+        local file
+        file=$(echo "$line" | grep -oiE '^[^ ]+\.(vcompmat_c|vmat_c|vtex_c)' | head -1 | tr -d '\r')
+        [ -z "$file" ] && continue
+        echo "  → $file"
+        "$TOOLS/Source2Viewer-CLI" -i "$VPK" -o "$OUT" -d --vpk_filepath "$file" >/dev/null 2>&1 || true
+    done < "$hits"
+}
+
+echo "==> 5/5 Качаю куски и вынимаю файлы раскраски"
+extract_hits "$WORK/skin-hits.txt"
+
+# Материал (.vmat) — текстовый: читаем из него пути к текстурам
+# узора, маски износа и нормалей и вынимаем их вторым проходом.
+TEX_PATHS=$(find "$OUT" -name '*.vmat' -exec cat {} \; 2>/dev/null \
+    | grep -oiE '[a-z0-9_/]+\.(vtex|png|tga)' | sed 's/\.[a-z]*$//' | sort -u)
+
+if [ -n "$TEX_PATHS" ]; then
+    echo
+    echo "Материал ссылается на текстуры — вынимаю и их:"
+    : > "$WORK/tex-hits.txt"
+    for t in $TEX_PATHS; do
+        grep -i "$t\.vtex_c" "$WORK/vpk_dir.txt" >> "$WORK/tex-hits.txt" || true
+    done
+    sort -u "$WORK/tex-hits.txt" -o "$WORK/tex-hits.txt"
+    if [ -s "$WORK/tex-hits.txt" ]; then
+        echo "  Текстур найдено: $(wc -l < "$WORK/tex-hits.txt")"
+        extract_hits "$WORK/tex-hits.txt"
+    else
+        echo "  (в индексе их не нашлось)"
+    fi
 fi
-
-echo "Нужные куски: $INDICES"
-
-echo "==> 5/5 Качаю куски и вынимаю текстуры"
-
-: > "$WORK/filelist-skin.txt"
-for i in $INDICES; do
-    printf 'regex:^game/csgo/pak01_%03d\\.vpk$\n' "$i" >> "$WORK/filelist-skin.txt"
-done
-
-dd_run -filelist "$WORK/filelist-skin.txt" -dir "$GAME"
-
-# Каждый найденный файл вынимаем отдельно: текстуры экспортируются
-# в PNG, материалы — как есть.
-while read -r line; do
-    FILE=$(echo "$line" | grep -oiE '[^ ]*paints/[^ ]*\.(vcompmat_c|vtex_c|vmat_c)' | head -1 | tr -d '\r')
-    [ -z "$FILE" ] && continue
-    echo "  → $FILE"
-    "$TOOLS/Source2Viewer-CLI" -i "$VPK" -o "$OUT" -d --vpk_filepath "$FILE" >/dev/null 2>&1 || true
-done < "$WORK/skin-hits.txt"
 
 echo
 echo "================================================"
+echo "Картинки:"
 find "$OUT" -name '*.png' -exec ls -lh {} \; | head -20
+echo
+echo "Текстовые файлы (рецепт и материал):"
+find "$OUT" -name '*.vmat' -o -name '*.vcompmat' | head -10
 echo
 echo "Скопируй нужные PNG в репозиторий (/tmp чистится при перезапуске):"
 echo "  mkdir -p /workspaces/dghost-market-app/models/skins"
