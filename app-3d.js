@@ -246,6 +246,7 @@ status.innerHTML = '';
 document.getElementById('viewer3dTitle').textContent = title || dict.v3_title;
 document.getElementById('viewer3dMode').textContent = mode === 'light' ? dict.v3_mode_light : dict.v3_mode_full;
 status.textContent = dict.v3_loading;
+let magicWarning = null;
 viewer3dOverlay.classList.add('show');
 
 // Сначала качаем файл сами — так видно настоящую причину: нет
@@ -265,20 +266,24 @@ const buffer = await response.arrayBuffer();
 const head = new Uint8Array(buffer, 0, Math.min(4, buffer.byteLength));
 const magic = String.fromCharCode.apply(null, head);
 if (magic !== 'glTF'){
-// Показываем, что реально пришло: размер и начало файла. По ним
-// видно, это HTML-страница, указатель Git LFS или битый экспорт.
+// Не бросаем ошибку сразу: моя проверка может ошибаться (например,
+// файл пришёл сжатым). Просто запоминаем, что увидели, и всё равно
+// отдаём буфер загрузчику — последнее слово за ним.
 const preview = String.fromCharCode.apply(
 null, new Uint8Array(buffer, 0, Math.min(60, buffer.byteLength))
 ).replace(/[^\x20-\x7e]/g, '.');
-const err = new Error(dict.v3_err_parse);
-err.detail = `${(buffer.byteLength / 1024).toFixed(0)} КБ · начало: ${preview}`;
-throw err;
+magicWarning = `${(buffer.byteLength / 1024).toFixed(0)} КБ · начало: ${preview}`;
+console.warn('3D: неожиданное начало файла —', magicWarning);
 }
 status.textContent = dict.v3_size.replace('{mb}', (buffer.byteLength / 1048576).toFixed(1));
 return buffer;
 })
 .then(buffer => new Promise((resolve, reject) => {
-new THREE.GLTFLoader().parse(buffer, '', resolve, () => reject(new Error(dict.v3_err_parse)));
+new THREE.GLTFLoader().parse(buffer, '', resolve, () => {
+const err = new Error(dict.v3_err_parse);
+err.detail = magicWarning;
+reject(err);
+});
 }))
 .then(gltf => {
 dispose3DViewer();
