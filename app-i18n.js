@@ -2560,4 +2560,3 @@ drops[i]++;
 }
 }
 setInterval(drawRain, 60);
-
