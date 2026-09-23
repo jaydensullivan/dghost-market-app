@@ -324,7 +324,21 @@ status.textContent = dict.v3_size.replace('{mb}', (buffer.byteLength / 1048576).
 return buffer;
 })
 .then(buffer => new Promise((resolve, reject) => {
-new THREE.GLTFLoader().parse(buffer, '', resolve, (loaderError) => {
+// WebView в Telegram не пишет "Safari" в User-Agent, поэтому
+// three.js принимает его за Chrome и грузит текстуры через
+// createImageBitmap — а движок Apple на этих картинках падает
+// с "Cannot decode the data in the argument to createImageBitmap".
+// На время разбора прячем эту функцию: библиотека сама
+// переключается на обычную загрузку через <img>.
+const nativeCreateImageBitmap = window.createImageBitmap;
+window.createImageBitmap = undefined;
+
+const restore = () => {
+if (nativeCreateImageBitmap) window.createImageBitmap = nativeCreateImageBitmap;
+};
+
+new THREE.GLTFLoader().parse(buffer, '', (gltf) => { restore(); resolve(gltf); }, (loaderError) => {
+restore();
 // Настоящий текст ошибки от three.js — по нему видно, чего
 // не хватает: неизвестного расширения glTF, текстуры и т.п.
 const real = (loaderError && (loaderError.message || String(loaderError))) || '';
