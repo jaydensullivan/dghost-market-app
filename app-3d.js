@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 10;
+const APP3D_VERSION = 11;
 
 let threeLoading = null;
 
@@ -357,16 +357,42 @@ viewer3d = null;
 // Модель приходит произвольного размера и центра — приводим её к
 // единому масштабу, чтобы камера всегда стояла одинаково.
 function fitObjectToView(THREE, object, camera){
-const box = new THREE.Box3().setFromObject(object);
+// Считаем габариты ТОЛЬКО по мешам: в экспорте CS2 есть пустые
+// узлы и вспомогательные точки далеко от ствола, из-за них общий
+// бокс раздувается и модель получается крошечной в кадре.
+const box = new THREE.Box3();
+let hasMesh = false;
+
+object.traverse(node => {
+if (node.isMesh && node.geometry){
+node.geometry.computeBoundingBox();
+box.expandByObject(node);
+hasMesh = true;
+}
+});
+
+if (!hasMesh) box.setFromObject(object);
+
 const size = box.getSize(new THREE.Vector3());
 const center = box.getCenter(new THREE.Vector3());
 const maxSide = Math.max(size.x, size.y, size.z) || 1;
+
+// Приводим к единому размеру и ставим центр модели в начало координат.
 object.scale.multiplyScalar(2 / maxSide);
-box.setFromObject(object);
-box.getCenter(center);
-object.position.sub(center);
-camera.position.set(0, 0.4, 4);
+object.position.sub(center.multiplyScalar(2 / maxSide));
+
+// Расстояние камеры считаем из угла обзора, чтобы модель занимала
+// кадр целиком, с небольшим запасом по краям.
+const radius = Math.sqrt(3);
+const fov = camera.fov * Math.PI / 180;
+const distance = (radius / Math.sin(fov / 2)) * 0.85;
+camera.position.set(0, 0.35, distance);
 camera.lookAt(0, 0, 0);
+camera.near = distance / 50;
+camera.far = distance * 10;
+camera.updateProjectionMatrix();
+
+return distance;
 }
 
 function countTriangles(THREE, object){
@@ -451,20 +477,40 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(40, canvas.clientWidth / canvas.clientHeight, 0.05, 100);
 const object = gltf.scene;
 scene.add(object);
-fitObjectToView(THREE, object, camera);
+const baseDistance = fitObjectToView(THREE, object, camera);
 
-// Свет по брендбуку: мягкая заливка + фиолетовый ключевой и
-// розовый контровой — тот самый neon glow вокруг предмета.
-scene.add(new THREE.AmbientLight(0xffffff, 0.4));
-const key = new THREE.DirectionalLight(0xA855F7, 2.0);
+// Нейтральный белый свет — чтобы металл читался как металл, а не
+// как розовая пластмасса. Неон по брендбуку идёт сверху, контровым
+// и заполняющим, но приглушённо.
+scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+
+const key = new THREE.DirectionalLight(0xffffff, 2.4);
 key.position.set(3, 4, 5);
 scene.add(key);
-const rim = new THREE.DirectionalLight(0xFF2BD6, 1.4);
-rim.position.set(-4, -1, -3);
-scene.add(rim);
-const fill = new THREE.DirectionalLight(0xffffff, 0.6);
-fill.position.set(0, 2, 6);
-scene.add(fill);
+
+const front = new THREE.DirectionalLight(0xffffff, 1.2);
+front.position.set(0, 1, 6);
+scene.add(front);
+
+const neonKey = new THREE.DirectionalLight(0xA855F7, 0.9);
+neonKey.position.set(-3, 3, 2);
+scene.add(neonKey);
+
+const neonRim = new THREE.DirectionalLight(0xFF2BD6, 0.8);
+neonRim.position.set(-4, -1, -3);
+scene.add(neonRim);
+
+// Блики на металле дают отражения окружения. Если модуль окружения
+// не подгрузится (старый WebView, откат на r128) — просто остаёмся
+// со светом выше.
+if (THREE.PMREMGenerator){
+dynamicImport(THREE_ADDONS + 'environments/RoomEnvironment.js')
+.then(mod => {
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new mod.RoomEnvironment(), 0.04).texture;
+})
+.catch(() => {});
+}
 
 let autoRotate = true;
 let dragging = false, lastX = 0, lastY = 0, pinchStart = 0;
@@ -489,7 +535,7 @@ const dist = Math.hypot(
 e.touches[0].clientX - e.touches[1].clientX,
 e.touches[0].clientY - e.touches[1].clientY
 );
-camera.position.z = Math.min(9, Math.max(1.6, camera.position.z * (pinchStart / dist)));
+camera.position.z = Math.min(baseDistance * 2.2, Math.max(baseDistance * 0.45, camera.position.z * (pinchStart / dist)));
 pinchStart = dist;
 e.preventDefault();
 return;
