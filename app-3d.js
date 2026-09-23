@@ -23,6 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
+const APP3D_VERSION = 9;
 
 let threeLoading = null;
 
@@ -237,6 +238,93 @@ status.textContent = friendlyErrorMessage(err);
 // только при первом открытии просмотрщика.
 // ============================================================
 
+
+// Убирает из .glb все картинки и ссылки на них, оставляя геометрию.
+// Нужно, когда WebKit не может декодировать текстуры: лучше серая
+// модель, чем пустой экран. Работаем прямо с бинарником: заголовок
+// 12 байт, дальше чанки (длина, тип, данные); JSON — первый чанк.
+function stripTexturesFromGlb(buffer){
+const view = new DataView(buffer);
+const jsonLength = view.getUint32(12, true);
+const jsonStart = 20;
+const jsonBytes = new Uint8Array(buffer, jsonStart, jsonLength);
+
+let jsonText = '';
+for (let i = 0; i < jsonBytes.length; i += 8192){
+jsonText += String.fromCharCode.apply(null, jsonBytes.subarray(i, i + 8192));
+}
+jsonText = decodeURIComponent(escape(jsonText));
+
+const json = JSON.parse(jsonText);
+delete json.images;
+delete json.textures;
+delete json.samplers;
+
+(json.materials || []).forEach(m => {
+delete m.normalTexture;
+delete m.occlusionTexture;
+delete m.emissiveTexture;
+if (m.pbrMetallicRoughness){
+delete m.pbrMetallicRoughness.baseColorTexture;
+delete m.pbrMetallicRoughness.metallicRoughnessTexture;
+}
+delete m.extensions;
+});
+delete json.extensionsUsed;
+delete json.extensionsRequired;
+
+// Собираем новый JSON-чанк (длина кратна 4, добивается пробелами).
+let newJson = JSON.stringify(json);
+while (newJson.length % 4 !== 0) newJson += ' ';
+const newJsonBytes = new Uint8Array(newJson.length);
+for (let i = 0; i < newJson.length; i++) newJsonBytes[i] = newJson.charCodeAt(i) & 0xff;
+
+// Бинарный чанк (вершины) переносим как есть.
+const binStart = jsonStart + jsonLength;
+const binLength = binStart < buffer.byteLength ? view.getUint32(binStart, true) : 0;
+const binBytes = binLength
+? new Uint8Array(buffer, binStart + 8, binLength)
+: new Uint8Array(0);
+
+const total = 12 + 8 + newJsonBytes.length + (binLength ? 8 + binLength : 0);
+const out = new ArrayBuffer(total);
+const outView = new DataView(out);
+const outBytes = new Uint8Array(out);
+
+outView.setUint32(0, 0x46546C67, true);  // "glTF"
+outView.setUint32(4, 2, true);
+outView.setUint32(8, total, true);
+outView.setUint32(12, newJsonBytes.length, true);
+outView.setUint32(16, 0x4E4F534A, true); // "JSON"
+outBytes.set(newJsonBytes, 20);
+
+if (binLength){
+const o = 20 + newJsonBytes.length;
+outView.setUint32(o, binLength, true);
+outView.setUint32(o + 4, 0x004E4942, true); // "BIN"
+outBytes.set(binBytes, o + 8);
+}
+
+return out;
+}
+
+// Разбор .glb с временно спрятанным createImageBitmap: WebView в
+// Telegram не пишет "Safari" в User-Agent, three.js принимает его за
+// Chrome и грузит текстуры через createImageBitmap, а движок Apple
+// на них падает.
+function parseGlb(buffer){
+return new Promise((resolve, reject) => {
+const native = window.createImageBitmap;
+window.createImageBitmap = undefined;
+const restore = () => { if (native) window.createImageBitmap = native; };
+new THREE.GLTFLoader().parse(
+buffer, '',
+(gltf) => { restore(); resolve(gltf); },
+(e) => { restore(); reject(e); }
+);
+});
+}
+
 const viewer3dOverlay = document.getElementById('viewer3dOverlay');
 let viewer3d = null; // { renderer, scene, camera, object, raf }
 
@@ -289,9 +377,10 @@ const mode = get3DMode() || 'full';
 const status = document.getElementById('viewer3dStatus');
 status.innerHTML = '';
 document.getElementById('viewer3dTitle').textContent = title || dict.v3_title;
-document.getElementById('viewer3dMode').textContent = mode === 'light' ? dict.v3_mode_light : dict.v3_mode_full;
+document.getElementById('viewer3dMode').textContent = (mode === 'light' ? dict.v3_mode_light : dict.v3_mode_full) + ' · v' + APP3D_VERSION;
 status.textContent = dict.v3_loading;
 let magicWarning = null;
+let texturesDropped = false;
 viewer3dOverlay.classList.add('show');
 
 // Сначала качаем файл сами — так видно настоящую причину: нет
@@ -323,29 +412,14 @@ console.warn('3D: неожиданное начало файла —', magicWarn
 status.textContent = dict.v3_size.replace('{mb}', (buffer.byteLength / 1048576).toFixed(1));
 return buffer;
 })
-.then(buffer => new Promise((resolve, reject) => {
-// WebView в Telegram не пишет "Safari" в User-Agent, поэтому
-// three.js принимает его за Chrome и грузит текстуры через
-// createImageBitmap — а движок Apple на этих картинках падает
-// с "Cannot decode the data in the argument to createImageBitmap".
-// На время разбора прячем эту функцию: библиотека сама
-// переключается на обычную загрузку через <img>.
-const nativeCreateImageBitmap = window.createImageBitmap;
-window.createImageBitmap = undefined;
-
-const restore = () => {
-if (nativeCreateImageBitmap) window.createImageBitmap = nativeCreateImageBitmap;
-};
-
-new THREE.GLTFLoader().parse(buffer, '', (gltf) => { restore(); resolve(gltf); }, (loaderError) => {
-restore();
-// Настоящий текст ошибки от three.js — по нему видно, чего
-// не хватает: неизвестного расширения glTF, текстуры и т.п.
-const real = (loaderError && (loaderError.message || String(loaderError))) || '';
-console.error('3D: GLTFLoader не смог разобрать файл —', loaderError);
-const err = new Error(dict.v3_err_parse);
-err.detail = [real, magicWarning].filter(Boolean).join(' · ');
-reject(err);
+.then(buffer => parseGlb(buffer).catch(err => {
+// Текстуры не декодируются — показываем хотя бы геометрию.
+console.warn('3D: разбор с текстурами не удался, пробую без них —', err);
+texturesDropped = true;
+return parseGlb(stripTexturesFromGlb(buffer)).catch(() => {
+const wrapped = new Error(dict.v3_err_parse);
+wrapped.detail = [(err && err.message) || String(err), magicWarning].filter(Boolean).join(' · ');
+throw wrapped;
 });
 }))
 .then(gltf => {
@@ -437,7 +511,8 @@ viewer3d.raf = requestAnimationFrame(animate);
 viewer3d = { renderer, scene, camera, object, raf: 0 };
 animate();
 
-status.textContent = `${dict.v3_triangles}: ${countTriangles(THREE, object).toLocaleString('ru-RU')}`;
+status.textContent = `${dict.v3_triangles}: ${countTriangles(THREE, object).toLocaleString('ru-RU')}`
++ (texturesDropped ? ' · без текстур' : '');
 setTimeout(() => { status.textContent = ''; }, 2500);
 })
 .catch(err => {
