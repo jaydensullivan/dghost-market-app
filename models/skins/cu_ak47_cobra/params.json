@@ -1,0 +1,18 @@
+{
+  "finish": "cu_ak47_cobra",
+  "shader": {
+    "paint_style": 6,
+    "pattern_scale": 1.0,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 1.0,
+    "color_brightness": 1.0
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "rough": "rough.webp",
+    "wear": "wear.webp",
+    "grunge": "grunge.webp"
+  }
+}
