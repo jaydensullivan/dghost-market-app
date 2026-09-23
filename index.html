@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="stylesheet" href="app.css?v=13">
+<link rel="stylesheet" href="app.css?v=14">
 </head>
 <body>
 
@@ -207,9 +207,15 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 </div>
 
+<div class="gw-participants" id="gwParticipants" style="display:none;"></div>
+
 <div class="cta-frame">
 <button class="cta" id="ctaBtn" data-i18n="timer_cta_btn">Участвовать</button>
 </div>
+
+<div class="gw-block" id="gwConditions" style="display:none;"></div>
+
+<div class="gw-block" id="gwWinners" style="display:none;"></div>
 
 <div class="footer-note" data-i18n="timer_footer_note">Кто успел — тот забрал</div>
 
@@ -1261,6 +1267,11 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 
 <div class="edit-field">
+<label for="fConditions" data-i18n="gw_conditions_label">Условия участия (видно всем в мини-аппе)</label>
+<textarea id="fConditions" rows="3" maxlength="1000" placeholder="Подписаться на канал, нажать «Участвовать»"></textarea>
+</div>
+
+<div class="edit-field">
 <label for="fMinutes">Сколько минут осталось (оставь пустым, чтобы не менять)</label>
 <input id="fMinutes" type="number" min="1" placeholder="10">
 </div>
@@ -1559,8 +1570,8 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 
 <script src="app-core.js?v=1"></script>
-<script src="app-i18n.js?v=12"></script>
-<script src="app-giveaway.js?v=1"></script>
+<script src="app-i18n.js?v=13"></script>
+<script src="app-giveaway.js?v=2"></script>
 <script src="app-navigation.js?v=4"></script>
 <script src="app-shop.js?v=3"></script>
 <script src="app-deals.js?v=5"></script>
@@ -1575,7 +1586,7 @@ transform="rotate(-90 100 100)"></circle>
 <script src="app-admin.js?v=2"></script>
 <script src="app-auctions.js?v=3"></script>
 <script src="app-reviews.js?v=1"></script>
-<script src="app-notifications.js?v=1"></script>
+<script src="app-notifications.js?v=2"></script>
 <script src="app-telegram.js?v=5"></script>
 </body>
 </html>

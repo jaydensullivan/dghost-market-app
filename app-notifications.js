@@ -10,7 +10,7 @@
 
 const NOTIF_ICONS = {
 deal: '🤝', trade: '🔄', balance: '💰', referral: '🎁',
-wishlist: '⭐', auction: '🔨', kyc: '🛡️',
+wishlist: '⭐', auction: '🔨', kyc: '🛡️', giveaway: '🎉',
 };
 
 const notifBellBtn = document.getElementById('notifBellBtn');

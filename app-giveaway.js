@@ -11,6 +11,7 @@ const fTitle = document.getElementById('fTitle');
 const fSubtitle = document.getElementById('fSubtitle');
 const fPrize = document.getElementById('fPrize');
 const fMinutes = document.getElementById('fMinutes');
+const fConditions = document.getElementById('fConditions');
 
 function applyGiveawayState(data){
 if (!data) return;
@@ -28,6 +29,11 @@ if (data.prize){
 document.getElementById('prize').innerHTML = COIN_ICON + ' <b>' + data.prize + '</b>';
 fPrize.value = data.prize;
 }
+// Прозрачность розыгрыша: сколько уже участвует и на каких условиях.
+renderGiveawayParticipants(data.participants_count);
+renderGiveawayConditions(data.conditions);
+if (fConditions) fConditions.value = data.conditions || '';
+
 if (data.end_time){
 endTime = data.end_time * 1000;
 totalDuration = Math.max(1, endTime - Date.now());
@@ -85,6 +91,7 @@ title: fTitle.value.trim(),
 subtitle: fSubtitle.value.trim(),
 prize: fPrize.value.trim(),
 minutes: fMinutes.value ? Number(fMinutes.value) : null,
+conditions: fConditions ? fConditions.value.trim() : undefined,
 })
 })
 .then(async r => {
@@ -109,3 +116,77 @@ editSave.disabled = false;
 });
 });
 
+
+
+// ============================================================
+// ПРОЗРАЧНОСТЬ РОЗЫГРЫША: СЧЁТЧИК УЧАСТНИКОВ, УСЛОВИЯ, АРХИВ
+// ============================================================
+
+function renderGiveawayParticipants(count){
+const box = document.getElementById('gwParticipants');
+if (!box) return;
+if (count === undefined || count === null){
+box.style.display = 'none';
+return;
+}
+const dict = I18N[currentLang] || I18N.ru;
+box.textContent = dict.gw_participants.replace('{n}', count);
+box.style.display = '';
+}
+
+function renderGiveawayConditions(text){
+const box = document.getElementById('gwConditions');
+if (!box) return;
+if (!text){
+box.style.display = 'none';
+box.innerHTML = '';
+return;
+}
+const dict = I18N[currentLang] || I18N.ru;
+box.innerHTML = `<div class="gw-block-title">${dict.gw_conditions}</div>
+<div class="gw-conditions-text">${escapeHtml(text)}</div>`;
+box.style.display = '';
+}
+
+function loadGiveawayWinners(){
+const box = document.getElementById('gwWinners');
+if (!box) return;
+const q = (tg && tg.initData) ? '?init_data=' + encodeURIComponent(tg.initData) : '';
+fetch(API_BASE + '/api/giveaway/winners' + q)
+.then(r => r.json())
+.then(data => {
+const dict = I18N[currentLang] || I18N.ru;
+const items = data.items || [];
+if (!items.length){
+box.style.display = 'none';
+return;
+}
+const locale = currentLang === 'uz' ? 'uz-UZ' : (currentLang === 'en' ? 'en-US' : 'ru-RU');
+box.innerHTML = `<div class="gw-block-title">${dict.gw_winners}</div>` + items.map(w => {
+const date = w.ended_at ? new Date(w.ended_at).toLocaleDateString(locale, { day: 'numeric', month: 'short' }) : '';
+const extra = [date, w.participants ? dict.gw_of_participants.replace('{n}', w.participants) : '']
+.filter(Boolean).join(' · ');
+return `<div class="gw-winner${w.is_me ? ' me' : ''}">
+<div class="gw-winner-icon">🏆</div>
+<div class="gw-winner-info">
+<div class="gw-winner-name">${escapeHtml(w.winner)}${w.is_me ? ` <span class="gw-you">${dict.gw_you}</span>` : ''}</div>
+<div class="gw-winner-sub">${escapeHtml(extra)}</div>
+</div>
+<div class="gw-winner-prize">${escapeHtml(w.prize || '')}</div>
+</div>`;
+}).join('');
+box.style.display = '';
+})
+.catch(() => {});
+}
+
+loadGiveawayWinners();
+
+// Счётчик участников обновляем, пока человек смотрит на таймер.
+setInterval(() => {
+if (document.hidden) return;
+fetch(API_BASE + '/api/giveaway')
+.then(r => r.json())
+.then(data => renderGiveawayParticipants(data.participants_count))
+.catch(() => {});
+}, 20000);

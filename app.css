@@ -2981,3 +2981,44 @@ width:100%; margin-top:6px; padding:8px; border-radius:8px;
 border:1px solid var(--red-dim); background:transparent; color:#c89bff;
 font-family:'Inter', sans-serif; font-size:12px; cursor:pointer;
 }
+
+/* ---------- прозрачность розыгрыша ---------- */
+.gw-participants{
+text-align:center;
+margin:6px 0 2px;
+font-family:'Inter', sans-serif;
+font-size:13px;
+color:var(--silver);
+}
+.gw-block{ max-width:420px; margin:18px auto 0; padding:0 4px; text-align:left; }
+.gw-block-title{
+font-family:'JetBrains Mono', monospace;
+font-size:11px;
+letter-spacing:0.08em;
+text-transform:uppercase;
+color:var(--muted);
+margin-bottom:8px;
+}
+.gw-conditions-text{
+padding:11px 13px;
+border-radius:10px;
+border:1px solid var(--red-dim);
+background:rgba(255,255,255,0.03);
+font-family:'Inter', sans-serif;
+font-size:13px;
+line-height:1.45;
+color:var(--silver);
+white-space:pre-line;
+}
+.gw-winner{
+display:flex; align-items:center; gap:10px;
+padding:9px 0; border-bottom:1px solid var(--red-dim);
+}
+.gw-winner:last-child{ border-bottom:none; }
+.gw-winner.me .gw-winner-name{ color:#f5c542; }
+.gw-winner-icon{ font-size:17px; flex:none; }
+.gw-winner-info{ flex:1; min-width:0; }
+.gw-winner-name{ font-family:'Inter', sans-serif; font-size:13px; color:var(--silver); }
+.gw-winner-sub{ font-family:'Inter', sans-serif; font-size:11px; color:var(--muted); margin-top:2px; }
+.gw-you{ color:#f5c542; font-size:11px; }
+.gw-winner-prize{ font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--red); font-weight:600; white-space:nowrap; }
