@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="stylesheet" href="app.css?v=16">
+<link rel="stylesheet" href="app.css?v=17">
 </head>
 <body>
 
@@ -564,6 +564,15 @@ transform="rotate(-90 100 100)"></circle>
 <div id="adminStatsGrid" class="admin-status-grid">
 <div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div>
 </div>
+</div>
+
+<div class="profile-section admin-group" data-group="overview" id="admin3dSection" style="margin-top:10px;">
+<div class="profile-section-title" data-i18n="d3_section">3D-рендер (тест)</div>
+<div class="shop-hint" data-i18n="d3_hint" style="margin-bottom:10px;"></div>
+<div id="d3CanvasWrap" class="d3-canvas-wrap"><canvas id="d3Canvas"></canvas></div>
+<div id="d3Table" class="d3-table"></div>
+<button type="button" id="d3RunBtn" class="steam-link-btn" style="margin-top:10px;" data-i18n="d3_run">Запустить тест</button>
+<div class="edit-status" id="d3Status"></div>
 </div>
 
 <div class="profile-section admin-group" data-group="giveaway" id="adminGiveawaySection" style="display:none;">
@@ -1571,7 +1580,7 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 
 <script src="app-core.js?v=1"></script>
-<script src="app-i18n.js?v=14"></script>
+<script src="app-i18n.js?v=15"></script>
 <script src="app-giveaway.js?v=2"></script>
 <script src="app-navigation.js?v=4"></script>
 <script src="app-shop.js?v=3"></script>
@@ -1588,6 +1597,7 @@ transform="rotate(-90 100 100)"></circle>
 <script src="app-auctions.js?v=3"></script>
 <script src="app-reviews.js?v=1"></script>
 <script src="app-notifications.js?v=2"></script>
+<script src="app-3d.js?v=1"></script>
 <script src="app-telegram.js?v=5"></script>
 </body>
 </html>
