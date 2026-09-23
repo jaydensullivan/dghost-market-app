@@ -246,26 +246,45 @@ echo "Модель: $MODEL_PATH"
 # экспорте ("pak01_409.vpk not found"). Номер куска зависит от
 # версии игры, поэтому не зашиваем его в скрипт: ловим из ошибки,
 # докачиваем и повторяем экспорт. До 5 попыток.
+# $1 — дополнительные флаги экспорта (материалы/текстуры).
 run_export() {
     "$TOOLS/Source2Viewer-CLI" \
         -i "$VPK" \
         -o "$OUT" \
         -d \
         --gltf_export_format glb \
-        --gltf_export_materials \
-        --gltf_textures_adapt \
+        $1 \
         --vpk_filepath "$MODEL_PATH" 2>&1 | tee "$WORK/export.log"
 
     # Код возврата берём у самого экспортёра, а не у tee.
-    return "${PIPESTATUS[0]}"
+    # Source2Viewer иногда завершается с кодом 0, напечатав
+    # исключение, поэтому дополнительно проверяем сам файл.
+    rc="${PIPESTATUS[0]}"
+
+    if [ "$rc" -ne 0 ]; then
+        return "$rc"
+    fi
+
+    if [ -z "$(find "$OUT" -name '*.glb' 2>/dev/null | head -1)" ]; then
+        echo "(файл .glb не появился)"
+        return 1
+    fi
+
+    return 0
 }
+
+# Полный набор — с материалами и текстурами. Если он падает,
+# пробуем голую геометрию: модель без текстур всё равно откроется
+# в просмотрщике, а текстуру скина мы всё равно будем подставлять
+# своим рендером.
+EXPORT_FLAGS="--gltf_export_materials --gltf_textures_adapt"
 
 GOT_CHUNKS=" $INDICES "
 
 for attempt in 1 2 3 4 5; do
     echo "--- Экспорт, попытка $attempt ---"
 
-    if run_export; then
+    if run_export "$EXPORT_FLAGS"; then
         break
     fi
 
@@ -283,9 +302,21 @@ for attempt in 1 2 3 4 5; do
     done
 
     if [ -z "$NEW" ]; then
-        echo "❌ Экспорт не удался, и недостающих кусков в логе нет."
-        echo "Последние строки лога:"
-        tail -20 "$WORK/export.log"
+
+        # Куски все на месте — значит падает сам экспорт. Один раз
+        # пробуем без материалов и текстур.
+        if [ -n "$EXPORT_FLAGS" ]; then
+            echo
+            echo "⚠️ Экспорт с текстурами не удался — пробую без них."
+            EXPORT_FLAGS=""
+            continue
+        fi
+
+        echo "❌ Экспорт не удался и без текстур."
+        echo "--- начало ошибки (по ней понятно, что сломалось) ---"
+        grep -m1 -A6 -iE 'exception|error' "$WORK/export.log" || head -25 "$WORK/export.log"
+        echo "--- конец ---"
+        echo "Полный лог: $WORK/export.log"
         exit 1
     fi
 
@@ -294,9 +325,20 @@ for attempt in 1 2 3 4 5; do
     GOT_CHUNKS="$GOT_CHUNKS$NEW "
 done
 
+GLB=$(find "$OUT" -name '*.glb' 2>/dev/null | head -1)
+
+if [ -z "$GLB" ]; then
+    echo "❌ .glb так и не появился. Полный лог: $WORK/export.log"
+    exit 1
+fi
+
+if [ -z "$EXPORT_FLAGS" ]; then
+    echo "⚠️ Модель без материалов и текстур — геометрия есть, вид серый."
+fi
+
 echo
 echo "================================================"
-find "$OUT" -name '*.glb' -exec ls -lh {} \;
+ls -lh "$GLB"
 echo
 echo "Скопируй .glb в репозиторий (/tmp чистится при перезапуске):"
 echo "  mkdir -p /workspaces/dghost-market-app/models"
