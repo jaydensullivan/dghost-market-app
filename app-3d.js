@@ -12,22 +12,84 @@
 // пользователям он ничего не стоит.
 // ============================================================
 
-const THREE_CDN = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
+// three.js грузим современной версии (модулем): r128 не понимает
+// часть возможностей glTF, которые использует экспорт из CS2 —
+// файл при этом валидный и в сторонних просмотрщиках открывается.
+// Если модули почему-то не заведутся (старый WebView), откатываемся
+// на классическую сборку r128 — лучше хоть что-то, чем ничего.
+const THREE_VERSION = '0.160.0';
+const THREE_ESM = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/build/three.module.js`;
+const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/examples/jsm/`;
+const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
+const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
 
 let threeLoading = null;
 
+function loadScript(src){
+return new Promise((resolve, reject) => {
+const tag = document.createElement('script');
+tag.src = src;
+tag.onload = resolve;
+tag.onerror = () => reject(new Error('не загрузился ' + src));
+document.head.appendChild(tag);
+});
+}
+
+// import() из обычного скрипта — через new Function, чтобы старые
+// парсеры не спотыкались на синтаксисе.
+const dynamicImport = new Function('u', 'return import(u);');
+
+function loadThreeModern(){
+// Карта импортов нужна, потому что GLTFLoader внутри пишет
+// import ... from 'three' — без неё браузер не поймёт, откуда брать.
+if (!document.getElementById('threeImportMap')){
+const map = document.createElement('script');
+map.type = 'importmap';
+map.id = 'threeImportMap';
+map.textContent = JSON.stringify({
+imports: { 'three': THREE_ESM, 'three/addons/': THREE_ADDONS }
+});
+document.head.appendChild(map);
+}
+
+return Promise.all([
+dynamicImport('three'),
+dynamicImport(THREE_ADDONS + 'loaders/GLTFLoader.js'),
+]).then(([three, gltf]) => {
+window.THREE = three;
+window.THREE.GLTFLoader = gltf.GLTFLoader;
+console.log('3D: three.js', three.REVISION);
+return window.THREE;
+});
+}
+
+function loadThreeLegacy(){
+return loadScript(THREE_LEGACY)
+.then(() => loadScript(THREE_LEGACY_GLTF))
+.then(() => {
+console.warn('3D: откат на three.js r128');
+return window.THREE;
+});
+}
+
 function load3DLibrary(){
 if (window.THREE) return Promise.resolve(window.THREE);
 if (threeLoading) return threeLoading;
-threeLoading = new Promise((resolve, reject) => {
-const tag = document.createElement('script');
-tag.src = THREE_CDN;
-tag.onload = () => resolve(window.THREE);
-tag.onerror = () => reject(new Error('three.js не загрузился'));
-document.head.appendChild(tag);
+threeLoading = loadThreeModern().catch(err => {
+console.warn('3D: современная three.js не загрузилась —', err);
+return loadThreeLegacy();
 });
 return threeLoading;
+}
+
+// Загрузчик .glb теперь приезжает вместе с библиотекой.
+function loadGltfLoader(){
+return load3DLibrary().then(() => {
+if (!window.THREE || !window.THREE.GLTFLoader){
+throw new Error('GLTFLoader недоступен');
+}
+});
 }
 
 // Характеристики устройства — без запуска рендера.
@@ -175,23 +237,6 @@ status.textContent = friendlyErrorMessage(err);
 // только при первом открытии просмотрщика.
 // ============================================================
 
-const GLTF_LOADER_CDN = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
-
-let gltfLoaderLoading = null;
-
-function loadGltfLoader(){
-if (window.THREE && window.THREE.GLTFLoader) return Promise.resolve();
-if (gltfLoaderLoading) return gltfLoaderLoading;
-gltfLoaderLoading = load3DLibrary().then(() => new Promise((resolve, reject) => {
-const tag = document.createElement('script');
-tag.src = GLTF_LOADER_CDN;
-tag.onload = resolve;
-tag.onerror = () => reject(new Error('GLTFLoader не загрузился'));
-document.head.appendChild(tag);
-}));
-return gltfLoaderLoading;
-}
-
 const viewer3dOverlay = document.getElementById('viewer3dOverlay');
 let viewer3d = null; // { renderer, scene, camera, object, raf }
 
@@ -297,6 +342,13 @@ canvas, antialias: mode !== 'light', alpha: true,
 });
 renderer.setPixelRatio(mode === 'light' ? 1 : Math.min(window.devicePixelRatio || 1, 2));
 renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+
+// В three r152+ цвета по умолчанию в линейном пространстве —
+// без этого металл выглядит блёклым. В r128 свойства нет, и
+// присваивание просто игнорируется.
+if ('outputColorSpace' in renderer) renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(40, canvas.clientWidth / canvas.clientHeight, 0.05, 100);
