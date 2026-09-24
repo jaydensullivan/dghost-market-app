@@ -67,6 +67,37 @@ commit_if_changed() {
 cd "$REPO"
 
 # ============================================================
+# 0. ПОДГОТОВКА: ИНСТРУМЕНТЫ И ИНДЕКС АРХИВА
+#
+# /tmp очищается при перезапуске Codespace, поэтому перед работой
+# проверяем, на месте ли распаковщик и индекс. Если нет — запускаем
+# extract-ak47.sh, он ставит инструменты и качает индекс (~7 МБ).
+# Заодно соберётся модель ствола, которая всё равно нужна.
+# ============================================================
+
+if [ ! -x "$TOOLS/Source2Viewer-CLI" ] || [ ! -f "$GAME/pak01_dir.vpk" ]; then
+
+    log "Готовлю инструменты и индекс архива (после перезапуска Codespace)"
+
+    WEAPON="$WEAPON" bash extract-ak47.sh 2>&1 | tail -5
+
+    if [ ! -f "$GAME/pak01_dir.vpk" ]; then
+        echo "❌ Индекс архива так и не скачался. Запусти вручную:"
+        echo "   WEAPON=$WEAPON bash extract-ak47.sh"
+        exit 1
+    fi
+
+    # Модель сразу кладём в репозиторий, раз уж она собралась.
+    GLB=$(find "$WORK/export" -name '*.glb' 2>/dev/null | head -1)
+
+    if [ -n "$GLB" ] && [ ! -f "$REPO/models/$WEAPON.glb" ]; then
+        mkdir -p "$REPO/models"
+        cp "$GLB" "$REPO/models/$WEAPON.glb"
+        echo "   модель сохранена: $(du -h "$REPO/models/$WEAPON.glb" | cut -f1)"
+    fi
+fi
+
+# ============================================================
 # 1. ОПИСАНИЕ ПРЕДМЕТОВ — ОТТУДА БЕРЁМ РЕДКОСТЬ
 # ============================================================
 
@@ -80,10 +111,17 @@ if [ ! -s "$ITEMS" ]; then
         "$TOOLS/Source2Viewer-CLI" -i "$GAME/pak01_dir.vpk" --vpk_dir > "$WORK/vpk_dir.txt" 2>/dev/null
     fi
 
+    if [ ! -s "$WORK/vpk_dir.txt" ]; then
+        echo "❌ Не удалось прочитать индекс архива."
+        exit 1
+    fi
+
     ITEM_PATH=$(grep -oiE '[^ ]*items_game\.txt' "$WORK/vpk_dir.txt" | head -1 | tr -d '\r')
 
     if [ -z "$ITEM_PATH" ]; then
-        echo "❌ items_game.txt не нашёлся в индексе."
+        echo "⚠️ items_game.txt не нашёлся в индексе. Похожие файлы:"
+        grep -iE 'items_game|scripts/items' "$WORK/vpk_dir.txt" | sed 's/ crc=.*//' | head -10
+        echo "Пришли этот список — подстрою поиск."
         exit 1
     fi
 
