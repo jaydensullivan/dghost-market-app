@@ -1,0 +1,10 @@
+{
+  "weapon": "ak47",
+  "textures": {
+    "masks": "masks.webp",
+    "color": "color.webp",
+    "rough": "rough.webp",
+    "ao": "ao.webp",
+    "surface": "surface.webp"
+  }
+}
