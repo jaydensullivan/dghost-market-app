@@ -281,7 +281,12 @@ EXPORT_FLAGS="--gltf_export_materials --gltf_textures_adapt"
 
 GOT_CHUNKS=" $INDICES "
 
-for attempt in 1 2 3 4 5; do
+# FORCE_TEXTURES=1 — не откатываться на экспорт без текстур, а
+# показать настоящую ошибку. Нужен, когда текстуры обязательны:
+# без них в 3D нет ни маски покраски, ни собственного цвета ствола.
+FORCE_TEXTURES="${FORCE_TEXTURES:-0}"
+
+for attempt in 1 2 3 4 5 6 7 8; do
     echo "--- Экспорт, попытка $attempt ---"
 
     if run_export "$EXPORT_FLAGS"; then
@@ -290,7 +295,7 @@ for attempt in 1 2 3 4 5; do
 
     # Ищем в логе номера недостающих кусков.
     # || true — иначе пустой grep при set -e уронит скрипт.
-    MISSING=$(grep -oE 'pak01_[0-9]{3}\.vpk' "$WORK/export.log" \
+    MISSING=$(grep -oE 'pak01_[0-9]{3}(\.vpk)?' "$WORK/export.log" \
         | grep -oE '[0-9]{3}' | sort -un | tr '\n' ' ' || true)
 
     NEW=""
@@ -305,9 +310,10 @@ for attempt in 1 2 3 4 5; do
 
         # Куски все на месте — значит падает сам экспорт. Один раз
         # пробуем без материалов и текстур.
-        if [ -n "$EXPORT_FLAGS" ]; then
+        if [ -n "$EXPORT_FLAGS" ] && [ "$FORCE_TEXTURES" != "1" ]; then
             echo
             echo "⚠️ Экспорт с текстурами не удался — пробую без них."
+            echo "   (запусти с FORCE_TEXTURES=1, чтобы увидеть причину)"
             EXPORT_FLAGS=""
             continue
         fi
