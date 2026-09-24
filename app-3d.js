@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 13;
+const APP3D_VERSION = 14;
 
 let threeLoading = null;
 
@@ -420,7 +420,10 @@ return Math.round(tris);
 // Battle-Scarred — ровно как в CS2.
 // ============================================================
 
-function loadSkinTexture(THREE, url){
+// isColor=true — текстура цвета (sRGB), иначе это данные: маски,
+// шероховатость, затенение. Раньше маски грузились как цвет, и
+// из-за этого по стволу шли белёсые разводы.
+function loadSkinTexture(THREE, url, isColor){
 return new Promise((resolve) => {
 // В WebView Telegram createImageBitmap ломается на части картинок —
 // прячем его и здесь (см. parseGlb).
@@ -430,7 +433,9 @@ new THREE.TextureLoader().load(
 url,
 (tex) => {
 if (native) window.createImageBitmap = native;
-if ('colorSpace' in tex) tex.colorSpace = THREE.SRGBColorSpace;
+if ('colorSpace' in tex){
+tex.colorSpace = isColor ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+}
 tex.flipY = false; // как в glTF
 tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
 resolve(tex);
@@ -441,28 +446,48 @@ undefined,
 });
 }
 
+
+// Базовые текстуры самого ствола: родной цвет, маска покраски,
+// шероховатость, затенение. Без маски узор ложился на всю модель
+// целиком, включая детали, которые в игре краской не покрываются.
+function loadWeaponPack(THREE, dir){
+const base = dir.replace(/\/+$/, '') + '/';
+return Promise.all([
+loadSkinTexture(THREE, base + 'color.webp', true),
+loadSkinTexture(THREE, base + 'masks.webp', false),
+loadSkinTexture(THREE, base + 'rough.webp', false),
+loadSkinTexture(THREE, base + 'ao.webp', false),
+]).then(([color, masks, rough, ao]) => ({ color, masks, rough, ao }));
+}
+
 // wear — float предмета (0 = новый, 1 = полностью убитый).
-function applySkinToModel(THREE, object, skin, wear){
+function applySkinToModel(THREE, object, skin, wear, weapon, maskChannel){
+const channel = { r: 0, g: 1, b: 2 }[String(maskChannel || 'r').toLowerCase()] || 0;
+
 const uniforms = {
 uPattern: { value: skin.pattern },
 uWearMask: { value: skin.wear },
 uGrunge: { value: skin.grunge },
+uBaseColor: { value: weapon ? weapon.color : null },
+uPaintMask: { value: weapon ? weapon.masks : null },
+uAo: { value: weapon ? weapon.ao : null },
 uWearAmount: { value: Math.max(0, Math.min(1, wear || 0)) },
 uPatternScale: { value: skin.params.pattern_scale || 1 },
 uColorBrightness: { value: skin.params.color_brightness || 1 },
+uMaskChannel: { value: channel },
+uHasWeapon: { value: weapon && weapon.color ? 1 : 0 },
 };
 
-// Ошибку компиляции шейдера WebGL сообщает молча — ловим её и
-// показываем, иначе модель просто исчезает без объяснений.
 object.traverse(node => {
 if (!node.isMesh) return;
 
 const material = new THREE.MeshStandardMaterial({
 color: 0xffffff,
-metalness: 0.9,
-roughness: 0.45,
+metalness: 0.85,
+roughness: 0.5,
 });
-if (skin.rough) material.roughnessMap = skin.rough;
+if (weapon && weapon.rough) material.roughnessMap = weapon.rough;
+else if (skin.rough) material.roughnessMap = skin.rough;
 
 material.onBeforeCompile = (shader) => {
 Object.assign(shader.uniforms, uniforms);
@@ -481,28 +506,45 @@ shader.fragmentShader = shader.fragmentShader
 uniform sampler2D uPattern;
 uniform sampler2D uWearMask;
 uniform sampler2D uGrunge;
+uniform sampler2D uBaseColor;
+uniform sampler2D uPaintMask;
+uniform sampler2D uAo;
 uniform float uWearAmount;
 uniform float uPatternScale;
 uniform float uColorBrightness;
+uniform int uMaskChannel;
+uniform int uHasWeapon;
 varying vec2 vSkinUv;`)
 .replace('#include <color_fragment>', `#include <color_fragment>
 {
-vec2 skinUv = vSkinUv * uPatternScale;
-vec3 pattern = texture2D(uPattern, skinUv).rgb * uColorBrightness;
+// Родной вид ствола: то, что видно на неокрашиваемых деталях.
+vec3 base = uHasWeapon == 1 ? texture2D(uBaseColor, vSkinUv).rgb : vec3(0.22);
 
-// Маска износа: чем меньше её значение, тем раньше краска
-// сотрётся в этом месте (грани, выступы).
+// Маска покраски: где краска вообще может лежать. Канал
+// выбирается настройкой — у разных стволов он разный.
+float paintable = 1.0;
+if (uHasWeapon == 1){
+vec4 masks = texture2D(uPaintMask, vSkinUv);
+paintable = uMaskChannel == 1 ? masks.g : (uMaskChannel == 2 ? masks.b : masks.r);
+}
+
+vec3 pattern = texture2D(uPattern, vSkinUv * uPatternScale).rgb * uColorBrightness;
+
+// Потёртость: краска сходит там, где маска износа меньше float.
 float wearMask = texture2D(uWearMask, vSkinUv).r;
-float painted = smoothstep(uWearAmount - 0.08, uWearAmount + 0.08, wearMask);
+float kept = smoothstep(uWearAmount - 0.12, uWearAmount + 0.04, wearMask);
 
-// Грязь и царапины — общий слой поверх всего.
+// Грязь только по окрашенному, и очень мягко.
 float grunge = texture2D(uGrunge, vSkinUv).r;
 
-vec3 bareMetal = vec3(0.32, 0.31, 0.30);
-vec3 skinColor = mix(bareMetal, pattern, painted);
-skinColor *= mix(0.72, 1.0, grunge);
+vec3 painted = pattern * mix(0.88, 1.0, grunge);
+vec3 result = mix(base, painted, paintable * kept);
 
-diffuseColor.rgb = skinColor;
+if (uHasWeapon == 1){
+result *= mix(0.55, 1.0, texture2D(uAo, vSkinUv).r);
+}
+
+diffuseColor.rgb = result;
 }`);
 };
 
@@ -522,17 +564,17 @@ if (!r.ok) throw new Error('нет params.json в ' + base);
 return r.json();
 })
 .then(meta => Promise.all([
-loadSkinTexture(THREE, base + 'pattern.webp'),
-loadSkinTexture(THREE, base + 'wear.webp'),
-loadSkinTexture(THREE, base + 'grunge.webp'),
-loadSkinTexture(THREE, base + 'rough.webp'),
+loadSkinTexture(THREE, base + 'pattern.webp', true),
+loadSkinTexture(THREE, base + 'wear.webp', false),
+loadSkinTexture(THREE, base + 'grunge.webp', false),
+loadSkinTexture(THREE, base + 'rough.webp', false),
 ]).then(([pattern, wear, grunge, rough]) => ({
 params: meta.shader || {},
 pattern, wear, grunge, rough,
 })));
 }
 
-function open3DViewer(modelUrl, title, skinDir, wearValue){
+function open3DViewer(modelUrl, title, skinDir, wearValue, weaponDir, maskChannel){
 const dict = I18N[currentLang] || I18N.ru;
 const mode = get3DMode() || 'full';
 const status = document.getElementById('viewer3dStatus');
@@ -641,10 +683,13 @@ scene.environment = pmrem.fromScene(new mod.RoomEnvironment(), 0.04).texture;
 
 // Раскраска лота, если она указана.
 if (skinDir){
-loadSkinPack(THREE, skinDir)
-.then(skin => {
+Promise.all([
+loadSkinPack(THREE, skinDir),
+weaponDir ? loadWeaponPack(THREE, weaponDir).catch(() => null) : Promise.resolve(null),
+])
+.then(([skin, weapon]) => {
 if (!skin.pattern) throw new Error('не загрузился узор');
-applySkinToModel(THREE, object, skin, wearValue);
+applySkinToModel(THREE, object, skin, wearValue, weapon, maskChannel);
 status.textContent = `${dict.v3_skin_on} · float ${Number(wearValue || 0).toFixed(4)}`;
 setTimeout(() => { status.textContent = ''; }, 3000);
 })
@@ -733,6 +778,8 @@ if (!url) return;
 if (!get3DMode()) document.getElementById('d3Status').textContent = (I18N[currentLang] || I18N.ru).v3_no_mode;
 const skinDir = document.getElementById('d3SkinDir').value.trim();
 const wear = Number(document.getElementById('d3Float').value) || 0;
-open3DViewer(url, null, skinDir || null, wear);
+const weaponDir = document.getElementById('d3WeaponDir').value.trim();
+const maskChannel = document.getElementById('d3MaskChannel').value;
+open3DViewer(url, null, skinDir || null, wear, weaponDir || null, maskChannel);
 });
 }
