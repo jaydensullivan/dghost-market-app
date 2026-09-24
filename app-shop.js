@@ -54,6 +54,8 @@ let pendingBuySkin = null;
 const WEAR_LABELS = { FN: 'FN', MW: 'MW', FT: 'FT', WW: 'WW', BS: 'BS' };
 
 const ERROR_MESSAGES = {
+too_many_requests: 'Слишком много запросов подряд — подожди минуту и попробуй снова.',
+user_blocked: 'Аккаунт заблокирован. Напиши в поддержку, чтобы разобраться.',
 bad_rating: 'Выбери оценку от 1 до 5.',
 review_too_early: 'Оставить отзыв можно после подтверждения получения предмета.',
 already_reviewed: 'Ты уже оставил отзыв по этой сделке.',
