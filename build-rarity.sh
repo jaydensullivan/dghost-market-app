@@ -196,30 +196,56 @@ RARITY_MAP = {
 
 text = open(items, encoding="utf-8", errors="ignore").read()
 
-# Блок "paint_kits_rarity" — это пары «имя раскраски» «редкость».
+# 1. Редкость каждой раскраски.
 block = re.search(r'"paint_kits_rarity"\s*\{(.*?)\n\t\}', text, re.S)
 
 if not block:
-    print("RARITY_PARSE_FAILED")
-    sys.exit(0)
+    print("В файле нет блока с редкостями.")
+    sys.exit(1)
 
-pairs = re.findall(r'"([a-zA-Z0-9_]+)"\s+"([a-z]+)"', block.group(1))
+rarity_of = dict(re.findall(r'"([a-zA-Z0-9_]+)"\s+"([a-z]+)"', block.group(1)))
 
-# Оставляем только раскраски нужного ствола: имя ствола встречается
-# в названии раскраски (cu_ak47_cobra, aa_glock_candy_apple).
-base = weapon.replace("_silencer", "").replace("knife_", "")
+# 2. Какая раскраска какому стволу принадлежит. В items_game.txt
+# это записи вида "[cu_glock_indigo]weapon_glock" — единственный
+# надёжный источник: по имени раскраски связь не видна, потому что
+# Fade, Ruby и другие называются одинаково у разных стволов.
+pairs = re.findall(r'\[([a-zA-Z0-9_]+)\]weapon_([a-z0-9_]+)', text)
 
-mine = [(name, rar) for name, rar in pairs if base in name.lower()]
+# Имя ствола в игре: glock -> weapon_glock, ak47 -> weapon_ak47.
+aliases = {
+    "glock": ["glock"],
+    "ak47": ["ak47"],
+    "awp": ["awp"],
+    "m4a1": ["m4a1"],
+    "m4a1_silencer": ["m4a1_silencer"],
+    "deagle": ["deagle"],
+    "usp_silencer": ["usp_silencer"],
+    "hkp2000": ["hkp2000"],
+}
+
+wanted = aliases.get(weapon, [weapon.replace("knife_", "knife_")])
+
+mine = {}
+
+for kit, wpn in pairs:
+    if wpn in wanted:
+        rar = rarity_of.get(kit)
+        if rar:
+            mine[kit] = rar
+
+# Запасной вариант: если связей не нашлось (например, для ножей),
+# берём раскраски, в имени которых есть название ствола.
+if not mine:
+    base = weapon.replace("_silencer", "").replace("knife_", "")
+    mine = {k: v for k, v in rarity_of.items() if base in k.lower()}
 
 by_rarity = {}
-for name, rar in mine:
+for name, rar in mine.items():
     key = RARITY_MAP.get(rar, (rar, rar))[0]
     by_rarity.setdefault(key, []).append(name)
 
 if rarity == "list":
     print(f"Раскраски для {weapon}:")
-    for code, (_, label) in [(v[0], v) for v in RARITY_MAP.values()]:
-        pass
     order = ["consumer", "industrial", "milspec", "restricted", "classified", "covert", "contraband"]
     labels = {v[0]: v[1] for v in RARITY_MAP.values()}
     for code in order:
