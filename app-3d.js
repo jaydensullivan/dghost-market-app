@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 15;
+const APP3D_VERSION = 16;
 
 let threeLoading = null;
 
@@ -146,7 +146,7 @@ const camera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clien
 camera.position.set(0, 0.6, 4);
 
 const geometry = new THREE.TorusKnotGeometry(0.9, 0.3, 160, 32);
-const material = new THREE.MeshStandardMaterial({ color: 0x7B2CFF, metalness: 0.85, roughness: 0.25 });
+const material = new THREE.MeshStandardMaterial({ color: 0x7B2CFF, metalness: 0.7, roughness: 0.25 });
 const mesh = new THREE.Mesh(geometry, material);
 scene.add(mesh);
 
@@ -465,7 +465,10 @@ function applySkinToModel(THREE, object, skin, wear, weapon, maskChannel){
 // 0,1,2 — каналы маски; 3 — красить всё без маски; 4 — показать
 // саму маску цветом (отладка: видно, какой канал за что отвечает).
 const CHANNELS = { r: 0, g: 1, b: 2, none: 3, debug: 4 };
-const channel = CHANNELS[String(maskChannel || 'r').toLowerCase()] ?? 0;
+// По умолчанию — без маски: у стилей вроде custom paint (Redline)
+// краска покрывает ствол целиком, а текстура masks в CS2 хранит не
+// зоны покраски, а свойства поверхности.
+const channel = CHANNELS[String(maskChannel || 'none').toLowerCase()] ?? 3;
 
 const uniforms = {
 uPattern: { value: skin.pattern },
@@ -486,7 +489,7 @@ if (!node.isMesh) return;
 
 const material = new THREE.MeshStandardMaterial({
 color: 0xffffff,
-metalness: 0.85,
+metalness: 0.7,
 roughness: 0.5,
 });
 if (weapon && weapon.rough) material.roughnessMap = weapon.rough;
