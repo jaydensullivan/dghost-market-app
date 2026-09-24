@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 14;
+const APP3D_VERSION = 15;
 
 let threeLoading = null;
 
@@ -462,7 +462,10 @@ loadSkinTexture(THREE, base + 'ao.webp', false),
 
 // wear — float предмета (0 = новый, 1 = полностью убитый).
 function applySkinToModel(THREE, object, skin, wear, weapon, maskChannel){
-const channel = { r: 0, g: 1, b: 2 }[String(maskChannel || 'r').toLowerCase()] || 0;
+// 0,1,2 — каналы маски; 3 — красить всё без маски; 4 — показать
+// саму маску цветом (отладка: видно, какой канал за что отвечает).
+const CHANNELS = { r: 0, g: 1, b: 2, none: 3, debug: 4 };
+const channel = CHANNELS[String(maskChannel || 'r').toLowerCase()] ?? 0;
 
 const uniforms = {
 uPattern: { value: skin.pattern },
@@ -523,9 +526,15 @@ vec3 base = uHasWeapon == 1 ? texture2D(uBaseColor, vSkinUv).rgb : vec3(0.22);
 // Маска покраски: где краска вообще может лежать. Канал
 // выбирается настройкой — у разных стволов он разный.
 float paintable = 1.0;
-if (uHasWeapon == 1){
-vec4 masks = texture2D(uPaintMask, vSkinUv);
+vec4 masks = uHasWeapon == 1 ? texture2D(uPaintMask, vSkinUv) : vec4(1.0);
+if (uHasWeapon == 1 && uMaskChannel < 3){
 paintable = uMaskChannel == 1 ? masks.g : (uMaskChannel == 2 ? masks.b : masks.r);
+}
+
+// Режим отладки: показываем саму маску, чтобы увидеть, какой
+// канал какие детали покрывает.
+if (uMaskChannel == 4){
+diffuseColor.rgb = masks.rgb;
 }
 
 vec3 pattern = texture2D(uPattern, vSkinUv * uPatternScale).rgb * uColorBrightness;
@@ -544,7 +553,7 @@ if (uHasWeapon == 1){
 result *= mix(0.55, 1.0, texture2D(uAo, vSkinUv).r);
 }
 
-diffuseColor.rgb = result;
+if (uMaskChannel != 4) diffuseColor.rgb = result;
 }`);
 };
 
