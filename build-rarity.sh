@@ -125,13 +125,39 @@ if [ ! -s "$ITEMS" ]; then
         exit 1
     fi
 
-    "$TOOLS/Source2Viewer-CLI" -i "$GAME/pak01_dir.vpk" -o "$WORK/items" -d \
-        --vpk_filepath "$ITEM_PATH" >/dev/null 2>&1
+    echo "   путь в архиве: $ITEM_PATH"
 
-    FOUND=$(find "$WORK/items" -name 'items_game.txt' | head -1)
+    # Файл может лежать в куске архива, которого ещё нет на диске.
+    # Ловим номер из ошибки, докачиваем кусок и повторяем.
+    for attempt in 1 2 3 4 5; do
+
+        "$TOOLS/Source2Viewer-CLI" -i "$GAME/pak01_dir.vpk" -o "$WORK/items" -d \
+            --vpk_filepath "$ITEM_PATH" > "$WORK/items.log" 2>&1
+
+        FOUND=$(find "$WORK/items" -name 'items_game.txt' 2>/dev/null | head -1)
+
+        [ -n "$FOUND" ] && break
+
+        MISSING=$(grep -oE 'pak01_[0-9]{3}' "$WORK/items.log" | grep -oE '[0-9]{3}' | head -1 || true)
+
+        if [ -z "$MISSING" ]; then
+            echo "❌ Не удалось вынуть items_game.txt. Ошибка:"
+            grep -m1 -A5 -iE 'exception|error' "$WORK/items.log" || tail -15 "$WORK/items.log"
+            exit 1
+        fi
+
+        echo "   не хватает куска pak01_$MISSING.vpk — качаю"
+
+        printf 'regex:^game/csgo/pak01_%s\\.vpk$\n' "$MISSING" > "$WORK/fl-items.txt"
+
+        (cd "$TOOLS" && dotnet DepotDownloader.dll -app 730 \
+            -username "${STEAM_USER:-landofdinasty}" -no-mobile -remember-password \
+            -filelist "$WORK/fl-items.txt" -dir "$WORK/game") >/dev/null 2>&1
+
+    done
 
     if [ -z "$FOUND" ]; then
-        echo "❌ Не удалось вынуть items_game.txt"
+        echo "❌ items_game.txt так и не вынулся за 5 попыток."
         exit 1
     fi
 
