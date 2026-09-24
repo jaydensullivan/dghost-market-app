@@ -134,15 +134,24 @@ if [ ! -s "$ITEMS" ]; then
         "$TOOLS/Source2Viewer-CLI" -i "$GAME/pak01_dir.vpk" -o "$WORK/items" -d \
             --vpk_filepath "$ITEM_PATH" > "$WORK/items.log" 2>&1
 
-        FOUND=$(find "$WORK/items" -name 'items_game.txt' 2>/dev/null | head -1)
+        # Экспортёр может сохранить файл под другим именем или
+        # расширением — ищем по содержимому, а не по имени.
+        FOUND=$(grep -rl 'paint_kits_rarity' "$WORK/items" 2>/dev/null | head -1)
+
+        if [ -z "$FOUND" ]; then
+            FOUND=$(find "$WORK/items" -type f -size +1M 2>/dev/null | head -1)
+        fi
 
         [ -n "$FOUND" ] && break
 
         MISSING=$(grep -oE 'pak01_[0-9]{3}' "$WORK/items.log" | grep -oE '[0-9]{3}' | head -1 || true)
 
         if [ -z "$MISSING" ]; then
-            echo "❌ Не удалось вынуть items_game.txt. Ошибка:"
-            grep -m1 -A5 -iE 'exception|error' "$WORK/items.log" || tail -15 "$WORK/items.log"
+            echo "❌ Не удалось вынуть items_game.txt."
+            echo "Что лежит в $WORK/items:"
+            find "$WORK/items" -type f -exec ls -lh {} \; 2>/dev/null | head -10
+            echo "Лог:"
+            grep -m1 -A5 -iE 'exception|error' "$WORK/items.log" || tail -10 "$WORK/items.log"
             exit 1
         fi
 
