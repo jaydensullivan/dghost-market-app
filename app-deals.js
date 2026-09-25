@@ -137,6 +137,9 @@ statusHtml = `<div class="deal-status sent">${dict.status_hold_running}</div>`;
 statusHtml = `<div class="deal-status sent">${dict.status_waiting_buyer_confirm}</div>`;
 } else {
 statusHtml = `<div class="deal-status pending">${dict.status_need_to_send}</div>`;
+if (deal.partner_trade_link){
+actionHtml = `<button class="deal-action" data-open-trade="${deal.id}" type="button">${dict.btn_open_trade}</button>` + actionHtml;
+}
 actionHtml = `<button class="deal-action" data-mark-sent="${deal.id}" type="button">${dict.btn_sent}</button>
 <button class="deal-action secondary" data-cancel-sale="${deal.id}" type="button">${dict.btn_cancel_sale}</button>`;
 if (deal.inspect_link){
@@ -614,4 +617,69 @@ disputeSubmitBtn.disabled = false;
 
 document.getElementById('disputeCancelBtn').addEventListener('click', () => {
 disputeOverlay.classList.remove('show');
+});
+
+
+// ============================================================
+// ОБМЕН В ОДИН ШАГ И АВТОПОДТВЕРЖДЕНИЕ ДОСТАВКИ
+//
+// Ссылка вида steamcommunity.com/tradeoffer/new/?partner=…&token=…
+// открывает окно обмена сразу с нужным человеком. Подставить в неё
+// конкретный предмет Steam не даёт — скин продавец выбирает сам.
+//
+// Зато после возвращения в приложение проверять на слово никого не
+// нужно: сервер сверяет инвентари по asset_id и сам двигает сделку.
+// ============================================================
+
+let pendingDeliveryCheck = null;
+
+function openSteamTrade(deal){
+if (!deal.partner_trade_link) return;
+const dict = I18N[currentLang] || I18N.ru;
+pendingDeliveryCheck = deal.id;
+haptic('light');
+showToast(dict.dlv_hint, { type: 'info', duration: 5000 });
+if (tg && tg.openLink) tg.openLink(deal.partner_trade_link);
+else window.open(deal.partner_trade_link, '_blank');
+}
+
+function checkDelivery(skinId, silent){
+const dict = I18N[currentLang] || I18N.ru;
+if (!tg || !tg.initData) return;
+if (!silent) showToast(dict.dlv_checking, { type: 'info', duration: 2500 });
+
+fetch(API_BASE + '/api/skins/' + skinId + '/check_delivery', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+})
+.then(r => r.json())
+.then(data => {
+if (data.state === 'delivered'){
+showToast(dict.dlv_delivered, { type: 'success' });
+loadDeals();
+} else if (!silent){
+showToast(
+data.state === 'pending' ? dict.dlv_pending : dict.dlv_unknown,
+{ type: data.state === 'pending' ? 'info' : 'error' }
+);
+}
+})
+.catch(() => {});
+}
+
+document.addEventListener('click', (e) => {
+const btn = e.target.closest('[data-open-trade]');
+if (!btn) return;
+const deal = lastDeals.find(d => d.id === Number(btn.dataset.openTrade));
+if (deal) openSteamTrade(deal);
+});
+
+// Вернулись из Steam — сразу проверяем, доехал ли предмет.
+document.addEventListener('visibilitychange', () => {
+if (document.hidden || !pendingDeliveryCheck) return;
+const skinId = pendingDeliveryCheck;
+pendingDeliveryCheck = null;
+// Небольшая пауза: Steam не мгновенно обновляет инвентарь.
+setTimeout(() => checkDelivery(skinId, false), 3000);
 });
