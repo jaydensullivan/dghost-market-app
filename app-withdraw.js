@@ -150,50 +150,50 @@ return;
 }
 inventoryStatus.textContent = '';
 inventoryGrid.innerHTML = items.map((item, i) => {
-// Обычная иконка Steam без серверного рендера и без фона по
-// редкости — редкость и так видна по цветной рамке сверху.
 const photo = item.photo_url
 ? `<img src="${item.photo_url}" alt="" loading="lazy">`
 : '';
 const wearText = item.wear ? WEAR_LABELS[item.wear] || '' : '';
 const isTradable = item.tradable !== false;
 const bannedClass = isTradable ? '' : ' inv-item-banned';
-// Цветная рамка сверху уже показывает редкость — фон-картинка тут
-// была бы тем же сигналом дважды, только тяжелее и незаметнее в
-// плотной сетке. Фон остаётся в окне "Выставить лот", где карточка
-// одна на экран.
-const rarityClass = RARITY_CLASS[item.rarity] || '';
-const rarityBg = '';
+const rarityClass = RARITY_CLASS[item.rarity] || 'rarity-consumer';
 
 const hasFloat = item.float_value !== null && item.float_value !== undefined;
 
 // Полоска износа с меткой на месте точного float — как в CSFloat.
-// Показываем, только если float уже подтянулся (инспект-бот мог
-// не успеть его расшифровать к моменту показа списка — тогда
-// просто не рисуем полоску вместо пустой/нулевой).
 const wearBar = hasFloat
 ? `<div class="inv-item-wearbar"><div class="inv-item-wearbar-mark" style="left:${(Math.min(1, Math.max(0, item.float_value)) * 100).toFixed(2)}%"></div></div>
 <div class="inv-item-floatrow"><span>${Number(item.float_value).toFixed(4)}</span>${item.pattern ? `<span>#${escapeHtml(String(item.pattern))}</span>` : ''}</div>`
 : '';
 
-// Бейдж «🏷️ N» заменён на сами картинки наклеек (если их отдал
-// инспект-бот); счётчик остаётся запасным вариантом.
-const stickerBadge = (!item.stickers || !item.stickers.length) && item.stickers_count
-? `<div class="inv-item-stickers">🏷️ ${item.stickers_count}</div>`
-: '';
+// Название предмета делим на две строки: оружие сверху обычным
+// шрифтом, раскраска снизу крупно — так карточка читается с
+// одного взгляда, как в инвентаре Steam.
+const rawTitle = String(item.title || '');
+const parts = rawTitle.split('|');
+const weaponName = parts.length > 1 ? parts[0].trim() : '';
+const skinName = parts.length > 1 ? parts.slice(1).join('|').trim() : rawTitle;
+
+// Метки поверх картинки: износ и StatTrak — как в Steam.
+const badges = [];
+if (item.stattrak) badges.push('<span class="inv-badge st">ST™</span>');
+if (wearText) badges.push(`<span class="inv-badge">${wearText}</span>`);
+if (!isTradable) badges.push('<span class="inv-badge ban">🔒</span>');
+
 const stickerStrip = stickersHtml(item.stickers, 'mini');
 
-const nameClass = item.stattrak ? ' stattrak' : '';
-const stText = item.stattrak ? 'ST™ ' : '';
-
 return `
-<div class="inv-item${bannedClass}${rarityClass ? ' ' + rarityClass : ''}" data-idx="${i}" data-tradable="${isTradable ? '1' : '0'}">
-<div class="inv-item-photo"${rarityBg}>${photo}${stickerBadge}</div>
-<div class="inv-item-name${nameClass}">${stText}${escapeHtml(item.title)}</div>
-${wearText ? `<div class="inv-item-wear">${wearText}</div>` : ''}
+<div class="inv-item ${rarityClass}${bannedClass}" data-idx="${i}" data-tradable="${isTradable ? '1' : '0'}">
+<div class="inv-item-photo">
+<div class="inv-badges">${badges.join('')}</div>
+${photo}
+${stickerStrip ? `<div class="inv-stickers-over">${stickerStrip}</div>` : ''}
+</div>
+<div class="inv-item-body">
+${weaponName ? `<div class="inv-item-weapon">${escapeHtml(weaponName)}</div>` : ''}
+<div class="inv-item-skin">${escapeHtml(skinName)}</div>
 ${wearBar}
-${stickerStrip}
-${!isTradable ? '<div class="inv-item-ban-label">🔒 Трейд-бан</div>' : ''}
+</div>
 </div>`;
 }).join('');
 }

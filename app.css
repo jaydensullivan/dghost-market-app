@@ -3122,3 +3122,120 @@ pointer-events:none;
 /* подробности ошибки 3D — длинный текст от three.js должен быть виден целиком */
 .viewer3d-status{ white-space:normal; padding:0 10px; }
 .v3-detail{ display:block; margin-top:4px; opacity:.85; font-size:10px; line-height:1.35; word-break:break-word; }
+
+
+/* ============================================================
+   ИНВЕНТАРЬ — КАРТОЧКИ В СТИЛЕ STEAM
+   Крупная картинка на градиенте по редкости, метки поверх неё,
+   название в две строки: оружие мелко, раскраска крупно.
+   ============================================================ */
+
+.inv-item{
+position:relative;
+display:flex;
+flex-direction:column;
+border-radius:14px;
+border:1px solid var(--red-dim);
+border-top-width:3px;
+background:var(--surface);
+overflow:hidden;
+padding:0;
+cursor:pointer;
+transition:transform .12s ease;
+}
+.inv-item:active{ transform:scale(0.98); }
+.inv-item.selected{ box-shadow:0 0 0 2px var(--accent); }
+
+.inv-item .inv-item-photo{
+position:relative;
+width:100%;
+aspect-ratio:4/3;
+display:flex;
+align-items:center;
+justify-content:center;
+padding:10px 8px 4px;
+/* Градиент по редкости — именно он даёт узнаваемый вид Steam. */
+background:
+radial-gradient(ellipse at 50% 120%, var(--rar-strong, rgba(140,95,214,0.55)) 0%, rgba(0,0,0,0) 72%),
+linear-gradient(180deg, var(--rar-soft, rgba(140,95,214,0.22)) 0%, rgba(8,7,13,0.9) 100%);
+}
+.inv-item .inv-item-photo img{
+width:100%;
+height:100%;
+object-fit:contain;
+filter:drop-shadow(0 6px 12px rgba(0,0,0,0.45));
+}
+
+.inv-badges{
+position:absolute;
+top:6px;
+left:7px;
+right:7px;
+display:flex;
+gap:4px;
+flex-wrap:wrap;
+z-index:2;
+}
+.inv-badge{
+padding:2px 6px;
+border-radius:6px;
+background:rgba(0,0,0,0.45);
+backdrop-filter:blur(4px);
+font-family:'JetBrains Mono', monospace;
+font-size:9px;
+font-weight:600;
+color:rgba(255,255,255,0.92);
+letter-spacing:0.04em;
+}
+.inv-badge.st{ color:#f5c542; }
+.inv-badge.ban{ background:rgba(224,85,90,0.5); }
+
+.inv-stickers-over{
+position:absolute;
+left:7px;
+bottom:4px;
+z-index:2;
+}
+.inv-stickers-over .st-mini{ width:18px; height:18px; }
+
+.inv-item-body{ padding:8px 9px 10px; }
+
+.inv-item-weapon{
+font-family:'Inter', sans-serif;
+font-size:11px;
+color:var(--muted);
+line-height:1.2;
+}
+.inv-item-skin{
+font-family:'Inter', sans-serif;
+font-size:14px;
+font-weight:700;
+color:var(--silver);
+line-height:1.25;
+margin-top:1px;
+display:-webkit-box;
+-webkit-line-clamp:2;
+-webkit-box-orient:vertical;
+overflow:hidden;
+}
+
+.inv-item .inv-item-wearbar{ margin-top:7px; }
+.inv-item .inv-item-floatrow{ margin-top:3px; }
+
+.inv-item-banned{ opacity:0.65; }
+
+/* Цвет градиента задаётся редкостью — те же цвета, что у рамок. */
+.inv-item.rarity-consumer{ --rar-soft:rgba(174,194,209,0.20); --rar-strong:rgba(174,194,209,0.45); }
+.inv-item.rarity-industrial{ --rar-soft:rgba(95,147,199,0.22); --rar-strong:rgba(95,147,199,0.50); }
+.inv-item.rarity-milspec{ --rar-soft:rgba(90,111,214,0.24); --rar-strong:rgba(90,111,214,0.52); }
+.inv-item.rarity-restricted{ --rar-soft:rgba(140,95,214,0.26); --rar-strong:rgba(140,95,214,0.55); }
+.inv-item.rarity-classified{ --rar-soft:rgba(193,91,201,0.26); --rar-strong:rgba(193,91,201,0.58); }
+.inv-item.rarity-covert{ --rar-soft:rgba(216,84,84,0.26); --rar-strong:rgba(216,84,84,0.58); }
+.inv-item.rarity-contraband,
+.inv-item.rarity-extraordinary{ --rar-soft:rgba(219,184,79,0.26); --rar-strong:rgba(219,184,79,0.58); }
+
+body.theme-light .inv-item .inv-item-photo{
+background:
+radial-gradient(ellipse at 50% 120%, var(--rar-strong) 0%, rgba(255,255,255,0) 72%),
+linear-gradient(180deg, var(--rar-soft) 0%, rgba(255,255,255,0.9) 100%);
+}
