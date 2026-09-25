@@ -3159,7 +3159,10 @@ background:
 radial-gradient(ellipse at 50% 120%, var(--rar-strong, rgba(140,95,214,0.55)) 0%, rgba(0,0,0,0) 72%),
 linear-gradient(180deg, var(--rar-soft, rgba(140,95,214,0.22)) 0%, rgba(8,7,13,0.9) 100%);
 }
-.inv-item .inv-item-photo img{
+/* Только само изображение предмета — прямой потомок блока.
+   Без этого правило растягивало и картинки наклеек, лежащие
+   в том же контейнере, и они закрывали собой весь предмет. */
+.inv-item .inv-item-photo > img{
 width:100%;
 height:100%;
 object-fit:contain;
@@ -3196,7 +3199,22 @@ left:7px;
 bottom:4px;
 z-index:2;
 }
-.inv-stickers-over .st-mini{ width:18px; height:18px; }
+.inv-stickers-over .st-strip{ gap:2px; margin:0; }
+.inv-stickers-over .st-mini{
+width:18px !important;
+height:18px !important;
+object-fit:contain;
+background:rgba(0,0,0,0.35);
+border-radius:4px;
+padding:1px;
+}
+
+/* float и паттерн — ближе друг к другу, иначе на широкой карточке
+   они разъезжаются по краям и читаются как два разных поля */
+.inv-item .inv-item-floatrow{
+justify-content:center;
+gap:10px;
+}
 
 .inv-item-body{ padding:8px 9px 10px; }
 
