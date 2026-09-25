@@ -137,8 +137,12 @@ statusHtml = `<div class="deal-status sent">${dict.status_hold_running}</div>`;
 statusHtml = `<div class="deal-status sent">${dict.status_waiting_buyer_confirm}</div>`;
 } else {
 statusHtml = `<div class="deal-status pending">${dict.status_need_to_send}</div>`;
+// Кнопка обмена — только если у покупателя есть ссылка. Иначе
+// показываем причину, чтобы продавец не искал кнопку впустую.
 if (deal.partner_trade_link){
 actionHtml = `<button class="deal-action" data-open-trade="${deal.id}" type="button">${dict.btn_open_trade}</button>` + actionHtml;
+} else {
+statusHtml += `<div class="deal-hint">${dict.dlv_no_link}</div>`;
 }
 actionHtml = `<button class="deal-action" data-mark-sent="${deal.id}" type="button">${dict.btn_sent}</button>
 <button class="deal-action secondary" data-cancel-sale="${deal.id}" type="button">${dict.btn_cancel_sale}</button>`;
@@ -395,13 +399,25 @@ status.style.display = '';
 status.textContent = (I18N[currentLang] || I18N.ru).combo_loading_preview;
 overlay.classList.add('show');
 fetch(API_BASE + '/api/skins/' + id + '/inspect_screenshot')
-.then(r => { if (!r.ok) throw new Error(); return r.blob(); })
+.then(async r => {
+if (!r.ok){
+// Показываем код и текст ответа: иначе любая причина
+// выглядит одинаково и разбираться не с чем.
+const detail = await r.text().catch(() => '');
+throw new Error(`HTTP ${r.status}${detail ? ' · ' + detail.slice(0, 80) : ''}`);
+}
+return r.blob();
+})
 .then(blob => {
 img.src = URL.createObjectURL(blob);
 img.style.display = '';
 status.style.display = 'none';
 })
-.catch(() => { status.textContent = (I18N[currentLang] || I18N.ru).combo_preview_failed; });
+.catch(err => {
+status.textContent = (I18N[currentLang] || I18N.ru).combo_preview_failed
++ (err && err.message ? ' · ' + err.message : '');
+console.error('Превью предмета:', err);
+});
 return;
 }
 
