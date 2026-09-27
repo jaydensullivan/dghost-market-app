@@ -1,0 +1,17 @@
+{
+  "finish": "hy_veneto_purple",
+  "shader": {
+    "paint_style": 1,
+    "pattern_scale": 14.0,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 1.0
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "wear.webp",
+    "grunge": "grunge.webp"
+  }
+}
