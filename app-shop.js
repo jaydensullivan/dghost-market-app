@@ -54,6 +54,7 @@ let pendingBuySkin = null;
 const WEAR_LABELS = { FN: 'FN', MW: 'MW', FT: 'FT', WW: 'WW', BS: 'BS' };
 
 const ERROR_MESSAGES = {
+trade_link_required: 'Чтобы покупать, привяжи ссылку на обмен Steam — продавцу нужно куда отправить предмет.',
 sender_insufficient_funds: 'У отправителя не хватает денег на доплату — предложение больше неактуально.',
 partner_not_sent: 'Партнёр ещё не отметил, что отправил предмет. Подтверждать получение рано.',
 not_accepted: 'Обмен уже завершён или отменён.',
@@ -139,6 +140,17 @@ document.getElementById('agreementTextBox').textContent = (I18N[currentLang] || 
 function updateMandatorySteamOverlay(){
 const agreementOverlay = document.getElementById('mandatoryAgreementOverlay');
 const steamOverlay = document.getElementById('mandatorySteamOverlay');
+
+// Покупка без ссылки на обмен невозможна: сервер вернёт
+// trade_link_required, и мы сразу открываем окно привязки, а не
+// показываем тупиковую ошибку.
+function requireSteamLink(){
+if (!steamOverlay) return;
+steamOverlay.style.height = window.innerHeight + 'px';
+steamOverlay.classList.add('show');
+document.body.style.overflow = 'hidden';
+haptic('warning');
+}
 
 if (currentUserId && !agreementAccepted){
 loadAgreementText();

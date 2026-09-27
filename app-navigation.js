@@ -143,6 +143,11 @@ setTimeout(close, opts.duration || (opts.onAction ? 6000 : 3500));
 // Ошибка запроса одной строкой: текст через friendlyErrorMessage
 // (он же даёт вибрацию ошибки), при желании — кнопка «Повторить».
 function showErrorToast(err, onRetry){
+// Нет ссылки на обмен — это не ошибка, а незаконченная настройка:
+// открываем окно привязки вместо тоста.
+if (err && /trade_link_required/.test(String(err.message || err))){
+if (typeof requireSteamLink === 'function') requireSteamLink();
+}
 const dict = I18N[currentLang] || I18N.ru;
 showToast(friendlyErrorMessage(err), {
 type: 'error',
