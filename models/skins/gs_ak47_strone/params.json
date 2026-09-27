@@ -1,0 +1,15 @@
+{
+  "finish": "gs_ak47_strone",
+  "shader": {
+    "paint_style": 8,
+    "pattern_scale": 1.0,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0.0,
+    "color_brightness": 1.0
+  },
+  "textures": {
+    "pattern": "pattern.webp"
+  }
+}
