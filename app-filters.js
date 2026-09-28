@@ -1399,8 +1399,24 @@ el.addEventListener('input', scheduleSellMarketPreview);
 el.addEventListener('change', scheduleSellMarketPreview);
 });
 
-buyShareBtn.addEventListener('click', () => {
-if (!pendingBuySkin) return;
+buyShareBtn.addEventListener('click', async () => {
+if (!pendingBuySkin || buyShareBtn.disabled) return;
+
+// Есть 3D у лота и свежий Telegram — отправляем GIF с оборотом
+// ствола; иначе (или при ошибке) — ссылкой, как раньше.
+if (typeof share3DLot === 'function'){
+buyShareBtn.disabled = true;
+try {
+const done = await share3DLot(pendingBuySkin, text => { buyStatus.textContent = text; });
+if (done) return;
+} catch (err){
+console.warn('Поделиться GIF не вышло —', err);
+buyStatus.textContent = '';
+} finally {
+buyShareBtn.disabled = false;
+}
+}
+
 const shareText = `${pendingBuySkin.stattrak ? 'StatTrak™ ' : ''}${pendingBuySkin.title} — ${formatCoins(pendingBuySkin.price)} в DGhost`;
 const shareUrl = `${API_BASE}/s/${pendingBuySkin.id}`;
 const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;

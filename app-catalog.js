@@ -260,7 +260,8 @@ stickers: 'any',
 
 let deepLinkSkinId = null;
 if (tg && tg.initDataUnsafe && typeof tg.initDataUnsafe.start_param === 'string' && tg.initDataUnsafe.start_param.startsWith('skin_')){
-deepLinkSkinId = tg.initDataUnsafe.start_param.slice(5);
+// skin_<id> или skin_<id>_r<пригласивший> (ссылка из «Поделиться» с GIF).
+deepLinkSkinId = (tg.initDataUnsafe.start_param.match(/^skin_(\d+)/) || [])[1] || null;
 }
 
 let deepLinkAuctionId = null;
