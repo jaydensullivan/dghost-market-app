@@ -4,6 +4,9 @@
 # размера, переводит в WebP и складывает в models/skins/<имя>/,
 # плюс вынимает параметры шейдера из материала в params.json.
 #
+# Износ и грязь у большинства скинов одни и те же файлы игры — их
+# кладём один раз в models/shared/ и в params.json пишем общий путь.
+#
 #   bash prep-skin.sh cu_ak47_cobra
 #
 # Запускать после fix-skin.sh, который вынимает сами PNG.
@@ -14,13 +17,14 @@ FINISH="${1:-cu_ak47_cobra}"
 SRC="${SRC:-/tmp/cs2-assets/export-skins}"
 REPO="${REPO:-/workspaces/dghost-market-app}"
 DEST="$REPO/models/skins/$FINISH"
+SHARED="$REPO/models/shared"
 
 if ! python3 -c 'import PIL' 2>/dev/null; then
     echo "==> Ставлю Pillow (нужен для сжатия картинок)"
     pip install --quiet Pillow
 fi
 
-mkdir -p "$DEST"
+mkdir -p "$DEST" "$SHARED"
 
 MATFILE=$(find "$SRC" -name "${FINISH}.vmat" | head -1)
 
@@ -29,11 +33,11 @@ if [ -z "$MATFILE" ]; then
     exit 1
 fi
 
-python3 - "$FINISH" "$SRC" "$DEST" "$MATFILE" <<'PY'
+python3 - "$FINISH" "$SRC" "$DEST" "$MATFILE" "$SHARED" <<'PY'
 import json, re, sys, os
 from PIL import Image
 
-finish, src, dest, matfile = sys.argv[1:5]
+finish, src, dest, matfile, shared = sys.argv[1:6]
 mat = open(matfile, encoding='utf-8', errors='ignore').read()
 
 def find_texture(key):
@@ -54,6 +58,10 @@ LAYERS = {
     'wear':     ('TextureWear',           1024),
     'grunge':   ('TextureGrunge',         1024),
 }
+
+# Слои, которые игра берёт из общих файлов. Имя в models/shared/
+# строится по имени файла игры: одинаковый источник — один файл.
+SHARED_LAYERS = ('wear', 'grunge')
 
 index = {}
 for path, dirs, files in os.walk(src):
@@ -95,6 +103,15 @@ for layer, (key, max_side) in LAYERS.items():
         print(f'  {layer}: не нашёл вынутый файл для {game_path}')
         continue
 
+    shared_name = None
+    if layer in SHARED_LAYERS:
+        src_name = os.path.splitext(os.path.basename(game_path))[0]
+        shared_name = layer + '_' + re.sub(r'[^A-Za-z0-9_.-]', '_', src_name) + '.webp'
+        if os.path.isfile(os.path.join(shared, shared_name)):
+            print(f'  {layer}: уже есть в models/shared/{shared_name}')
+            result['textures'][layer] = 'models/shared/' + shared_name
+            continue
+
     img = Image.open(png)
     w, h = img.size
     if max(w, h) > max_side:
@@ -107,11 +124,11 @@ for layer, (key, max_side) in LAYERS.items():
     else:
         img = img.convert('RGBA' if 'A' in img.getbands() else 'RGB')
 
-    out = os.path.join(dest, layer + '.webp')
+    out = os.path.join(shared, shared_name) if shared_name else os.path.join(dest, layer + '.webp')
     img.save(out, 'WEBP', quality=88, method=6)
     size_kb = os.path.getsize(out) / 1024
     print(f'  {layer}: {w}x{h} → {img.size[0]}x{img.size[1]}, {size_kb:.0f} КБ')
-    result['textures'][layer] = layer + '.webp'
+    result['textures'][layer] = ('models/shared/' + shared_name) if shared_name else layer + '.webp'
 
 with open(os.path.join(dest, 'params.json'), 'w', encoding='utf-8') as f:
     json.dump(result, f, ensure_ascii=False, indent=2)
@@ -124,5 +141,5 @@ echo "================================================"
 ls -lh "$DEST"
 echo
 echo "Осталось закоммитить:"
-echo "  cd $REPO && git add models/skins && git commit -m '3D: текстуры $FINISH' && git push"
+echo "  cd $REPO && git add models/skins models/shared && git commit -m '3D: текстуры $FINISH' && git push"
 echo "================================================"
