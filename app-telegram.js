@@ -60,7 +60,6 @@ discountOverlay: 'discountCloseBtn',
 tradeDetailsOverlay: 'tradeDetailsCloseBtn',
 historyOverlay: 'historyCloseBtn',
 filtersOverlay: 'filtersCloseBtn',
-editOverlay: 'editCancel',
 addSkinOverlay: 'addSkinCancel',
 buyOverlay: 'buyClose',
 setsOverlay: 'setsCloseBtn',
@@ -81,7 +80,7 @@ legalOverlay: 'legalCloseBtn',
 // Экранные «назад» внутри приложения — сначала более глубокие.
 const SCREEN_BACK_BTNS = [
 'categoryPickerBack', 'dealsBackBtn', 'buyRequestsBackBtn',
-'shopBackBtn', 'profileBackBtn', 'auctionsBackBtn', 'adminBackBtn',
+'shopBackBtn', 'profileBackBtn', 'rfBackBtn', 'auctionsBackBtn', 'adminBackBtn',
 ];
 
 function isShown(el){

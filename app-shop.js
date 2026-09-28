@@ -272,7 +272,6 @@ if (typeof lastDeals !== 'undefined' && lastDeals.length){
 document.getElementById('dealsList').innerHTML = lastDeals.map(dealCardHtml).join('');
 }
 }
-updateFabVisibility();
 updateSteamBlockVisibility();
 updateMandatorySteamOverlay();
 })
@@ -345,7 +344,6 @@ if (typeof updateWithdrawMethodVisibility === 'function') updateWithdrawMethodVi
 if (typeof updateTopupCryptoBtnVisibility === 'function') updateTopupCryptoBtnVisibility();
 document.getElementById('openTopupBtn').style.display = (!topupCardEnabled && !topupCryptoEnabled) ? 'none' : '';
 document.getElementById('openWithdrawBtn').style.display = (!withdrawCardEnabled && !withdrawCryptoEnabled) ? 'none' : '';
-updateFabVisibility();
 updateSteamBlockVisibility();
 updateMandatorySteamOverlay();
 updateProfileSteamBlock();

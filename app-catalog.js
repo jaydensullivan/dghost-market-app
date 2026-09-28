@@ -269,7 +269,10 @@ if (tg && tg.initDataUnsafe && typeof tg.initDataUnsafe.start_param === 'string'
 deepLinkAuctionId = Number(tg.initDataUnsafe.start_param.slice(8));
 }
 
-const deepLinkGiveaway = !!(tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param === 'giveaway');
+// «giveaway» — из поста в канале; ref_<id> — друг позвал по приглашению
+// в розыгрыш, сразу показываем, куда его звали.
+const deepLinkGiveaway = !!(tg && tg.initDataUnsafe && typeof tg.initDataUnsafe.start_param === 'string'
+&& (tg.initDataUnsafe.start_param === 'giveaway' || tg.initDataUnsafe.start_param.startsWith('ref_')));
 
 function applyFiltersAndRender(){
 const q = skinSearch.value.trim().toLowerCase();

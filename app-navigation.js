@@ -197,11 +197,6 @@ if (tg && tg.showConfirm){ tg.showConfirm(message, ok => { if (ok) onOk(); }); }
 else if (confirm(message)) { onOk(); }
 }
 
-function updateFabVisibility(){
-if (isAdmin && currentTab === 'timer'){ editFab.classList.add('show'); }
-else { editFab.classList.remove('show'); }
-}
-
 function switchTab(name){
 currentTab = name;
 if (name !== 'admin' && typeof stopAdminStatsLive === 'function'){
@@ -223,7 +218,9 @@ document.getElementById('tabAuctionsBtn').classList.toggle('active', name === 'a
 // там только кнопка «Назад». На остальных экранах навигация
 // остаётся видимой как обычно.
 document.getElementById('bottomNav').style.display = (name === 'shop' || name === 'admin' || name === 'deals' || name === 'buyRequests') ? 'none' : 'flex';
-updateFabVisibility();
+if (name === 'timer' && typeof loadRaffle === 'function'){
+loadRaffle();
+}
 if (name === 'shop'){
 loadMe();
 loadSkins();
@@ -304,6 +301,8 @@ tg.openLink(url);
 } else {
 window.open(url, '_blank');
 }
+} else if (action === 'giveaway'){
+goToScreen('timer');
 } else if (action === 'legal'){
 openLegal('terms');
 } else if (action === 'auctions'){
@@ -313,7 +312,7 @@ switchTab('admin');
 }
 });
 
-tabTimerBtn.addEventListener('click', () => switchTab('timer'));
+tabTimerBtn.addEventListener('click', () => goToScreen('timer'));
 
 // ============================================================
 // ИСТОРИЯ НАВИГАЦИИ — «НАЗАД» ВЕДЁТ НА ПРЕДЫДУЩИЙ ЭКРАН,
