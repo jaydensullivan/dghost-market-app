@@ -37,7 +37,7 @@ COMPFILE=$(find "$SRC" -name "${FINISH}.vcompmat" | head -1)
 if [ -z "$MATFILE" ] && [ -n "$COMPFILE" ]; then
 python3 - "$FINISH" "$SRC" "$DEST" "$COMPFILE" "$SHARED" <<'PY'
 import glob, json, os, re, sys
-from PIL import Image
+from PIL import Image, ImageStat
 
 finish, src, dest, compfile, shared = sys.argv[1:6]
 recipe = open(compfile, encoding='utf-8', errors='ignore').read()
@@ -88,13 +88,24 @@ for layer, key, max_side, color in LAYERS:
         img = img.convert('RGBA' if 'A' in img.getbands() else 'RGB')
     else:
         img = img.convert('L')
+
+    # Пустая текстура хуже никакой: нулевая карта нормалей затемняла
+    # весь ствол, а пустое альбедо давало чёрный силуэт.
+    if max(ImageStat.Stat(img.convert('RGB')).extrema[i][1] for i in range(3)) < 8:
+        print(f'  {layer}: пустая картинка — пропускаю ({os.path.basename(src_png)})')
+        old = os.path.join(dest, layer + '.webp')
+        if os.path.isfile(old):
+            os.remove(old)
+        continue
+
     out = os.path.join(dest, layer + '.webp')
     img.save(out, 'WEBP', quality=88, method=6)
     print(f'  {layer}: {w}x{h} → {img.size[0]}x{img.size[1]}, {os.path.getsize(out) / 1024:.0f} КБ')
     textures[layer] = layer + '.webp'
 
 if 'pattern' not in textures:
-    print('❌ В рецепте нет альбедо — такой скин просмотрщик пока не покажет.')
+    print('❌ Альбедо нет или оно пустое — такой скин просмотрщик пока не покажет.')
+    print('   Пришли рецепт: sed -n "/РЕЦЕПТ/,/=====/p" /tmp/cs2-assets/build-skin-' + finish + '.log')
     sys.exit(1)
 
 # Своей маски износа у нового формата нет — берём общую.
