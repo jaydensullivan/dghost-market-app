@@ -36,26 +36,6 @@ const API_BASE = 'https://api.dghostmarket.com';
 const BID_BOT_URL_JS = 'https://t.me/dghostmarketbot';
 const MINI_APP_LINK_BASE = 'https://t.me/dghostmarketbot/DGhost';
 
-// ============================================================
-// ЛОГОТИП В УГЛУ — РУЧНАЯ ФИКСАЦИЯ ПРИ СКРОЛЛЕ
-//
-// Внутри Telegram (особенно на iOS) position:fixed иногда
-// считается не от видимого экрана, а от всей высоты страницы —
-// из-за этого значок "уезжал" вниз при прокрутке. Держим его
-// на месте вручную через scroll-listener вместо того, чтобы
-// полагаться на CSS fixed.
-// ============================================================
-
-window.addEventListener('resize', () => {
-const wo = document.getElementById('welcomeOverlay');
-if (wo && wo.classList.contains('show')){
-wo.style.height = window.innerHeight + 'px';
-}
-const cp = document.getElementById('categoryPickerScreen');
-if (cp && cp.classList.contains('show')){
-cp.style.height = window.innerHeight + 'px';
-}
-});
 
 
 // Пока открыто любое окно, кнопки шапки прячутся (см. body.modal-open

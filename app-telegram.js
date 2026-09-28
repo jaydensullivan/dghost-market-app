@@ -44,7 +44,7 @@ haptic('light');
 // шаги (соглашение, Steam, онбординг) и сам главный экран.
 const BACK_IGNORED_OVERLAYS = new Set([
 'mandatoryAgreementOverlay', 'mandatorySteamOverlay',
-'onboardingOverlay', 'welcomeOverlay',
+'onboardingOverlay',
 ]);
 
 // Кнопка закрытия каждого оверлея — та же, что пользователь нажал бы сам.
@@ -79,8 +79,8 @@ legalOverlay: 'legalCloseBtn',
 
 // Экранные «назад» внутри приложения — сначала более глубокие.
 const SCREEN_BACK_BTNS = [
-'categoryPickerBack', 'dealsBackBtn', 'buyRequestsBackBtn',
-'shopBackBtn', 'profileBackBtn', 'rfBackBtn', 'auctionsBackBtn', 'adminBackBtn',
+'dealsBackBtn', 'buyRequestsBackBtn',
+'rfBackBtn', 'auctionsBackBtn', 'adminBackBtn',
 ];
 
 function isShown(el){
@@ -111,7 +111,6 @@ return best;
 }
 
 function visibleScreenBackBtn(){
-if (isOverlayOpen('welcomeOverlay')) return null;
 for (const id of SCREEN_BACK_BTNS){
 const btn = document.getElementById(id);
 if (isShown(btn)) return btn;

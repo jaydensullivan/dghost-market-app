@@ -718,39 +718,6 @@ inventoryPickHandler = null;
 openInventory();
 });
 
-const welcomeOverlay = document.getElementById('welcomeOverlay');
-
-function showWelcomeOverlay(){
-// 100vh внутри Telegram WebView иногда считается неверно (больше
-// реально видимой области) — измеряем высоту сами через JS и
-// блокируем скролл страницы, пока экран показан, чтобы контент
-// не "уезжал" вниз.
-welcomeOverlay.style.height = window.innerHeight + 'px';
-welcomeOverlay.classList.add('show');
-document.body.style.overflow = 'hidden';
-}
-
-function hideWelcomeOverlay(){
-welcomeOverlay.classList.remove('show');
-document.body.style.overflow = '';
-}
-
-const categoryPickerScreen = document.getElementById('categoryPickerScreen');
-
-function showCategoryPicker(){
-categoryPickerScreen.style.height = window.innerHeight + 'px';
-categoryPickerScreen.classList.add('show');
-document.body.style.overflow = 'hidden';
-document.getElementById('bottomNav').style.display = 'flex';
-document.getElementById('bottomNav').classList.add('elevated');
-}
-
-function hideCategoryPicker(){
-categoryPickerScreen.classList.remove('show');
-document.body.style.overflow = '';
-document.getElementById('bottomNav').classList.remove('elevated');
-}
-
 const ONBOARDING_SEEN_KEY = 'dghost_onboarding_seen';
 let onboardingSlideIndex = 0;
 const ONBOARDING_SLIDES_COUNT = 4;
@@ -808,51 +775,10 @@ document.body.style.overflow = 'hidden';
 startAppAfterOnboarding();
 }
 
-document.getElementById('welcomeSellBtn').addEventListener('click', () => {
-goToScreen('shop');
-
-if (!tg || !tg.initData){
-showAlert(errorMessage('unauthorized'));
-return;
-}
-
-addSkinStatus.textContent = '';
-updateSteamBlockVisibility();
-updateMandatorySteamOverlay();
-pendingSkinAssetId = null;
-pendingSkinInspectLink = null;
-document.getElementById('sMarketPricePreview').style.display = 'none';
-addSkinOverlay.classList.add('show');
-
-// Если Steam уже привязан — сразу открываем инвентарь, без
-// лишнего тапа на «Выбрать из инвентаря Steam». Если не привязан —
-// addSkinOverlay сам покажет подсказку привязать его сначала.
-if (hasSteamLink){
-inventoryPickHandler = null;
-openInventory();
-}
-});
-
-document.getElementById('welcomeBuyBtn').addEventListener('click', () => {
-goToScreen('categoryPicker');
-});
-
-document.getElementById('categoryPickerBack').addEventListener('click', () => goToScreen('welcome'));
-
-document.getElementById('shopBackBtn').addEventListener('click', () => goToScreen('categoryPicker'));
-document.getElementById('profileBackBtn').addEventListener('click', () => goToScreen('welcome'));
 document.getElementById('auctionsBackBtn').addEventListener('click', () => goToScreen('welcome'));
 document.getElementById('adminBackBtn').addEventListener('click', () => goToScreen('welcome'));
 document.getElementById('dealsBackBtn').addEventListener('click', () => goToScreen('welcome'));
 document.getElementById('buyRequestsBackBtn').addEventListener('click', () => goToScreen('welcome'));
-
-document.querySelector('.category-tile-grid').addEventListener('click', (e) => {
-const tile = e.target.closest('.category-tile');
-if (!tile) return;
-currentCategory = tile.dataset.cat;
-if (typeof renderCategoryChips === 'function') renderCategoryChips();
-goToScreen('shop');
-});
 
 addSkinCancel.addEventListener('click', () => {
 addSkinOverlay.classList.remove('show');

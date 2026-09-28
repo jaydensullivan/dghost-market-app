@@ -2,7 +2,6 @@
 // ВКЛАДКИ (ТАЙМЕР / МАГАЗИН / ПРОФИЛЬ)
 // ============================================================
 
-const tabTimerBtn = document.getElementById('tabTimerBtn');
 const tabShopBtn = document.getElementById('tabShopBtn');
 const tabProfileBtn = document.getElementById('tabProfileBtn');
 const screenTimer = document.getElementById('screenTimer');
@@ -212,10 +211,8 @@ document.getElementById('screenAuctions').style.display = name === 'auctions' ? 
 document.getElementById('screenDeals').style.display = name === 'deals' ? 'block' : 'none';
 document.getElementById('screenBuyRequests').style.display = name === 'buyRequests' ? 'block' : 'none';
 document.getElementById('screenLots').style.display = name === 'lots' ? 'block' : 'none';
-tabTimerBtn.classList.toggle('active', name === 'timer');
 tabShopBtn.classList.toggle('active', name === 'shop');
 tabProfileBtn.classList.toggle('active', name === 'profile');
-document.getElementById('tabAdminBtn').classList.toggle('active', name === 'admin');
 document.getElementById('tabAuctionsBtn').classList.toggle('active', name === 'auctions');
 document.getElementById('tabLotsBtn').classList.toggle('active', name === 'lots' || name === 'deals');
 // Нижняя навигация видна везде, кроме панели Admin — там своя кнопка «Назад».
@@ -318,7 +315,6 @@ switchTab('admin');
 }
 });
 
-tabTimerBtn.addEventListener('click', () => goToScreen('timer'));
 
 // ============================================================
 // ИСТОРИЯ НАВИГАЦИИ — «НАЗАД» ВЕДЁТ НА ПРЕДЫДУЩИЙ ЭКРАН,
@@ -335,19 +331,9 @@ tabTimerBtn.addEventListener('click', () => goToScreen('timer'));
 //         «Назад» отсюда ведёт на экран категорий Магазина
 // ============================================================
 
+// «welcome» — главный экран, то есть магазин.
 function displayScreen(name){
-if (name === 'welcome'){
-hideCategoryPicker();
-hideWelcomeOverlay();
-switchTab('shop');
-} else if (name === 'categoryPicker'){
-hideWelcomeOverlay();
-showCategoryPicker();
-} else {
-hideWelcomeOverlay();
-hideCategoryPicker();
-switchTab(name);
-}
+switchTab(name === 'welcome' ? 'shop' : name);
 }
 
 function goToScreen(name){
@@ -357,7 +343,6 @@ displayScreen(name);
 document.getElementById('tabShopBtn').addEventListener('click', () => goToScreen('shop'));
 document.getElementById('tabProfileBtn').addEventListener('click', () => goToScreen('profile'));
 document.getElementById('tabLotsBtn').addEventListener('click', () => goToScreen('lots'));
-document.getElementById('tabAdminBtn').addEventListener('click', () => goToScreen('admin'));
 document.getElementById('tabAuctionsBtn').addEventListener('click', () => goToScreen('auctions'));
 
 // Аватар Telegram-пользователя в нижней навигации, если доступен
