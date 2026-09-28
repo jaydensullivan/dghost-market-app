@@ -218,5 +218,135 @@
   "model": "models/ak47.glb",
   "skin": "models/skins/cu_ak_xray",
   "weapon": "models/weapons/ak47"
+ },
+ "AWP | Asiimov": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/cu_awp_asimov",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | BOOM": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/hy_blam_simple",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Chromatic Aberration": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/cu_awp_chroma_pink",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Containment Breach": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/cu_awp_virus",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Corticera": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/cu_favela_awp",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Desert Hydra": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/gs_awp_hydra",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Dragon Lore": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/cu_medieval_dragon_awp",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Duality": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/gs_awp_limbo_snake",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Electric Hive": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/hy_hive",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Elite Build": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/cu_awp_mastery",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Fade": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/aa_awp_fade",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Fever Dream": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/cu_awp_psychopath",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Graphite": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/am_crumple_bravo",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Gungnir": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/gs_awp_gungnir",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Hyper Beast": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/cu_awp_hyper_beast",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Lightning Strike": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/am_lightning_awp",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Man-o'-war": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/am_awp_glory",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Medusa": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/cu_medusa_awp",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Mortis": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/gs_awp_death",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Neo-Noir": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/cu_awp_neonoir",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Oni Taiji": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/cu_awp_hannya",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Redline": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/cu_awp_cobra",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Safari Mesh": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/sp_mesh_tan",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Silk Tiger": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/am_tigers_blue",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | The Prince": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/gs_awp_enamel",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Wildfire": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/cu_awp_wildfire",
+  "weapon": "models/weapons/awp"
  }
 }
