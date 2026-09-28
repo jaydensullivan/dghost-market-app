@@ -2828,10 +2828,11 @@ console.warn('shareMessage упал —', e);
 }
 }
 
-// 2) Окно «Поделиться» ссылкой — ссылка уже загружена.
+// 2) Ссылка. На iPhone окно t.me/share/url через openTelegramLink
+// молча не открывалось — поэтому сначала копируем ссылку (в момент
+// касания это надёжно), потом пробуем открыть окно отправки.
 if (gwInviteLink){
-gwShareSettled = false;
-watchInviteWindow('link');
+copyInviteLink();
 openInviteShareLink();
 prepareGiveawayInvite();
 return;
