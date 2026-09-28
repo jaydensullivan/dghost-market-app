@@ -1399,26 +1399,16 @@ el.addEventListener('input', scheduleSellMarketPreview);
 el.addEventListener('change', scheduleSellMarketPreview);
 });
 
-buyShareBtn.addEventListener('click', async () => {
-if (!pendingBuySkin || buyShareBtn.disabled) return;
+buyShareBtn.addEventListener('click', () => {
+if (!pendingBuySkin) return;
 
-// Есть 3D у лота и свежий Telegram — отправляем GIF с оборотом
-// ствола; иначе (или при ошибке) — ссылкой, как раньше.
-if (typeof share3DLot === 'function'){
-buyShareBtn.disabled = true;
-try {
-const done = await share3DLot(pendingBuySkin, text => { buyStatus.textContent = text; });
-if (done) return;
-} catch (err){
-console.warn('Поделиться GIF не вышло —', err);
-buyStatus.textContent = '';
-} finally {
-buyShareBtn.disabled = false;
-}
-}
-
+// Обычное окно Telegram «Поделиться ссылкой», открытое прямо в
+// касании. Ссылка ведёт на страницу превью лота (фото, цена), а ?r=
+// засчитывает того, кто поделился, как пригласившего.
+// GIF через shareMessage на телефонах молча не открывался.
+const me = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
 const shareText = `${pendingBuySkin.stattrak ? 'StatTrak™ ' : ''}${pendingBuySkin.title} — ${formatCoins(pendingBuySkin.price)} в DGhost`;
-const shareUrl = `${API_BASE}/s/${pendingBuySkin.id}`;
+const shareUrl = `${API_BASE}/s/${pendingBuySkin.id}` + (me ? `?r=${me}` : '');
 const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
 if (tg && tg.openTelegramLink) {
 tg.openTelegramLink(telegramShareUrl);
