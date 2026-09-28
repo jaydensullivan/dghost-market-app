@@ -21,7 +21,30 @@ const WEAPON_CATEGORY_MAP = {
 'M249':'heavy','Negev':'heavy',
 };
 
-const CATEGORY_ORDER = ['all','pistols','rifles','smgs','snipers','heavy','knives','gloves','stickers','other'];
+const CATEGORY_ORDER = ['all','knives','rifles','pistols','snipers','smgs','heavy','gloves','stickers','other'];
+
+// Иконки категорий на главном экране — простые линии, в цвет текста.
+const CATEGORY_ICONS = {
+all: '<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>',
+knives: '<path d="M4 20 10 14"/><path d="M10 14 19.5 4.5c1 3-.5 6.5-3 9L13 17z"/><path d="M8.5 12.5l3 3"/>',
+rifles: '<path d="M2 11h13l2-2h5v3h-4l-1 1h-3l-2 5H9l1.5-5H2z"/>',
+pistols: '<path d="M3 7h16v4h-7l-1.5 2H9l-1 6H4.5L6 11H3z"/>',
+snipers: '<path d="M2 12.5h20"/><path d="M8 12.5V9.5h7v3"/><path d="M5 12.5 4 17h3l1-4.5"/>',
+smgs: '<path d="M3 9h13v3.5h-4V19H9v-6.5H3z"/><path d="M16 10h4"/>',
+heavy: '<path d="M2 11h15l4-2v5l-4-1H9l-1.5 4.5H5L6.5 13H2z"/>',
+gloves: '<path d="M8 21v-6l-2.5-3.5V6a1.2 1.2 0 0 1 2.4 0v4"/><path d="M8 10V3.6a1.2 1.2 0 0 1 2.4 0V10"/><path d="M10.4 10V4.6a1.2 1.2 0 0 1 2.4 0V10"/><path d="M12.8 10V6a1.2 1.2 0 0 1 2.4 0v8c0 3-1.2 5-2.2 7"/>',
+stickers: '<path d="M4 4h12l4 4v12H4z"/><path d="M16 4v4h4"/>',
+other: '<circle cx="6" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="18" cy="12" r="1.3"/>',
+sets: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
+builder: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
+};
+
+function categoryIconSvg(key){
+return `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${CATEGORY_ICONS[key] || ''}</svg>`;
+}
+
+// Вкладка над товарами: popular | new | discounts (auctions — отдельный экран).
+let currentShopTab = 'popular';
 
 function categorizeSkin(skin){
 const wt = (skin.weapon_type || '').trim();
@@ -42,8 +65,11 @@ const chipsEl = document.getElementById('categoryChips');
 if (!chipsEl) return;
 chipsEl.innerHTML = CATEGORY_ORDER.map(cat => {
 const active = cat === currentCategory ? ' active' : '';
-return `<button type="button" class="category-chip${active}" data-cat="${cat}">${dict['cat_' + cat]}</button>`;
-}).join('');
+return `<button type="button" class="category-chip${active}" data-cat="${cat}">${categoryIconSvg(cat)}<span>${dict['cat_' + cat]}</span></button>`;
+}).join('')
+// Сеты и билдер — инструменты каталога, в конце того же ряда.
++ `<button type="button" class="category-chip tool" data-tool="sets">${categoryIconSvg('sets')}<span>${dict.shop_tool_sets}</span></button>`
++ `<button type="button" class="category-chip tool" data-tool="builder">${categoryIconSvg('builder')}<span>${dict.shop_tool_builder}</span></button>`;
 }
 
 const categoryChipsEl = document.getElementById('categoryChips');
@@ -51,10 +77,46 @@ if (categoryChipsEl){
 categoryChipsEl.addEventListener('click', (e) => {
 const btn = e.target.closest('.category-chip');
 if (!btn) return;
+if (btn.dataset.tool){
+document.getElementById(btn.dataset.tool === 'sets' ? 'openSetsBtn' : 'openBuilderBtn').click();
+return;
+}
 currentCategory = btn.dataset.cat;
 renderCategoryChips();
 applyFiltersAndRender();
 });
+}
+
+document.getElementById('shopTabs').addEventListener('click', (e) => {
+const btn = e.target.closest('[data-shop-tab]');
+if (!btn) return;
+if (btn.dataset.shopTab === 'auctions'){
+goToScreen('auctions');
+return;
+}
+currentShopTab = btn.dataset.shopTab;
+document.querySelectorAll('#shopTabs [data-shop-tab]').forEach(b => b.classList.toggle('active', b === btn));
+applyFiltersAndRender();
+});
+
+// ---------- ❤️ «Следить» ----------
+// Сердечко на карточке открывает «Следить» (уведомление, когда такой
+// скин появится или подешевеет). Заполнено, если скин уже в списке.
+let favQueries = new Set();
+
+function isFavSkin(skin){
+return favQueries.has(String(skin.title || '').trim().toLowerCase());
+}
+
+function loadFavQueries(){
+if (!tg || !tg.initData) return;
+fetch(API_BASE + '/api/wishlist?init_data=' + encodeURIComponent(tg.initData))
+.then(r => r.json())
+.then(data => {
+favQueries = new Set((data.items || []).map(it => String(it.query || '').trim().toLowerCase()));
+applyFiltersAndRender();
+})
+.catch(() => {});
 }
 
 renderCategoryChips();
@@ -160,12 +222,8 @@ const stBadge = skin.stattrak
 ? `<div class="skin-badge stattrak">ST™</div>`
 : '';
 
-const trustDict = I18N[currentLang] || I18N.ru;
-const trustLabels = { new: trustDict.trust_level_new, verified: trustDict.trust_level_verified, trusted: trustDict.trust_level_trusted };
-const sellerTrustBadge = skin.seller_trust_level
-? `<div class="skin-seller-trust" title="${trustLabels[skin.seller_trust_level] || ''}">${TRUST_BADGE_ICON[skin.seller_trust_level] || ''} ${trustLabels[skin.seller_trust_level] || ''}</div>`
-: '';
-
+// Карточка в сетке компактная: float, наклейки и доверие к продавцу
+// показываются в окне лота.
 const rarityClass = RARITY_CLASS[skin.rarity] || '';
 
 // В плотной сетке карточек цветная рамка сверху уже говорит о
@@ -179,21 +237,31 @@ const isOwn = currentUserId && skin.seller_id === currentUserId;
 
 const inCart = cart.includes(skin.id);
 
+const CART_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h2l2.2 12.4a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 2-1.6L21 7H6"/></svg>';
+
+// Свой лот — «Управлять»; чужой — корзина + «Купить».
 const actionBtn = isOwn
 ? `<button class="skin-action own" data-open="${skin.id}" type="button">${(I18N[currentLang] || I18N.ru).btn_manage}</button>`
-: `<button class="skin-action" data-buy="${skin.id}" type="button" style="width:100%;">${(I18N[currentLang] || I18N.ru).btn_buy}</button>`;
+: `<div class="skin-action-row">
+<button class="skin-cart-btn${inCart ? ' in-cart' : ''}" data-cart-toggle="${skin.id}" type="button" aria-label="Корзина">${CART_ICON}</button>
+<button class="skin-action" data-buy="${skin.id}" type="button">${(I18N[currentLang] || I18N.ru).btn_buy}</button>
+</div>`;
+
+const favBtn = isOwn ? ''
+: `<button type="button" class="skin-fav${isFavSkin(skin) ? ' on' : ''}" data-fav="${skin.id}" aria-label="Следить"><svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.8 3.9 4.5 7.3 4.5c2 0 3.6 1.1 4.7 2.7 1.1-1.6 2.7-2.7 4.7-2.7 3.4 0 5.7 3.3 4.5 6.7-1.7 4.7-9.2 9.3-9.2 9.3z"/></svg></button>`;
 
 const weaponType = skin.weapon_type
 ? `<div class="skin-weapon-type">${escapeHtml(skin.weapon_type)}</div>`
 : '';
 
-const floatLine = (skin.float_value !== null && skin.float_value !== undefined)
-? `<div class="skin-float">Float: ${Number(skin.float_value).toFixed(4)}</div>`
-: '';
-
+// В заголовке — только название раскраски: оружие уже строкой выше.
+const bareTitle = String(skin.title || '').replace(/^★\s*/, '');
+const shortTitle = skin.weapon_type && bareTitle.startsWith(skin.weapon_type + ' | ')
+? bareTitle.slice(skin.weapon_type.length + 3)
+: skin.title;
 const title = skin.stattrak
-? `StatTrak™ ${escapeHtml(skin.title)}`
-: escapeHtml(skin.title);
+? `StatTrak™ ${escapeHtml(shortTitle)}`
+: escapeHtml(shortTitle);
 
 const priceHtml = skin.original_price
 ? `<div class="skin-price"><span style="text-decoration:line-through; color:var(--muted); font-size:11px; margin-right:5px;">${formatCoins(skin.original_price)}</span>${formatCoins(skin.price)} <span style="color:#7ec98a; font-size:11px;">-${skin.discount_type === 'percent' ? skin.discount_value + '%' : formatCoins(skin.discount_value)}</span></div>`
@@ -205,12 +273,10 @@ return `
 ${photo}
 ${wearBadge}
 ${stBadge}
+${favBtn}
 </div>
 ${weaponType}
-${sellerTrustBadge}
 <div class="skin-title">${title}</div>
-${floatLine}
-${stickersHtml(skin.stickers, 'mini')}
 ${priceHtml}
 ${actionBtn}
 </div>`;
@@ -309,18 +375,27 @@ filtered = filtered.filter(s => !!s.has_stickers);
 filtered = filtered.filter(s => !s.has_stickers);
 }
 
+if (currentShopTab === 'discounts'){
+filtered = filtered.filter(s => !!s.original_price);
+}
+
 filtered = filtered.slice();
 
 if (sort === 'price_asc'){
 filtered.sort((a, b) => a.price - b.price);
 } else if (sort === 'price_desc'){
 filtered.sort((a, b) => b.price - a.price);
+} else if (sort === 'auto' && currentShopTab === 'popular'){
+// Популярное — по просмотрам, при равенстве новые выше.
+filtered.sort((a, b) => (b.view_count || 0) - (a.view_count || 0) || b.id - a.id);
 } else {
 filtered.sort((a, b) => b.id - a.id);
 }
 
 if (!filtered.length){
-skinsList.innerHTML = `<div class="skins-empty">${lastSkins.length ? 'Ничего не нашлось' : 'Пока нет лотов — стань первым'}</div>`;
+const dict = I18N[currentLang] || I18N.ru;
+skinsList.innerHTML = `<div class="skins-empty">${!lastSkins.length ? dict.shop_empty_all
+: currentShopTab === 'discounts' ? dict.shop_empty_discounts : dict.shop_empty_filtered}</div>`;
 return;
 }
 
@@ -330,6 +405,8 @@ skinsList.innerHTML = filtered.map(skinCardHtml).join('');
 function renderSkins(list){
 lastSkins = list || [];
 applyFiltersAndRender();
+if (typeof renderMyLots === 'function') renderMyLots();
+if (typeof renderPromo === 'function') renderPromo();
 if (deepLinkSkinId){
 const targetId = deepLinkSkinId;
 deepLinkSkinId = null;
@@ -372,9 +449,18 @@ loadSkins();
 }
 
 skinSearch.addEventListener('input', applyFiltersAndRender);
-skinSort.addEventListener('change', applyFiltersAndRender);
+skinSort.addEventListener('change', () => {
+applyFiltersAndRender();
+if (typeof updateFiltersBadge === 'function') updateFiltersBadge();
+});
 
-skinsList.addEventListener('click', (e) => {
+function onSkinGridClick(e){
+const favBtn = e.target.closest('[data-fav]');
+if (favBtn){
+const skin = lastSkins.find(s => String(s.id) === favBtn.dataset.fav);
+if (skin) openWatchSheet(skin);
+return;
+}
 const buyBtn = e.target.closest('[data-buy]');
 if (buyBtn){
 const skin = lastSkins.find(s => String(s.id) === buyBtn.dataset.buy);
@@ -400,5 +486,10 @@ if (card && !e.target.closest('button, a, input, select')){
 const skin = lastSkins.find(s => String(s.id) === card.dataset.card);
 if (skin) openBuySheet(skin);
 }
-});
+}
+
+skinsList.addEventListener('click', onSkinGridClick);
+document.getElementById('myLotsList').addEventListener('click', onSkinGridClick);
+
+loadFavQueries();
 

@@ -217,11 +217,12 @@ fetch(API_BASE + '/api/me?init_data=' + encodeURIComponent(tg.initData))
 .then(data => {
 if (!data || data.error) return;
 document.getElementById('balanceAmount').textContent = formatCoins(data.available);
+balancePill.style.display = '';
 isAdmin = !!data.is_admin;
 isOwner = !!data.is_owner;
 adminPermissions = data.admin_permissions || [];
 isAuctioneer = !!data.is_auctioneer;
-document.getElementById('tabAdminBtn').style.display = (isAdmin || isAuctioneer) ? '' : 'none';
+// Admin — в меню аватара; в нижней навигации только пять вкладок.
 document.getElementById('headerMenuAdmin').style.display = (isAdmin || isAuctioneer) ? '' : 'none';
 if (typeof applyChipVisibility === 'function') applyChipVisibility();
 currentUserId = data.user_id;
@@ -310,7 +311,6 @@ isAdmin = !!data.is_admin;
 isOwner = !!data.is_owner;
 adminPermissions = data.admin_permissions || [];
 isAuctioneer = !!data.is_auctioneer;
-document.getElementById('tabAdminBtn').style.display = (isAdmin || isAuctioneer) ? '' : 'none';
 document.getElementById('headerMenuAdmin').style.display = (isAdmin || isAuctioneer) ? '' : 'none';
 if (typeof applyChipVisibility === 'function') applyChipVisibility();
 currentUserId = data.user_id;

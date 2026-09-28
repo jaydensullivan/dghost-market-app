@@ -166,7 +166,9 @@ const prevById = {};
 auctionsData.forEach(a => { prevById[a.auction_id] = a; });
 const hadData = auctionsData.length > 0;
 auctionsData = data.items || [];
-document.getElementById('tabAuctionsBtn').style.display = auctionsData.length ? '' : 'none';
+// Вкладка «Аукционы» в нижней навигации видна всегда; пункт меню — только
+// когда аукционы идут.
+if (typeof renderPromo === 'function') renderPromo();
 document.getElementById('headerMenuAuctions').style.display = auctionsData.length ? '' : 'none';
 if (currentTab === 'auctions'){
 if (hadData) applyAuctionUpdates(prevById);

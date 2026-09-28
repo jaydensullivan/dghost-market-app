@@ -238,6 +238,7 @@ renderRaffleProof(c);
 
 // Баннер на главном экране: «🎁 Сейчас разыгрывается …» — ведёт сюда.
 function renderRaffleBanner(){
+if (typeof renderPromo === 'function') renderPromo();
 const banner = document.getElementById('welcomeRaffle');
 if (!banner) return;
 const c = raffleData && raffleData.current;

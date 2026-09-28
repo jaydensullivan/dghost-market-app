@@ -209,15 +209,19 @@ document.getElementById('screenAdmin').style.display = name === 'admin' ? 'block
 document.getElementById('screenAuctions').style.display = name === 'auctions' ? 'block' : 'none';
 document.getElementById('screenDeals').style.display = name === 'deals' ? 'block' : 'none';
 document.getElementById('screenBuyRequests').style.display = name === 'buyRequests' ? 'block' : 'none';
+document.getElementById('screenLots').style.display = name === 'lots' ? 'block' : 'none';
 tabTimerBtn.classList.toggle('active', name === 'timer');
 tabShopBtn.classList.toggle('active', name === 'shop');
 tabProfileBtn.classList.toggle('active', name === 'profile');
 document.getElementById('tabAdminBtn').classList.toggle('active', name === 'admin');
 document.getElementById('tabAuctionsBtn').classList.toggle('active', name === 'auctions');
-// В каталоге лотов и в панели Admin нижняя навигация не нужна —
-// там только кнопка «Назад». На остальных экранах навигация
-// остаётся видимой как обычно.
-document.getElementById('bottomNav').style.display = (name === 'shop' || name === 'admin' || name === 'deals' || name === 'buyRequests') ? 'none' : 'flex';
+document.getElementById('tabLotsBtn').classList.toggle('active', name === 'lots' || name === 'deals');
+// Нижняя навигация видна везде, кроме панели Admin — там своя кнопка «Назад».
+document.getElementById('bottomNav').style.display = name === 'admin' ? 'none' : 'flex';
+if (name === 'lots' && typeof renderMyLots === 'function'){
+renderMyLots();
+loadSkins();
+}
 if (name === 'timer' && typeof loadRaffle === 'function'){
 loadRaffle();
 }
@@ -290,7 +294,7 @@ switchTab('deals');
 } else if (action === 'buyRequests'){
 switchTab('buyRequests');
 } else if (action === 'sell'){
-switchTab('shop');
+goToScreen('lots');
 setTimeout(() => addSkinBtn.click(), 150);
 } else if (action === 'support'){
 const url = 'https://t.me/DGhostCountdownBot';
@@ -350,6 +354,7 @@ displayScreen(name);
 
 document.getElementById('tabShopBtn').addEventListener('click', () => goToScreen('shop'));
 document.getElementById('tabProfileBtn').addEventListener('click', () => goToScreen('profile'));
+document.getElementById('tabLotsBtn').addEventListener('click', () => goToScreen('lots'));
 document.getElementById('tabAdminBtn').addEventListener('click', () => goToScreen('admin'));
 document.getElementById('tabAuctionsBtn').addEventListener('click', () => goToScreen('auctions'));
 

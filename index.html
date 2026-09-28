@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="stylesheet" href="app.css?v=28">
+<link rel="stylesheet" href="app.css?v=29">
 </head>
 <body>
 
@@ -17,6 +17,11 @@
 <div class="brand-tl"><video class="brand-logo" src="logo.mp4" autoplay loop muted playsinline disablepictureinpicture onerror="this.style.display='none'"></video></div>
 
 <div class="brand-tr" style="position:fixed; top:18px; z-index:500; display:flex; align-items:center; gap:8px;">
+<!-- Баланс продавца: нажатие — профиль, ⓘ — как работает холд. -->
+<div class="balance-pill" id="balancePill" style="display:none;">
+<button type="button" class="balance-pill-main" id="balancePillBtn"><img src="coin.PNG" alt="" onerror="this.style.display='none'"> <span id="balanceAmount">—</span></button>
+<button type="button" class="balance-pill-info" id="balanceInfoBtn" aria-label="Как работает холд">ⓘ</button>
+</div>
 <button type="button" id="notifBellBtn" class="brand-logo notif-bell" aria-label="Уведомления">
 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
 <span class="notif-badge" id="notifBadge" style="display:none;"></span>
@@ -165,23 +170,30 @@
 </div>
 
 
+<!-- Постоянная навигация: Маркет / Аукционы / Корзина / Мои лоты / Профиль.
+     Розыгрыш — в промо-баннере и меню, Admin — в меню. -->
 <div class="bottom-nav" id="bottomNav">
-<button class="nav-btn" id="tabTimerBtn" type="button">
-<span class="nav-icon">🎁</span>
-<span class="nav-label" data-i18n="nav_giveaway">Розыгрыш</span>
-</button>
 <button class="nav-btn active" id="tabShopBtn" type="button">
-<span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h2l2.2 12.4a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 2-1.6L21 7H6"/></svg></span>
-<span class="nav-label" data-i18n="nav_shop">Магазин</span>
+<span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg></span>
+<span class="nav-label" data-i18n="nav_market">Маркет</span>
+</button>
+<button class="nav-btn" id="tabAuctionsBtn" type="button">
+<span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="3" width="10" height="5.5" rx="1.3" transform="rotate(45 7.5 5.75)"/><path d="M11 9.5 18 16.5"/><path d="M3 20h9"/></svg></span>
+<span class="nav-label" data-i18n="nav_auctions_short">Аукционы</span>
+</button>
+<button class="nav-btn" id="navCartBtn" type="button">
+<span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h2l2.2 12.4a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 2-1.6L21 7H6"/></svg><span class="nav-badge" id="navCartBadge" style="display:none;">0</span></span>
+<span class="nav-label" data-i18n="nav_cart">Корзина</span>
+</button>
+<button class="nav-btn" id="tabLotsBtn" type="button">
+<span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span>
+<span class="nav-label" data-i18n="nav_my_lots">Мои лоты</span>
 </button>
 <button class="nav-btn" id="tabProfileBtn" type="button">
-<span class="nav-icon" id="navAvatarIcon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.2-4 4-6 7.5-6s6.3 2 7.5 6"/></svg></span>
+<span class="nav-icon" id="navAvatarIcon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.2-4 4-6 7.5-6s6.3 2 7.5 6"/></svg></span>
 <span class="nav-label" data-i18n="nav_profile">Профиль</span>
 </button>
-<button class="nav-btn" id="tabAuctionsBtn" type="button" style="display:none;">
-<span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="3" width="10" height="5.5" rx="1.3" transform="rotate(45 7.5 5.75)"/><path d="M11 9.5 18 16.5"/><path d="M3 20h9"/></svg></span>
-<span class="nav-label" data-i18n="nav_auctions">Аукцион</span>
-</button>
+<button class="nav-btn" id="tabTimerBtn" type="button" style="display:none;"></button>
 <button class="nav-btn" id="tabAdminBtn" type="button" style="display:none;">
 <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2 3 6v6c0 5 3.8 8.7 9 10 5.2-1.3 9-5 9-10V6l-9-4Z"/><path d="M8.5 12.2l2.3 2.3 4.7-4.9"/></svg></span>
 <span class="nav-label" data-i18n="nav_admin">Admin</span>
@@ -243,38 +255,36 @@
 🛒 <span id="cartFabCount">0</span>
 </button>
 
-<div class="shop-header">
-<div style="display:flex; align-items:center; gap:10px;">
+<!-- Главный экран магазина: промо → поиск → категории → вкладки → товары. -->
 <button type="button" class="back-btn" id="shopBackBtn" style="display:none;">←</button>
-<div class="balance-pill" id="balancePill" style="display:none;"><img src="https://jaydensullivan.github.io/dghost-market-app/coin.PNG" alt="" style="width:15px; height:15px; vertical-align:-3px; object-fit:contain;" onerror="this.style.display='none'"> <span id="balanceAmount">—</span></div>
-</div>
-<button class="add-skin-btn" id="addSkinBtn" type="button" data-i18n="btn_add_skin" style="display:none;">+ Скин</button>
-</div>
 
-<div class="shop-hint" data-i18n="hint_sell_flow">Продал скин — деньги придут покупателю в холд на 7 дней (трейд-бан Steam), затем автоматически на твой баланс.</div>
-
-<div class="shop-controls">
-<input id="skinSearch" class="skin-search" type="text" placeholder="Поиск по названию или оружию..." data-i18n-placeholder="search_placeholder">
-<select id="skinSort" class="skin-sort">
-<option value="new" data-i18n="sort_new">Сначала новые</option>
-<option value="price_asc" data-i18n="sort_price_asc">Цена: сначала дешёвые</option>
-<option value="price_desc" data-i18n="sort_price_desc">Цена: сначала дорогие</option>
-</select>
+<div class="promo" id="promo">
+<div class="promo-track" id="promoTrack"></div>
+<div class="promo-dots" id="promoDots"></div>
 </div>
 
-<button type="button" id="openFiltersBtn" class="filters-btn">
-<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
-<span data-i18n="filters_btn">Фильтры</span>
+<div class="shop-search-row" id="shopSearchAnchor">
+<label class="shop-search">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+<input id="skinSearch" type="search" placeholder="Поиск по названию или оружию..." data-i18n-placeholder="search_placeholder">
+</label>
+<button type="button" id="openFiltersBtn" class="shop-filter-btn" aria-label="Фильтры">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>
 <span id="filtersActiveCount" class="filters-count" style="display:none;">0</span>
 </button>
+</div>
 
-<button type="button" id="openSetsBtn" class="filters-btn" style="margin-top:6px; border-color:var(--red);">
-<span data-i18n="sets_btn">Сеты оружия</span>
-</button>
+<!-- Категории и инструменты каталога (сеты, билдер) — рисуются в app-catalog.js. -->
+<div class="category-chips shop-cats" id="categoryChips"></div>
+<button type="button" id="openSetsBtn" style="display:none;"></button>
+<button type="button" id="openBuilderBtn" style="display:none;"></button>
 
-<button type="button" id="openBuilderBtn" class="filters-btn" style="margin-top:6px; border-color:var(--red);">
-<span data-i18n="builder_btn">🎯 Билдер под бюджет</span>
-</button>
+<div class="shop-tabs" id="shopTabs">
+<button type="button" class="active" data-shop-tab="popular"><span>🔥</span> <span data-i18n="shop_tab_popular">Популярное</span></button>
+<button type="button" data-shop-tab="new"><span>✨</span> <span data-i18n="shop_tab_new">Новинки</span></button>
+<button type="button" data-shop-tab="discounts"><span>🏷</span> <span data-i18n="shop_tab_discounts">Скидки</span></button>
+<button type="button" data-shop-tab="auctions"><span>🔨</span> <span data-i18n="shop_tab_auctions">Аукционы</span></button>
+</div>
 
 <div class="skins-grid" id="skinsList">
 <div class="skel-card" aria-hidden="true"><div class="skel-block skel-photo"></div><div class="skel-block skel-line w80"></div><div class="skel-block skel-line w35"></div><div class="skel-block skel-line tall"></div></div>
@@ -481,6 +491,17 @@
 <div class="skins-empty" style="padding:16px 4px;" data-i18n="auctions_empty">Сейчас нет активных аукционов.</div>
 </div>
 
+</div>
+
+<!-- Мои лоты: свои активные лоты, выставить новый, история сделок. -->
+<div class="screen-profile" id="screenLots" style="display:none; padding:76px 16px 110px;">
+<div class="lots-head">
+<div class="profile-section-title" style="font-size:16px; margin:0;" data-i18n="nav_my_lots">Мои лоты</div>
+<button class="add-skin-btn" id="addSkinBtn" type="button" data-i18n="btn_add_skin">+ Скин</button>
+</div>
+<div class="shop-hint" data-i18n="hint_sell_flow">Продал скин — деньги придут покупателю в холд на 7 дней (трейд-бан Steam), затем автоматически на твой баланс.</div>
+<div class="skins-grid" id="myLotsList"></div>
+<button type="button" class="steam-link-btn secondary" id="lotsDealsBtn" style="margin-top:16px;" data-i18n="lots_deals_btn">📜 Мои сделки и обмены</button>
 </div>
 
 <div class="screen-profile" id="screenDeals" style="display:none; padding:50px 16px 100px;">
@@ -1278,6 +1299,16 @@
 <h2 data-i18n="filters_title">Фильтры</h2>
 
 <div class="edit-field">
+<label for="skinSort" data-i18n="filters_sort">Сортировка</label>
+<select id="skinSort">
+<option value="auto" data-i18n="sort_auto">Как во вкладке</option>
+<option value="new" data-i18n="sort_new">Сначала новые</option>
+<option value="price_asc" data-i18n="sort_price_asc">Цена: сначала дешёвые</option>
+<option value="price_desc" data-i18n="sort_price_desc">Цена: сначала дорогие</option>
+</select>
+</div>
+
+<div class="edit-field">
 <label data-i18n="filters_price_range">Цена, сум</label>
 <div class="range-row">
 <input id="filterPriceMin" type="number" min="0" placeholder="от">
@@ -1641,25 +1672,26 @@
 </div>
 
 <script src="app-core.js?v=3"></script>
-<script src="app-i18n.js?v=34"></script>
-<script src="app-navigation.js?v=7"></script>
-<script src="app-shop.js?v=9"></script>
+<script src="app-i18n.js?v=35"></script>
+<script src="app-navigation.js?v=8"></script>
+<script src="app-shop.js?v=10"></script>
 <script src="app-legal.js?v=1"></script>
 <script src="app-deals.js?v=8"></script>
-<script src="app-catalog.js?v=6"></script>
+<script src="app-catalog.js?v=7"></script>
 <script src="app-cart.js?v=1"></script>
-<script src="app-filters.js?v=10"></script>
+<script src="app-filters.js?v=11"></script>
 <script src="app-steam.js?v=1"></script>
 <script src="app-topup.js?v=1"></script>
 <script src="app-history.js?v=4"></script>
 <script src="app-referral.js?v=2"></script>
 <script src="app-withdraw.js?v=8"></script>
 <script src="app-admin.js?v=6"></script>
-<script src="app-auctions.js?v=3"></script>
+<script src="app-auctions.js?v=4"></script>
 <script src="app-reviews.js?v=1"></script>
 <script src="app-notifications.js?v=2"></script>
 <script src="app-3d.js?v=23"></script>
 <script src="app-telegram.js?v=8"></script>
-<script src="app-raffle.js?v=1"></script>
+<script src="app-raffle.js?v=2"></script>
+<script src="app-home.js?v=1"></script>
 </body>
 </html>
