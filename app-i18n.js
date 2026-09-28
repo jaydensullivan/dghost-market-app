@@ -182,6 +182,11 @@ notif_title: "Уведомления",
 notif_empty: "Пока тихо — здесь появятся новости о сделках, балансе и аукционах.",
 notif_open: "Открыть",
 giveaway_registered: 'Ты участвуешь ✓',
+gw_invite_share_text: '🎁 Розыгрыш скинов CS2 в DGhostMarket — заходи по моей ссылке!',
+gw_invite_done: 'Готово! Теперь жми «Участвовать».',
+gw_invite_hint: 'Чтобы участвовать, пригласи ещё {n} — друг должен открыть бота по твоей ссылке.',
+gw_invite_btn: '📨 Пригласить друзей',
+gw_invite_title: 'Пригласи друзей',
 filters_btn: 'Фильтры',
 filters_title: 'Фильтры',
 filters_price_range: 'Цена, сум',
@@ -970,6 +975,11 @@ notif_title: "Bildirishnomalar",
 notif_empty: "Hozircha jim — bu yerda bitimlar, balans va auksionlar haqidagi xabarlar paydo bo'ladi.",
 notif_open: "Ochish",
 giveaway_registered: "Siz ishtirok etyapsiz ✓",
+gw_invite_share_text: "🎁 DGhostMarket'da CS2 skinlari o'yini — mening havolam orqali kir!",
+gw_invite_done: "Tayyor! Endi «Ishtirok etish»ni bos.",
+gw_invite_hint: "Ishtirok etish uchun yana {n} ta do'stni taklif qil — do'sting botni sening havolang orqali ochishi kerak.",
+gw_invite_btn: "📨 Do'stlarni taklif qilish",
+gw_invite_title: "Do'stlarni taklif qil",
 filters_btn: 'Filtrlar',
 filters_title: 'Filtrlar',
 filters_price_range: 'Narxi, sum',
@@ -1758,6 +1768,11 @@ notif_title: "Notifications",
 notif_empty: "All quiet — news about your deals, balance and auctions will show up here.",
 notif_open: "Open",
 giveaway_registered: "You're in ✓",
+gw_invite_share_text: "🎁 CS2 skin giveaway on DGhostMarket — join via my link!",
+gw_invite_done: "Done! Now tap “Join”.",
+gw_invite_hint: "Invite {n} more to take part — your friend has to open the bot via your link.",
+gw_invite_btn: "📨 Invite friends",
+gw_invite_title: "Invite friends",
 filters_btn: 'Filters',
 filters_title: 'Filters',
 filters_price_range: 'Price, sum',
@@ -2505,6 +2520,12 @@ window.open(joinUrl, '_blank');
 return;
 }
 
+// Условие «пригласи друзей» ещё не выполнено — ведём к приглашению.
+if (gwInviteLocked){
+shareGiveawayInvite();
+return;
+}
+
 // Розыгрыш ещё идёт — реальная регистрация участника
 if (!tg || !tg.initData){
 showAlert(errorMessage('unauthorized'));
@@ -2523,13 +2544,21 @@ body: JSON.stringify({ init_data: tg.initData })
 .then(async r => {
 if (!r.ok){
 const data = await r.json().catch(() => ({}));
+if (data.error === 'need_invites'){
+renderInviteProgress(data);
+ctaBtn.disabled = false;
+shareGiveawayInvite();
+return null;
+}
 throw new Error(errorMessage(data.error));
 }
 return r.json();
 })
-.then(() => {
+.then(res => {
+if (!res) return;
 ctaBtn.textContent = (I18N[currentLang] || I18N.ru).giveaway_registered;
 ctaBtn.classList.add('registered');
+gwInvite.style.display = 'none';
 })
 .catch(err => {
 showErrorToast(err);
@@ -2537,20 +2566,83 @@ ctaBtn.disabled = false;
 });
 });
 
-// Если пользователь уже был зарегистрирован раньше (перезашёл в
-// мини-апп) — сразу показываем это в кнопке, не даём жать заново.
-if (tg && tg.initData){
+// ---------- условие «пригласи друзей» ----------
+// Бот отдаёт invites / invites_required. Пока приглашённых меньше
+// нужного, кнопка «Участвовать» ведёт к приглашению, а под ней виден
+// прогресс 0/2 → 1/2 → 2/2.
+const gwInvite = document.getElementById('gwInvite');
+let gwInviteLocked = false;
+
+function renderInviteProgress(data){
+if (!data || !data.invites_required || data.registered || ctaBtn.classList.contains('live')){
+gwInvite.style.display = 'none';
+gwInviteLocked = false;
+ctaBtn.classList.remove('locked');
+return;
+}
+const dict = I18N[currentLang] || I18N.ru;
+const need = data.invites_required;
+const have = Math.min(data.invites || 0, need);
+gwInvite.style.display = '';
+gwInvite.classList.toggle('done', have >= need);
+document.getElementById('gwInviteCount').textContent = have + '/' + need;
+document.getElementById('gwInviteBar').style.width = Math.round(have / need * 100) + '%';
+document.getElementById('gwInviteHint').textContent = have >= need
+? dict.gw_invite_done
+: dict.gw_invite_hint.replace('{n}', need - have);
+gwInviteLocked = have < need;
+ctaBtn.classList.toggle('locked', gwInviteLocked);
+}
+
+function loadGiveawayStatus(){
+if (!tg || !tg.initData) return;
 fetch(API_BASE + '/api/giveaway/status?init_data=' + encodeURIComponent(tg.initData))
 .then(r => r.json())
 .then(data => {
+// Если пользователь уже был зарегистрирован раньше (перезашёл в
+// мини-апп) — сразу показываем это в кнопке, не даём жать заново.
 if (data.registered && !ctaBtn.classList.contains('live')){
 ctaBtn.textContent = (I18N[currentLang] || I18N.ru).giveaway_registered;
 ctaBtn.classList.add('registered');
 ctaBtn.disabled = true;
 }
+renderInviteProgress(data);
 })
 .catch(() => {});
 }
+
+let gwInviteLink = '';
+
+function shareGiveawayInvite(){
+const dict = I18N[currentLang] || I18N.ru;
+const share = (link) => {
+const url = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(dict.gw_invite_share_text);
+if (tg && tg.openTelegramLink) tg.openTelegramLink(url);
+else window.open(url, '_blank');
+};
+if (gwInviteLink) return share(gwInviteLink);
+if (!tg || !tg.initData){
+showAlert(errorMessage('unauthorized'));
+return;
+}
+fetch(API_BASE + '/api/referral_info?init_data=' + encodeURIComponent(tg.initData))
+.then(r => r.json())
+.then(data => {
+if (!data.link) throw new Error('no_link');
+gwInviteLink = data.link;
+share(gwInviteLink);
+})
+.catch(err => showErrorToast(err));
+}
+
+document.getElementById('gwInviteBtn').addEventListener('click', shareGiveawayInvite);
+
+// Вернулся из чата после отправки приглашения — обновляем прогресс.
+document.addEventListener('visibilitychange', () => {
+if (!document.hidden) loadGiveawayStatus();
+});
+
+loadGiveawayStatus();
 
 // ---- matrix-style digital rain — now scoped to the profile hero
 // card instead of the whole page, for a calmer, more minimal feel ----
