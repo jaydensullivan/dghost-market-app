@@ -770,6 +770,51 @@ return pack;
 });
 }
 
+// Цвет, тонмаппинг, свет и отражения — общие для просмотрщика и GIF,
+// чтобы анимация в чате выглядела так же, как 3D в приложении.
+// Возвращает промис, который выполняется, когда готовы отражения.
+function setupViewerScene(THREE, renderer, scene){
+// В three r152+ цвета по умолчанию в линейном пространстве —
+// без этого металл выглядит блёклым. В r128 свойства нет, и
+// присваивание просто игнорируется.
+if (renderer.debug) renderer.debug.checkShaderErrors = true;
+if ('outputColorSpace' in renderer) renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+
+// Нейтральный белый свет — чтобы металл читался как металл, а не
+// как розовая пластмасса. Неон по брендбуку идёт сверху, контровым
+// и заполняющим, но приглушённо.
+scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+
+const key = new THREE.DirectionalLight(0xffffff, 2.4);
+key.position.set(3, 4, 5);
+scene.add(key);
+
+const front = new THREE.DirectionalLight(0xffffff, 1.2);
+front.position.set(0, 1, 6);
+scene.add(front);
+
+const neonKey = new THREE.DirectionalLight(0xA855F7, 0.9);
+neonKey.position.set(-3, 3, 2);
+scene.add(neonKey);
+
+const neonRim = new THREE.DirectionalLight(0xFF2BD6, 0.8);
+neonRim.position.set(-4, -1, -3);
+scene.add(neonRim);
+
+// Блики на металле дают отражения окружения. Если модуль окружения
+// не подгрузится (старый WebView, откат на r128) — просто остаёмся
+// со светом выше.
+if (!THREE.PMREMGenerator) return Promise.resolve();
+return dynamicImport(THREE_ADDONS + 'environments/RoomEnvironment.js')
+.then(mod => {
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new mod.RoomEnvironment(), 0.04).texture;
+})
+.catch(() => {});
+}
+
 function open3DViewer(modelUrl, title, skinDir, wearValue, weaponDir, maskChannel){
 const dict = I18N[currentLang] || I18N.ru;
 const mode = get3DMode() || 'full';
@@ -830,14 +875,6 @@ canvas, antialias: mode !== 'light', alpha: true,
 renderer.setPixelRatio(mode === 'light' ? 1 : Math.min(window.devicePixelRatio || 1, 2));
 renderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
 
-// В three r152+ цвета по умолчанию в линейном пространстве —
-// без этого металл выглядит блёклым. В r128 свойства нет, и
-// присваивание просто игнорируется.
-if (renderer.debug) renderer.debug.checkShaderErrors = true;
-if ('outputColorSpace' in renderer) renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.1;
-
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(40, canvas.clientWidth / canvas.clientHeight, 0.05, 100);
 // Крутим не саму модель, а группу вокруг её центра — иначе ствол
@@ -847,38 +884,7 @@ object.add(gltf.scene);
 scene.add(object);
 const baseDistance = fitObjectToView(THREE, gltf.scene, camera);
 
-// Нейтральный белый свет — чтобы металл читался как металл, а не
-// как розовая пластмасса. Неон по брендбуку идёт сверху, контровым
-// и заполняющим, но приглушённо.
-scene.add(new THREE.AmbientLight(0xffffff, 0.55));
-
-const key = new THREE.DirectionalLight(0xffffff, 2.4);
-key.position.set(3, 4, 5);
-scene.add(key);
-
-const front = new THREE.DirectionalLight(0xffffff, 1.2);
-front.position.set(0, 1, 6);
-scene.add(front);
-
-const neonKey = new THREE.DirectionalLight(0xA855F7, 0.9);
-neonKey.position.set(-3, 3, 2);
-scene.add(neonKey);
-
-const neonRim = new THREE.DirectionalLight(0xFF2BD6, 0.8);
-neonRim.position.set(-4, -1, -3);
-scene.add(neonRim);
-
-// Блики на металле дают отражения окружения. Если модуль окружения
-// не подгрузится (старый WebView, откат на r128) — просто остаёмся
-// со светом выше.
-if (THREE.PMREMGenerator){
-dynamicImport(THREE_ADDONS + 'environments/RoomEnvironment.js')
-.then(mod => {
-const pmrem = new THREE.PMREMGenerator(renderer);
-scene.environment = pmrem.fromScene(new mod.RoomEnvironment(), 0.04).texture;
-})
-.catch(() => {});
-}
+setupViewerScene(THREE, renderer, scene);
 
 // Раскраска лота, если она указана.
 if (skinDir){
@@ -1040,4 +1046,146 @@ const skin = buy3dSkin;
 const title = skin.stattrak ? 'StatTrak™ ' + skin.title : skin.title;
 open3DViewer(buy3dEntry.model, title, buy3dEntry.skin, Number(skin.float_value) || 0, buy3dEntry.weapon || null, 'none');
 });
+}
+
+// ---------- GIF с 3D-рендером для «Поделиться» ----------
+// Рендерим оборот ствола в маленький холст, собираем GIF (gifenc,
+// ~10 КБ) и отдаём боту. Бот готовит сообщение (savePreparedInlineMessage),
+// а Telegram.WebApp.shareMessage показывает окно выбора чата.
+// Если что-то из этого недоступно — «Поделиться» работает по-старому,
+// ссылкой.
+const GIFENC_URL = 'https://cdn.jsdelivr.net/npm/gifenc@1.0.3/dist/gifenc.esm.js';
+const SHARE_GIF = { width: 360, height: 240, frames: 36, delay: 70, colors: 128 };
+let gifencLoading = null;
+
+function loadGifEncoder(){
+if (!gifencLoading){
+gifencLoading = dynamicImport(GIFENC_URL).catch(err => {
+gifencLoading = null;
+throw err;
+});
+}
+return gifencLoading;
+}
+
+function drawShareFrame(ctx, glCanvas, title){
+const { width: W, height: H } = SHARE_GIF;
+const bg = ctx.createRadialGradient(W / 2, H / 2, 10, W / 2, H / 2, W * 0.7);
+bg.addColorStop(0, '#2a1650');
+bg.addColorStop(1, '#0c0816');
+ctx.fillStyle = bg;
+ctx.fillRect(0, 0, W, H);
+ctx.drawImage(glCanvas, 0, 0, W, H);
+ctx.font = 'bold 13px sans-serif';
+ctx.fillStyle = '#ffffff';
+ctx.fillText(title, 12, H - 14, W - 24);
+ctx.font = 'bold 10px monospace';
+ctx.fillStyle = '#A855F7';
+ctx.fillText('DGHOSTMARKET', 12, 18);
+}
+
+async function render3DGif(entry, wear, title, onProgress){
+const { width: W, height: H, frames, delay, colors } = SHARE_GIF;
+const [, gifenc] = await Promise.all([loadGltfLoader(), loadGifEncoder()]);
+
+const response = await fetch(entry.model);
+if (!response.ok) throw new Error('model ' + response.status);
+const buffer = await response.arrayBuffer();
+const gltf = await parseGlb(buffer).catch(() => parseGlb(stripTexturesFromGlb(buffer)));
+const [skin, weapon] = await Promise.all([
+loadSkinPack(THREE, entry.skin),
+entry.weapon ? loadWeaponPack(THREE, entry.weapon).catch(() => null) : null,
+]);
+if (!skin.pattern) throw new Error('не загрузился узор');
+
+const glCanvas = document.createElement('canvas');
+glCanvas.width = W;
+glCanvas.height = H;
+const renderer = new THREE.WebGLRenderer({ canvas: glCanvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
+const scene = new THREE.Scene();
+try {
+renderer.setPixelRatio(1);
+renderer.setSize(W, H, false);
+renderer.setClearColor(0x000000, 0);
+
+const camera = new THREE.PerspectiveCamera(40, W / H, 0.05, 100);
+const object = new THREE.Group();
+object.add(gltf.scene);
+scene.add(object);
+fitObjectToView(THREE, gltf.scene, camera);
+// Ствол только покачивается, запас под полный оборот не нужен.
+camera.position.multiplyScalar(0.78);
+applySkinToModel(THREE, object, skin, wear, weapon, 'none');
+await setupViewerScene(THREE, renderer, scene);
+
+const out = document.createElement('canvas');
+out.width = W;
+out.height = H;
+const ctx = out.getContext('2d', { willReadFrequently: true });
+const encoder = gifenc.GIFEncoder();
+
+for (let i = 0; i < frames; i++){
+// Не полный оборот, а покачивание ±35° вокруг вида сбоку: при
+// обороте ствол половину времени смотрел в камеру торцом.
+object.rotation.y = Math.PI / 2 + 0.6 * Math.sin((i / frames) * Math.PI * 2);
+renderer.render(scene, camera);
+drawShareFrame(ctx, glCanvas, title);
+const { data } = ctx.getImageData(0, 0, W, H);
+const palette = gifenc.quantize(data, colors);
+encoder.writeFrame(gifenc.applyPalette(data, palette), W, H, { palette, delay });
+if (onProgress) onProgress((i + 1) / frames);
+// Отдаём управление браузеру, чтобы окно не подвисало.
+await new Promise(resolve => setTimeout(resolve, 0));
+}
+encoder.finish();
+return encoder.bytes();
+} finally {
+scene.traverse(node => {
+if (node.geometry) node.geometry.dispose();
+if (node.material){
+(Array.isArray(node.material) ? node.material : [node.material]).forEach(m => m.dispose());
+}
+});
+renderer.dispose();
+if (renderer.forceContextLoss) renderer.forceContextLoss();
+}
+}
+
+function bytesToBase64(bytes){
+let binary = '';
+for (let i = 0; i < bytes.length; i += 0x8000){
+binary += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+}
+return btoa(binary);
+}
+
+// true — сообщение с GIF отправлено в окно выбора чата; false —
+// GIF здесь невозможен (нет 3D у лота или старый Telegram), и
+// вызывающий код делится ссылкой по-старому.
+async function share3DLot(skin, onStatus){
+if (!skin || buy3dSkin !== skin || !buy3dEntry) return false;
+if (!tg || !tg.initData || typeof tg.shareMessage !== 'function') return false;
+if (typeof tg.isVersionAtLeast === 'function' && !tg.isVersionAtLeast('8.0')) return false;
+
+const dict = I18N[currentLang] || I18N.ru;
+const title = (skin.stattrak ? 'StatTrak™ ' : '') + skin.title;
+const say = (text) => { if (onStatus) onStatus(text); };
+
+say(dict.share_gif_preparing.replace('{p}', '0'));
+const bytes = await render3DGif(buy3dEntry, Number(skin.float_value) || 0, title,
+p => say(dict.share_gif_preparing.replace('{p}', Math.round(p * 100))));
+
+const response = await fetch(API_BASE + '/api/share/prepare', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData, skin_id: skin.id, gif_base64: bytesToBase64(bytes) }),
+});
+const data = await response.json().catch(() => ({}));
+if (!response.ok || !data.prepared_id) throw new Error(data.error || ('HTTP ' + response.status));
+
+say('');
+tg.shareMessage(data.prepared_id, (sent) => {
+if (sent) say(dict.share_gif_sent);
+});
+return true;
 }
