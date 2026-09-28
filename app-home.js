@@ -148,3 +148,22 @@ badge.style.display = cart.length ? '' : 'none';
 // Счётчик на вкладке «Корзина» — вместо плавающей кнопки.
 const _updateCartFab = updateCartFab;
 updateCartFab = function(){
+_updateCartFab();
+updateNavCartBadge();
+};
+
+document.getElementById('navCartBtn').addEventListener('click', () => {
+renderCartOverlay();
+document.getElementById('cartStatus').textContent = '';
+document.getElementById('cartOverlay').classList.add('show');
+});
+
+// ---------- баланс в шапке ----------
+
+document.getElementById('balancePillBtn').addEventListener('click', () => goToScreen('profile'));
+
+document.getElementById('balanceInfoBtn').addEventListener('click', () => {
+showAlert((I18N[currentLang] || I18N.ru).hint_sell_flow);
+});
+
+renderPromo();

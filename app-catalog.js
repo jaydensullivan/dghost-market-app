@@ -255,8 +255,9 @@ const weaponType = skin.weapon_type
 : '';
 
 // В заголовке — только название раскраски: оружие уже строкой выше.
-const shortTitle = skin.weapon_type && String(skin.title || '').startsWith(skin.weapon_type + ' | ')
-? String(skin.title).slice(skin.weapon_type.length + 3)
+const bareTitle = String(skin.title || '').replace(/^★\s*/, '');
+const shortTitle = skin.weapon_type && bareTitle.startsWith(skin.weapon_type + ' | ')
+? bareTitle.slice(skin.weapon_type.length + 3)
 : skin.title;
 const title = skin.stattrak
 ? `StatTrak™ ${escapeHtml(shortTitle)}`
