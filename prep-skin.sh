@@ -27,6 +27,98 @@ fi
 mkdir -p "$DEST" "$SHARED"
 
 MATFILE=$(find "$SRC" -name "${FINISH}.vmat" | head -1)
+COMPFILE=$(find "$SRC" -name "${FINISH}.vcompmat" | head -1)
+
+# ------------------------------------------------------------
+# Новый формат (vcompmat): текстуры уже разложены по развёртке
+# ствола, просто переводим их в WebP и пишем params.json так же,
+# как у ak47_autoexec_camo.
+# ------------------------------------------------------------
+if [ -z "$MATFILE" ] && [ -n "$COMPFILE" ]; then
+python3 - "$FINISH" "$SRC" "$DEST" "$COMPFILE" "$SHARED" <<'PY'
+import glob, json, os, re, sys
+from PIL import Image
+
+finish, src, dest, compfile, shared = sys.argv[1:6]
+recipe = open(compfile, encoding='utf-8', errors='ignore').read()
+
+# Имена файлов, на которые ссылается рецепт (без расширения).
+refs = {os.path.splitext(os.path.basename(r))[0].lower()
+        for r in re.findall(r'[A-Za-z0-9_/.-]+\.(?:vtex|tga|psd|png)', recipe)}
+
+pngs = []
+for path, dirs, files in os.walk(src):
+    for f in files:
+        if not f.endswith('.png'):
+            continue
+        stem = f[:-4].lower()
+        own = stem.startswith(finish.lower() + '_')
+        # Хвост вида _tga_1c610e5a Source2Viewer добавляет сам.
+        base = re.sub(r'_(tga|psd|png)_[0-9a-f]+$', '', stem)
+        if own or base in refs:
+            pngs.append((not own, os.path.join(path, f)))
+pngs.sort()  # свои текстуры раньше общих
+
+# слой → (признак в имени файла, наибольшая сторона, цветной ли)
+LAYERS = [
+    ('pattern',       'albedo',            2048, True),
+    ('normal',        'normal',            2048, None),
+    ('ao',            'ambient_occlusion', 1024, False),
+    ('material_mask', 'material_mask',     1024, False),
+    ('roughness',     'roughness',         1024, False),
+    ('sfx',           'sfx',               1024, False),
+]
+
+os.makedirs(dest, exist_ok=True)
+textures = {}
+
+for layer, key, max_side, color in LAYERS:
+    src_png = next((p for _, p in pngs if key in os.path.basename(p).lower()), None)
+    if not src_png:
+        print(f'  {layer}: нет')
+        continue
+    img = Image.open(src_png)
+    w, h = img.size
+    if max(w, h) > max_side:
+        k = max_side / max(w, h)
+        img = img.resize((int(w * k), int(h * k)), Image.LANCZOS)
+    if color is None:
+        img = img.convert('RGB')
+    elif color:
+        img = img.convert('RGBA' if 'A' in img.getbands() else 'RGB')
+    else:
+        img = img.convert('L')
+    out = os.path.join(dest, layer + '.webp')
+    img.save(out, 'WEBP', quality=88, method=6)
+    print(f'  {layer}: {w}x{h} → {img.size[0]}x{img.size[1]}, {os.path.getsize(out) / 1024:.0f} КБ')
+    textures[layer] = layer + '.webp'
+
+if 'pattern' not in textures:
+    print('❌ В рецепте нет альбедо — такой скин просмотрщик пока не покажет.')
+    sys.exit(1)
+
+# Своей маски износа у нового формата нет — берём общую.
+wear = sorted(glob.glob(os.path.join(shared, 'wear_*.webp')))
+if wear:
+    textures['wear'] = 'models/shared/' + os.path.basename(wear[0])
+    print(f'  wear: общий {textures["wear"]}')
+
+rel = compfile.split('/weapons/paints/', 1)[-1]
+meta = {
+    'finish': finish,
+    'material': 'weapons/paints/' + rel,
+    'format': 'vcompmat',
+    'textures': textures,
+    'shader': {},
+}
+with open(os.path.join(dest, 'params.json'), 'w', encoding='utf-8') as f:
+    json.dump(meta, f, ensure_ascii=False, indent=2)
+PY
+    STATUS=$?
+    echo
+    ls -lh "$DEST"
+    exit $STATUS
+fi
 
 if [ -z "$MATFILE" ]; then
     echo "❌ Материал не найден. Сначала: bash fix-skin.sh $FINISH"
@@ -43,7 +135,11 @@ mat = open(matfile, encoding='utf-8', errors='ignore').read()
 def find_texture(key):
     """Путь к текстуре из строки вида "TexturePattern"  "materials/.../x.png" """
     m = re.search(r'"%s"\s+"([^"]+)"' % key, mat)
-    return m.group(1) if m else None
+    # Вместо пути бывает заглушка-цвет "[0.000000 0.000000 …]" —
+    # это значит, что текстуры у слоя нет.
+    if not m or m.group(1).startswith('['):
+        return None
+    return m.group(1)
 
 def find_number(key, default=0.0):
     m = re.search(r'"%s"\s+"([-0-9.]+)"' % key, mat)
