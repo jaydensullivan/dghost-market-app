@@ -4,6 +4,9 @@
 # размера, переводит в WebP и складывает в models/skins/<имя>/,
 # плюс вынимает параметры шейдера из материала в params.json.
 #
+# Износ и грязь у большинства скинов одни и те же файлы игры — их
+# кладём один раз в models/shared/ и в params.json пишем общий путь.
+#
 #   bash prep-skin.sh cu_ak47_cobra
 #
 # Запускать после fix-skin.sh, который вынимает сами PNG.
@@ -14,13 +17,14 @@ FINISH="${1:-cu_ak47_cobra}"
 SRC="${SRC:-/tmp/cs2-assets/export-skins}"
 REPO="${REPO:-/workspaces/dghost-market-app}"
 DEST="$REPO/models/skins/$FINISH"
+SHARED="$REPO/models/shared"
 
 if ! python3 -c 'import PIL' 2>/dev/null; then
     echo "==> Ставлю Pillow (нужен для сжатия картинок)"
     pip install --quiet Pillow
 fi
 
-mkdir -p "$DEST"
+mkdir -p "$DEST" "$SHARED"
 
 MATFILE=$(find "$SRC" -name "${FINISH}.vmat" | head -1)
 
@@ -29,11 +33,11 @@ if [ -z "$MATFILE" ]; then
     exit 1
 fi
 
-python3 - "$FINISH" "$SRC" "$DEST" "$MATFILE" <<'PY'
-import json, re, sys, os
+python3 - "$FINISH" "$SRC" "$DEST" "$MATFILE" "$SHARED" <<'PY'
+import hashlib, io, json, re, sys, os
 from PIL import Image
 
-finish, src, dest, matfile = sys.argv[1:5]
+finish, src, dest, matfile, shared = sys.argv[1:6]
 mat = open(matfile, encoding='utf-8', errors='ignore').read()
 
 def find_texture(key):
@@ -45,6 +49,16 @@ def find_number(key, default=0.0):
     m = re.search(r'"%s"\s+"([-0-9.]+)"' % key, mat)
     return float(m.group(1)) if m else default
 
+def find_color(key):
+    """Цвет вида "g_vColor0" "[0.5 0.2 0.1 0.0]" → [r, g, b] в 0..1."""
+    m = re.search(r'"%s"\s+"\[([^\]]+)\]"' % key, mat)
+    if not m:
+        return None
+    rgb = [float(x) for x in m.group(1).split()[:3]]
+    if max(rgb) > 1:
+        rgb = [x / 255 for x in rgb]
+    return [round(x, 4) for x in rgb]
+
 # Какие слои нам нужны и до какого размера их ужимать. Узор — самое
 # важное, ему даём больше; грязь и износ — общие маски, они хорошо
 # переживают уменьшение.
@@ -54,6 +68,11 @@ LAYERS = {
     'wear':     ('TextureWear',           1024),
     'grunge':   ('TextureGrunge',         1024),
 }
+
+# Слои, которые игра берёт из общих файлов. Имя в models/shared/ —
+# по содержимому (<слой>_<хеш>.webp): одинаковая маска — один файл,
+# даже если у разных скинов она лежит под разными именами.
+SHARED_LAYERS = ('wear', 'grunge')
 
 index = {}
 for path, dirs, files in os.walk(src):
@@ -85,6 +104,12 @@ result = {
     'textures': {},
 }
 
+# Гидрография, спрей, анодирование: узор там — маска, а сами цвета
+# лежат в материале. Без них просмотрщик покажет сырые каналы маски.
+colors = [find_color('g_vColor%d' % i) for i in range(4)]
+if any(colors):
+    result['shader']['colors'] = [c or [0, 0, 0] for c in colors]
+
 for layer, (key, max_side) in LAYERS.items():
     game_path = find_texture(key)
     if not game_path:
@@ -107,11 +132,29 @@ for layer, (key, max_side) in LAYERS.items():
     else:
         img = img.convert('RGBA' if 'A' in img.getbands() else 'RGB')
 
-    out = os.path.join(dest, layer + '.webp')
-    img.save(out, 'WEBP', quality=88, method=6)
-    size_kb = os.path.getsize(out) / 1024
-    print(f'  {layer}: {w}x{h} → {img.size[0]}x{img.size[1]}, {size_kb:.0f} КБ')
-    result['textures'][layer] = layer + '.webp'
+    buf = io.BytesIO()
+    img.save(buf, 'WEBP', quality=88, method=6)
+    data = buf.getvalue()
+
+    if layer in SHARED_LAYERS:
+        name = f'{layer}_{hashlib.md5(data).hexdigest()[:10]}.webp'
+        out = os.path.join(shared, name)
+        rel = 'models/shared/' + name
+        # Старая копия в папке скина больше не нужна.
+        old = os.path.join(dest, layer + '.webp')
+        if os.path.isfile(old):
+            os.remove(old)
+    else:
+        out = os.path.join(dest, layer + '.webp')
+        rel = layer + '.webp'
+
+    if layer in SHARED_LAYERS and os.path.isfile(out):
+        print(f'  {layer}: уже есть в {rel}')
+    else:
+        with open(out, 'wb') as f:
+            f.write(data)
+        print(f'  {layer}: {w}x{h} → {img.size[0]}x{img.size[1]}, {len(data) / 1024:.0f} КБ → {rel}')
+    result['textures'][layer] = rel
 
 with open(os.path.join(dest, 'params.json'), 'w', encoding='utf-8') as f:
     json.dump(result, f, ensure_ascii=False, indent=2)
@@ -124,5 +167,5 @@ echo "================================================"
 ls -lh "$DEST"
 echo
 echo "Осталось закоммитить:"
-echo "  cd $REPO && git add models/skins && git commit -m '3D: текстуры $FINISH' && git push"
+echo "  cd $REPO && git add models/skins models/shared && git commit -m '3D: текстуры $FINISH' && git push"
 echo "================================================"

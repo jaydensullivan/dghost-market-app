@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 18;
+const APP3D_VERSION = 20;
 
 let threeLoading = null;
 
@@ -362,6 +362,7 @@ function fitObjectToView(THREE, object, camera){
 // бокс раздувается и модель получается крошечной в кадре.
 const box = new THREE.Box3();
 let hasMesh = false;
+object.updateMatrixWorld(true);
 
 object.traverse(node => {
 if (node.isMesh && node.geometry){
@@ -381,11 +382,13 @@ const maxSide = Math.max(size.x, size.y, size.z) || 1;
 object.scale.multiplyScalar(2 / maxSide);
 object.position.sub(center.multiplyScalar(2 / maxSide));
 
-// Расстояние камеры считаем из угла обзора, чтобы модель занимала
-// кадр целиком, с небольшим запасом по краям.
-const radius = Math.sqrt(3);
-const fov = camera.fov * Math.PI / 180;
-const distance = (radius / Math.sin(fov / 2)) * 0.85;
+// Расстояние камеры — по настоящим габаритам (ствол длинный и
+// плоский, а не куб) и по более узкому углу обзора: на телефоне
+// кадр вертикальный, и тесно становится по ширине.
+const radius = size.length() / maxSide;
+const vFov = camera.fov * Math.PI / 180;
+const hFov = 2 * Math.atan(Math.tan(vFov / 2) * (camera.aspect || 1));
+const distance = radius / Math.sin(Math.min(vFov, hFov) / 2);
 camera.position.set(0, 0.35, distance);
 camera.lookAt(0, 0, 0);
 camera.near = distance / 50;
@@ -450,14 +453,52 @@ undefined,
 // Базовые текстуры самого ствола: родной цвет, маска покраски,
 // шероховатость, затенение. Без маски узор ложился на всю модель
 // целиком, включая детали, которые в игре краской не покрываются.
+// Имена файлов, как и у скинов, берутся из params.json ствола;
+// без него — прежние color/masks/rough/ao.webp.
 function loadWeaponPack(THREE, dir){
 const base = dir.replace(/\/+$/, '') + '/';
-return Promise.all([
-loadSkinTexture(THREE, base + 'color.webp', true),
-loadSkinTexture(THREE, base + 'masks.webp', false),
-loadSkinTexture(THREE, base + 'rough.webp', false),
-loadSkinTexture(THREE, base + 'ao.webp', false),
-]).then(([color, masks, rough, ao]) => ({ color, masks, rough, ao }));
+return fetch(base + 'params.json')
+.then(r => r.ok ? r.json() : {})
+.catch(() => ({}))
+.then(meta => {
+const textures = Object.assign({
+color: 'color.webp',
+masks: 'masks.webp',
+rough: 'rough.webp',
+ao: 'ao.webp',
+}, meta.textures || {});
+const names = ['color', 'masks', 'rough', 'ao'];
+return Promise.all(names.map(name =>
+loadSkinTexture(THREE, resolveSkinPath(base, textures[name]), name === 'color')
+)).then(loaded => {
+const pack = {};
+names.forEach((name, i) => { pack[name] = loaded[i]; });
+return pack;
+});
+});
+}
+
+// Гидрография (1), спрей (2) и анодирование (3, 4): узор в таких
+// скинах — маска, где R/G/B говорят, какой из четырёх цветов
+// материала лежит в этой точке. Цвета генератор кладёт в
+// params.json → shader.colors; без них показываем узор как есть.
+function skinUsesColorMask(params){
+return [1, 2, 3, 4].indexOf(params.paint_style) !== -1
+&& Array.isArray(params.colors) && params.colors.length >= 4;
+}
+
+function skinColors(THREE, params){
+const list = Array.isArray(params.colors) ? params.colors : [];
+const out = [];
+for (let i = 0; i < 4; i++){
+const c = list[i] || [0, 0, 0];
+const color = new THREE.Color();
+// Цвета из материала — в sRGB; шейдеру нужны линейные.
+if (THREE.SRGBColorSpace) color.setRGB(c[0], c[1], c[2], THREE.SRGBColorSpace);
+else color.setRGB(c[0], c[1], c[2]);
+out.push(new THREE.Vector3(color.r, color.g, color.b));
+}
+return out;
 }
 
 // wear — float предмета (0 = новый, 1 = полностью убитый).
@@ -483,6 +524,15 @@ uPaintMask: { value: weapon ? weapon.masks : null },
 uAo: { value: weapon ? weapon.ao : null },
 uWearAmount: { value: Math.max(0, Math.min(1, wear || 0)) },
 uPatternScale: { value: skin.params.pattern_scale || 1 },
+// Поворот узора в params.json — в градусах.
+uPatternRotation: { value: (skin.params.pattern_rotation || 0) * Math.PI / 180 },
+uWearScale: { value: skin.params.wear_scale || 1 },
+uGrungeScale: { value: skin.params.grunge_scale || 1 },
+uPaintMetalness: { value: Number(skin.params.paint_metalness) || 0 },
+uUseColors: { value: skinUsesColorMask(skin.params) ? 1 : 0 },
+uColors: { value: skinColors(THREE, skin.params) },
+// Узор грузится как sRGB, а маске нужны исходные значения каналов.
+uMaskGamma: { value: THREE.SRGBColorSpace ? 1 / 2.2 : 1 },
 uColorBrightness: { value: skin.params.color_brightness || 1 },
 uMaskChannel: { value: channel },
 uHasWeapon: { value: weapon && weapon.color ? 1 : 0 },
@@ -503,7 +553,12 @@ else if (weapon && weapon.rough) material.roughnessMap = weapon.rough;
 // Рельеф и затенение из комплекта скина — новый формат отдаёт их
 // отдельными слоями, и с ними металл перестаёт быть плоским.
 if (skin.normal) material.normalMap = skin.normal;
-if (skin.ao) material.aoMap = skin.ao;
+if (skin.ao){
+material.aoMap = skin.ao;
+if (node.geometry.attributes.uv && !node.geometry.attributes.uv2){
+node.geometry.setAttribute('uv2', node.geometry.attributes.uv);
+}
+}
 
 material.onBeforeCompile = (shader) => {
 Object.assign(shader.uniforms, uniforms);
@@ -531,11 +586,20 @@ uniform sampler2D uPaintMask;
 uniform sampler2D uAo;
 uniform float uWearAmount;
 uniform float uPatternScale;
+uniform float uPatternRotation;
+uniform float uWearScale;
+uniform float uGrungeScale;
+uniform float uPaintMetalness;
+uniform int uUseColors;
+uniform vec3 uColors[4];
+uniform float uMaskGamma;
 uniform float uColorBrightness;
 uniform int uMaskChannel;
 uniform int uHasWeapon;
 varying vec2 vSkinUv;`)
 .replace('#include <color_fragment>', `#include <color_fragment>
+// Доля покрытия краской — нужна ниже, для металличности.
+float skinCover = 0.0;
 {
 // Родной вид ствола: то, что видно на неокрашиваемых деталях.
 vec3 base = uHasWeapon == 1 ? texture2D(uBaseColor, vSkinUv).rgb : vec3(0.22);
@@ -554,19 +618,36 @@ if (uMaskChannel == 4){
 diffuseColor.rgb = masks.rgb;
 }
 
-vec3 pattern = texture2D(uPattern, vSkinUv * uPatternScale).rgb * uColorBrightness;
+// Поворот узора — вокруг центра развёртки, как в игре.
+float rc = cos(uPatternRotation), rs = sin(uPatternRotation);
+vec2 puv = vSkinUv - 0.5;
+puv = vec2(rc * puv.x - rs * puv.y, rs * puv.x + rc * puv.y) + 0.5;
+vec3 pattern = texture2D(uPattern, puv * uPatternScale).rgb;
+if (uUseColors == 1){
+// Первый цвет — основа, остальные ложатся по каналам маски.
+vec3 m = pow(pattern, vec3(uMaskGamma));
+pattern = uColors[0];
+pattern = mix(pattern, uColors[1], m.r);
+pattern = mix(pattern, uColors[2], m.g);
+pattern = mix(pattern, uColors[3], m.b);
+}
+pattern *= uColorBrightness;
 
 // Потёртость: краска сходит там, где маска износа меньше float.
 // У части новых скинов своей маски износа нет — тогда считаем
 // краску целой, иначе ствол выглядел бы полностью облезлым.
 float kept = 1.0;
 if (uHasWear == 1){
-float wearMask = texture2D(uWearMask, vSkinUv).r;
-kept = smoothstep(uWearAmount - 0.12, uWearAmount + 0.04, wearMask);
+float wearMask = texture2D(uWearMask, vSkinUv * uWearScale).r;
+// float напрямую как порог стирал краску слишком рано: при 0.8
+// оставалось меньше 5%. Порог 0.25 + 0.5·float держит FN/MW целыми,
+// а на Battle-Scarred оставляет часть краски, как в игре.
+float wearCut = 0.25 + 0.5 * uWearAmount;
+kept = smoothstep(wearCut - 0.08, wearCut + 0.04, wearMask);
 }
 
 // Грязь и царапины — общий слой, тоже необязательный.
-float grunge = uHasGrunge == 1 ? texture2D(uGrunge, vSkinUv).r : 1.0;
+float grunge = uHasGrunge == 1 ? texture2D(uGrunge, vSkinUv * uGrungeScale).r : 1.0;
 
 // Своя маска скина (новый формат) точнее общей маски ствола:
 // она говорит, где именно лежит краска у этой конкретной раскраски.
@@ -575,14 +656,20 @@ paintable *= texture2D(uSkinMask, vSkinUv).r;
 }
 
 vec3 painted = pattern * mix(0.88, 1.0, grunge);
-vec3 result = mix(base, painted, paintable * kept);
+skinCover = paintable * kept;
+vec3 result = mix(base, painted, skinCover);
 
 if (uHasWeapon == 1){
 result *= mix(0.55, 1.0, texture2D(uAo, vSkinUv).r);
 }
 
 if (uMaskChannel != 4) diffuseColor.rgb = result;
-}`);
+}`)
+// Краска бывает и не металлической (большинство скинов), и
+// металлической (paint_metalness = 1): там, где она лежит, берём
+// металличность из params.json, на голом металле — как было.
+.replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>
+metalnessFactor = mix(metalnessFactor, uPaintMetalness, skinCover);`);
 };
 
 node.material = material;
@@ -623,6 +710,14 @@ if (textures[name]) return textures[name];
 return null;
 }
 
+// Путь из params.json: просто имя файла — ищем в папке скина;
+// "models/...", "/..." или http(s) — берём как есть (так указываются
+// общие ресурсы из models/shared/); "../" работает относительно скина.
+function resolveSkinPath(base, file){
+if (/^(https?:)?\/\//.test(file) || file.charAt(0) === '/' || file.indexOf('models/') === 0) return file;
+return base + file;
+}
+
 function loadSkinPack(THREE, dir){
 const base = dir.replace(/\/+$/, '') + '/';
 
@@ -661,7 +756,7 @@ return Promise.all(names.map(name => {
 const file = wanted[name];
 if (!file) return Promise.resolve(null);
 const isColor = SKIN_COLOR_LAYERS.indexOf(name) !== -1;
-return loadSkinTexture(THREE, base + file, isColor);
+return loadSkinTexture(THREE, resolveSkinPath(base, file), isColor);
 })).then(loaded => {
 const pack = { params: meta.shader || {} };
 names.forEach((name, i) => { pack[name] = loaded[i]; });
@@ -742,9 +837,12 @@ renderer.toneMappingExposure = 1.1;
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(40, canvas.clientWidth / canvas.clientHeight, 0.05, 100);
-const object = gltf.scene;
+// Крутим не саму модель, а группу вокруг её центра — иначе ствол
+// вращался вокруг начала координат файла и уезжал из кадра.
+const object = new THREE.Group();
+object.add(gltf.scene);
 scene.add(object);
-const baseDistance = fitObjectToView(THREE, object, camera);
+const baseDistance = fitObjectToView(THREE, gltf.scene, camera);
 
 // Нейтральный белый свет — чтобы металл читался как металл, а не
 // как розовая пластмасса. Неон по брендбуку идёт сверху, контровым
