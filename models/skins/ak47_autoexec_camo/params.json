@@ -8,7 +8,7 @@
     "ao": "ao.webp",
     "material_mask": "material_mask.webp",
     "roughness": "roughness.webp",
-    "wear": "wear.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
     "sfx": "sfx.webp"
   },
   "shader": {
