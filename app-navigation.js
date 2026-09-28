@@ -304,6 +304,8 @@ tg.openLink(url);
 } else {
 window.open(url, '_blank');
 }
+} else if (action === 'legal'){
+openLegal('terms');
 } else if (action === 'auctions'){
 switchTab('auctions');
 } else if (action === 'admin'){

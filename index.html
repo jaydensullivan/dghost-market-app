@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="stylesheet" href="app.css?v=26">
+<link rel="stylesheet" href="app.css?v=27">
 </head>
 <body>
 
@@ -31,6 +31,7 @@
 <button type="button" class="header-menu-item" data-header-action="buyRequests">🔍 <span data-i18n="header_menu_buy_requests">Ищут</span></button>
 <button type="button" class="header-menu-item" data-header-action="sell">🏷️ <span data-i18n="header_menu_sell">Продать скин</span></button>
 <button type="button" class="header-menu-item" data-header-action="support">🆘 <span data-i18n="header_menu_support">Поддержка</span></button>
+<button type="button" class="header-menu-item" data-header-action="legal">📄 <span data-i18n="header_menu_legal">Правила и оферты</span></button>
 <button type="button" class="header-menu-item" data-header-action="auctions" id="headerMenuAuctions" style="display:none;">🔨 <span data-i18n="header_menu_auctions">Аукцион</span></button>
 <button type="button" class="header-menu-item" data-header-action="admin" id="headerMenuAdmin" style="display:none;">⚙️ <span data-i18n="header_menu_admin">Админка</span></button>
 </div>
@@ -48,6 +49,7 @@
 <div class="welcome-content" style="padding:0 20px;">
 <div class="welcome-greeting" style="font-size:16px; margin-bottom:12px;" data-i18n="agreement_title">📄 Пользовательское соглашение</div>
 <div id="agreementTextBox" style="max-height:50vh; overflow-y:auto; text-align:left; font-size:13px; line-height:1.5; color:var(--muted); background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px; white-space:pre-wrap;">Загрузка...</div>
+<div class="legal-links"><a href="#" data-legal-doc="buyer" data-i18n="legal_buyer_offer">Оферта для покупателя</a> · <a href="#" data-legal-doc="seller" data-i18n="legal_seller_offer">Оферта для продавца</a></div>
 <button type="button" id="mandatoryAcceptAgreementBtn" class="welcome-btn primary" style="margin-top:14px; width:100%;" data-i18n="agreement_btn_accept">Принимаю условия</button>
 <div class="edit-status" id="mandatoryAgreementStatus" style="margin-top:8px;"></div>
 </div>
@@ -1577,6 +1579,28 @@ transform="rotate(-90 100 100)"></circle>
 <button type="button" id="buyConfirmCrypto" class="save" style="display:none;" data-i18n="buy_pay_crypto">💳 Оплатить криптой</button>
 <button type="button" id="buyConfirmP2P" class="save" style="display:none;" data-i18n="buy_pay_p2p">🏦 Оплатить П2П (карта)</button>
 </div>
+<div class="legal-note"><span data-i18n="legal_pay_note">Нажимая кнопку оплаты, вы принимаете</span> <a href="#" data-legal-doc="buyer" data-i18n="legal_pay_note_link">Оферту для покупателя</a></div>
+</div>
+</div>
+
+<!-- Правила и оферты. В режиме оферты продавца снизу чекбокс и
+     кнопка — так её принимают перед первым лотом. -->
+<div class="edit-overlay legal-overlay" id="legalOverlay">
+<div class="edit-sheet legal-sheet">
+<div class="legal-head">
+<div class="legal-tabs" id="legalTabs">
+<button type="button" data-legal-tab="terms" data-i18n="legal_tab_terms">Правила</button>
+<button type="button" data-legal-tab="buyer" data-i18n="legal_tab_buyer">Покупателю</button>
+<button type="button" data-legal-tab="seller" data-i18n="legal_tab_seller">Продавцу</button>
+</div>
+<button type="button" id="legalCloseBtn" class="buy-close-btn" style="position:static;">✕</button>
+</div>
+<div id="legalText" class="legal-text">Загрузка...</div>
+<div id="legalAccept" class="legal-accept" style="display:none;">
+<label class="legal-check"><input type="checkbox" id="legalAcceptCheck"> <span id="legalAcceptLabel"></span></label>
+<button type="button" id="legalAcceptBtn" class="welcome-btn primary" style="width:100%;" disabled data-i18n="legal_accept_continue">Принять и продолжить</button>
+<div class="edit-status" id="legalAcceptStatus"></div>
+</div>
 </div>
 </div>
 
@@ -1691,10 +1715,11 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 
 <script src="app-core.js?v=2"></script>
-<script src="app-i18n.js?v=31"></script>
+<script src="app-i18n.js?v=32"></script>
 <script src="app-giveaway.js?v=3"></script>
-<script src="app-navigation.js?v=5"></script>
-<script src="app-shop.js?v=7"></script>
+<script src="app-navigation.js?v=6"></script>
+<script src="app-shop.js?v=8"></script>
+<script src="app-legal.js?v=1"></script>
 <script src="app-deals.js?v=8"></script>
 <script src="app-catalog.js?v=5"></script>
 <script src="app-cart.js?v=1"></script>
@@ -1703,12 +1728,12 @@ transform="rotate(-90 100 100)"></circle>
 <script src="app-topup.js?v=1"></script>
 <script src="app-history.js?v=4"></script>
 <script src="app-referral.js?v=2"></script>
-<script src="app-withdraw.js?v=6"></script>
+<script src="app-withdraw.js?v=7"></script>
 <script src="app-admin.js?v=5"></script>
 <script src="app-auctions.js?v=3"></script>
 <script src="app-reviews.js?v=1"></script>
 <script src="app-notifications.js?v=2"></script>
 <script src="app-3d.js?v=23"></script>
-<script src="app-telegram.js?v=6"></script>
+<script src="app-telegram.js?v=7"></script>
 </body>
 </html>
