@@ -104,6 +104,10 @@ au_extended: "⏱ Продлён",
 au_snipe_hint: "⏱ Ставка в последнюю минуту продлевает аукцион ещё на минуту — выиграть «в последнюю секунду» не получится.",
 watch_btn: "Следить",
 btn_3d: "3D",
+gw_invite_dm_need_start: "Бот не может тебе написать: открой чат с ботом, нажми «Старт» и попробуй снова. Или нажми «Копировать».",
+gw_invite_dm_wait: "Приглашение уже в чате с ботом — перешли его друзьям",
+gw_invite_dm_sent: "Приглашение в чате с ботом — перешли его друзьям ✓",
+gw_invite_dm_btn: "📩 Прислать приглашение мне в чат",
 gw_invite_no_window: "Если окно отправки не открылось ({code}) — нажми «Копировать» и отправь ссылку другу.",
 admin_gw_media_no_3d: "Для этого скина нет 3D-модели — выбери карточку приза.",
 admin_gw_media_need_prize: "Сначала выбери приз из инвентаря.",
@@ -919,6 +923,10 @@ au_extended: "⏱ Uzaytirildi",
 au_snipe_hint: "⏱ Oxirgi daqiqadagi stavka auksionni yana bir daqiqaga uzaytiradi — «oxirgi soniyada» yutib bo'lmaydi.",
 watch_btn: "Kuzatish",
 btn_3d: "3D",
+gw_invite_dm_need_start: "Bot senga yoza olmaydi: bot bilan chatni och, «Start»ni bos va qayta urin. Yoki «Nusxalash»ni bos.",
+gw_invite_dm_wait: "Taklif allaqachon bot bilan chatda — uni do'stlaringga yubor",
+gw_invite_dm_sent: "Taklif bot bilan chatda — uni do'stlaringga yubor ✓",
+gw_invite_dm_btn: "📩 Taklifni menga chatga yubor",
 gw_invite_no_window: "Agar yuborish oynasi ochilmagan bo'lsa ({code}) — «Nusxalash»ni bos va havolani do'stingga yubor.",
 admin_gw_media_no_3d: "Bu skin uchun 3D model yo'q — sovrin kartasini tanla.",
 admin_gw_media_need_prize: "Avval inventardan sovrin tanla.",
@@ -1734,6 +1742,10 @@ au_extended: "⏱ Extended",
 au_snipe_hint: "⏱ A bid in the last minute extends the auction by another minute — no last-second sniping.",
 watch_btn: "Watch",
 btn_3d: "3D",
+gw_invite_dm_need_start: "The bot cannot message you: open the chat with the bot, tap “Start” and retry. Or tap “Copy”.",
+gw_invite_dm_wait: "The invite is already in your chat with the bot — forward it",
+gw_invite_dm_sent: "The invite is in your chat with the bot — forward it to friends ✓",
+gw_invite_dm_btn: "📩 Send the invite to my chat",
 gw_invite_no_window: "If the share window did not open ({code}), tap “Copy” and send the link to a friend.",
 admin_gw_media_no_3d: "No 3D model for this skin — pick the prize card.",
 admin_gw_media_need_prize: "Pick a prize from the inventory first.",
@@ -2739,6 +2751,40 @@ if (tg && typeof tg.onEvent === 'function'){
 tg.onEvent('shareMessageFailed', (e) => { gwShareError = (e && e.error) || 'UNKNOWN_ERROR'; });
 }
 
+// Запасной путь, который работает на любом устройстве: бот присылает
+// готовое приглашение в личку, пользователь пересылает его друзьям.
+async function sendInviteToDm(){
+const dict = I18N[currentLang] || I18N.ru;
+if (!tg || !tg.initData) return;
+const btn = document.getElementById('gwInviteDmBtn');
+if (btn.disabled) return;
+btn.disabled = true;
+try {
+const r = await fetch(API_BASE + '/api/giveaway/invite_send', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData }),
+});
+const data = await r.json().catch(() => ({}));
+if (data.link) setInviteLink(data.link);
+if (r.ok){
+showToast(dict.gw_invite_dm_sent);
+} else if (data.error === 'too_often'){
+showToast(dict.gw_invite_dm_wait);
+} else if (data.error === 'dm_failed'){
+showErrorToast(new Error(dict.gw_invite_dm_need_start));
+} else {
+showErrorToast(new Error(dict.gw_invite_failed.replace('{code}', data.error || ('HTTP ' + r.status))));
+}
+} catch (e) {
+showErrorToast(e);
+} finally {
+btn.disabled = false;
+}
+}
+
+document.getElementById('gwInviteDmBtn').addEventListener('click', sendInviteToDm);
+
 // Точно как «Поделиться» лотом, который на iPhone работает: по
 // нажатию просим бота подготовить сообщение (GIF с кнопкой) и сразу
 // вызываем shareMessage. Заранее подготовленное сообщение iPhone
@@ -2770,22 +2816,22 @@ if (r.ok && data.prepared_id){
 gwShareError = '';
 tg.shareMessage(data.prepared_id, (sent) => {
 if (sent) showToast(dict.gw_invite_sent);
-else if (gwShareError && gwShareError !== 'USER_DECLINED'){
-showErrorToast(new Error(dict.gw_invite_failed.replace('{code}', gwShareError)));
-}
+else if (gwShareError && gwShareError !== 'USER_DECLINED') sendInviteToDm();
 });
 return;
 }
 code = data.error || ('HTTP ' + r.status);
 } catch (e) {
 // WebAppShareMessageOpened — прошлый вызов так и не получил
-// ответа от Telegram; помогает только перезапуск приложения.
+// ответа от Telegram (на части iPhone окно молча не открывается).
 code = (e && e.message) || 'error';
 } finally {
 btn.disabled = false;
 btn.textContent = label;
 }
-showErrorToast(new Error(dict.gw_invite_failed.replace('{code}', code)));
+// Окно отправки не открылось — присылаем приглашение в личку.
+console.warn('shareMessage не сработал —', code);
+sendInviteToDm();
 return;
 }
 
