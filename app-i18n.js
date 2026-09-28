@@ -104,6 +104,10 @@ au_extended: "⏱ Продлён",
 au_snipe_hint: "⏱ Ставка в последнюю минуту продлевает аукцион ещё на минуту — выиграть «в последнюю секунду» не получится.",
 watch_btn: "Следить",
 btn_3d: "3D",
+admin_gw_pick_prize: "🎒 Выбрать из инвентаря",
+gw_invite_sent: "Приглашение отправлено ✓",
+gw_invite_copied: "Ссылка скопирована — отправь её другу",
+gw_invite_copy: "Копировать",
 share_gif_sent: "Отправлено ✓",
 share_gif_preparing: "Готовлю анимацию… {p}%",
 watch_title: "Следить за скином",
@@ -899,6 +903,10 @@ au_extended: "⏱ Uzaytirildi",
 au_snipe_hint: "⏱ Oxirgi daqiqadagi stavka auksionni yana bir daqiqaga uzaytiradi — «oxirgi soniyada» yutib bo'lmaydi.",
 watch_btn: "Kuzatish",
 btn_3d: "3D",
+admin_gw_pick_prize: "🎒 Inventardan tanlash",
+gw_invite_sent: "Taklif yuborildi ✓",
+gw_invite_copied: "Havola nusxalandi — do'stingga yubor",
+gw_invite_copy: "Nusxalash",
 share_gif_sent: "Yuborildi ✓",
 share_gif_preparing: "Animatsiya tayyorlanmoqda… {p}%",
 watch_title: "Skinni kuzatish",
@@ -1694,6 +1702,10 @@ au_extended: "⏱ Extended",
 au_snipe_hint: "⏱ A bid in the last minute extends the auction by another minute — no last-second sniping.",
 watch_btn: "Watch",
 btn_3d: "3D",
+admin_gw_pick_prize: "🎒 Pick from inventory",
+gw_invite_sent: "Invite sent ✓",
+gw_invite_copied: "Link copied — send it to a friend",
+gw_invite_copy: "Copy",
 share_gif_sent: "Sent ✓",
 share_gif_preparing: "Preparing animation… {p}%",
 watch_title: "Watch this skin",
@@ -2598,6 +2610,7 @@ document.getElementById('gwInviteHint').textContent = have >= need
 : dict.gw_invite_hint.replace('{n}', need - have);
 gwInviteLocked = have < need;
 ctaBtn.classList.toggle('locked', gwInviteLocked);
+if (gwInviteLocked) prefetchInviteLink();
 }
 
 function loadGiveawayStatus(){
@@ -2618,30 +2631,101 @@ renderInviteProgress(data);
 }
 
 let gwInviteLink = '';
+let gwInviteLinkLoading = null;
 
-function shareGiveawayInvite(){
+// Ссылку грузим заранее: тогда по нажатию окно отправки открывается
+// сразу, в том же касании. openTelegramLink, вызванный уже после
+// сетевого запроса, Telegram молча игнорировал — «Пригласить» ничего
+// не делал.
+function prefetchInviteLink(){
+if (gwInviteLink || gwInviteLinkLoading || !tg || !tg.initData) return gwInviteLinkLoading;
+gwInviteLinkLoading = fetch(API_BASE + '/api/referral_info?init_data=' + encodeURIComponent(tg.initData))
+.then(r => r.json())
+.then(data => {
+if (data.link) setInviteLink(data.link);
+return gwInviteLink;
+})
+.catch(() => null)
+.finally(() => { gwInviteLinkLoading = null; });
+return gwInviteLinkLoading;
+}
+
+function setInviteLink(link){
+gwInviteLink = link;
+document.getElementById('gwInviteLinkText').textContent = link.replace(/^https:\/\//, '');
+document.getElementById('gwInviteLinkRow').style.display = '';
+}
+
+function openInviteShareLink(){
 const dict = I18N[currentLang] || I18N.ru;
-const share = (link) => {
-const url = 'https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(dict.gw_invite_share_text);
+const url = 'https://t.me/share/url?url=' + encodeURIComponent(gwInviteLink) + '&text=' + encodeURIComponent(dict.gw_invite_share_text);
 if (tg && tg.openTelegramLink) tg.openTelegramLink(url);
 else window.open(url, '_blank');
-};
-if (gwInviteLink) return share(gwInviteLink);
+}
+
+function copyInviteLink(){
+const dict = I18N[currentLang] || I18N.ru;
+const done = () => showToast(dict.gw_invite_copied);
+if (navigator.clipboard && navigator.clipboard.writeText){
+navigator.clipboard.writeText(gwInviteLink).then(done).catch(() => fallbackCopy());
+} else {
+fallbackCopy();
+}
+function fallbackCopy(){
+const ta = document.createElement('textarea');
+ta.value = gwInviteLink;
+document.body.appendChild(ta);
+ta.select();
+try { document.execCommand('copy'); done(); } catch (e) {}
+ta.remove();
+}
+}
+
+async function shareGiveawayInvite(){
+const dict = I18N[currentLang] || I18N.ru;
 if (!tg || !tg.initData){
 showAlert(errorMessage('unauthorized'));
 return;
 }
-fetch(API_BASE + '/api/referral_info?init_data=' + encodeURIComponent(tg.initData))
-.then(r => r.json())
-.then(data => {
-if (!data.link) throw new Error('no_link');
-gwInviteLink = data.link;
-share(gwInviteLink);
-})
-.catch(err => showErrorToast(err));
+const btn = document.getElementById('gwInviteBtn');
+if (btn.disabled) return;
+
+// Свежий Telegram: бот готовит сообщение с кнопкой «Участвовать»,
+// shareMessage показывает выбор чата (так же, как «Поделиться» лотом).
+if (typeof tg.shareMessage === 'function' && (!tg.isVersionAtLeast || tg.isVersionAtLeast('8.0'))){
+btn.disabled = true;
+try {
+const r = await fetch(API_BASE + '/api/giveaway/invite_prepare', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData }),
+});
+const data = await r.json().catch(() => ({}));
+if (data.link) setInviteLink(data.link);
+if (r.ok && data.prepared_id){
+tg.shareMessage(data.prepared_id, (sent) => { if (sent) showToast(dict.gw_invite_sent); });
+return;
+}
+} catch (e) {
+console.warn('Приглашение через shareMessage не вышло —', e);
+} finally {
+btn.disabled = false;
+}
+}
+
+// Старый Telegram или бот без этой функции — окно «Поделиться» ссылкой.
+if (!gwInviteLink) await prefetchInviteLink();
+if (!gwInviteLink){
+showErrorToast(new Error(errorMessage('')));
+return;
+}
+openInviteShareLink();
 }
 
 document.getElementById('gwInviteBtn').addEventListener('click', shareGiveawayInvite);
+document.getElementById('gwInviteCopyBtn').addEventListener('click', () => {
+if (gwInviteLink) copyInviteLink();
+});
 
 // Вернулся из чата после отправки приглашения — обновляем прогресс.
 document.addEventListener('visibilitychange', () => {
