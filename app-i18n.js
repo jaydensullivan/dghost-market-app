@@ -104,6 +104,21 @@ au_extended: "⏱ Продлён",
 au_snipe_hint: "⏱ Ставка в последнюю минуту продлевает аукцион ещё на минуту — выиграть «в последнюю секунду» не получится.",
 watch_btn: "Следить",
 btn_3d: "3D",
+admin_gw_media_no_3d: "Для этого скина нет 3D-модели — выбери карточку приза.",
+admin_gw_media_need_prize: "Сначала выбери приз из инвентаря.",
+admin_gw_media_hint_gif: "GIF соберётся из 3D-модели приза при сохранении или запуске.",
+admin_gw_media_hint_card: "Бот нарисует карточку приза — такую же, как у постов с лотами.",
+admin_gw_media_hint_none: "Пост уйдёт текстом. Фото, присланное боту в личку, всё равно будет главнее.",
+admin_gw_media_gif: "🎞 GIF с 3D-рендером приза",
+admin_gw_media_card: "📸 Карточка приза (как у лотов)",
+admin_gw_media_none: "Без картинки",
+admin_gw_post_media: "Картинка к посту",
+admin_history_clear_confirm_auction: "Удалить всю историю аукционов? Это нельзя отменить.",
+admin_history_clear_confirm_giveaway: "Удалить всю историю розыгрышей? Это нельзя отменить.",
+admin_history_clear: "🗑 Очистить",
+gw_invite_failed: "Не получилось подготовить приглашение ({code}). Скопируй ссылку ниже.",
+gw_invite_ready: "Готово — нажми «Пригласить друзей» ещё раз",
+gw_invite_loading: "Готовлю приглашение…",
 admin_gw_pick_prize: "🎒 Выбрать из инвентаря",
 gw_invite_sent: "Приглашение отправлено ✓",
 gw_invite_copied: "Ссылка скопирована — отправь её другу",
@@ -903,6 +918,21 @@ au_extended: "⏱ Uzaytirildi",
 au_snipe_hint: "⏱ Oxirgi daqiqadagi stavka auksionni yana bir daqiqaga uzaytiradi — «oxirgi soniyada» yutib bo'lmaydi.",
 watch_btn: "Kuzatish",
 btn_3d: "3D",
+admin_gw_media_no_3d: "Bu skin uchun 3D model yo'q — sovrin kartasini tanla.",
+admin_gw_media_need_prize: "Avval inventardan sovrin tanla.",
+admin_gw_media_hint_gif: "GIF saqlash yoki ishga tushirishda sovrinning 3D modelidan yig'iladi.",
+admin_gw_media_hint_card: "Bot sovrin kartasini chizadi — lotlar postidagidek.",
+admin_gw_media_hint_none: "Post matn bo'lib ketadi. Botga shaxsiy yuborilgan rasm baribir ustun.",
+admin_gw_media_gif: "🎞 Sovrinning 3D GIF’i",
+admin_gw_media_card: "📸 Sovrin kartasi (lotlardagidek)",
+admin_gw_media_none: "Rasmsiz",
+admin_gw_post_media: "Post uchun rasm",
+admin_history_clear_confirm_auction: "Barcha auksionlar tarixini o'chirasizmi? Qaytarib bo'lmaydi.",
+admin_history_clear_confirm_giveaway: "Barcha o'yinlar tarixini o'chirasizmi? Qaytarib bo'lmaydi.",
+admin_history_clear: "🗑 Tozalash",
+gw_invite_failed: "Taklifni tayyorlab bo'lmadi ({code}). Quyidagi havolani nusxala.",
+gw_invite_ready: "Tayyor — «Do'stlarni taklif qilish»ni yana bos",
+gw_invite_loading: "Taklif tayyorlanmoqda…",
 admin_gw_pick_prize: "🎒 Inventardan tanlash",
 gw_invite_sent: "Taklif yuborildi ✓",
 gw_invite_copied: "Havola nusxalandi — do'stingga yubor",
@@ -1702,6 +1732,21 @@ au_extended: "⏱ Extended",
 au_snipe_hint: "⏱ A bid in the last minute extends the auction by another minute — no last-second sniping.",
 watch_btn: "Watch",
 btn_3d: "3D",
+admin_gw_media_no_3d: "No 3D model for this skin — pick the prize card.",
+admin_gw_media_need_prize: "Pick a prize from the inventory first.",
+admin_gw_media_hint_gif: "The GIF is rendered from the prize 3D model on save or start.",
+admin_gw_media_hint_card: "The bot draws a prize card — same as listing posts.",
+admin_gw_media_hint_none: "The post goes as text. A photo sent to the bot in DM still takes priority.",
+admin_gw_media_gif: "🎞 3D GIF of the prize",
+admin_gw_media_card: "📸 Prize card (like listings)",
+admin_gw_media_none: "No image",
+admin_gw_post_media: "Post image",
+admin_history_clear_confirm_auction: "Delete the whole auction history? This cannot be undone.",
+admin_history_clear_confirm_giveaway: "Delete the whole giveaway history? This cannot be undone.",
+admin_history_clear: "🗑 Clear",
+gw_invite_failed: "Could not prepare the invite ({code}). Copy the link below.",
+gw_invite_ready: "Ready — tap “Invite friends” again",
+gw_invite_loading: "Preparing invite…",
 admin_gw_pick_prize: "🎒 Pick from inventory",
 gw_invite_sent: "Invite sent ✓",
 gw_invite_copied: "Link copied — send it to a friend",
@@ -2610,7 +2655,10 @@ document.getElementById('gwInviteHint').textContent = have >= need
 : dict.gw_invite_hint.replace('{n}', need - have);
 gwInviteLocked = have < need;
 ctaBtn.classList.toggle('locked', gwInviteLocked);
-if (gwInviteLocked) prefetchInviteLink();
+if (gwInviteLocked){
+prefetchInviteLink();
+prepareGiveawayInvite();
+}
 }
 
 function loadGiveawayStatus(){
@@ -2681,45 +2729,80 @@ ta.remove();
 }
 }
 
-async function shareGiveawayInvite(){
+// Приглашение готовится ЗАРАНЕЕ (как только виден блок): тогда по
+// нажатию shareMessage / openTelegramLink вызываются сразу, в том же
+// касании. Любой сетевой запрос между касанием и открытием окна
+// Telegram может молча проигнорировать — «Пригласить» «не работал».
+let gwInvitePrepared = null; // { id, expiresAt }
+let gwInvitePreparing = null;
+
+function canShareMessage(){
+return !!(tg && typeof tg.shareMessage === 'function' && (!tg.isVersionAtLeast || tg.isVersionAtLeast('8.0')));
+}
+
+function prepareGiveawayInvite(){
+if (!tg || !tg.initData || !canShareMessage()) return Promise.resolve(null);
+const fresh = gwInvitePrepared && (!gwInvitePrepared.expiresAt || gwInvitePrepared.expiresAt * 1000 > Date.now() + 60000);
+if (fresh) return Promise.resolve(gwInvitePrepared);
+if (gwInvitePreparing) return gwInvitePreparing;
+gwInvitePreparing = fetch(API_BASE + '/api/giveaway/invite_prepare', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData }),
+})
+.then(async r => {
+const data = await r.json().catch(() => ({}));
+if (data.link) setInviteLink(data.link);
+if (!r.ok || !data.prepared_id) throw new Error(data.error || ('HTTP ' + r.status));
+gwInvitePrepared = { id: data.prepared_id, expiresAt: data.expires_at || null };
+return gwInvitePrepared;
+})
+.catch(err => {
+console.warn('Приглашение не подготовилось —', err);
+gwInvitePrepared = null;
+gwInvitePrepared_error = err.message;
+return null;
+})
+.finally(() => { gwInvitePreparing = null; });
+return gwInvitePreparing;
+}
+let gwInvitePrepared_error = '';
+
+function shareGiveawayInvite(){
 const dict = I18N[currentLang] || I18N.ru;
 if (!tg || !tg.initData){
 showAlert(errorMessage('unauthorized'));
 return;
 }
-const btn = document.getElementById('gwInviteBtn');
-if (btn.disabled) return;
 
-// Свежий Telegram: бот готовит сообщение с кнопкой «Участвовать»,
-// shareMessage показывает выбор чата (так же, как «Поделиться» лотом).
-if (typeof tg.shareMessage === 'function' && (!tg.isVersionAtLeast || tg.isVersionAtLeast('8.0'))){
-btn.disabled = true;
+// 1) Готовое сообщение от бота — сразу, без запросов.
+const fresh = gwInvitePrepared && (!gwInvitePrepared.expiresAt || gwInvitePrepared.expiresAt * 1000 > Date.now() + 60000);
+if (fresh && canShareMessage()){
 try {
-const r = await fetch(API_BASE + '/api/giveaway/invite_prepare', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ init_data: tg.initData }),
-});
-const data = await r.json().catch(() => ({}));
-if (data.link) setInviteLink(data.link);
-if (r.ok && data.prepared_id){
-tg.shareMessage(data.prepared_id, (sent) => { if (sent) showToast(dict.gw_invite_sent); });
+tg.shareMessage(gwInvitePrepared.id, (sent) => { if (sent) showToast(dict.gw_invite_sent); });
 return;
-}
 } catch (e) {
-console.warn('Приглашение через shareMessage не вышло —', e);
-} finally {
-btn.disabled = false;
+console.warn('shareMessage упал —', e);
 }
 }
 
-// Старый Telegram или бот без этой функции — окно «Поделиться» ссылкой.
-if (!gwInviteLink) await prefetchInviteLink();
-if (!gwInviteLink){
-showErrorToast(new Error(errorMessage('')));
+// 2) Окно «Поделиться» ссылкой — ссылка уже загружена.
+if (gwInviteLink){
+openInviteShareLink();
+prepareGiveawayInvite();
 return;
 }
-openInviteShareLink();
+
+// 3) Ничего не успело загрузиться — грузим и просим нажать ещё раз,
+// чтобы открыть окно уже в новом касании.
+showToast(dict.gw_invite_loading);
+Promise.all([prepareGiveawayInvite(), prefetchInviteLink()]).then(() => {
+if (!gwInvitePrepared && !gwInviteLink){
+showErrorToast(new Error(dict.gw_invite_failed.replace('{code}', gwInvitePrepared_error || 'no_link')));
+} else {
+showToast(dict.gw_invite_ready);
+}
+});
 }
 
 document.getElementById('gwInviteBtn').addEventListener('click', shareGiveawayInvite);

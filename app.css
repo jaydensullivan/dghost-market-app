@@ -3316,7 +3316,11 @@ padding:0 18px;
 
 /* ---------- розыгрыш: прогресс приглашений ---------- */
 .gw-invite{
-max-width:420px;
+/* Ширина задана явно: в колонке с центрированием блок иначе
+   подстраивался под содержимое, и длинная ссылка раздувала его
+   шире экрана — на iPhone он уезжал вправо. */
+width:100%;
+max-width:300px;
 margin:16px auto 0;
 padding:14px;
 border:1px solid var(--red-dim);
@@ -3356,7 +3360,8 @@ transition:width .4s ease;
 display:flex;
 align-items:center;
 gap:12px;
-max-width:420px;
+width:100%;
+max-width:300px;
 margin:12px auto 0;
 padding:10px 12px;
 border:1px solid var(--red-dim);
@@ -3379,7 +3384,7 @@ font-family:'JetBrains Mono', monospace;
 font-size:12px;
 cursor:pointer;
 }
-.gw-prize-skin.admin{ margin:8px 0 0; }
+.gw-prize-skin.admin{ margin:8px 0 0; max-width:none; }
 
 /* ---------- розыгрыш: ссылка-приглашение ---------- */
 .gw-invite-link{
@@ -3392,7 +3397,9 @@ border-radius:8px;
 background:rgba(0,0,0,0.25);
 }
 .gw-invite-link span{
-flex:1;
+display:block;
+flex:1 1 0;
+width:0;
 min-width:0;
 overflow:hidden;
 text-overflow:ellipsis;
@@ -3409,5 +3416,24 @@ border-radius:6px;
 background:var(--red);
 color:#fff;
 font-size:12px;
+cursor:pointer;
+}
+
+.admin-history-head{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:8px;
+margin-top:16px;
+}
+.admin-history-head .profile-section-title{ margin:0 !important; }
+.admin-history-clear{
+flex:none;
+padding:5px 10px;
+border-radius:8px;
+border:1px solid var(--red-dim);
+background:transparent;
+color:var(--muted);
+font-size:11px;
 cursor:pointer;
 }

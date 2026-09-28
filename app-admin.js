@@ -780,10 +780,12 @@ const box = document.getElementById('adminGwPrizeSkin');
 if (!adminGwPrizeSkin){
 box.style.display = 'none';
 box.innerHTML = '';
+if (document.getElementById('adminGwMediaHint')) updateAdminGwMediaHint();
 return;
 }
 box.innerHTML = prizeSkinHtml(adminGwPrizeSkin, true);
 box.style.display = '';
+if (document.getElementById('adminGwMediaHint')) updateAdminGwMediaHint();
 }
 
 document.getElementById('adminGwPrizeSkin').addEventListener('click', (e) => {
@@ -818,6 +820,68 @@ document.getElementById('adminGwPrize').addEventListener('input', (e) => {
 e.target.dataset.auto = '';
 });
 
+// ---------- картинка к посту розыгрыша ----------
+// «card» — карточку приза рисует бот (как у лотов); «gif» — GIF с
+// 3D-рендером приза рендерим здесь и загружаем боту перед сохранением.
+let adminGwGif = null; // { key, bytes }
+
+function adminGwPrizeEntry(){
+if (!adminGwPrizeSkin || typeof loadModelIndex !== 'function') return Promise.resolve(null);
+return loadModelIndex().then(map => map[modelIndexKey(adminGwPrizeSkin.title)] || null);
+}
+
+function updateAdminGwMediaHint(){
+const dict = I18N[currentLang] || I18N.ru;
+const mode = document.getElementById('adminGwPostMedia').value;
+const hint = document.getElementById('adminGwMediaHint');
+const preview = document.getElementById('adminGwGifPreview');
+if (mode !== 'gif'){ preview.style.display = 'none'; }
+if (mode === 'none'){ hint.textContent = dict.admin_gw_media_hint_none; return; }
+if (!adminGwPrizeSkin){ hint.textContent = dict.admin_gw_media_need_prize; return; }
+if (mode === 'card'){ hint.textContent = dict.admin_gw_media_hint_card; return; }
+adminGwPrizeEntry().then(entry => {
+hint.textContent = entry ? dict.admin_gw_media_hint_gif : dict.admin_gw_media_no_3d;
+});
+}
+
+document.getElementById('adminGwPostMedia').addEventListener('change', updateAdminGwMediaHint);
+
+function ensureAdminGwMedia(status){
+const dict = I18N[currentLang] || I18N.ru;
+const mode = document.getElementById('adminGwPostMedia').value;
+if (mode === 'none') return Promise.resolve();
+if (!adminGwPrizeSkin) return Promise.reject(new Error(dict.admin_gw_media_need_prize));
+if (mode === 'card') return Promise.resolve();
+const key = JSON.stringify([adminGwPrizeSkin.title, adminGwPrizeSkin.float_value]);
+return adminGwPrizeEntry().then(entry => {
+if (!entry) throw new Error(dict.admin_gw_media_no_3d);
+if (adminGwGif && adminGwGif.key === key) return adminGwGif.bytes;
+return render3DGif(entry, Number(adminGwPrizeSkin.float_value) || 0, adminGwPrizeSkin.title,
+p => { status.textContent = dict.share_gif_preparing.replace('{p}', Math.round(p * 100)); })
+.then(bytes => { adminGwGif = { key, bytes }; return bytes; });
+})
+.then(bytes => {
+const preview = document.getElementById('adminGwGifPreview');
+preview.src = URL.createObjectURL(new Blob([bytes], { type: 'image/gif' }));
+preview.style.display = '';
+status.textContent = '...';
+return adminApiFetch('/api/admin/giveaway/gif', { method: 'POST', body: { gif_base64: bytesToBase64(bytes) } });
+});
+}
+
+// ---------- очистка истории ----------
+document.querySelectorAll('[data-clear-history]').forEach(btn => {
+btn.addEventListener('click', () => {
+const dict = I18N[currentLang] || I18N.ru;
+const type = btn.dataset.clearHistory;
+showConfirm(type === 'auction' ? dict.admin_history_clear_confirm_auction : dict.admin_history_clear_confirm_giveaway, () => {
+adminApiFetch('/api/admin/events/history/clear', { method: 'POST', body: { event_type: type } })
+.then(() => { showToast(dict.status_done_ok); loadAdminEventsHistory(); })
+.catch(err => showErrorToast(err));
+});
+});
+});
+
 function loadAdminGiveawayPanel(){
 fetch(API_BASE + '/api/giveaway')
 .then(r => r.json())
@@ -827,6 +891,8 @@ document.getElementById('adminGwTitle').value = data.title || '';
 document.getElementById('adminGwSubtitle').value = data.subtitle || '';
 document.getElementById('adminGwPrize').value = data.prize || '';
 setAdminGwPrizeSkin(data.prize_skin || null);
+document.getElementById('adminGwPostMedia').value = data.post_media || 'none';
+updateAdminGwMediaHint();
 document.getElementById('adminGwCustomPostText').value = data.custom_post_text || '';
 
 loadSavedEmojis(null, data.emoji_id || null);
@@ -868,7 +934,8 @@ const gwEmojiSave = getSelectedEmoji('adminGwEmoji');
 
 const gwCustomTextSave = document.getElementById('adminGwCustomPostText').value.trim();
 
-adminApiFetch('/api/giveaway', {
+ensureAdminGwMedia(status)
+.then(() => adminApiFetch('/api/giveaway', {
 method: 'POST',
 body: {
 title: title || undefined,
@@ -879,8 +946,9 @@ emoji_id: gwEmojiSave.emoji_id,
 emoji_char: gwEmojiSave.emoji_char,
 custom_post_text: gwCustomTextSave,
 prize_skin: adminGwPrizeSkin,
+post_media: document.getElementById('adminGwPostMedia').value,
 }
-})
+}))
 .then(() => { status.textContent = (I18N[currentLang] || I18N.ru).status_done_ok; loadAdminGiveawayPanel(); })
 .catch(err => { status.textContent = friendlyErrorMessage(err); });
 });
@@ -911,7 +979,8 @@ const gwEmoji = getSelectedEmoji('adminGwEmoji');
 // Сохраняем текущие значения формы и сразу запускаем — раньше
 // нужно было отдельно жать "Сохранить" перед "Запустить", иначе
 // сервер не знал время окончания и запуск падал с ошибкой.
-adminApiFetch('/api/giveaway', {
+ensureAdminGwMedia(status)
+.then(() => adminApiFetch('/api/giveaway', {
 method: 'POST',
 body: {
 title: title || undefined,
@@ -922,8 +991,9 @@ emoji_id: gwEmoji.emoji_id,
 emoji_char: gwEmoji.emoji_char,
 custom_post_text: gwCustomTextStart,
 prize_skin: adminGwPrizeSkin,
+post_media: document.getElementById('adminGwPostMedia').value,
 }
-})
+}))
 .then(() => adminApiFetch('/api/admin/giveaway/start', { method: 'POST' }))
 .then(() => { status.textContent = (I18N[currentLang] || I18N.ru).status_done_ok; loadAdminGiveawayPanel(); loadAdminStatus(); })
 .catch(err => { status.textContent = friendlyErrorMessage(err); });
