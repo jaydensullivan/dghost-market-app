@@ -1,0 +1,39 @@
+{
+  "finish": "gs_awp_hydra",
+  "shader": {
+    "paint_style": 8,
+    "pattern_scale": 1.0,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0.0,
+    "color_brightness": 1.5,
+    "colors": [
+      [
+        0.8,
+        0.7922,
+        0.7922
+      ],
+      [
+        1.0,
+        0.9529,
+        0.9216
+      ],
+      [
+        0.8118,
+        0.6706,
+        0.6235
+      ],
+      [
+        0.7176,
+        0.6431,
+        0.6353
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_d7b538f3db.webp"
+  }
+}
