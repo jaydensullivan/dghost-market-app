@@ -104,6 +104,7 @@ au_extended: "⏱ Продлён",
 au_snipe_hint: "⏱ Ставка в последнюю минуту продлевает аукцион ещё на минуту — выиграть «в последнюю секунду» не получится.",
 watch_btn: "Следить",
 btn_3d: "3D",
+gw_invite_no_window: "Если окно отправки не открылось ({code}) — нажми «Копировать» и отправь ссылку другу.",
 admin_gw_media_no_3d: "Для этого скина нет 3D-модели — выбери карточку приза.",
 admin_gw_media_need_prize: "Сначала выбери приз из инвентаря.",
 admin_gw_media_hint_gif: "GIF соберётся из 3D-модели приза при сохранении или запуске.",
@@ -918,6 +919,7 @@ au_extended: "⏱ Uzaytirildi",
 au_snipe_hint: "⏱ Oxirgi daqiqadagi stavka auksionni yana bir daqiqaga uzaytiradi — «oxirgi soniyada» yutib bo'lmaydi.",
 watch_btn: "Kuzatish",
 btn_3d: "3D",
+gw_invite_no_window: "Agar yuborish oynasi ochilmagan bo'lsa ({code}) — «Nusxalash»ni bos va havolani do'stingga yubor.",
 admin_gw_media_no_3d: "Bu skin uchun 3D model yo'q — sovrin kartasini tanla.",
 admin_gw_media_need_prize: "Avval inventardan sovrin tanla.",
 admin_gw_media_hint_gif: "GIF saqlash yoki ishga tushirishda sovrinning 3D modelidan yig'iladi.",
@@ -1732,6 +1734,7 @@ au_extended: "⏱ Extended",
 au_snipe_hint: "⏱ A bid in the last minute extends the auction by another minute — no last-second sniping.",
 watch_btn: "Watch",
 btn_3d: "3D",
+gw_invite_no_window: "If the share window did not open ({code}), tap “Copy” and send the link to a friend.",
 admin_gw_media_no_3d: "No 3D model for this skin — pick the prize card.",
 admin_gw_media_need_prize: "Pick a prize from the inventory first.",
 admin_gw_media_hint_gif: "The GIF is rendered from the prize 3D model on save or start.",
@@ -2768,6 +2771,28 @@ return gwInvitePreparing;
 }
 let gwInvitePrepared_error = '';
 
+// Что Telegram ответил на shareMessage (событие shareMessageFailed).
+let gwShareError = '';
+let gwShareSettled = false;
+if (tg && typeof tg.onEvent === 'function'){
+tg.onEvent('shareMessageFailed', (e) => { gwShareError = (e && e.error) || 'UNKNOWN_ERROR'; });
+tg.onEvent('shareMessageSent', () => { gwShareSettled = true; });
+}
+
+// Сторож: если окно Telegram так и не открылось (приложение не ушло
+// на задний план и ответа нет), честно говорим об этом и даём ссылку.
+function watchInviteWindow(path){
+let hidden = false;
+const onHide = () => { if (document.hidden) hidden = true; };
+document.addEventListener('visibilitychange', onHide);
+setTimeout(() => {
+document.removeEventListener('visibilitychange', onHide);
+if (hidden || gwShareSettled) return;
+const dict = I18N[currentLang] || I18N.ru;
+showErrorToast(new Error(dict.gw_invite_no_window.replace('{code}', path + (gwShareError ? ':' + gwShareError : ''))));
+}, 2500);
+}
+
 function shareGiveawayInvite(){
 const dict = I18N[currentLang] || I18N.ru;
 if (!tg || !tg.initData){
@@ -2779,7 +2804,24 @@ return;
 const fresh = gwInvitePrepared && (!gwInvitePrepared.expiresAt || gwInvitePrepared.expiresAt * 1000 > Date.now() + 60000);
 if (fresh && canShareMessage()){
 try {
-tg.shareMessage(gwInvitePrepared.id, (sent) => { if (sent) showToast(dict.gw_invite_sent); });
+gwShareError = '';
+gwShareSettled = false;
+watchInviteWindow('share');
+tg.shareMessage(gwInvitePrepared.id, (sent) => {
+gwShareSettled = true;
+if (sent){
+showToast(dict.gw_invite_sent);
+return;
+}
+// Отказ самого пользователя — не ошибка.
+if (gwShareError === 'USER_DECLINED') return;
+// Telegram не принял готовое сообщение: пробуем окно ссылки и
+// показываем код, чтобы было видно, что именно сломалось.
+gwInvitePrepared = null;
+showErrorToast(new Error(dict.gw_invite_failed.replace('{code}', gwShareError || 'share_failed')));
+if (gwInviteLink) openInviteShareLink();
+prepareGiveawayInvite();
+});
 return;
 } catch (e) {
 console.warn('shareMessage упал —', e);
@@ -2788,6 +2830,8 @@ console.warn('shareMessage упал —', e);
 
 // 2) Окно «Поделиться» ссылкой — ссылка уже загружена.
 if (gwInviteLink){
+gwShareSettled = false;
+watchInviteWindow('link');
 openInviteShareLink();
 prepareGiveawayInvite();
 return;
