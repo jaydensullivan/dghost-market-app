@@ -40,6 +40,14 @@ import glob, json, os, re, sys
 from PIL import Image, ImageStat
 
 finish, src, dest, compfile, shared = sys.argv[1:6]
+
+def resize_bands(img, size):
+    """Уменьшает каждый канал отдельно. Обычный resize у RGBA умножает
+    цвет на прозрачность: там, где альфа 0 (у Printstream — почти везде,
+    в альфе маска перламутра), цвет обнулялся и ствол выходил чёрным."""
+    if img.mode not in ('RGBA', 'LA'):
+        return img.resize(size, Image.LANCZOS)
+    return Image.merge(img.mode, [b.resize(size, Image.LANCZOS) for b in img.split()])
 recipe = open(compfile, encoding='utf-8', errors='ignore').read()
 
 # Имена файлов, на которые ссылается рецепт (без расширения).
@@ -81,7 +89,7 @@ for layer, key, max_side, color in LAYERS:
     w, h = img.size
     if max(w, h) > max_side:
         k = max_side / max(w, h)
-        img = img.resize((int(w * k), int(h * k)), Image.LANCZOS)
+        img = resize_bands(img, (int(w * k), int(h * k)))
     if color is None:
         img = img.convert('RGB')
     elif color:
@@ -141,6 +149,14 @@ import hashlib, io, json, re, sys, os
 from PIL import Image
 
 finish, src, dest, matfile, shared = sys.argv[1:6]
+
+def resize_bands(img, size):
+    """Уменьшает каждый канал отдельно. Обычный resize у RGBA умножает
+    цвет на прозрачность: там, где альфа 0 (у Printstream — почти везде,
+    в альфе маска перламутра), цвет обнулялся и ствол выходил чёрным."""
+    if img.mode not in ('RGBA', 'LA'):
+        return img.resize(size, Image.LANCZOS)
+    return Image.merge(img.mode, [b.resize(size, Image.LANCZOS) for b in img.split()])
 mat = open(matfile, encoding='utf-8', errors='ignore').read()
 
 def find_texture(key):
@@ -231,7 +247,7 @@ for layer, (key, max_side) in LAYERS.items():
     w, h = img.size
     if max(w, h) > max_side:
         k = max_side / max(w, h)
-        img = img.resize((int(w * k), int(h * k)), Image.LANCZOS)
+        img = resize_bands(img, (int(w * k), int(h * k)))
 
     # Маски — в оттенках серого, это ещё экономит вес.
     if layer in ('rough', 'wear', 'grunge'):
