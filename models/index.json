@@ -1,1 +1,222 @@
-{}
+{
+ "AK-47 | AUTOEXEC": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/ak47_autoexec_camo",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Aquamarine Revenge": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/cu_ak47_courage_alt",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Asiimov": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/cu_ak47_asiimov",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Baroque Purple": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/hy_veneto_purple",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Black Laminate": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/hy_ak47lam_bw",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Bloodsport": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/gs_ak47_bloodsport",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Blue Laminate": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/hy_ak47lam_blue",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Cartel": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/aq_ak47_cartel",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Case Hardened": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/aq_oiled",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Elite Build": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/cu_ak47_mastery",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Emerald Pinstripe": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/cu_pinstripe_ak47",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Fire Serpent": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/cu_fireserpent_ak47_bravo",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | First Class": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/cu_green_leather_ak47",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Frontside Misty": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/cu_ak47_winter_sport",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Fuel Injector": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/gs_ak47_supercharged",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Gold Arabesque": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/gs_ak47_gold_arabesque",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Green Laminate": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/hy_ak47lam_green",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Head Shot": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/cu_ak_head_shot_holo",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Hydroponic": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/am_bamboo_jungle",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Ice Coaled": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/cu_ak47_cogthings",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Jaguar": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/cu_panther_ak47",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Jet Set": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/cu_well_traveled_ak47",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Jungle Spray": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/sp_spray_jungle",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Leet Museo": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/gs_ak47_abstract",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Legion of Anubis": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/cu_ak47_anubis",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Neon Revolution": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/cu_ak47_anarchy",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Neon Rider": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/cu_ak_neon_rider",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Nightwish": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/cu_ak47_nightwish",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Orbit Mk01": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/gs_ak_colony01_red",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Panthera onca": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/cu_ak_jaguar",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Point Disarray": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/cu_ak47_point_disarray",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Rat Rod": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/gs_ak47_nibbler",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Red Laminate": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/hy_ak47lam",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Redline": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/cu_ak47_cobra",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Safari Mesh": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/sp_mesh_tan",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Safety Net": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/hy_mesh_safetyorange",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Slate": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/gs_ak47_professional",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Steel Delta": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/gs_ak47_strone",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | The Empress": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/gs_ak47_empress",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Uncharted": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/cu_ak47_aztec",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Vulcan": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/cu_ak47_rubber",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Wasteland Rebel": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/cu_tribute_ak47",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Wild Lotus": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/cu_ak_island_floral",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | X-Ray": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/cu_ak_xray",
+  "weapon": "models/weapons/ak47"
+ }
+}

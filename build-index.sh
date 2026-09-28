@@ -108,15 +108,25 @@ for enc in ("utf-16", "utf-8"):
         continue
 
 # 1. Токен -> человеческое название: "PaintKit_cu_ak47_cobra_Tag" -> "Redline"
-tokens = dict(re.findall(r'"([A-Za-z0-9_]+)"\s+"([^"]{1,80})"', lang))
+# Регистр в токенах items_game и языкового файла иногда расходится
+# (_Tag / _tag), поэтому ключи храним в нижнем регистре.
+# Разбираем построчно: "ключ"  "значение" в начале строки. Прежний
+# поиск по всему файлу сбивался на длинных описаниях и кавычках
+# внутри текста и подставлял вместо названия чужой токен.
+tokens = {
+    k.lower(): v
+    for k, v in re.findall(r'^[ \t]*"([A-Za-z0-9_]+)"[ \t]+"((?:[^"\\\n]|\\.)*)"', lang, re.M)
+}
 
 def human(tag):
     """Название по токену вида #PaintKit_xxx_Tag."""
-    return tokens.get((tag or "").lstrip("#"))
+    return tokens.get((tag or "").lstrip("#").lower())
 
 # 2. Раскраска -> её токен названия.
 kit_tag = {}
-for block in re.finditer(r'"name"\s+"([a-zA-Z0-9_]+)"\s*(.{0,400}?)"description_tag"\s+"([^"]+)"', items, re.S):
+# [^{}] — не выходим за границы блока: иначе "name" соседней записи
+# без description_tag дотягивался до чужого тега и забирал его себе.
+for block in re.finditer(r'"name"\s+"([a-zA-Z0-9_]+)"\s*([^{}]{0,400}?)"description_tag"\s+"([^"]+)"', items):
     kit_tag[block.group(1)] = block.group(3)
 
 # 3. Раскраска <-> оружие: записи вида "[cu_ak47_cobra]weapon_ak47".
@@ -127,6 +137,14 @@ weapon_names = {}
 for m in re.finditer(r'"name"\s+"(weapon_[a-z0-9_]+)"(.{0,600}?)"item_name"\s+"([^"]+)"', items, re.S):
     name = human(m.group(3))
     if name:
+        weapon_names[m.group(1)] = name
+
+# В CS2 у большинства стволов item_name лежит не в самом предмете,
+# а в шаблоне "weapon_ak47_prefab" — без этого AK-47 не находился,
+# и таблица выходила пустой.
+for m in re.finditer(r'"(weapon_[a-z0-9_]+)_prefab"\s*\{(.{0,3000}?)"item_name"\s+"([^"]+)"', items, re.S):
+    name = human(m.group(3))
+    if name and m.group(1) not in weapon_names:
         weapon_names[m.group(1)] = name
 
 # 5. Что реально есть в репозитории.
