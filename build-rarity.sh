@@ -225,11 +225,21 @@ aliases = {
 
 wanted = aliases.get(weapon, [weapon.replace("knife_", "knife_")])
 
+# Редкость связки «раскраска + ствол» точнее всего видна по спискам
+# выпадения коллекций: "set_xxx_ancient" { "[cu_awp_...]weapon_awp" }.
+# В paint_kits_rarity есть далеко не всё — у AWP там 18 раскрасок из
+# 52 и ни одной тайной, поэтому он идёт только запасным вариантом.
+loot_rarity = {}
+for suffix, body in re.findall(
+        r'"[a-z0-9_]+?_(common|uncommon|rare|mythical|legendary|ancient|immortal)"\s*\{([^{}]*)\}', text):
+    for kit, wpn in re.findall(r'\[([a-zA-Z0-9_]+)\]weapon_([a-z0-9_]+)', body):
+        loot_rarity.setdefault((kit, wpn), suffix)
+
 mine = {}
 
 for kit, wpn in pairs:
     if wpn in wanted:
-        rar = rarity_of.get(kit)
+        rar = loot_rarity.get((kit, wpn)) or rarity_of.get(kit)
         if rar:
             mine[kit] = rar
 
@@ -259,7 +269,9 @@ if rarity == "list":
 names = by_rarity.get(rarity, [])
 
 with open(os.path.join(work, f"rarity-{weapon}-{rarity}.txt"), "w") as f:
-    f.write("\n".join(names))
+    # Перевод строки в конце обязателен: без него while read ниже
+    # не видел последнюю раскраску, и из шести собиралось пять.
+    f.write("".join(n + "\n" for n in names))
 
 print(f"NAMES:{len(names)}")
 PY
