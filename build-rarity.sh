@@ -269,7 +269,9 @@ if rarity == "list":
 names = by_rarity.get(rarity, [])
 
 with open(os.path.join(work, f"rarity-{weapon}-{rarity}.txt"), "w") as f:
-    f.write("\n".join(names))
+    # Перевод строки в конце обязателен: без него while read ниже
+    # не видел последнюю раскраску, и из шести собиралось пять.
+    f.write("".join(n + "\n" for n in names))
 
 print(f"NAMES:{len(names)}")
 PY
