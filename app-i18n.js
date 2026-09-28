@@ -2821,15 +2821,24 @@ btn.disabled = false;
 
 document.getElementById('gwInviteDmBtn').addEventListener('click', sendInviteToDm);
 
-// Как «Поделиться» у карточек лотов: обычное окно Telegram
-// «Поделиться ссылкой» (t.me/share/url), открытое прямо в касании.
-// Подготовленные ботом сообщения (shareMessage) на телефонах молча не
-// открывались — ни на Android, ни на iOS. Ссылка грузится заранее,
-// поэтому здесь нет ни одного сетевого запроса до открытия окна.
+// Без inline-режима — как «Поделиться» у карточек лотов: обычное
+// окно Telegram «Поделиться ссылкой» (t.me/share/url), открытое прямо
+// в касании. Ссылка грузится заранее, поэтому здесь нет ни одного
+// сетевого запроса до открытия окна.
 function shareGiveawayInvite(){
 if (!tg || !tg.initData){
 showAlert(errorMessage('unauthorized'));
 return;
+}
+// Лучший вариант (проверено на Android и iOS): выбор чата, куда бот
+// сам вставляет карточку розыгрыша с GIF и кнопкой «Участвовать»
+// по реферальной ссылке. Работает, только если у бота включён
+// Inline Mode, и начиная с Telegram 6.7.
+if (typeof tg.switchInlineQuery === 'function' && (!tg.isVersionAtLeast || tg.isVersionAtLeast('6.7'))){
+try {
+tg.switchInlineQuery('invite', ['users', 'groups', 'channels']);
+return;
+} catch (e) {}
 }
 if (gwInviteLink){
 openInviteShareLink();
