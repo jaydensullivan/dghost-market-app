@@ -11,7 +11,7 @@
   },
   "textures": {
     "pattern": "pattern.webp",
-    "wear": "wear.webp",
-    "grunge": "grunge.webp"
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_d7b538f3db.webp"
   }
 }
