@@ -199,6 +199,9 @@ ${wearBar}
 }
 
 let lastInventoryItems = [];
+// Если задан — окно инвентаря выбирает предмет для этого обработчика
+// (например, приз розыгрыша в админке), а не для продажи.
+let inventoryPickHandler = null;
 let pendingSkinAssetId = null;
 let pendingSkinInspectLink = null;
 
@@ -257,6 +260,7 @@ renderErrorState(inventoryGrid, msg, () => loadInventory(forceRefresh));
 
 openInventoryBtn.addEventListener('click', () => {
 if (!tg || !tg.initData) return;
+inventoryPickHandler = null;
 inventoryOverlay.classList.add('show');
 loadInventory(false);
 });
@@ -267,6 +271,7 @@ loadInventory(true);
 });
 
 inventoryCancel.addEventListener('click', () => {
+inventoryPickHandler = null;
 inventoryOverlay.classList.remove('show');
 });
 
@@ -275,6 +280,14 @@ const card = e.target.closest('.inv-item');
 if (!card) return;
 const item = lastInventoryItems[Number(card.dataset.idx)];
 if (!item) return;
+
+if (inventoryPickHandler){
+const handler = inventoryPickHandler;
+inventoryPickHandler = null;
+inventoryOverlay.classList.remove('show');
+handler(item);
+return;
+}
 
 if (item.tradable === false){
 showAlert('Этот предмет сейчас в трейд-бане Steam — выбрать его для продажи нельзя, пока бан не закончится.');

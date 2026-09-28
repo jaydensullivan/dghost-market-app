@@ -769,6 +769,55 @@ renderEmojiInsertRow('gwEmojiInsertRow', 'adminGwCustomPostText');
 .catch(() => {});
 }
 
+// ---------- приз розыгрыша из инвентаря ----------
+// Кнопка открывает то же окно инвентаря Steam, что и при выставлении
+// лота, но в режиме выбора приза: нажатый предмет становится призом.
+let adminGwPrizeSkin = null;
+
+function setAdminGwPrizeSkin(ps){
+adminGwPrizeSkin = ps && ps.title ? ps : null;
+const box = document.getElementById('adminGwPrizeSkin');
+if (!adminGwPrizeSkin){
+box.style.display = 'none';
+box.innerHTML = '';
+return;
+}
+box.innerHTML = prizeSkinHtml(adminGwPrizeSkin, true);
+box.style.display = '';
+}
+
+document.getElementById('adminGwPrizeSkin').addEventListener('click', (e) => {
+if (e.target.closest('[data-gps-clear]')) setAdminGwPrizeSkin(null);
+});
+
+document.getElementById('adminGwPickPrizeBtn').addEventListener('click', () => {
+if (!tg || !tg.initData) return;
+inventoryPickHandler = (item) => {
+const prizeInput = document.getElementById('adminGwPrize');
+const title = (item.stattrak ? 'StatTrak™ ' : '') + (item.title || '');
+setAdminGwPrizeSkin({
+title,
+photo_url: item.photo_url || null,
+float_value: item.float_value ?? null,
+wear: item.wear || null,
+stattrak: !!item.stattrak,
+rarity: item.rarity || null,
+});
+// Текст приза — название скина с износом, если админ не написал своё.
+const withWear = item.wear ? `${title} (${item.wear})` : title;
+if (!prizeInput.value.trim() || prizeInput.dataset.auto === '1'){
+prizeInput.value = withWear.slice(0, 60);
+prizeInput.dataset.auto = '1';
+}
+};
+inventoryOverlay.classList.add('show');
+loadInventory(false);
+});
+
+document.getElementById('adminGwPrize').addEventListener('input', (e) => {
+e.target.dataset.auto = '';
+});
+
 function loadAdminGiveawayPanel(){
 fetch(API_BASE + '/api/giveaway')
 .then(r => r.json())
@@ -777,6 +826,7 @@ const dict = I18N[currentLang] || I18N.ru;
 document.getElementById('adminGwTitle').value = data.title || '';
 document.getElementById('adminGwSubtitle').value = data.subtitle || '';
 document.getElementById('adminGwPrize').value = data.prize || '';
+setAdminGwPrizeSkin(data.prize_skin || null);
 document.getElementById('adminGwCustomPostText').value = data.custom_post_text || '';
 
 loadSavedEmojis(null, data.emoji_id || null);
@@ -828,6 +878,7 @@ minutes: minutes ? Number(minutes) : undefined,
 emoji_id: gwEmojiSave.emoji_id,
 emoji_char: gwEmojiSave.emoji_char,
 custom_post_text: gwCustomTextSave,
+prize_skin: adminGwPrizeSkin,
 }
 })
 .then(() => { status.textContent = (I18N[currentLang] || I18N.ru).status_done_ok; loadAdminGiveawayPanel(); })
@@ -870,6 +921,7 @@ minutes: Number(minutes),
 emoji_id: gwEmoji.emoji_id,
 emoji_char: gwEmoji.emoji_char,
 custom_post_text: gwCustomTextStart,
+prize_skin: adminGwPrizeSkin,
 }
 })
 .then(() => adminApiFetch('/api/admin/giveaway/start', { method: 'POST' }))

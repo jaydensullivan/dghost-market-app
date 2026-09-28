@@ -1,3 +1,49 @@
+// Карточка приза из инвентаря. box — куда рисовать, onClear — если
+// нужна кнопка «убрать» (в админке), иначе показываем «3D», когда
+// для скина есть модель.
+function prizeSkinHtml(ps, withClear){
+const dict = I18N[currentLang] || I18N.ru;
+const meta = [
+ps.stattrak ? 'ST™' : '',
+ps.wear || '',
+(ps.float_value !== null && ps.float_value !== undefined) ? 'float ' + Number(ps.float_value).toFixed(4) : '',
+].filter(Boolean).join(' · ');
+return (ps.photo_url ? `<img src="${escapeHtml(ps.photo_url)}" alt="">` : '')
++ `<div class="gps-body"><div class="gps-title">${escapeHtml(ps.title)}</div>`
++ (meta ? `<div class="gps-meta">${escapeHtml(meta)}</div>` : '') + '</div>'
++ (withClear
+? `<button type="button" data-gps-clear>✕</button>`
+: `<button type="button" data-gps-3d style="display:none;">${dict.btn_3d}</button>`);
+}
+
+function renderGiveawayPrizeSkin(ps){
+const box = document.getElementById('gwPrizeSkin');
+if (!box) return;
+if (!ps || !ps.title){
+box.style.display = 'none';
+box.innerHTML = '';
+return;
+}
+box.innerHTML = prizeSkinHtml(ps, false);
+box.style.display = '';
+// «3D» — если скин есть в таблице моделей (models/index.json).
+// app-3d.js грузится позже этого файла: если ответ бота пришёл
+// раньше, ждём полной загрузки страницы.
+if (typeof loadModelIndex !== 'function'){
+if (document.readyState !== 'complete'){
+window.addEventListener('load', () => renderGiveawayPrizeSkin(ps), { once: true });
+}
+return;
+}
+loadModelIndex().then(map => {
+const entry = map[modelIndexKey(ps.title)];
+const btn = box.querySelector('[data-gps-3d]');
+if (!entry || !btn) return;
+btn.style.display = '';
+btn.onclick = () => open3DViewer(entry.model, ps.title, entry.skin, Number(ps.float_value) || 0, entry.weapon || null, 'none');
+});
+}
+
 // ============================================================
 // ЖИВЫЕ ДАННЫЕ РОЗЫГРЫША + РЕДАКТИРОВАНИЕ (только для админа)
 // ============================================================
@@ -29,6 +75,7 @@ if (data.prize){
 document.getElementById('prize').innerHTML = COIN_ICON + ' <b>' + data.prize + '</b>';
 fPrize.value = data.prize;
 }
+renderGiveawayPrizeSkin(data.prize_skin);
 // Прозрачность розыгрыша: сколько уже участвует и на каких условиях.
 renderGiveawayParticipants(data.participants_count);
 renderGiveawayConditions(data.conditions);

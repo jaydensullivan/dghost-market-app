@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="stylesheet" href="app.css?v=23">
+<link rel="stylesheet" href="app.css?v=24">
 </head>
 <body>
 
@@ -190,6 +190,9 @@
 
 <div class="prize" id="prize"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="vertical-align:-2px"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5c0-1 1-1.8 2.5-1.8s2.5.7 2.5 1.7c0 2.3-5 1.3-5 3.6 0 1 1 1.8 2.5 1.8s2.5-.8 2.5-1.8"/></svg> <b>250 000</b>&nbsp;сум</div>
 
+<!-- Приз из инвентаря: картинка, float и 3D, если есть модель. -->
+<div class="gw-prize-skin" id="gwPrizeSkin" style="display:none;"></div>
+
 <div class="crystal">
 <svg viewBox="0 0 200 200">
 <circle class="crystal-ring" cx="100" cy="100" r="92"></circle>
@@ -219,6 +222,11 @@ transform="rotate(-90 100 100)"></circle>
 <div class="gw-invite-bar"><div id="gwInviteBar"></div></div>
 <div class="gw-invite-hint" id="gwInviteHint"></div>
 <button type="button" id="gwInviteBtn" class="steam-link-btn" data-i18n="gw_invite_btn">📨 Пригласить друзей</button>
+<!-- Запасной путь: ссылку всегда можно скопировать и отправить вручную. -->
+<div class="gw-invite-link" id="gwInviteLinkRow" style="display:none;">
+<span id="gwInviteLinkText"></span>
+<button type="button" id="gwInviteCopyBtn" data-i18n="gw_invite_copy">Копировать</button>
+</div>
 </div>
 
 <div class="gw-block" id="gwConditions" style="display:none;"></div>
@@ -620,6 +628,8 @@ transform="rotate(-90 100 100)"></circle>
 <div class="edit-field">
 <label for="adminGwPrize" data-i18n="admin_gw_prize">Приз</label>
 <input id="adminGwPrize" type="text" maxlength="60" placeholder="250 000 сум">
+<button type="button" id="adminGwPickPrizeBtn" class="steam-link-btn secondary" style="margin-top:8px;" data-i18n="admin_gw_pick_prize">🎒 Выбрать из инвентаря</button>
+<div class="gw-prize-skin admin" id="adminGwPrizeSkin" style="display:none;"></div>
 </div>
 <div class="edit-field">
 <label for="adminGwMinutes" data-i18n="admin_gw_minutes">Через сколько минут финал</label>
@@ -1645,8 +1655,8 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 
 <script src="app-core.js?v=2"></script>
-<script src="app-i18n.js?v=24"></script>
-<script src="app-giveaway.js?v=2"></script>
+<script src="app-i18n.js?v=25"></script>
+<script src="app-giveaway.js?v=3"></script>
 <script src="app-navigation.js?v=5"></script>
 <script src="app-shop.js?v=7"></script>
 <script src="app-deals.js?v=8"></script>
@@ -1657,8 +1667,8 @@ transform="rotate(-90 100 100)"></circle>
 <script src="app-topup.js?v=1"></script>
 <script src="app-history.js?v=4"></script>
 <script src="app-referral.js?v=2"></script>
-<script src="app-withdraw.js?v=5"></script>
-<script src="app-admin.js?v=2"></script>
+<script src="app-withdraw.js?v=6"></script>
+<script src="app-admin.js?v=3"></script>
 <script src="app-auctions.js?v=3"></script>
 <script src="app-reviews.js?v=1"></script>
 <script src="app-notifications.js?v=2"></script>
