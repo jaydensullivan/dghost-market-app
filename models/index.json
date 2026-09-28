@@ -229,9 +229,19 @@
   "skin": "models/skins/hy_blam_simple",
   "weapon": "models/weapons/awp"
  },
+ "AWP | CMYK": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/gs_independe_awp",
+  "weapon": "models/weapons/awp"
+ },
  "AWP | Chromatic Aberration": {
   "model": "models/awp.glb",
   "skin": "models/skins/cu_awp_chroma_pink",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Chrome Cannon": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/awp_tempered",
   "weapon": "models/weapons/awp"
  },
  "AWP | Containment Breach": {
@@ -242,6 +252,11 @@
  "AWP | Corticera": {
   "model": "models/awp.glb",
   "skin": "models/skins/cu_favela_awp",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Crakow!": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/cu_overpass_crakow_awp",
   "weapon": "models/weapons/awp"
  },
  "AWP | Desert Hydra": {
@@ -294,6 +309,11 @@
   "skin": "models/skins/cu_awp_hyper_beast",
   "weapon": "models/weapons/awp"
  },
+ "AWP | Ice Coaled": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/awp_ice_coaled",
+  "weapon": "models/weapons/awp"
+ },
  "AWP | Lightning Strike": {
   "model": "models/awp.glb",
   "skin": "models/skins/am_lightning_awp",
@@ -324,6 +344,16 @@
   "skin": "models/skins/cu_awp_hannya",
   "weapon": "models/weapons/awp"
  },
+ "AWP | Printstream": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/awp_printstream",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Queen's Gambit": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/awp_queens_gambit",
+  "weapon": "models/weapons/awp"
+ },
  "AWP | Redline": {
   "model": "models/awp.glb",
   "skin": "models/skins/cu_awp_cobra",
@@ -337,6 +367,11 @@
  "AWP | Silk Tiger": {
   "model": "models/awp.glb",
   "skin": "models/skins/am_tigers_blue",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Sovereign Flame": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/awp_sovereign_flame",
   "weapon": "models/weapons/awp"
  },
  "AWP | The Prince": {
