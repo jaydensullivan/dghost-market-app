@@ -1,0 +1,39 @@
+{
+  "finish": "gs_awp_death",
+  "shader": {
+    "paint_style": 8,
+    "pattern_scale": 1.0,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0.25,
+    "color_brightness": 1.4,
+    "colors": [
+      [
+        1.0,
+        0.7137,
+        0.5882
+      ],
+      [
+        1.0,
+        0.9843,
+        0.8588
+      ],
+      [
+        1.0,
+        0.7373,
+        0.6235
+      ],
+      [
+        1.0,
+        0.7176,
+        0.2667
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_d7b538f3db.webp"
+  }
+}
