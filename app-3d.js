@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 16;
+const APP3D_VERSION = 18;
 
 let threeLoading = null;
 
@@ -474,6 +474,10 @@ const uniforms = {
 uPattern: { value: skin.pattern },
 uWearMask: { value: skin.wear },
 uGrunge: { value: skin.grunge },
+uSkinMask: { value: skin.mask },
+uHasSkinMask: { value: skin.mask ? 1 : 0 },
+uHasGrunge: { value: skin.grunge ? 1 : 0 },
+uHasWear: { value: skin.wear ? 1 : 0 },
 uBaseColor: { value: weapon ? weapon.color : null },
 uPaintMask: { value: weapon ? weapon.masks : null },
 uAo: { value: weapon ? weapon.ao : null },
@@ -492,8 +496,14 @@ color: 0xffffff,
 metalness: 0.7,
 roughness: 0.5,
 });
-if (weapon && weapon.rough) material.roughnessMap = weapon.rough;
-else if (skin.rough) material.roughnessMap = skin.rough;
+// Шероховатость: своя у скина точнее, чем общая у ствола.
+if (skin.rough) material.roughnessMap = skin.rough;
+else if (weapon && weapon.rough) material.roughnessMap = weapon.rough;
+
+// Рельеф и затенение из комплекта скина — новый формат отдаёт их
+// отдельными слоями, и с ними металл перестаёт быть плоским.
+if (skin.normal) material.normalMap = skin.normal;
+if (skin.ao) material.aoMap = skin.ao;
 
 material.onBeforeCompile = (shader) => {
 Object.assign(shader.uniforms, uniforms);
@@ -512,6 +522,10 @@ shader.fragmentShader = shader.fragmentShader
 uniform sampler2D uPattern;
 uniform sampler2D uWearMask;
 uniform sampler2D uGrunge;
+uniform sampler2D uSkinMask;
+uniform int uHasSkinMask;
+uniform int uHasGrunge;
+uniform int uHasWear;
 uniform sampler2D uBaseColor;
 uniform sampler2D uPaintMask;
 uniform sampler2D uAo;
@@ -543,11 +557,22 @@ diffuseColor.rgb = masks.rgb;
 vec3 pattern = texture2D(uPattern, vSkinUv * uPatternScale).rgb * uColorBrightness;
 
 // Потёртость: краска сходит там, где маска износа меньше float.
+// У части новых скинов своей маски износа нет — тогда считаем
+// краску целой, иначе ствол выглядел бы полностью облезлым.
+float kept = 1.0;
+if (uHasWear == 1){
 float wearMask = texture2D(uWearMask, vSkinUv).r;
-float kept = smoothstep(uWearAmount - 0.12, uWearAmount + 0.04, wearMask);
+kept = smoothstep(uWearAmount - 0.12, uWearAmount + 0.04, wearMask);
+}
 
-// Грязь только по окрашенному, и очень мягко.
-float grunge = texture2D(uGrunge, vSkinUv).r;
+// Грязь и царапины — общий слой, тоже необязательный.
+float grunge = uHasGrunge == 1 ? texture2D(uGrunge, vSkinUv).r : 1.0;
+
+// Своя маска скина (новый формат) точнее общей маски ствола:
+// она говорит, где именно лежит краска у этой конкретной раскраски.
+if (uHasSkinMask == 1){
+paintable *= texture2D(uSkinMask, vSkinUv).r;
+}
 
 vec3 painted = pattern * mix(0.88, 1.0, grunge);
 vec3 result = mix(base, painted, paintable * kept);
@@ -568,22 +593,83 @@ return uniforms;
 }
 
 // Грузит комплект раскраски из models/skins/<имя>/.
+//
+// Имена файлов НЕ зашиты в коде: берутся из params.json, из блока
+// textures. У старых скинов там pattern/wear/grunge/rough, у новых
+// добавляются normal, ao, material_mask, sfx. Благодаря этому новый
+// формат не требует правок просмотрщика — достаточно, чтобы
+// генератор положил нужные пути в params.json.
+//
+// Общие для всех скинов маски (износ, грязь) лежат один раз в
+// models/shared/, и путь к ним тоже приходит из params.json.
+
+// Какие слои считаем цветными (sRGB), а какие данными (линейное
+// пространство). Ошибка здесь даёт белёсые разводы на стволе.
+const SKIN_COLOR_LAYERS = ['pattern', 'albedo', 'color'];
+
+// Синонимы: один и тот же слой в разных форматах зовётся по-разному.
+const SKIN_LAYER_ALIASES = {
+grunge: ['grunge', 'sfx'],
+rough: ['rough', 'roughness'],
+mask: ['material_mask', 'mask'],
+normal: ['normal', 'normal_map'],
+ao: ['ao', 'ambient_occlusion'],
+};
+
+function pickLayer(textures, names){
+for (const name of names){
+if (textures[name]) return textures[name];
+}
+return null;
+}
+
 function loadSkinPack(THREE, dir){
 const base = dir.replace(/\/+$/, '') + '/';
+
 return fetch(base + 'params.json')
 .then(r => {
 if (!r.ok) throw new Error('нет params.json в ' + base);
 return r.json();
 })
-.then(meta => Promise.all([
-loadSkinTexture(THREE, base + 'pattern.webp', true),
-loadSkinTexture(THREE, base + 'wear.webp', false),
-loadSkinTexture(THREE, base + 'grunge.webp', false),
-loadSkinTexture(THREE, base + 'rough.webp', false),
-]).then(([pattern, wear, grunge, rough]) => ({
-params: meta.shader || {},
-pattern, wear, grunge, rough,
-})));
+.then(meta => {
+const textures = meta.textures || {};
+
+// Старые комплекты могли не иметь блока textures — тогда
+// подставляем прежние имена файлов.
+if (!Object.keys(textures).length){
+Object.assign(textures, {
+pattern: 'pattern.webp',
+wear: 'wear.webp',
+grunge: 'grunge.webp',
+rough: 'rough.webp',
+});
+}
+
+const wanted = {
+pattern: textures.pattern || pickLayer(textures, SKIN_COLOR_LAYERS),
+wear: textures.wear || null,
+grunge: pickLayer(textures, SKIN_LAYER_ALIASES.grunge),
+rough: pickLayer(textures, SKIN_LAYER_ALIASES.rough),
+mask: pickLayer(textures, SKIN_LAYER_ALIASES.mask),
+normal: pickLayer(textures, SKIN_LAYER_ALIASES.normal),
+ao: pickLayer(textures, SKIN_LAYER_ALIASES.ao),
+};
+
+const names = Object.keys(wanted);
+
+return Promise.all(names.map(name => {
+const file = wanted[name];
+if (!file) return Promise.resolve(null);
+const isColor = SKIN_COLOR_LAYERS.indexOf(name) !== -1;
+return loadSkinTexture(THREE, base + file, isColor);
+})).then(loaded => {
+const pack = { params: meta.shader || {} };
+names.forEach((name, i) => { pack[name] = loaded[i]; });
+console.log('3D: слои раскраски —',
+names.filter(n => pack[n]).join(', ') || 'ничего не загрузилось');
+return pack;
+});
+});
 }
 
 function open3DViewer(modelUrl, title, skinDir, wearValue, weaponDir, maskChannel){
