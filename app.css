@@ -3437,3 +3437,17 @@ color:var(--muted);
 font-size:11px;
 cursor:pointer;
 }
+
+/* ---------- админка: проверка способов «Поделиться» ---------- */
+.share-diag{ margin:0 0 14px; padding:10px 12px; border:1px dashed var(--red-dim); border-radius:10px; }
+.share-diag summary{ cursor:pointer; font-size:13px; color:var(--silver); }
+.share-diag-info{ margin-top:8px; font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); }
+.share-diag-btns{ display:grid; gap:6px; margin-top:8px; }
+.share-diag-btns button{
+padding:9px 10px; border-radius:8px; border:1px solid var(--red-dim);
+background:rgba(255,255,255,0.04); color:var(--silver); font-size:12px; text-align:left; cursor:pointer;
+}
+.share-diag-log{
+margin:8px 0 0; padding:8px; max-height:220px; overflow:auto; border-radius:8px;
+background:rgba(0,0,0,0.35); color:#c8f7c5; font-size:10.5px; white-space:pre-wrap; word-break:break-all;
+}
