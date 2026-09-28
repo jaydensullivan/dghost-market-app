@@ -700,12 +700,41 @@ btn.disabled = false;
 });
 });
 
-// ---------------- Билдер под бюджет (Combo / Inventory) ----------------
+// ---------------- Билдер под бюджет ----------------
+// Форма: режим, бюджет, предпочтения, цвет → /api/builder/build.
+// Результат: предметы, сводка по бюджету и варианты замены для
+// выбранного слота; замена пересчитывает итог и остаток.
 
 let builderMode = 'combo';
-let builderSide = 't';
+let builderPref = 'any';
+let builderColor = 'any';
+let builderData = null;      // ответ сервера (items меняются при замене)
+let builderAltSlot = null;
+
+const BUILDER_SLOT_ICON = { knife: 'knives', gloves: 'gloves', rifle: 'rifles', pistol: 'pistols', sniper: 'snipers' };
+
+// Иконки режимов — те же линии, что у категорий на главной.
+document.querySelectorAll('#builderModes [data-ico]').forEach(el => {
+el.innerHTML = el.dataset.ico.split(',').map(k => categoryIconSvg(k)).join('');
+});
+
+function builderBudgetValue(){
+return Number(String(document.getElementById('builderBudget').value).replace(/\D/g, '')) || 0;
+}
+
+function setBuilderBudget(n){
+document.getElementById('builderBudget').value = n ? Number(n).toLocaleString('ru-RU') : '';
+document.querySelectorAll('#builderBudgetChips [data-budget]').forEach(b => b.classList.toggle('active', Number(b.dataset.budget) === n));
+}
+
+function showBuilderForm(){
+document.getElementById('builderForm').style.display = '';
+document.getElementById('builderResultView').style.display = 'none';
+}
 
 document.getElementById('openBuilderBtn').addEventListener('click', () => {
+showBuilderForm();
+document.getElementById('builderStatus').textContent = '';
 document.getElementById('builderOverlay').classList.add('show');
 });
 
@@ -713,105 +742,175 @@ document.getElementById('builderCloseBtn').addEventListener('click', () => {
 document.getElementById('builderOverlay').classList.remove('show');
 });
 
-document.querySelectorAll('.builder-mode-btn').forEach(btn => {
-btn.addEventListener('click', () => {
+document.getElementById('builderModes').addEventListener('click', (e) => {
+const btn = e.target.closest('[data-mode]');
+if (!btn) return;
 builderMode = btn.dataset.mode;
-document.querySelectorAll('.builder-mode-btn').forEach(b => b.classList.toggle('active', b === btn));
-document.getElementById('builderSideRow').style.display = builderMode === 'inventory' ? '' : 'none';
-document.getElementById('builderResult').innerHTML = '';
-document.getElementById('builderStatus').textContent = '';
-});
+document.querySelectorAll('#builderModes [data-mode]').forEach(b => b.classList.toggle('active', b === btn));
 });
 
-document.querySelectorAll('.builder-side-btn').forEach(btn => {
-btn.addEventListener('click', () => {
-builderSide = btn.dataset.side;
-document.querySelectorAll('.builder-side-btn').forEach(b => b.classList.toggle('active', b === btn));
-});
+document.getElementById('builderBudget').addEventListener('input', (e) => {
+const n = builderBudgetValue();
+setBuilderBudget(n);
+e.target.setSelectionRange(e.target.value.length, e.target.value.length);
 });
 
-let builderResultItems = {};
+document.getElementById('builderBudgetChips').addEventListener('click', (e) => {
+const btn = e.target.closest('[data-budget]');
+if (!btn) return;
+if (btn.dataset.budget === 'other'){
+setBuilderBudget(0);
+document.getElementById('builderBudget').focus();
+return;
+}
+setBuilderBudget(Number(btn.dataset.budget));
+});
 
-function builderItemCard(item, label){
-if (!item) return '';
-builderResultItems[item.id] = item;
-const photo = item.photo_url
-? `<img src="${item.photo_url}" alt="" style="width:56px; height:56px; border-radius:8px; object-fit:cover; background:rgba(255,255,255,0.04);" onerror="showPlaceholderIcon(this)">`
-: `<div style="width:56px; height:56px; border-radius:8px; background:rgba(255,255,255,0.04);"></div>`;
-return `<div class="deal-card builder-result-item" data-skin-id="${item.id}" style="cursor:pointer;">
-<div style="display:flex; align-items:center; gap:10px;">
-${photo}
-<div class="deal-info">
-<div class="deal-meta" style="font-size:11px;">${label}</div>
-<div class="deal-title" style="font-size:13px;">${escapeHtml(item.title)}</div>
-<div class="deal-meta">${formatCoins(item.price)}</div>
+document.getElementById('builderPrefs').addEventListener('click', (e) => {
+const btn = e.target.closest('[data-pref]');
+if (!btn) return;
+builderPref = btn.dataset.pref;
+document.querySelectorAll('#builderPrefs [data-pref]').forEach(b => b.classList.toggle('active', b === btn));
+document.getElementById('builderColorStep').style.display = builderPref === 'color' ? '' : 'none';
+});
+
+document.getElementById('builderColors').addEventListener('click', (e) => {
+const btn = e.target.closest('[data-color]');
+if (!btn) return;
+builderColor = btn.dataset.color;
+document.querySelectorAll('#builderColors [data-color]').forEach(b => b.classList.toggle('active', b === btn));
+});
+
+function builderSlotLabel(slot){
+return (I18N[currentLang] || I18N.ru)['bld_slot_' + slot] || slot;
+}
+
+function builderItemCard(slot, item){
+const dict = I18N[currentLang] || I18N.ru;
+const hasFloat = item.float_value !== null && item.float_value !== undefined;
+const wear = item.wear && WEAR_LABELS[item.wear] ? `<span class="inv-badge">${WEAR_LABELS[item.wear]}</span>` : '';
+return `<div class="bld-item${slot === builderAltSlot ? ' active' : ''} ${RARITY_CLASS[item.rarity] || ''}" data-bld-slot="${slot}">
+<div class="bld-item-photo">
+<div class="inv-badges"><span class="inv-badge">${categoryIconSvg(BUILDER_SLOT_ICON[slot])}</span>${wear}</div>
+<button type="button" class="skin-fav${isFavSkin(item) ? ' on' : ''}" data-bld-fav="${slot}" aria-label="Следить">${HEART_SVG}</button>
+${item.photo_url ? `<img src="${item.photo_url}" alt="">` : ''}
 </div>
-</div>
+<div class="bld-item-title">${escapeHtml((item.stattrak ? 'StatTrak™ ' : '') + String(item.title || '').replace(/^★\s*/, ''))}</div>
+${hasFloat ? `<div class="bld-item-float">Float: ${Number(item.float_value).toFixed(4)}${item.pattern ? ` · #${escapeHtml(String(item.pattern))}` : ''}</div>` : ''}
+<div class="bld-item-price">${formatCoins(item.price)}</div>
+<button type="button" class="bld-more" data-bld-more="${slot}">${dict.inv_more}</button>
 </div>`;
 }
 
-function renderBuilderResult(container, data, mode){
-if (mode === 'combo'){
-if (!data.found){
-container.innerHTML = '<div class="shop-hint">Не нашлось подходящей пары нож+перчатки под этот бюджет.</div>';
-return;
+function renderBuilderAlts(){
+const dict = I18N[currentLang] || I18N.ru;
+const d = builderData;
+const current = d.items[builderAltSlot];
+const room = d.budget - (d.total - current.price);
+const alts = (d.alternatives[builderAltSlot] || []).filter(a => a.id !== current.id && a.price <= room);
+document.getElementById('bldAltTitle').classList.toggle('empty', !alts.length);
+document.getElementById('bldAltTitle').textContent = alts.length
+? dict.bld_alts.replace('{slot}', builderSlotLabel(builderAltSlot).toLowerCase())
+: dict.bld_no_alts.replace('{slot}', builderSlotLabel(builderAltSlot).toLowerCase());
+document.getElementById('bldAlts').innerHTML = alts.slice(0, 4).map(a => {
+const diff = a.price - current.price;
+const name = String(a.title || '').split('|').slice(-1)[0].trim();
+return `<button type="button" class="bld-alt" data-bld-alt="${a.id}">
+${a.photo_url ? `<img src="${a.photo_url}" alt="">` : ''}
+<span class="bld-alt-name">${escapeHtml(name)}</span>
+<span class="bld-alt-diff ${diff > 0 ? 'up' : 'down'}">${diff > 0 ? '+' : '−'}${formatCoins(Math.abs(diff))}</span>
+</button>`;
+}).join('');
 }
-container.innerHTML =
-builderItemCard(data.knife, 'Нож') +
-builderItemCard(data.gloves, 'Перчатки') +
-`<div class="shop-hint" style="margin-top:8px;">Итого: ${formatCoins(data.total)} · Остаток от бюджета: ${formatCoins(data.remaining)}</div>`;
-return;
-}
-// inventory
-const renderOne = (res, sideLabel) => {
-if (!res.found){
-return `<div class="shop-hint" style="margin-bottom:10px;">${sideLabel}: не нашлось полного набора под этот бюджет.</div>`;
-}
-return `<div class="profile-section-title" style="font-size:12px; margin-top:10px;">${sideLabel}</div>` +
-builderItemCard(res.rifle, 'Винтовка') +
-builderItemCard(res.pistol, 'Пистолет') +
-builderItemCard(res.knife, 'Нож') +
-builderItemCard(res.gloves, 'Перчатки') +
-`<div class="shop-hint" style="margin:8px 0 4px;">Итого: ${formatCoins(res.total)} · Остаток: ${formatCoins(res.remaining)}</div>`;
-};
-if (data.t !== undefined){
-container.innerHTML = renderOne(data.t, 'T') + renderOne(data.ct, 'CT');
-} else {
-container.innerHTML = renderOne(data, data.side === 't' ? 'T' : 'CT');
-}
+
+function renderBuilderResult(){
+const d = builderData;
+d.total = d.slots.reduce((sum, s) => sum + d.items[s].price, 0);
+d.remaining = d.budget - d.total;
+document.getElementById('bldSumBudget').textContent = formatCoins(d.budget);
+document.getElementById('bldSumTotal').textContent = formatCoins(d.total);
+document.getElementById('bldSumRest').textContent = formatCoins(d.remaining);
+const box = document.getElementById('builderResult');
+box.classList.toggle('three', d.slots.length === 3);
+box.innerHTML = d.slots.map(s => builderItemCard(s, d.items[s])).join('');
+renderBuilderAlts();
 }
 
 document.getElementById('builderGenerateBtn').addEventListener('click', () => {
+const dict = I18N[currentLang] || I18N.ru;
 const status = document.getElementById('builderStatus');
-const result = document.getElementById('builderResult');
-const budget = Number(document.getElementById('builderBudget').value);
-if (!budget || budget <= 0){
-status.textContent = (I18N[currentLang] || I18N.ru).combo_need_budget;
+const budget = builderBudgetValue();
+if (!budget){
+status.textContent = dict.combo_need_budget;
 return;
 }
-status.textContent = (I18N[currentLang] || I18N.ru).combo_assembling;
-result.innerHTML = '';
-builderResultItems = {};
-const url = builderMode === 'combo'
-? `${API_BASE}/api/builder/combo?budget=${budget}`
-: `${API_BASE}/api/builder/inventory?budget=${budget}&side=${builderSide}`;
-fetch(url)
+const btn = document.getElementById('builderGenerateBtn');
+btn.disabled = true;
+status.textContent = dict.combo_assembling;
+const color = builderPref === 'color' ? builderColor : 'any';
+fetch(`${API_BASE}/api/builder/build?mode=${builderMode}&budget=${budget}&pref=${builderPref}&color=${color}`)
 .then(r => r.json())
 .then(data => {
+if (!data.found){
+const empty = (data.empty_slots || []).map(builderSlotLabel).join(', ');
+status.textContent = empty ? dict.bld_not_found_slots.replace('{slots}', empty.toLowerCase()) : dict.bld_not_found;
+return;
+}
 status.textContent = '';
-renderBuilderResult(result, data, builderMode);
+builderData = data;
+builderAltSlot = data.slots[0];
+renderBuilderResult();
+document.getElementById('builderForm').style.display = 'none';
+document.getElementById('builderResultView').style.display = '';
+document.querySelector('#builderOverlay .edit-sheet').scrollTop = 0;
 })
-.catch(() => {
-status.textContent = (I18N[currentLang] || I18N.ru).combo_assemble_failed;
-});
+.catch(() => { status.textContent = dict.combo_assemble_failed; })
+.finally(() => { btn.disabled = false; });
 });
 
 document.getElementById('builderResult').addEventListener('click', (e) => {
-const card = e.target.closest('.builder-result-item');
-if (!card) return;
-const skinId = Number(card.dataset.skinId);
-const skin = builderResultItems[skinId];
-if (skin) openBuySheet(skin);
+const d = builderData;
+if (!d) return;
+const fav = e.target.closest('[data-bld-fav]');
+if (fav){ openWatchSheet(d.items[fav.dataset.bldFav]); return; }
+const more = e.target.closest('[data-bld-more]');
+if (more){ openBuySheet(d.items[more.dataset.bldMore]); return; }
+// Нажатие на карточку — показать замены для этого слота.
+const card = e.target.closest('[data-bld-slot]');
+if (card){
+builderAltSlot = card.dataset.bldSlot;
+renderBuilderResult();
+}
+});
+
+document.getElementById('bldAlts').addEventListener('click', (e) => {
+const btn = e.target.closest('[data-bld-alt]');
+if (!btn || !builderData) return;
+const d = builderData;
+const alt = (d.alternatives[builderAltSlot] || []).find(a => String(a.id) === btn.dataset.bldAlt);
+if (!alt) return;
+// Бывший предмет становится вариантом замены — можно вернуть.
+d.alternatives[builderAltSlot] = [d.items[builderAltSlot], ...d.alternatives[builderAltSlot].filter(a => a.id !== alt.id)];
+d.items[builderAltSlot] = alt;
+haptic('light');
+renderBuilderResult();
+});
+
+document.getElementById('builderAgainBtn').addEventListener('click', showBuilderForm);
+
+// «Купить комплект» — все предметы в корзину и открыть её.
+document.getElementById('builderToCartBtn').addEventListener('click', () => {
+const d = builderData;
+if (!d) return;
+d.slots.forEach(s => {
+const item = d.items[s];
+if (!lastSkins.some(x => x.id === item.id)) lastSkins.push(item);
+if (!cart.includes(item.id)) cart.push(item.id);
+});
+updateCartFab();
+applyFiltersAndRender();
+document.getElementById('builderOverlay').classList.remove('show');
+document.getElementById('navCartBtn').click();
 });
 
 function renderSetCard(item){

@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="stylesheet" href="app.css?v=33">
+<link rel="stylesheet" href="app.css?v=34">
 </head>
 <body data-tab="shop">
 
@@ -1621,31 +1621,86 @@
 </div>
 
 <div class="edit-overlay" id="builderOverlay">
-<div class="edit-sheet">
-<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-<h2 style="margin:0;" data-i18n="builder_title">🎯 Билдер под бюджет</h2>
-<button type="button" id="builderCloseBtn" class="buy-close-btn" style="position:static;">✕</button>
+<div class="edit-sheet bld-sheet">
+<button type="button" id="builderCloseBtn" class="buy-close-btn bld-close">✕</button>
+
+<!-- Форма: что собираем, бюджет, предпочтения, цвет -->
+<div id="builderForm">
+<div class="bld-head">
+<div class="bld-head-ico">🎯</div>
+<div>
+<h2 class="bld-title" data-i18n="bld_title">Билдер под бюджет</h2>
+<div class="bld-sub" data-i18n="bld_sub">Собери идеальный комплект скинов под свой бюджет</div>
+</div>
 </div>
 
-<div class="btn-row" style="margin:12px 0;">
-<button type="button" class="steam-link-btn secondary builder-mode-btn active" data-mode="combo" style="flex:1;" data-i18n="builder_mode_combo">Combo (нож+перчатки)</button>
-<button type="button" class="steam-link-btn secondary builder-mode-btn" data-mode="inventory" style="flex:1;" data-i18n="builder_mode_inventory">Инвентарь</button>
+<div class="bld-step"><span>1.</span> <span data-i18n="bld_step_mode">Что собираем?</span></div>
+<div class="bld-modes" id="builderModes">
+<button type="button" class="bld-mode active" data-mode="combo"><span class="bld-mode-ico" data-ico="knives,gloves"></span><b data-i18n="bld_mode_combo">Нож + Перчатки</b><small data-i18n="bld_mode_combo_sub">Популярный комбо-набор</small></button>
+<button type="button" class="bld-mode" data-mode="full"><span class="bld-mode-ico" data-ico="rifles,pistols"></span><b data-i18n="bld_mode_full">Полный сет</b><small data-i18n="bld_mode_full_sub">Винтовка, пистолет, нож и перчатки</small></button>
+<button type="button" class="bld-mode" data-mode="weapons"><span class="bld-mode-ico" data-ico="snipers"></span><b data-i18n="bld_mode_weapons">Только оружие</b><small data-i18n="bld_mode_weapons_sub">Винтовка, пистолет и снайперка</small></button>
 </div>
 
-<div class="edit-field">
-<label for="builderBudget" data-i18n="builder_budget_label">Бюджет, сум</label>
-<input id="builderBudget" type="number" min="1" placeholder="13000000">
+<div class="bld-step"><span>2.</span> <span data-i18n="bld_step_budget">Ваш бюджет</span></div>
+<label class="bld-budget">
+<img src="coin.PNG" alt="" width="22" height="22" onerror="this.style.display='none'">
+<input id="builderBudget" type="text" inputmode="numeric" placeholder="13 000 000">
+<span data-i18n="currency_sum">сум</span>
+</label>
+<div class="bld-chips" id="builderBudgetChips">
+<button type="button" data-budget="1000000">1 млн</button>
+<button type="button" data-budget="5000000">5 млн</button>
+<button type="button" data-budget="10000000">10 млн</button>
+<button type="button" data-budget="20000000">20 млн</button>
+<button type="button" data-budget="other" data-i18n="bld_other">Другая</button>
 </div>
 
-<div id="builderSideRow" class="btn-row" style="margin-bottom:12px; display:none;">
-<button type="button" class="steam-link-btn secondary builder-side-btn active" data-side="t" style="flex:1;">T</button>
-<button type="button" class="steam-link-btn secondary builder-side-btn" data-side="ct" style="flex:1;">CT</button>
-<button type="button" class="steam-link-btn secondary builder-side-btn" data-side="both" style="flex:1;" data-i18n="builder_side_both">Обе</button>
+<div class="bld-step"><span>3.</span> <span data-i18n="bld_step_pref">Предпочтения</span> <em data-i18n="bld_optional">(необязательно)</em></div>
+<div class="bld-chips bld-prefs" id="builderPrefs">
+<button type="button" data-pref="color">🎨 <span data-i18n="bld_pref_color">По цвету</span></button>
+<button type="button" data-pref="popular">🔥 <span data-i18n="bld_pref_popular">Популярные</span></button>
+<button type="button" data-pref="premium">💎 <span data-i18n="bld_pref_premium">Премиум</span></button>
+<button type="button" class="active" data-pref="any">🔀 <span data-i18n="bld_pref_any">Без разницы</span></button>
 </div>
 
-<button type="button" id="builderGenerateBtn" class="save" data-i18n="builder_generate_btn">Собрать</button>
+<div id="builderColorStep" style="display:none;">
+<div class="bld-step"><span>4.</span> <span data-i18n="bld_step_color">Цветовая гамма</span></div>
+<div class="bld-colors" id="builderColors">
+<button type="button" class="active" data-color="any"><i style="background:conic-gradient(#ef4444,#f5c542,#22c55e,#3b82f6,#a855f7,#ef4444);"></i><span data-i18n="bld_color_any">Любая</span></button>
+<button type="button" data-color="red"><i style="background:#dc2626;"></i><span data-i18n="bld_color_red">Красная</span></button>
+<button type="button" data-color="blue"><i style="background:#2563eb;"></i><span data-i18n="bld_color_blue">Синяя</span></button>
+<button type="button" data-color="purple"><i style="background:#9333ea;"></i><span data-i18n="bld_color_purple">Фиолетовая</span></button>
+<button type="button" data-color="green"><i style="background:#16a34a;"></i><span data-i18n="bld_color_green">Зелёная</span></button>
+<button type="button" data-color="gold"><i style="background:#d4a017;"></i><span data-i18n="bld_color_gold">Золотая</span></button>
+</div>
+</div>
+
+<button type="button" id="builderGenerateBtn" class="bld-go">✨ <span data-i18n="bld_go">Собрать комплект</span> →</button>
 <div class="edit-status" id="builderStatus"></div>
-<div id="builderResult" style="margin-top:14px;"></div>
+</div>
+
+<!-- Результат -->
+<div id="builderResultView" style="display:none;">
+<div class="bld-head">
+<div class="bld-head-ico">✨</div>
+<div>
+<h2 class="bld-title" data-i18n="bld_ready">Твой комплект готов!</h2>
+<div class="bld-sub" data-i18n="bld_ready_sub">Мы подобрали лучший комплект скинов под твой бюджет</div>
+</div>
+</div>
+<div class="bld-summary">
+<div><span data-i18n="bld_sum_budget">Твой бюджет</span><b id="bldSumBudget">—</b></div>
+<div><span data-i18n="bld_sum_total">Итого за комплект</span><b class="green" id="bldSumTotal">—</b></div>
+<div><span data-i18n="bld_sum_rest">Остаток</span><b class="gold" id="bldSumRest">—</b></div>
+</div>
+<div class="bld-items" id="builderResult"></div>
+<div class="bld-alt-title" id="bldAltTitle"></div>
+<div class="bld-alts" id="bldAlts"></div>
+<div class="bld-actions">
+<button type="button" class="bld-again" id="builderAgainBtn">↻ <span data-i18n="bld_again">Собрать другой</span></button>
+<button type="button" class="bld-go" id="builderToCartBtn"><span data-i18n="bld_to_cart">Купить комплект</span> →</button>
+</div>
+</div>
 </div>
 </div>
 
@@ -1796,14 +1851,14 @@
 </div>
 
 <script src="app-core.js?v=4"></script>
-<script src="app-i18n.js?v=38"></script>
+<script src="app-i18n.js?v=39"></script>
 <script src="app-navigation.js?v=10"></script>
 <script src="app-shop.js?v=11"></script>
 <script src="app-legal.js?v=2"></script>
 <script src="app-deals.js?v=9"></script>
 <script src="app-catalog.js?v=8"></script>
 <script src="app-cart.js?v=2"></script>
-<script src="app-filters.js?v=14"></script>
+<script src="app-filters.js?v=15"></script>
 <script src="app-steam.js?v=3"></script>
 <script src="app-topup.js?v=2"></script>
 <script src="app-history.js?v=5"></script>
