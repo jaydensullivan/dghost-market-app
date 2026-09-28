@@ -1491,3 +1491,73 @@ adminApiFetch('/api/admin/people/block_user', { method: 'POST', body: { user_id:
 });
 });
 
+
+// ---------- проверка способов «Поделиться» ----------
+// Все способы открыть отправку на телефонах вели себя «тихо». Эта
+// панель вызывает каждый по отдельности и пишет в журнал, что вызвано
+// и какие события вернул Telegram — видно, какой способ реально работает.
+(function setupShareDiag(){
+const box = document.getElementById('shareDiag');
+if (!box) return;
+const logEl = document.getElementById('shareDiagLog');
+const log = (msg) => {
+const t = new Date().toTimeString().slice(0, 8);
+logEl.textContent = `${t} ${msg}\n` + logEl.textContent;
+};
+const info = () => {
+if (!tg){ return 'Telegram.WebApp нет'; }
+return `version ${tg.version} · platform ${tg.platform} · 8.0+: ${tg.isVersionAtLeast ? tg.isVersionAtLeast('8.0') : '?'}`
++ ` · shareMessage: ${typeof tg.shareMessage} · switchInlineQuery: ${typeof tg.switchInlineQuery}`;
+};
+box.addEventListener('toggle', () => { document.getElementById('shareDiagInfo').textContent = info(); });
+
+if (tg && typeof tg.onEvent === 'function'){
+['shareMessageSent', 'shareMessageFailed', 'activated', 'deactivated', 'viewportChanged', 'popupClosed', 'writeAccessRequested']
+.forEach(name => tg.onEvent(name, (e) => log(`событие ${name} ${e ? JSON.stringify(e) : ''}`)));
+}
+document.addEventListener('visibilitychange', () => log(`страница ${document.hidden ? 'скрыта' : 'снова видна'}`));
+
+const me = () => tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : 0;
+const shareUrl = () => 'https://t.me/share/url?url=' + encodeURIComponent(API_BASE + '/s/1?r=' + me()) + '&text=' + encodeURIComponent('Проверка');
+
+const run = {
+link(){ tg.openTelegramLink(shareUrl()); },
+inline_pick(){ tg.switchInlineQuery('invite', ['users', 'groups', 'channels']); },
+inline_here(){ tg.switchInlineQuery('invite'); },
+async share_message(){
+const r = await fetch(API_BASE + '/api/giveaway/invite_prepare', {
+method: 'POST', headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData }),
+});
+const data = await r.json().catch(() => ({}));
+log(`invite_prepare → ${r.status} ${data.prepared_id ? 'id ' + data.prepared_id : (data.error || '')}`);
+if (data.prepared_id) tg.shareMessage(data.prepared_id, (sent) => log(`shareMessage колбэк: ${sent}`));
+},
+open_link(){ tg.openLink(shareUrl()); },
+async native(){
+if (!navigator.share) throw new Error('navigator.share нет');
+await navigator.share({ text: 'Проверка', url: API_BASE + '/s/1' });
+},
+async dm(){
+const r = await fetch(API_BASE + '/api/giveaway/invite_send', {
+method: 'POST', headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData }),
+});
+const data = await r.json().catch(() => ({}));
+log(`invite_send → ${r.status} ${data.ok ? 'отправлено в чат с ботом' : (data.error || '')}`);
+},
+};
+
+box.querySelectorAll('[data-diag]').forEach(btn => {
+btn.addEventListener('click', async () => {
+const name = btn.dataset.diag;
+log(`▶ ${btn.textContent.trim()}`);
+try {
+await run[name]();
+log(`  вызов прошёл без исключения`);
+} catch (e) {
+log(`  ИСКЛЮЧЕНИЕ: ${(e && e.message) || e}`);
+}
+});
+});
+})();

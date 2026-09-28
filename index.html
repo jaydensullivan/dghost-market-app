@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="stylesheet" href="app.css?v=25">
+<link rel="stylesheet" href="app.css?v=26">
 </head>
 <body>
 
@@ -619,6 +619,24 @@ transform="rotate(-90 100 100)"></circle>
 <div class="profile-section admin-group" data-group="giveaway" id="adminGiveawaySection" style="display:none;">
 <div class="profile-section-title" data-i18n="admin_section_giveaway">Розыгрыш / таймер</div>
 <div id="adminGiveawayStatus2" class="shop-hint" style="margin-bottom:10px;"></div>
+
+<!-- Проверка способов отправки: какой из них реально открывает окно
+     на этом телефоне. Нажми кнопку — в журнале будет, что вызвано и
+     что ответил Telegram. -->
+<details class="share-diag" id="shareDiag">
+<summary>🔧 Проверка «Поделиться» на этом телефоне</summary>
+<div class="share-diag-info" id="shareDiagInfo"></div>
+<div class="share-diag-btns">
+<button type="button" data-diag="link">1. Окно «Поделиться ссылкой»</button>
+<button type="button" data-diag="inline_pick">2. Выбор чата + @бот (inline)</button>
+<button type="button" data-diag="inline_here">3. @бот в этом чате (inline)</button>
+<button type="button" data-diag="share_message">4. Готовое сообщение (shareMessage)</button>
+<button type="button" data-diag="open_link">5. Через браузер (openLink)</button>
+<button type="button" data-diag="native">6. Системное «Поделиться»</button>
+<button type="button" data-diag="dm">7. Прислать в чат с ботом</button>
+</div>
+<pre class="share-diag-log" id="shareDiagLog"></pre>
+</details>
 <div class="edit-field">
 <label for="adminGwTitle" data-i18n="admin_gw_title">Название</label>
 <input id="adminGwTitle" type="text" maxlength="80" placeholder="SNOW CASES">
@@ -1686,7 +1704,7 @@ transform="rotate(-90 100 100)"></circle>
 <script src="app-history.js?v=4"></script>
 <script src="app-referral.js?v=2"></script>
 <script src="app-withdraw.js?v=6"></script>
-<script src="app-admin.js?v=4"></script>
+<script src="app-admin.js?v=5"></script>
 <script src="app-auctions.js?v=3"></script>
 <script src="app-reviews.js?v=1"></script>
 <script src="app-notifications.js?v=2"></script>
