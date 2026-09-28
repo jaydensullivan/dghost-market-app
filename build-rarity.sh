@@ -351,13 +351,13 @@ while read -r finish; do
 
     bash fix-skin.sh "$finish" > "$WORK/build-skin-$finish.log" 2>&1
 
-    if ! find "$WORK/export-skins" -name "$finish.vmat" 2>/dev/null | grep -q .; then
+    if ! find "$WORK/export-skins" \( -name "$finish.vmat" -o -name "$finish.vcompmat" \) 2>/dev/null | grep -q .; then
         echo "   ⚠️ не вынулась, лог: $WORK/build-skin-$finish.log"
         FAILED=$((FAILED + 1))
         continue
     fi
 
-    bash prep-skin.sh "$finish" 2>&1 | grep -E '^\s+(pattern|rough|wear|grunge)' || true
+    bash prep-skin.sh "$finish" 2>&1 | grep -E '^\s+(pattern|rough|wear|grunge|normal|ao|material_mask|roughness|sfx)' || true
 
     commit_if_changed "раскраска $finish"
 
