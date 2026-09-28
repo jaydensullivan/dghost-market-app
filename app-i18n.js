@@ -2658,10 +2658,7 @@ document.getElementById('gwInviteHint').textContent = have >= need
 : dict.gw_invite_hint.replace('{n}', need - have);
 gwInviteLocked = have < need;
 ctaBtn.classList.toggle('locked', gwInviteLocked);
-if (gwInviteLocked){
-prefetchInviteLink();
-prepareGiveawayInvite();
-}
+if (gwInviteLocked) prefetchInviteLink();
 }
 
 function loadGiveawayStatus(){
@@ -2732,122 +2729,75 @@ ta.remove();
 }
 }
 
-// Приглашение готовится ЗАРАНЕЕ (как только виден блок): тогда по
-// нажатию shareMessage / openTelegramLink вызываются сразу, в том же
-// касании. Любой сетевой запрос между касанием и открытием окна
-// Telegram может молча проигнорировать — «Пригласить» «не работал».
-let gwInvitePrepared = null; // { id, expiresAt }
-let gwInvitePreparing = null;
-
 function canShareMessage(){
 return !!(tg && typeof tg.shareMessage === 'function' && (!tg.isVersionAtLeast || tg.isVersionAtLeast('8.0')));
 }
 
-function prepareGiveawayInvite(){
-if (!tg || !tg.initData || !canShareMessage()) return Promise.resolve(null);
-const fresh = gwInvitePrepared && (!gwInvitePrepared.expiresAt || gwInvitePrepared.expiresAt * 1000 > Date.now() + 60000);
-if (fresh) return Promise.resolve(gwInvitePrepared);
-if (gwInvitePreparing) return gwInvitePreparing;
-gwInvitePreparing = fetch(API_BASE + '/api/giveaway/invite_prepare', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ init_data: tg.initData }),
-})
-.then(async r => {
-const data = await r.json().catch(() => ({}));
-if (data.link) setInviteLink(data.link);
-if (!r.ok || !data.prepared_id) throw new Error(data.error || ('HTTP ' + r.status));
-gwInvitePrepared = { id: data.prepared_id, expiresAt: data.expires_at || null };
-return gwInvitePrepared;
-})
-.catch(err => {
-console.warn('Приглашение не подготовилось —', err);
-gwInvitePrepared = null;
-gwInvitePrepared_error = err.message;
-return null;
-})
-.finally(() => { gwInvitePreparing = null; });
-return gwInvitePreparing;
-}
-let gwInvitePrepared_error = '';
-
 // Что Telegram ответил на shareMessage (событие shareMessageFailed).
 let gwShareError = '';
-let gwShareSettled = false;
 if (tg && typeof tg.onEvent === 'function'){
 tg.onEvent('shareMessageFailed', (e) => { gwShareError = (e && e.error) || 'UNKNOWN_ERROR'; });
-tg.onEvent('shareMessageSent', () => { gwShareSettled = true; });
 }
 
-// Сторож: если окно Telegram так и не открылось (приложение не ушло
-// на задний план и ответа нет), честно говорим об этом и даём ссылку.
-function watchInviteWindow(path){
-let hidden = false;
-const onHide = () => { if (document.hidden) hidden = true; };
-document.addEventListener('visibilitychange', onHide);
-setTimeout(() => {
-document.removeEventListener('visibilitychange', onHide);
-if (hidden || gwShareSettled) return;
-const dict = I18N[currentLang] || I18N.ru;
-showErrorToast(new Error(dict.gw_invite_no_window.replace('{code}', path + (gwShareError ? ':' + gwShareError : ''))));
-}, 2500);
-}
-
-function shareGiveawayInvite(){
+// Точно как «Поделиться» лотом, который на iPhone работает: по
+// нажатию просим бота подготовить сообщение (GIF с кнопкой) и сразу
+// вызываем shareMessage. Заранее подготовленное сообщение iPhone
+// молча не открывал, а после такого «зависшего» вызова библиотека
+// Telegram отказывает во всех следующих до перезапуска приложения.
+async function shareGiveawayInvite(){
 const dict = I18N[currentLang] || I18N.ru;
 if (!tg || !tg.initData){
 showAlert(errorMessage('unauthorized'));
 return;
 }
+const btn = document.getElementById('gwInviteBtn');
+if (btn.disabled) return;
 
-// 1) Готовое сообщение от бота — сразу, без запросов.
-const fresh = gwInvitePrepared && (!gwInvitePrepared.expiresAt || gwInvitePrepared.expiresAt * 1000 > Date.now() + 60000);
-if (fresh && canShareMessage()){
+if (canShareMessage()){
+btn.disabled = true;
+const label = btn.textContent;
+btn.textContent = dict.gw_invite_loading;
+let code = '';
 try {
+const r = await fetch(API_BASE + '/api/giveaway/invite_prepare', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData }),
+});
+const data = await r.json().catch(() => ({}));
+if (data.link) setInviteLink(data.link);
+if (r.ok && data.prepared_id){
 gwShareError = '';
-gwShareSettled = false;
-watchInviteWindow('share');
-tg.shareMessage(gwInvitePrepared.id, (sent) => {
-gwShareSettled = true;
-if (sent){
-showToast(dict.gw_invite_sent);
-return;
+tg.shareMessage(data.prepared_id, (sent) => {
+if (sent) showToast(dict.gw_invite_sent);
+else if (gwShareError && gwShareError !== 'USER_DECLINED'){
+showErrorToast(new Error(dict.gw_invite_failed.replace('{code}', gwShareError)));
 }
-// Отказ самого пользователя — не ошибка.
-if (gwShareError === 'USER_DECLINED') return;
-// Telegram не принял готовое сообщение: пробуем окно ссылки и
-// показываем код, чтобы было видно, что именно сломалось.
-gwInvitePrepared = null;
-showErrorToast(new Error(dict.gw_invite_failed.replace('{code}', gwShareError || 'share_failed')));
-if (gwInviteLink) openInviteShareLink();
-prepareGiveawayInvite();
 });
 return;
-} catch (e) {
-console.warn('shareMessage упал —', e);
 }
+code = data.error || ('HTTP ' + r.status);
+} catch (e) {
+// WebAppShareMessageOpened — прошлый вызов так и не получил
+// ответа от Telegram; помогает только перезапуск приложения.
+code = (e && e.message) || 'error';
+} finally {
+btn.disabled = false;
+btn.textContent = label;
+}
+showErrorToast(new Error(dict.gw_invite_failed.replace('{code}', code)));
+return;
 }
 
-// 2) Ссылка. На iPhone окно t.me/share/url через openTelegramLink
-// молча не открывалось — поэтому сначала копируем ссылку (в момент
-// касания это надёжно), потом пробуем открыть окно отправки.
-if (gwInviteLink){
+// Старый Telegram — копируем ссылку (в момент касания это надёжно)
+// и пробуем открыть окно отправки.
+if (!gwInviteLink) await prefetchInviteLink();
+if (!gwInviteLink){
+showErrorToast(new Error(dict.gw_invite_failed.replace('{code}', 'no_link')));
+return;
+}
 copyInviteLink();
 openInviteShareLink();
-prepareGiveawayInvite();
-return;
-}
-
-// 3) Ничего не успело загрузиться — грузим и просим нажать ещё раз,
-// чтобы открыть окно уже в новом касании.
-showToast(dict.gw_invite_loading);
-Promise.all([prepareGiveawayInvite(), prefetchInviteLink()]).then(() => {
-if (!gwInvitePrepared && !gwInviteLink){
-showErrorToast(new Error(dict.gw_invite_failed.replace('{code}', gwInvitePrepared_error || 'no_link')));
-} else {
-showToast(dict.gw_invite_ready);
-}
-});
 }
 
 document.getElementById('gwInviteBtn').addEventListener('click', shareGiveawayInvite);
