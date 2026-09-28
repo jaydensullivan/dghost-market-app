@@ -7,7 +7,29 @@
     "wear_scale": 1.0,
     "grunge_scale": 1.0,
     "paint_metalness": 0,
-    "color_brightness": 1.0
+    "color_brightness": 1.0,
+    "colors": [
+      [
+        0.1961,
+        0.1765,
+        0.1647
+      ],
+      [
+        0.2471,
+        0.2157,
+        0.2
+      ],
+      [
+        0.9529,
+        0.9176,
+        0.8706
+      ],
+      [
+        0.3451,
+        0.3451,
+        0.3843
+      ]
+    ]
   },
   "textures": {
     "pattern": "pattern.webp",
