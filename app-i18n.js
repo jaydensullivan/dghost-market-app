@@ -2785,65 +2785,23 @@ btn.disabled = false;
 
 document.getElementById('gwInviteDmBtn').addEventListener('click', sendInviteToDm);
 
-// Точно как «Поделиться» лотом, который на iPhone работает: по
-// нажатию просим бота подготовить сообщение (GIF с кнопкой) и сразу
-// вызываем shareMessage. Заранее подготовленное сообщение iPhone
-// молча не открывал, а после такого «зависшего» вызова библиотека
-// Telegram отказывает во всех следующих до перезапуска приложения.
-async function shareGiveawayInvite(){
-const dict = I18N[currentLang] || I18N.ru;
+// Как «Поделиться» у карточек лотов: обычное окно Telegram
+// «Поделиться ссылкой» (t.me/share/url), открытое прямо в касании.
+// Подготовленные ботом сообщения (shareMessage) на телефонах молча не
+// открывались — ни на Android, ни на iOS. Ссылка грузится заранее,
+// поэтому здесь нет ни одного сетевого запроса до открытия окна.
+function shareGiveawayInvite(){
 if (!tg || !tg.initData){
 showAlert(errorMessage('unauthorized'));
 return;
 }
-const btn = document.getElementById('gwInviteBtn');
-if (btn.disabled) return;
-
-if (canShareMessage()){
-btn.disabled = true;
-const label = btn.textContent;
-btn.textContent = dict.gw_invite_loading;
-let code = '';
-try {
-const r = await fetch(API_BASE + '/api/giveaway/invite_prepare', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ init_data: tg.initData }),
-});
-const data = await r.json().catch(() => ({}));
-if (data.link) setInviteLink(data.link);
-if (r.ok && data.prepared_id){
-gwShareError = '';
-tg.shareMessage(data.prepared_id, (sent) => {
-if (sent) showToast(dict.gw_invite_sent);
-else if (gwShareError && gwShareError !== 'USER_DECLINED') sendInviteToDm();
-});
-return;
-}
-code = data.error || ('HTTP ' + r.status);
-} catch (e) {
-// WebAppShareMessageOpened — прошлый вызов так и не получил
-// ответа от Telegram (на части iPhone окно молча не открывается).
-code = (e && e.message) || 'error';
-} finally {
-btn.disabled = false;
-btn.textContent = label;
-}
-// Окно отправки не открылось — присылаем приглашение в личку.
-console.warn('shareMessage не сработал —', code);
-sendInviteToDm();
-return;
-}
-
-// Старый Telegram — копируем ссылку (в момент касания это надёжно)
-// и пробуем открыть окно отправки.
-if (!gwInviteLink) await prefetchInviteLink();
-if (!gwInviteLink){
-showErrorToast(new Error(dict.gw_invite_failed.replace('{code}', 'no_link')));
-return;
-}
-copyInviteLink();
+if (gwInviteLink){
 openInviteShareLink();
+return;
+}
+// Ссылка ещё не успела загрузиться — присылаем приглашение в личку.
+sendInviteToDm();
+prefetchInviteLink();
 }
 
 document.getElementById('gwInviteBtn').addEventListener('click', shareGiveawayInvite);
