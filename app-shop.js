@@ -76,6 +76,7 @@ target_no_longer_available: 'Лот уже недоступен — возмож
 not_pending: 'Это предложение уже обработано.',
 not_accepted: 'Это предложение ещё не принято.',
 seller_kyc_required: 'Эта функция доступна только продавцам, прошедшим проверку. Подай заявку в Профиле.',
+seller_offer_required: 'Сначала прими оферту для продавца.',
 already_submitted: 'Заявка уже отправлена или уже одобрена.',
 seller_not_sent_yet: 'Продавец ещё не отметил "Отправил" — подтвердить получение можно только после этого.',
 unauthorized: 'Открой мини-апп через Telegram, а не в браузере.',
@@ -117,6 +118,7 @@ return Number(n || 0).toLocaleString('ru-RU') + ' сум';
 let hasSteamLink = false;
 let steamLinkSkippedThisSession = false;
 let agreementAccepted = false;
+let sellerOfferAccepted = false;
 let agreementTextLoaded = false;
 
 function updateSteamBlockVisibility(){
@@ -225,6 +227,7 @@ if (typeof applyChipVisibility === 'function') applyChipVisibility();
 currentUserId = data.user_id;
 hasSteamLink = !!data.has_steam_link;
 agreementAccepted = !!data.agreement_accepted;
+sellerOfferAccepted = !!data.seller_offer_accepted;
 changelogSeen = !!data.changelog_seen;
 cryptoTopupAvailable = !!data.crypto_topup_available;
 cryptoPayoutAvailable = !!data.crypto_payout_available;
@@ -314,6 +317,7 @@ if (typeof applyChipVisibility === 'function') applyChipVisibility();
 currentUserId = data.user_id;
 hasSteamLink = !!data.has_steam_link;
 agreementAccepted = !!data.agreement_accepted;
+sellerOfferAccepted = !!data.seller_offer_accepted;
 changelogSeen = !!data.changelog_seen;
 cryptoTopupAvailable = !!data.crypto_topup_available;
 cryptoPayoutAvailable = !!data.crypto_payout_available;

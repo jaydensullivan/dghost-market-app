@@ -644,6 +644,13 @@ statusEl.textContent = (I18N[currentLang] || I18N.ru).addskin_need_pick;
 return;
 }
 
+// Перед первым лотом — оферта продавца. После принятия продолжаем
+// ту же публикацию, пользователю не нужно жать кнопку ещё раз.
+if (!sellerOfferAccepted){
+openSellerOffer(() => publishSkin(triggerBtn, statusEl, overlayEl));
+return;
+}
+
 const title = sTitle.value.trim();
 const price = Number(sPrice.value);
 const photo = sPhoto.value.trim();
@@ -687,6 +694,10 @@ inspect_link: pendingSkinInspectLink,
 .then(async r => {
 if (!r.ok){
 const data = await r.json().catch(() => ({}));
+if (data.error === 'seller_offer_required'){
+sellerOfferAccepted = false;
+openSellerOffer(() => publishSkin(triggerBtn, statusEl, overlayEl));
+}
 if (data.error === 'price_too_high'){
 throw new Error(`Цена слишком высокая — максимум для этого предмета сейчас ${formatCoins(data.max_allowed)} (не больше 200% от рыночной цены ${formatCoins(data.market_price_uzs)}).`);
 }

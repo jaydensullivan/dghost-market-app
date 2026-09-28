@@ -75,6 +75,7 @@ sellerProfileOverlay: 'sellerProfileCloseBtn',
 reviewOverlay: 'reviewCancelBtn',
 watchOverlay: 'watchCancelBtn',
 viewer3dOverlay: 'viewer3dCloseBtn',
+legalOverlay: 'legalCloseBtn',
 };
 
 // Экранные «назад» внутри приложения — сначала более глубокие.

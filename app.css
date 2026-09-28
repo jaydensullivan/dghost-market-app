@@ -3451,3 +3451,70 @@ background:rgba(255,255,255,0.04); color:var(--silver); font-size:12px; text-ali
 margin:8px 0 0; padding:8px; max-height:220px; overflow:auto; border-radius:8px;
 background:rgba(0,0,0,0.35); color:#c8f7c5; font-size:10.5px; white-space:pre-wrap; word-break:break-all;
 }
+
+/* ---------- правила и оферты ---------- */
+/* Выше обязательного окна соглашения (10000) — оттуда тоже открывают. */
+.legal-overlay{ z-index:10050; }
+.legal-sheet{
+display:flex;
+flex-direction:column;
+max-height:88vh;
+padding-bottom:calc(env(safe-area-inset-bottom, 0px) + 16px);
+}
+.legal-head{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:8px;
+margin-bottom:12px;
+}
+.legal-tabs{ display:flex; gap:6px; flex-wrap:wrap; }
+.legal-tabs button{
+padding:6px 10px;
+border-radius:999px;
+border:1px solid rgba(255,255,255,0.12);
+background:transparent;
+color:var(--muted);
+font-size:12px;
+}
+.legal-tabs button.active{
+border-color:var(--red-dim);
+background:var(--red-dim);
+color:var(--silver);
+}
+.legal-text{
+flex:1 1 auto;
+min-height:120px;
+overflow-y:auto;
+white-space:pre-wrap;
+word-wrap:break-word;
+font-size:13px;
+line-height:1.55;
+color:var(--muted);
+background:rgba(255,255,255,0.03);
+border:1px solid rgba(255,255,255,0.08);
+border-radius:12px;
+padding:14px;
+}
+.legal-accept{ display:flex; flex-direction:column; gap:10px; margin-top:12px; }
+.legal-check{
+display:flex;
+align-items:flex-start;
+gap:8px;
+font-size:13px;
+line-height:1.4;
+color:var(--silver);
+}
+.legal-check input{ margin-top:2px; flex:none; width:18px; height:18px; }
+.legal-note,
+.legal-links{
+margin:12px 18px 0;
+font-size:11px;
+line-height:1.45;
+color:var(--muted);
+text-align:center;
+}
+.legal-links{ margin:10px 0 0; font-size:12px; }
+.legal-note a,
+.legal-links a{ color:var(--silver); text-decoration:underline; }
+.legal-accept button:disabled{ opacity:0.45; }
