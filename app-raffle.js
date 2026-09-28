@@ -236,15 +236,9 @@ renderRaffleResult(c, me);
 renderRaffleProof(c);
 }
 
-// Баннер на главном экране: «🎁 Сейчас разыгрывается …» — ведёт сюда.
+// Розыгрыш есть в промо-баннере на главной — обновляем его.
 function renderRaffleBanner(){
 if (typeof renderPromo === 'function') renderPromo();
-const banner = document.getElementById('welcomeRaffle');
-if (!banner) return;
-const c = raffleData && raffleData.current;
-if (!c || c.status !== 'active'){ banner.style.display = 'none'; return; }
-banner.querySelector('[data-rf-banner-title]').textContent = c.title;
-banner.style.display = '';
 }
 
 function loadRaffle(){
@@ -351,9 +345,7 @@ ta.remove();
 document.getElementById('rfInviteBtn').addEventListener('click', inviteToRaffle);
 document.getElementById('rfDmBtn').addEventListener('click', sendRaffleInviteToDm);
 document.getElementById('rfCopyBtn').addEventListener('click', copyRaffleLink);
-document.getElementById('welcomeRaffle').addEventListener('click', () => goToScreen('timer'));
 document.getElementById('rfBackBtn').addEventListener('click', () => goToScreen('welcome'));
-document.getElementById('tabTimerBtn').addEventListener('click', loadRaffle);
 
 // Вернулся из чата после приглашения — обновляем прогресс.
 document.addEventListener('visibilitychange', () => {

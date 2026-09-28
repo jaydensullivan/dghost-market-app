@@ -139,19 +139,6 @@ document.getElementById('lotsDealsBtn').addEventListener('click', () => goToScre
 
 // ---------- корзина в нижней навигации ----------
 
-function updateNavCartBadge(){
-const badge = document.getElementById('navCartBadge');
-badge.textContent = String(cart.length);
-badge.style.display = cart.length ? '' : 'none';
-}
-
-// Счётчик на вкладке «Корзина» — вместо плавающей кнопки.
-const _updateCartFab = updateCartFab;
-updateCartFab = function(){
-_updateCartFab();
-updateNavCartBadge();
-};
-
 document.getElementById('navCartBtn').addEventListener('click', () => {
 renderCartOverlay();
 document.getElementById('cartStatus').textContent = '';

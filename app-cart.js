@@ -13,14 +13,11 @@ applyFiltersAndRender();
 updateCartFab();
 }
 
+// Счётчик на вкладке «Корзина» в нижней навигации.
 function updateCartFab(){
-const fab = document.getElementById('cartFab');
-if (cart.length){
-fab.style.display = 'flex';
-document.getElementById('cartFabCount').textContent = String(cart.length);
-} else {
-fab.style.display = 'none';
-}
+const badge = document.getElementById('navCartBadge');
+badge.textContent = String(cart.length);
+badge.style.display = cart.length ? '' : 'none';
 }
 
 function cartItemRowHtml(skin){
@@ -54,12 +51,6 @@ const total = items.reduce((sum, s) => sum + s.price, 0);
 document.getElementById('cartTotalAmount').textContent = formatCoins(total);
 document.getElementById('cartCheckoutBtn').disabled = false;
 }
-
-document.getElementById('cartFab').addEventListener('click', () => {
-renderCartOverlay();
-document.getElementById('cartStatus').textContent = '';
-document.getElementById('cartOverlay').classList.add('show');
-});
 
 document.getElementById('cartCloseBtn').addEventListener('click', () => {
 document.getElementById('cartOverlay').classList.remove('show');
