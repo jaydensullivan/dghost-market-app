@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 18;
+const APP3D_VERSION = 19;
 
 let threeLoading = null;
 
@@ -623,6 +623,14 @@ if (textures[name]) return textures[name];
 return null;
 }
 
+// Путь из params.json: просто имя файла — ищем в папке скина;
+// "models/...", "/..." или http(s) — берём как есть (так указываются
+// общие ресурсы из models/shared/); "../" работает относительно скина.
+function resolveSkinPath(base, file){
+if (/^(https?:)?\/\//.test(file) || file.charAt(0) === '/' || file.indexOf('models/') === 0) return file;
+return base + file;
+}
+
 function loadSkinPack(THREE, dir){
 const base = dir.replace(/\/+$/, '') + '/';
 
@@ -661,7 +669,7 @@ return Promise.all(names.map(name => {
 const file = wanted[name];
 if (!file) return Promise.resolve(null);
 const isColor = SKIN_COLOR_LAYERS.indexOf(name) !== -1;
-return loadSkinTexture(THREE, base + file, isColor);
+return loadSkinTexture(THREE, resolveSkinPath(base, file), isColor);
 })).then(loaded => {
 const pack = { params: meta.shader || {} };
 names.forEach((name, i) => { pack[name] = loaded[i]; });
