@@ -4,6 +4,7 @@
   "format": "vcompmat",
   "textures": {
     "pattern": "pattern.webp",
+    "normal": "normal.webp",
     "material_mask": "material_mask.webp",
     "roughness": "roughness.webp",
     "wear": "models/shared/wear_32f653a6a3.webp"

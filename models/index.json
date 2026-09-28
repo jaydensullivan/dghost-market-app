@@ -229,6 +229,11 @@
   "skin": "models/skins/hy_blam_simple",
   "weapon": "models/weapons/awp"
  },
+ "AWP | CMYK": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/gs_independe_awp",
+  "weapon": "models/weapons/awp"
+ },
  "AWP | Chromatic Aberration": {
   "model": "models/awp.glb",
   "skin": "models/skins/cu_awp_chroma_pink",
@@ -337,6 +342,11 @@
  "AWP | Oni Taiji": {
   "model": "models/awp.glb",
   "skin": "models/skins/cu_awp_hannya",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Printstream": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/awp_printstream",
   "weapon": "models/weapons/awp"
  },
  "AWP | Queen's Gambit": {
