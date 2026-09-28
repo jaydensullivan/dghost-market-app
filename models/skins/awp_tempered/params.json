@@ -4,7 +4,6 @@
   "format": "vcompmat",
   "textures": {
     "pattern": "pattern.webp",
-    "normal": "normal.webp",
     "ao": "ao.webp",
     "material_mask": "material_mask.webp",
     "roughness": "roughness.webp",
