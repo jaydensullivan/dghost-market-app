@@ -77,3 +77,22 @@ cp.style.height = window.innerHeight + 'px';
 }
 });
 
+
+// Пока открыто любое окно, кнопки шапки прячутся (см. body.modal-open
+// в app.css). Следим за классом show у всех окон.
+(function watchModals(){
+const selector = '.buy-overlay, .edit-overlay';
+const update = () => {
+document.body.classList.toggle('modal-open',
+!!document.querySelector('.buy-overlay.show, .edit-overlay.show'));
+};
+const observer = new MutationObserver(update);
+const attach = () => {
+document.querySelectorAll(selector).forEach(el => {
+observer.observe(el, { attributes: true, attributeFilter: ['class'] });
+});
+update();
+};
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attach);
+else attach();
+})();

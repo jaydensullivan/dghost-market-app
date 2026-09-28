@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="stylesheet" href="app.css?v=21">
+<link rel="stylesheet" href="app.css?v=22">
 </head>
 <body>
 
@@ -1492,24 +1492,37 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 </div>
 
-<div class="edit-status" id="buyStatus"></div>
 </div>
 
 <div class="buy-sticky-bar">
-<button type="button" id="buyCancel" data-i18n="btn_cancel">Отмена</button>
-<div id="buyPaymentMethods" style="display:flex; flex-direction:column; gap:8px; flex:1;">
-<div id="buyNoPaymentHint" class="shop-hint" style="display:none; text-align:center;" data-i18n="buy_no_payment_hint">Сейчас нет доступного способа оплаты — напиши в поддержку.</div>
-<button type="button" id="buyConfirmBalance" class="save" style="display:none;">💰 <span data-i18n="btn_buy_prefix">Купить</span> · <span id="buyPrice">—</span></button>
-<button type="button" id="buyConfirmStars" class="save" style="display:none;" data-i18n="buy_pay_stars">⭐ Оплатить Stars</button>
-<button type="button" id="buyConfirmCrypto" class="save" style="display:none;" data-i18n="buy_pay_crypto">💳 Оплатить криптой</button>
-<button type="button" id="buyConfirmP2P" class="save" style="display:none;" data-i18n="buy_pay_p2p">🏦 Оплатить П2П (карта)</button>
-</div>
+<div class="edit-status buy-status-line" id="buyStatus"></div>
+<button type="button" id="buyCancel" style="display:none;" data-i18n="btn_cancel">Отмена</button>
+<!-- Одна основная кнопка: способ оплаты выбирается в отдельном окне. -->
+<button type="button" id="buyOpenPayBtn" class="buy-main-btn" style="display:none;"><span data-i18n="btn_buy">Купить</span> · <span id="buyMainPrice">—</span></button>
 <button type="button" id="buyMakeOfferBtn" class="steam-link-btn secondary" data-i18n="btn_make_offer">Предложить цену</button>
 <button type="button" id="buyMakeTradeBtn" class="steam-link-btn secondary" style="display:none;" data-i18n="buy_make_trade">🔄 Предложить обмен</button>
 <button type="button" id="buySendOfferBtn" class="save" style="display:none;" data-i18n="btn_send_offer">Отправить предложение</button>
 <button type="button" id="buyEditPriceBtn" class="save" style="display:none;" data-i18n="btn_edit_price">Изменить цену</button>
 <button type="button" id="buySavePriceBtn" class="save" style="display:none;" data-i18n="btn_save_price">Сохранить цену</button>
 <button type="button" id="buyDiscountBtn" class="steam-link-btn secondary" style="display:none;" data-i18n="buy_discount_btn">🏷️ Скидка</button>
+</div>
+</div>
+
+<!-- Выбор способа оплаты — открывается кнопкой «Купить» в окне лота. -->
+<div class="buy-overlay pay-overlay" id="payOverlay">
+<div class="buy-sheet pay-sheet">
+<button type="button" id="payClose" class="buy-close-btn">✕</button>
+<div class="pay-head">
+<div class="pay-title" data-i18n="buy_choose_payment">Способ оплаты</div>
+<div class="pay-sub"><span id="payItemTitle"></span> · <b id="payItemPrice"></b></div>
+</div>
+<div id="buyPaymentMethods" class="pay-methods">
+<div id="buyNoPaymentHint" class="shop-hint" style="display:none; text-align:center;" data-i18n="buy_no_payment_hint">Сейчас нет доступного способа оплаты — напиши в поддержку.</div>
+<button type="button" id="buyConfirmBalance" class="save" style="display:none;">💰 <span data-i18n="btn_buy_prefix">Купить</span> · <span id="buyPrice">—</span></button>
+<button type="button" id="buyConfirmStars" class="save" style="display:none;" data-i18n="buy_pay_stars">⭐ Оплатить Stars</button>
+<button type="button" id="buyConfirmCrypto" class="save" style="display:none;" data-i18n="buy_pay_crypto">💳 Оплатить криптой</button>
+<button type="button" id="buyConfirmP2P" class="save" style="display:none;" data-i18n="buy_pay_p2p">🏦 Оплатить П2П (карта)</button>
+</div>
 </div>
 </div>
 
@@ -1623,15 +1636,15 @@ transform="rotate(-90 100 100)"></circle>
 </div>
 </div>
 
-<script src="app-core.js?v=1"></script>
-<script src="app-i18n.js?v=21"></script>
+<script src="app-core.js?v=2"></script>
+<script src="app-i18n.js?v=22"></script>
 <script src="app-giveaway.js?v=2"></script>
 <script src="app-navigation.js?v=5"></script>
 <script src="app-shop.js?v=7"></script>
 <script src="app-deals.js?v=8"></script>
-<script src="app-catalog.js?v=3"></script>
+<script src="app-catalog.js?v=4"></script>
 <script src="app-cart.js?v=1"></script>
-<script src="app-filters.js?v=7"></script>
+<script src="app-filters.js?v=8"></script>
 <script src="app-steam.js?v=1"></script>
 <script src="app-topup.js?v=1"></script>
 <script src="app-history.js?v=4"></script>

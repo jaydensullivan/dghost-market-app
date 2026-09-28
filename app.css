@@ -2463,10 +2463,8 @@ align-items:center;
 justify-content:center;
 }
 
-.buy-sticky-bar #buyConfirmBalance,
-.buy-sticky-bar #buyConfirmStars,
-.buy-sticky-bar #buyConfirmCrypto,
-.buy-sticky-bar #buyConfirmP2P{
+.pay-methods .save,
+.buy-sticky-bar .buy-main-btn{
 flex:1;
 min-height:48px;
 padding:0 18px;
@@ -3257,3 +3255,61 @@ background:
 radial-gradient(ellipse at 50% 120%, var(--rar-strong) 0%, rgba(255,255,255,0) 72%),
 linear-gradient(180deg, var(--rar-soft) 0%, rgba(255,255,255,0.9) 100%);
 }
+
+/* ---------- окно лота: одна кнопка «Купить» ---------- */
+.buy-sticky-bar .buy-status-line{
+flex:1 1 100%;
+margin:0;
+min-height:0;
+text-align:center;
+}
+.buy-sticky-bar .buy-status-line:empty{ display:none; }
+.buy-sticky-bar .buy-main-btn{ flex:1 1 100%; order:1; gap:6px; }
+/* «Предложить цену» и «Обмен» — компактно в одну строку под «Купить». */
+.buy-sticky-bar #buyMakeOfferBtn,
+.buy-sticky-bar #buyMakeTradeBtn{
+flex:1 1 0;
+order:2;
+margin:0;
+min-height:40px;
+font-size:12px;
+}
+.buy-sticky-bar #buySendOfferBtn{ order:3; }
+
+/* Крестик прилипает к верху окна и не уезжает при прокрутке. */
+.buy-sheet > .buy-close-btn{
+position:sticky;
+top:10px;
+display:block;
+margin:10px 10px -40px auto;
+}
+
+/* Пока открыто окно, кнопки шапки (уведомления, профиль) прячем:
+   они висят поверх всех слоёв, и крестик окна оказывался прямо под
+   аватаркой, а сама аватарка оставалась нажимаемой. */
+body.modal-open .brand-tr{
+visibility:hidden;
+pointer-events:none;
+}
+
+/* ---------- окно выбора способа оплаты ---------- */
+.pay-overlay{ z-index:25; }
+.pay-sheet{ padding-bottom:calc(env(safe-area-inset-bottom, 0px) + 16px); }
+.pay-head{ padding:14px 56px 12px 20px; }
+.pay-title{
+font-family:'JetBrains Mono', monospace;
+font-size:15px;
+font-weight:700;
+color:var(--silver);
+}
+.pay-sub{ margin-top:4px; font-size:12px; color:var(--muted); }
+.pay-methods{
+display:flex;
+flex-direction:column;
+gap:10px;
+padding:0 18px;
+}
+
+/* ---------- карточка каталога целиком кликабельна ---------- */
+.skin-card[data-card]{ cursor:pointer; }
+.skin-card[data-card]:active{ transform:scale(0.985); }

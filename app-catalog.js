@@ -200,7 +200,7 @@ const priceHtml = skin.original_price
 : `<div class="skin-price">${formatCoins(skin.price)}</div>`;
 
 return `
-<div class="skin-card ${rarityClass}">
+<div class="skin-card ${rarityClass}" data-card="${skin.id}">
 <div class="skin-photo-wrap"${rarityBg}>
 ${photo}
 ${wearBadge}
@@ -387,6 +387,14 @@ const cartBtn = e.target.closest('[data-cart-toggle]');
 if (cartBtn){
 const id = Number(cartBtn.dataset.cartToggle);
 toggleCartItem(id);
+return;
+}
+// Нажатие на саму карточку (не на кнопку внутри) открывает лот —
+// не нужно целиться в маленькую кнопку.
+const card = e.target.closest('[data-card]');
+if (card && !e.target.closest('button, a, input, select')){
+const skin = lastSkins.find(s => String(s.id) === card.dataset.card);
+if (skin) openBuySheet(skin);
 }
 });
 

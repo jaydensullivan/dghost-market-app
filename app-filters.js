@@ -1207,6 +1207,9 @@ stickersBox.style.display = 'none';
 buyRemoveBtn.style.display = (isOwn || isAdmin) ? '' : 'none';
 document.getElementById('buyWatchBtn').style.display = isOwn ? 'none' : '';
 document.getElementById('buyPaymentMethods').style.display = isOwn ? 'none' : 'flex';
+document.getElementById('buyOpenPayBtn').style.display = isOwn ? 'none' : '';
+document.getElementById('buyMainPrice').textContent = formatCoins(skin.price);
+closePaySheet();
 buyConfirmBalance.style.display = 'none'; // Оплата с баланса покупателем убрана полностью
 buyConfirmStars.style.display = (!isOwn && directStarsPurchaseEnabled) ? '' : 'none';
 buyConfirmCrypto.style.display = (!isOwn && directCryptoPurchaseEnabled) ? '' : 'none';
@@ -1413,6 +1416,29 @@ window.open(telegramShareUrl, '_blank');
 buyCancel.addEventListener('click', () => {
 buyOverlay.classList.remove('show');
 pendingBuySkin = null;
+});
+
+// ---------- окно выбора способа оплаты ----------
+const payOverlay = document.getElementById('payOverlay');
+
+function closePaySheet(){
+payOverlay.classList.remove('show');
+}
+
+document.getElementById('buyOpenPayBtn').addEventListener('click', () => {
+if (!pendingBuySkin) return;
+document.getElementById('payItemTitle').textContent = buyTitle.textContent;
+document.getElementById('payItemPrice').textContent = formatCoins(pendingBuySkin.price);
+payOverlay.classList.add('show');
+});
+
+document.getElementById('payClose').addEventListener('click', closePaySheet);
+payOverlay.addEventListener('click', (e) => {
+if (e.target === payOverlay) closePaySheet();
+});
+// Выбрали способ — окно закрываем: статус оплаты виден в окне лота.
+document.getElementById('buyPaymentMethods').addEventListener('click', (e) => {
+if (e.target.closest('button')) closePaySheet();
 });
 
 buyClose.addEventListener('click', () => {
