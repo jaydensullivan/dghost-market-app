@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 20;
+const APP3D_VERSION = 21;
 
 let threeLoading = null;
 
@@ -516,7 +516,10 @@ uPattern: { value: skin.pattern },
 uWearMask: { value: skin.wear },
 uGrunge: { value: skin.grunge },
 uSkinMask: { value: skin.mask },
-uHasSkinMask: { value: skin.mask ? 1 : 0 },
+// В составных материалах (vcompmat) material_mask размечает зоны
+// материалов, а не покрытие краской: как маска покраски он гасил
+// почти весь узор, и сквозь него проступал родной ствол.
+uHasSkinMask: { value: skin.mask && skin.format !== 'vcompmat' ? 1 : 0 },
 uHasGrunge: { value: skin.grunge ? 1 : 0 },
 uHasWear: { value: skin.wear ? 1 : 0 },
 uBaseColor: { value: weapon ? weapon.color : null },
@@ -758,7 +761,7 @@ if (!file) return Promise.resolve(null);
 const isColor = SKIN_COLOR_LAYERS.indexOf(name) !== -1;
 return loadSkinTexture(THREE, resolveSkinPath(base, file), isColor);
 })).then(loaded => {
-const pack = { params: meta.shader || {} };
+const pack = { params: meta.shader || {}, format: meta.format || null };
 names.forEach((name, i) => { pack[name] = loaded[i]; });
 console.log('3D: слои раскраски —',
 names.filter(n => pack[n]).join(', ') || 'ничего не загрузилось');
