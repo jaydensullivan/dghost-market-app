@@ -3945,3 +3945,185 @@ text-align:center;
 
 /* мои лоты */
 .lots-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }
+
+/* ============================================================
+   ИНВЕНТАРЬ STEAM — окно выбора скинов
+   ============================================================ */
+.inventory-sheet{
+display:flex;
+flex-direction:column;
+max-height:92vh;
+padding:16px 14px calc(env(safe-area-inset-bottom, 0px) + 12px);
+}
+.inv-head{
+display:flex;
+align-items:center;
+gap:12px;
+padding:4px 0 12px;
+}
+.inv-head-icon{
+flex:0 0 48px;
+height:48px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+color:#fff;
+background:linear-gradient(145deg, #1b2838, #2a475e);
+box-shadow:0 0 0 2px rgba(123,44,255,0.35);
+}
+.inv-head-text{ flex:1; min-width:0; }
+.inv-head-text h2{ margin:0; font-family:'Inter', sans-serif; font-size:19px; font-weight:800; text-transform:none; letter-spacing:0; color:var(--silver); }
+.inv-head-sub{ margin-top:2px; font-size:12px; color:var(--muted); line-height:1.35; }
+.inv-refresh-btn{
+flex:0 0 auto;
+display:flex;
+align-items:center;
+gap:6px;
+padding:9px 12px;
+border-radius:10px;
+border:1px solid var(--red);
+background:rgba(123,44,255,0.12);
+color:var(--silver);
+font-size:12px;
+font-weight:600;
+cursor:pointer;
+}
+.inv-search-row{ margin-bottom:10px; scroll-margin-top:0; }
+.shop-filter-btn.active{ border-color:var(--red); background:rgba(123,44,255,0.25); color:#fff; }
+.inv-filters{ display:grid; grid-template-columns:1fr 0.9fr 1.2fr; gap:6px; margin-bottom:6px; }
+.inv-select{
+position:relative;
+display:flex;
+align-items:center;
+gap:5px;
+min-width:0;
+height:40px;
+padding:0 7px;
+border-radius:10px;
+border:1px solid var(--red-dim);
+background:var(--surface);
+color:var(--red-glow);
+}
+.inv-select svg{ flex:none; }
+.inv-select select{
+flex:1;
+min-width:0;
+height:100%;
+border:none;
+background:none;
+color:var(--silver);
+font-family:'Inter', sans-serif;
+font-size:11.5px;
+outline:none;
+appearance:none;
+-webkit-appearance:none;
+padding-right:12px;
+background-image:linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+background-position:right 5px center, right 1px center;
+background-size:4px 4px, 4px 4px;
+background-repeat:no-repeat;
+text-overflow:ellipsis;
+}
+.inv-select select option{ color:#000; }
+
+.inventory-sheet .inventory-grid{
+flex:1 1 auto;
+max-height:none;
+min-height:200px;
+margin:6px 0 8px;
+}
+.inv-item .inv-item-photo{ padding-top:26px; }
+.inv-fav{ z-index:3; top:5px; right:5px; width:28px; height:28px; }
+.inv-float-line{ margin-top:4px; font-size:11px; color:var(--muted); }
+.inv-float-line b{ color:var(--silver); font-weight:600; font-family:'JetBrains Mono', monospace; }
+.inv-float-line span{ margin-left:6px; }
+.inv-item-actions{ display:flex; gap:6px; margin-top:9px; }
+.inv-item-actions button{
+flex:1;
+min-width:0;
+padding:9px 4px;
+border-radius:9px;
+font-size:11px;
+font-weight:600;
+white-space:nowrap;
+cursor:pointer;
+}
+.inv-more{ border:1px solid var(--red-dim); background:transparent; color:var(--silver); }
+.inv-pick{ border:none; background:var(--cta-gradient); color:#fff; }
+.inv-pick.on{ background:#4ade80; color:#0a1a10; }
+.inv-pick:disabled{ opacity:0.5; }
+.inv-item.selected{ box-shadow:0 0 0 2px var(--red); border-color:var(--red); }
+
+/* панель выбранных */
+.inv-picked{
+display:flex;
+align-items:center;
+gap:10px;
+padding:10px;
+margin-bottom:8px;
+border-radius:14px;
+border:1px solid var(--red-dim);
+background:rgba(23,16,34,0.96);
+}
+.inv-picked-thumbs{ display:flex; gap:6px; overflow-x:auto; flex:1 1 auto; min-width:0; scrollbar-width:none; }
+.inv-picked-thumbs::-webkit-scrollbar{ display:none; }
+.inv-thumb{
+position:relative;
+flex:0 0 44px;
+height:44px;
+border-radius:9px;
+border:1px solid var(--red-dim);
+background:rgba(123,44,255,0.12);
+}
+.inv-thumb img{ width:100%; height:100%; object-fit:contain; }
+.inv-thumb button{
+position:absolute;
+top:-5px;
+right:-5px;
+width:17px;
+height:17px;
+border-radius:50%;
+border:none;
+background:var(--red);
+color:#fff;
+font-size:9px;
+line-height:17px;
+padding:0;
+cursor:pointer;
+}
+.inv-thumb.add{ border-style:dashed; color:var(--muted); font-size:20px; cursor:pointer; }
+.inv-picked-count{ display:flex; flex-direction:column; flex:none; font-size:11px; color:var(--muted); text-align:right; }
+.inv-picked-count b{ font-size:14px; color:var(--silver); }
+.inv-continue{
+flex:none;
+padding:12px 14px;
+border:none;
+border-radius:11px;
+background:var(--cta-gradient);
+color:#fff;
+font-size:13px;
+font-weight:700;
+white-space:nowrap;
+cursor:pointer;
+}
+.inv-close{
+width:100%;
+padding:13px;
+border-radius:12px;
+border:1px solid var(--red-dim);
+background:transparent;
+color:var(--muted);
+font-family:'JetBrains Mono', monospace;
+font-size:13px;
+font-weight:600;
+letter-spacing:0.08em;
+text-transform:uppercase;
+cursor:pointer;
+}
+
+/* подробнее */
+.inv-detail-body{ margin-top:12px; }
+.inv-detail-photo{ cursor:default; }
+.inv-detail-photo .inv-item-photo{ aspect-ratio:16 / 10; }
+.qs-queue{ margin-top:2px; font-size:12px; color:var(--red-glow); }

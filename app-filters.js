@@ -2132,7 +2132,8 @@ document.getElementById('watchStCheck').checked = true;
 document.getElementById('watchStLabel').textContent = skin.stattrak ? dict.watch_only_st : dict.watch_no_st;
 const priceInput = document.getElementById('watchPriceInput');
 priceInput.value = '';
-priceInput.placeholder = dict.watch_price_ph.replace('{price}', Math.round((skin.price || 0) * 0.9));
+// У предмета из инвентаря цены нет — тогда без подсказки.
+priceInput.placeholder = skin.price ? dict.watch_price_ph.replace('{price}', Math.round(skin.price * 0.9)) : '';
 document.getElementById('watchStatus').textContent = '';
 watchOverlay.classList.add('show');
 }
