@@ -4032,6 +4032,10 @@ flex:1 1 auto;
 max-height:none;
 min-height:200px;
 margin:6px 0 8px;
+/* Строки — по высоте карточки. Без этого сетка, зажатая по высоте
+   окна, сплющивала карточки (у них overflow:hidden) в полоски. */
+grid-auto-rows:max-content;
+align-content:start;
 }
 .inv-item .inv-item-photo{ padding-top:26px; }
 .inv-fav{ z-index:3; top:5px; right:5px; width:28px; height:28px; }
