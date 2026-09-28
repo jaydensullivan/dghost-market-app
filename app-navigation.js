@@ -199,6 +199,8 @@ else if (confirm(message)) { onOk(); }
 
 function switchTab(name){
 currentTab = name;
+// По вкладке CSS прячет баланс в шапке вне главной.
+document.body.dataset.tab = name;
 if (name !== 'admin' && typeof stopAdminStatsLive === 'function'){
 stopAdminStatsLive();
 }

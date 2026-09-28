@@ -167,3 +167,36 @@ showAlert((I18N[currentLang] || I18N.ru).hint_sell_flow);
 });
 
 renderPromo();
+
+// ---------- профиль: переходы и настройки ----------
+
+document.getElementById('screenProfile').addEventListener('click', (e) => {
+const go = e.target.closest('[data-pf-go]');
+if (go){
+goToScreen(go.dataset.pfGo);
+return;
+}
+const act = e.target.closest('[data-pf-action]');
+if (!act) return;
+const action = act.dataset.pfAction;
+if (action === 'notifications'){
+document.getElementById('notifBellBtn').click();
+} else if (action === 'legal'){
+openLegal('terms');
+} else if (action === 'support'){
+document.querySelector('[data-header-action="support"]').click();
+} else if (action === 'exit'){
+if (tg && tg.close) tg.close();
+}
+});
+
+document.getElementById('profileHeldInfo').addEventListener('click', () => {
+showAlert((I18N[currentLang] || I18N.ru).hint_sell_flow);
+});
+
+// Форма «Каталога желаний» открывается по «+ Добавить».
+document.getElementById('wishlistToggleForm').addEventListener('click', () => {
+const form = document.getElementById('wishlistForm');
+form.style.display = form.style.display === 'none' ? '' : 'none';
+if (form.style.display === '') document.getElementById('wishlistQueryInput').focus();
+});

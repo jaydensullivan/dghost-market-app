@@ -8,9 +8,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="stylesheet" href="app.css?v=32">
+<link rel="stylesheet" href="app.css?v=33">
 </head>
-<body>
+<body data-tab="shop">
 
 <div class="princess-bg" id="princessBg"></div>
 
@@ -299,56 +299,80 @@
 
 <div class="screen-profile" id="screenProfile">
 
-<button type="button" class="back-btn" id="profileBackBtn" style="margin-bottom:12px;">←</button>
+<button type="button" class="back-btn" id="profileBackBtn" style="display:none;">←</button>
 
-<video src="promo.mp4" autoplay loop muted playsinline disablepictureinpicture style="width:100%; border-radius:16px; margin-bottom:14px; display:block;" onerror="this.style.display='none'"></video>
-
-<div class="profile-card rain-card-wrap">
+<!-- 👤 Пользователь и статус -->
+<div class="profile-card pf-hero rain-card-wrap">
 <canvas id="rain"></canvas>
+<div class="pf-hero-row">
 <div class="profile-avatar" id="profileAvatar"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.2-4 4-6 7.5-6s6.3 2 7.5 6"/></svg></div>
-<div class="profile-name" id="profileName">—</div>
+<div class="pf-hero-info">
+<div class="pf-name-row"><div class="profile-name" id="profileName">—</div><span class="pf-verified" id="profileVerified" style="display:none;" title="Проверенный продавец"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="m12 1.5 2.6 2 3.3-.2.9 3.2 2.7 1.9-1.2 3.1 1.2 3.1-2.7 1.9-.9 3.2-3.3-.2-2.6 2-2.6-2-3.3.2-.9-3.2-2.7-1.9L4.8 12 3.6 8.9l2.7-1.9.9-3.2 3.3.2z"/><path d="m8.5 12.2 2.4 2.4 4.6-4.9" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
 <div class="trust-badge" id="trustBadge" style="display:none;"></div>
 <div class="trust-progress" id="trustProgress" style="display:none;"></div>
-<div class="profile-balance" id="profileBalance"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="vertical-align:-2px"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5c0-1 1-1.8 2.5-1.8s2.5.7 2.5 1.7c0 2.3-5 1.3-5 3.6 0 1 1 1.8 2.5 1.8s2.5-.8 2.5-1.8"/></svg> <span id="profileBalanceAmount">—</span></div>
-<div class="profile-held" id="profileHeld"></div>
 </div>
-
-<div class="profile-stats">
-<div class="stat-box">
-<div class="stat-value" id="statSold">—</div>
-<div class="stat-label" data-i18n="stat_sold">Продано</div>
-</div>
-<div class="stat-box">
-<div class="stat-value" id="statBought">—</div>
-<div class="stat-label" data-i18n="stat_bought">Куплено</div>
-</div>
-<div class="stat-box">
-<div class="stat-value" id="statActive">—</div>
-<div class="stat-label" data-i18n="stat_active">Активных лотов</div>
 </div>
 </div>
 
-<div class="profile-section" id="profileLanguageSection">
-<div class="profile-section-title" data-i18n="section_language">Язык</div>
-<div class="lang-switch">
-<button type="button" class="lang-btn" id="langBtnRu" data-lang="ru">Русский</button>
-<button type="button" class="lang-btn" id="langBtnUz" data-lang="uz">O'zbekcha</button>
-<button type="button" class="lang-btn" id="langBtnEn" data-lang="en">English</button>
+<!-- 💰 Баланс -->
+<div class="pf-card pf-balance">
+<div class="pf-balance-top">
+<div class="pf-ico violet"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg></div>
+<div class="pf-balance-info">
+<div class="pf-label" data-i18n="pf_balance">Баланс</div>
+<div class="pf-balance-amount" id="profileBalanceAmount">—</div>
+<div class="pf-held-row"><span class="profile-held" id="profileHeld"></span><button type="button" class="pf-info-btn" id="profileHeldInfo" aria-label="Как работает холд">ⓘ</button></div>
 </div>
 </div>
-
-<div class="profile-section" id="profileSteamSection">
-<div class="profile-section-title" data-i18n="section_steam">Steam</div>
-<button type="button" id="openSteamTradeUrlBtn" class="steam-link-btn secondary" style="margin-bottom:12px;">
-<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="vertical-align:-3px;margin-right:5px"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>
-<span data-i18n="btn_open_steam">Открыть страницу Steam с трейд-ссылкой</span>
+<div class="pf-money-row" id="profileMoneyButtons" style="display:none;">
+<button type="button" id="openTopupBtn" class="pf-money-btn primary">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+<span data-i18n="btn_topup_short">Пополнить</span>
 </button>
+<button type="button" id="openWithdrawBtn" class="pf-money-btn">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+<span data-i18n="btn_withdraw_short">Вывести</span>
+</button>
+</div>
+</div>
+
+<!-- 📊 Моя активность -->
+<div class="profile-stats pf-stats">
+<button type="button" class="stat-box" data-pf-go="deals">
+<div class="pf-ico green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></div>
+<div><div class="stat-value" id="statSold">—</div><div class="stat-label" data-i18n="stat_sold">Продано</div></div>
+</button>
+<button type="button" class="stat-box" data-pf-go="deals">
+<div class="pf-ico blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h2l2.2 12.4a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 2-1.6L21 7H6"/></svg></div>
+<div><div class="stat-value" id="statBought">—</div><div class="stat-label" data-i18n="stat_bought">Куплено</div></div>
+</button>
+<button type="button" class="stat-box" data-pf-go="lots">
+<div class="pf-ico orange"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m12 2 9 5v10l-9 5-9-5V7z"/><path d="m3 7 9 5 9-5M12 12v10"/></svg></div>
+<div><div class="stat-value" id="statActive">—</div><div class="stat-label" data-i18n="stat_active">Активных лотов</div></div>
+</button>
+</div>
+
+<!-- 🎮 Steam -->
+<div class="pf-card" id="profileSteamSection">
+<div class="pf-card-head">
+<div class="pf-ico steam"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M11.98 2C6.73 2 2.43 6.05 2.02 11.2l5.36 2.22a2.84 2.84 0 0 1 1.6-.5l2.39-3.46v-.05a3.79 3.79 0 1 1 3.79 3.79h-.09l-3.4 2.43v.13a2.85 2.85 0 0 1-5.65.5L2.2 14.64A10 10 0 1 0 11.98 2zm-4.7 15.18-1.23-.5a2.13 2.13 0 1 0 1.17-2.9l1.27.52a1.57 1.57 0 1 1-1.2 2.9zm9.5-7.95a2.53 2.53 0 1 0-2.53 2.53 2.53 2.53 0 0 0 2.53-2.53zm-4.42 0a1.9 1.9 0 1 1 1.9 1.9 1.9 1.9 0 0 1-1.9-1.9z"/></svg></div>
+<div class="pf-card-title">
+<div class="pf-title" data-i18n="section_steam">Steam</div>
 <div id="profileSteamLinked" style="display:none;">
-<div class="profile-steam-status"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="vertical-align:-2px"><path d="M20 6 9 17l-5-5"/></svg> <span data-i18n="steam_linked">Трейд-ссылка привязана</span></div>
-<button type="button" id="profileRelinkBtn" class="steam-link-btn secondary" data-i18n="btn_change_link">Изменить ссылку</button>
+<div class="pf-status ok"><span class="pf-dot"></span><span data-i18n="pf_steam_connected">Подключён</span></div>
+<div class="profile-steam-status"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg> <span data-i18n="steam_linked">Трейд-ссылка привязана</span></div>
+</div>
+</div>
+</div>
+<div class="pf-btn-row">
+<button type="button" id="openSteamTradeUrlBtn" class="pf-btn">
+<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>
+<span data-i18n="pf_open_steam">Открыть Steam</span>
+</button>
+<button type="button" id="profileRelinkBtn" class="pf-btn" style="display:none;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg><span data-i18n="pf_change_link">Изменить ссылку</span></button>
 </div>
 <div id="profileSteamUnlinked">
-<div class="shop-hint" style="margin-bottom:10px;" data-i18n="steam_link_profile_hint">Нажми кнопку выше — откроется страница Steam с твоей трейд-ссылкой, останется скопировать и вставить сюда. Это разовая настройка, потом делать это не придётся.</div>
+<div class="shop-hint" style="margin:10px 0;" data-i18n="steam_link_profile_hint">Нажми кнопку выше — откроется страница Steam с твоей трейд-ссылкой, останется скопировать и вставить сюда. Это разовая настройка, потом делать это не придётся.</div>
 <div class="edit-field">
 <input id="pTradeLink" type="text" placeholder="https://steamcommunity.com/tradeoffer/new/?partner=...&token=...">
 </div>
@@ -357,32 +381,42 @@
 <div class="edit-status" id="profileSteamStatus"></div>
 </div>
 
-<div class="profile-section" id="profileSellerSection">
-<div class="profile-section-title" data-i18n="seller_section_title">🪪 Статус продавца</div>
+<!-- 🪪 Стать продавцом — только пока не проверен -->
+<div class="pf-card" id="profileSellerSection">
+<div class="pf-card-head">
+<div class="pf-ico green"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.4 1.7-2 3-2s2.4.6 3 2M14 10h4M14 13h3"/></svg></div>
+<div class="pf-card-title"><div class="pf-title" data-i18n="pf_seller_title">Статус продавца</div></div>
+</div>
 <div id="sellerStatusNone">
-<div class="shop-hint" style="margin-bottom:10px;" data-i18n="seller_status_none_hint">Покупать можно всем без ограничений. Чтобы выставлять свои лоты и пользоваться балансом — нужно пройти проверку (ФИО, телефон, страна, адрес).</div>
+<div class="shop-hint" style="margin:8px 0 10px;" data-i18n="seller_status_none_hint">Покупать можно всем без ограничений. Чтобы выставлять свои лоты и пользоваться балансом — нужно пройти проверку (ФИО, телефон, страна, адрес).</div>
 <button type="button" id="openKycBtn" class="steam-link-btn" style="width:100%;" data-i18n="seller_btn_become">Стать продавцом</button>
 </div>
 <div id="sellerStatusPending" style="display:none;">
-<div class="shop-hint" data-i18n="seller_status_pending">⏳ Заявка на проверке — обычно рассматривается в течение дня.</div>
+<div class="shop-hint" style="margin-top:8px;" data-i18n="seller_status_pending">⏳ Заявка на проверке — обычно рассматривается в течение дня.</div>
 </div>
 <div id="sellerStatusRejected" style="display:none;">
-<div class="shop-hint" style="color:#e07a7a; margin-bottom:10px;" data-i18n="seller_status_rejected">❌ Заявка отклонена. Проверь данные и подай заново.</div>
+<div class="shop-hint" style="color:#e07a7a; margin:8px 0 10px;" data-i18n="seller_status_rejected">❌ Заявка отклонена. Проверь данные и подай заново.</div>
 <button type="button" id="openKycBtnAgain" class="steam-link-btn secondary" style="width:100%;" data-i18n="seller_btn_resubmit">Подать заявку снова</button>
 </div>
-<div id="sellerStatusVerified" style="display:none;">
-<div class="shop-hint" style="color:#7ec98a;" data-i18n="seller_status_verified">✅ Ты продавец — можешь выставлять лоты и пользоваться балансом.</div>
-</div>
+<div id="sellerStatusVerified" style="display:none;"></div>
 </div>
 
-<div class="profile-section" id="profile2faSection" style="margin-top:10px;">
-<div class="profile-section-title" data-i18n="totp_section_title">🔐 Двухэтапная защита</div>
+<!-- 🛡 Безопасность — сворачивается -->
+<details class="pf-card pf-collapse" id="profile2faSection">
+<summary class="pf-card-head">
+<div class="pf-ico teal"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2 4 5v6c0 5 3.4 9.5 8 11 4.6-1.5 8-6 8-11V5z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg></div>
+<div class="pf-card-title">
+<div class="pf-title" data-i18n="pf_2fa_title">Двухэтапная защита</div>
+<div class="pf-status" id="totpSummaryStatus"><span class="pf-dot"></span><span></span></div>
+</div>
+<span class="pf-chevron">›</span>
+</summary>
 <div id="totp2faNotSetUp">
-<div class="shop-hint" style="margin-bottom:10px;" data-i18n="totp_intro_hint">Дополнительная защита через приложение-аутентификатор (Google Authenticator, Microsoft Authenticator и любое другое). Защищает вывод средств и/или вход в админку даже если кто-то получит доступ к твоему Telegram.</div>
+<div class="shop-hint" style="margin:10px 0;" data-i18n="totp_intro_hint">Дополнительная защита через приложение-аутентификатор (Google Authenticator, Microsoft Authenticator и любое другое). Защищает вывод средств и/или вход в админку даже если кто-то получит доступ к твоему Telegram.</div>
 <button type="button" id="setup2faBtn" class="steam-link-btn secondary" style="width:100%;" data-i18n="totp_btn_setup">Настроить</button>
 </div>
 <div id="totp2faSetupBox" style="display:none;">
-<div class="shop-hint" style="margin-bottom:8px;" data-i18n="totp_setup_hint">Открой приложение-аутентификатор → добавить аккаунт вручную (не по QR) → введи этот ключ:</div>
+<div class="shop-hint" style="margin:10px 0 8px;" data-i18n="totp_setup_hint">Открой приложение-аутентификатор → добавить аккаунт вручную (не по QR) → введи этот ключ:</div>
 <div class="topup-details-box" id="totp2faSecretBox">
 <div class="topup-details-text" id="totp2faSecretText" style="font-family:'JetBrains Mono', monospace; letter-spacing:0.05em;">—</div>
 <button type="button" id="totp2faCopyBtn" class="topup-copy-btn">
@@ -397,17 +431,24 @@
 <button type="button" id="totp2faConfirmBtn" class="welcome-btn primary" style="width:100%; margin-top:8px;" data-i18n="totp_btn_confirm">Подтвердить</button>
 <div class="edit-status" id="totp2faSetupStatus" style="margin-top:6px;"></div>
 </div>
-<div id="totp2faToggles" style="display:none;">
-<div class="shop-hint" style="color:#7ec98a; margin-bottom:10px;" data-i18n="totp_ready_hint">✅ Настроена и готова к использованию.</div>
-<label class="admin-perm-chip" style="display:flex; justify-content:space-between; align-items:center;">🏦 <span data-i18n="totp_toggle_withdraw">Защита вывода средств</span> <input type="checkbox" id="totp2faToggleWithdraw"></label>
-<label class="admin-perm-chip" id="totp2faAdminToggleRow" style="display:none; justify-content:space-between; align-items:center; margin-top:6px;">🛡️ <span data-i18n="totp_toggle_admin">Защита входа в админку</span> <input type="checkbox" id="totp2faToggleAdmin"></label>
+<div id="totp2faToggles" class="pf-toggles" style="display:none;">
+<label class="pf-toggle">🏦 <span data-i18n="totp_toggle_withdraw">Защита вывода средств</span> <input type="checkbox" id="totp2faToggleWithdraw"></label>
+<label class="pf-toggle" id="totp2faAdminToggleRow" style="display:none;">🛡️ <span data-i18n="totp_toggle_admin">Защита входа в админку</span> <input type="checkbox" id="totp2faToggleAdmin"></label>
 </div>
-</div>
+</details>
 
-<div class="profile-section" id="profileWishlistSection" style="margin-top:10px;">
-<div class="profile-section-title" data-i18n="wishlist_section_title">⭐ Каталог желаний</div>
-<div class="shop-hint" style="margin-bottom:10px;" data-i18n="wishlist_intro_hint">Сохрани, что ищешь — пришлём уведомление, когда подходящий лот появится или подешевеет.</div>
-<div id="wishlistItemsList" style="margin-bottom:10px;"></div>
+<!-- ⭐ Избранное -->
+<div class="pf-card" id="profileWishlistSection">
+<div class="pf-card-head">
+<div class="pf-ico gold"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z"/></svg></div>
+<div class="pf-card-title">
+<div class="pf-title" data-i18n="pf_wishlist_title">Каталог желаний</div>
+<div class="pf-sub" data-i18n="wishlist_intro_hint">Сохрани, что ищешь — пришлём уведомление, когда подходящий лот появится или подешевеет.</div>
+</div>
+<button type="button" class="pf-add-btn" id="wishlistToggleForm">＋ <span data-i18n="pf_add">Добавить</span></button>
+</div>
+<div id="wishlistItemsList" class="pf-wishlist"></div>
+<div id="wishlistForm" style="display:none; margin-top:10px;">
 <div class="edit-field">
 <label data-i18n="wishlist_label_query">Что ищешь (название/модель)</label>
 <input id="wishlistQueryInput" type="text" placeholder="AK-47 | Redline" data-i18n-placeholder="wishlist_placeholder_query">
@@ -433,50 +474,57 @@
 </select>
 </div>
 </div>
-<button type="button" id="wishlistAddBtn" class="steam-link-btn secondary" style="width:100%;" data-i18n="wishlist_btn_add">Добавить</button>
+<button type="button" id="wishlistAddBtn" class="steam-link-btn" style="width:100%;" data-i18n="wishlist_btn_add">Добавить</button>
 <div class="edit-status" id="wishlistStatus" style="margin-top:6px;"></div>
 </div>
-
-<div class="profile-section" id="profileMoneyButtons" style="display:none; margin-top:10px; background-image:linear-gradient(180deg, rgba(10,7,16,0.75), rgba(10,7,16,0.92)), url('https://jaydensullivan.github.io/dghost-market-app/coins-scattered.png'); background-size:cover; background-position:center 20%;">
-<div class="money-btn-row">
-<button type="button" id="openTopupBtn" class="money-btn">
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
-<span data-i18n="btn_topup_short">Пополнить</span>
-</button>
-<button type="button" id="openWithdrawBtn" class="money-btn">
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-<span data-i18n="btn_withdraw_short">Вывести</span>
-</button>
-<button type="button" id="openHistoryBtn" class="money-btn">
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
-<span data-i18n="btn_history_short">История</span>
-</button>
-<button type="button" id="exportSalesCsvBtn" class="money-btn">
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 15V3M7 10l5 5 5-5"/><path d="M4 21h16"/></svg>
-<span data-i18n="btn_export_csv">Экспорт CSV</span>
-</button>
-</div>
 </div>
 
-<div class="profile-section" id="profileReferralSection" style="margin-top:10px;">
-<div class="profile-section-title" data-i18n="section_referral">Пригласить друга</div>
-<div class="shop-hint" id="referralBonusText" style="margin-bottom:10px;">Загрузка...</div>
-<div class="topup-details-box" id="referralLinkBox">
-<div class="topup-details-text" id="referralLinkText" style="font-size:13px; word-break:break-all;">Загрузка...</div>
+<!-- 👥 Рефералы -->
+<div class="pf-card" id="profileReferralSection">
+<div class="pf-card-head">
+<div class="pf-ico violet"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.8-3.4 3.2-5.2 6-5.2s5.2 1.8 6 5.2"/><circle cx="17" cy="9" r="2.4"/><path d="M16.5 14.3c2.4.2 4 1.9 4.5 4.7"/></svg></div>
+<div class="pf-card-title">
+<div class="pf-title" data-i18n="pf_referral_title">Реферальная программа</div>
+<div class="pf-sub" id="referralBonusText">Загрузка...</div>
+</div>
+</div>
+<div class="topup-details-box pf-ref-link" id="referralLinkBox">
+<div class="topup-details-text" id="referralLinkText">Загрузка...</div>
 <button type="button" id="referralCopyBtn" class="topup-copy-btn">
 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
 <span data-i18n="btn_copy">Скопировать</span>
 </button>
 </div>
-<button type="button" id="referralShareBtn" class="steam-link-btn" style="margin-top:10px;" data-i18n="rd_share">Поделиться ссылкой</button>
 <div class="shop-hint" style="display:none;"><span data-i18n="label_invited">Приглашено:</span> <span id="referralInvitedCount">—</span></div>
-<div id="referralDashboard" style="margin-top:12px;"></div>
-<div class="admin-commission-box" style="margin-top:12px;">
-<div class="admin-commission-label" data-i18n="referral_wallet_label">Реферальный кошелёк</div>
-<div class="admin-commission-value" id="referralWalletValue">—</div>
+<div id="referralDashboard" style="margin-top:10px;"></div>
+<div class="pf-wallet-row">
+<div class="pf-wallet">
+<div class="pf-wallet-head"><span data-i18n="referral_wallet_label">Реферальный кошелёк</span><b id="referralWalletValue">—</b></div>
+<div class="pf-wallet-bar"><div id="referralWalletBar"></div></div>
+</div>
+<button type="button" id="referralShareBtn" class="pf-money-btn primary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4"/></svg><span data-i18n="pf_share">Поделиться</span></button>
 </div>
 <button type="button" id="referralClaimBtn" class="steam-link-btn" style="margin-top:10px; display:none;" data-i18n="btn_claim_referral">Перевести на баланс</button>
 <div class="edit-status" id="referralClaimStatus"></div>
+</div>
+
+<!-- ⚙️ Настройки -->
+<div class="pf-card pf-lang" id="profileLanguageSection">
+<div class="pf-lang-head"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.7 5.7 3.7 9s-1.2 6.3-3.7 9c-2.5-2.7-3.7-5.7-3.7-9S9.5 5.7 12 3z"/></svg><span data-i18n="section_language">Язык</span></div>
+<div class="lang-switch">
+<button type="button" class="lang-btn" id="langBtnRu" data-lang="ru">🇷🇺 Русский</button>
+<button type="button" class="lang-btn" id="langBtnUz" data-lang="uz">🇺🇿 O'zbekcha</button>
+<button type="button" class="lang-btn" id="langBtnEn" data-lang="en">🇬🇧 English</button>
+</div>
+</div>
+
+<div class="pf-settings">
+<button type="button" class="pf-set-btn" data-pf-action="notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span data-i18n="pf_notifications">Уведомления</span></button>
+<button type="button" class="pf-set-btn pf-seller-only" id="openHistoryBtn" style="display:none;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg><span data-i18n="pf_history">История операций</span></button>
+<button type="button" class="pf-set-btn pf-seller-only" id="exportSalesCsvBtn" style="display:none;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 15V3M7 10l5 5 5-5"/><path d="M4 21h16"/></svg><span data-i18n="btn_export_csv">Экспорт CSV</span></button>
+<button type="button" class="pf-set-btn" data-pf-action="legal"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span data-i18n="header_menu_legal">Правила и оферты</span></button>
+<button type="button" class="pf-set-btn" data-pf-action="support"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7M12 17h.01"/></svg><span data-i18n="pf_help">Помощь</span></button>
+<button type="button" class="pf-set-btn danger" data-pf-action="exit"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l-5-5 5-5M5 12h11"/></svg><span data-i18n="pf_exit">Выйти</span></button>
 </div>
 
 </div>
@@ -1748,18 +1796,18 @@
 </div>
 
 <script src="app-core.js?v=4"></script>
-<script src="app-i18n.js?v=37"></script>
-<script src="app-navigation.js?v=9"></script>
+<script src="app-i18n.js?v=38"></script>
+<script src="app-navigation.js?v=10"></script>
 <script src="app-shop.js?v=11"></script>
 <script src="app-legal.js?v=2"></script>
 <script src="app-deals.js?v=9"></script>
 <script src="app-catalog.js?v=8"></script>
 <script src="app-cart.js?v=2"></script>
-<script src="app-filters.js?v=13"></script>
-<script src="app-steam.js?v=2"></script>
+<script src="app-filters.js?v=14"></script>
+<script src="app-steam.js?v=3"></script>
 <script src="app-topup.js?v=2"></script>
 <script src="app-history.js?v=5"></script>
-<script src="app-referral.js?v=3"></script>
+<script src="app-referral.js?v=4"></script>
 <script src="app-withdraw.js?v=10"></script>
 <script src="app-admin.js?v=8"></script>
 <script src="app-auctions.js?v=5"></script>
@@ -1768,6 +1816,6 @@
 <script src="app-3d.js?v=24"></script>
 <script src="app-telegram.js?v=9"></script>
 <script src="app-raffle.js?v=3"></script>
-<script src="app-home.js?v=2"></script>
+<script src="app-home.js?v=3"></script>
 </body>
 </html>
