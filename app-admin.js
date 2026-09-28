@@ -238,11 +238,8 @@ adminApiFetch('/api/admin/events/history')
 .then(data => {
 const items = data.items || [];
 const auctionItems = items.filter(it => it.event_type === 'auction');
-const giveawayItems = items.filter(it => it.event_type === 'giveaway');
 const auctionEl = document.getElementById('adminAuctionHistoryList');
-const giveawayEl = document.getElementById('adminGiveawayHistoryList');
 if (auctionEl) auctionEl.innerHTML = renderHistoryList(auctionItems);
-if (giveawayEl) giveawayEl.innerHTML = renderHistoryList(giveawayItems);
 })
 .catch(() => {});
 }
@@ -266,7 +263,7 @@ loadAdminActiveAuctions();
 loadAdminStatus();
 
 if (isAdmin || isAuctioneer){
-loadSavedEmojis(null, null);
+loadSavedEmojis(null);
 }
 
 if (currentAdminChip === 'overview' && isAdmin){
@@ -669,28 +666,6 @@ function stopAdminStatsLive(){
 if (adminStatsLiveTimer){ clearInterval(adminStatsLiveTimer); adminStatsLiveTimer = null; }
 }
 
-// ---------------- Розыгрыш / таймер ----------------
-
-let adminGwCountdownTimer = null;
-let adminGwEndTime = null;
-
-function adminGwTick(){
-const el = document.getElementById('adminGiveawayStatus2');
-if (!adminGwEndTime) return;
-const dict = I18N[currentLang] || I18N.ru;
-const remaining = adminGwEndTime * 1000 - Date.now();
-if (remaining <= 0){
-el.textContent = dict.admin_gw_ending;
-return;
-}
-const total = Math.floor(remaining / 1000);
-const h = Math.floor(total / 3600);
-const m = Math.floor((total % 3600) / 60);
-const s = total % 60;
-const pad = n => String(n).padStart(2, '0');
-el.textContent = dict.admin_gw_running_label + ' ' + (h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`);
-}
-
 // ---------------- Список сохранённых premium-эмодзи (общий пикер) ----------------
 
 let savedEmojisList = [];
@@ -735,10 +710,6 @@ document.getElementById('aPreviewBtn').addEventListener('click', () => {
 renderPostPreview('aPreviewBox', document.getElementById('aCustomPostText').value);
 });
 
-document.getElementById('gwPreviewBtn').addEventListener('click', () => {
-renderPostPreview('gwPreviewBox', document.getElementById('adminGwCustomPostText').value);
-});
-
 function populateEmojiSelect(selectId, selectedEmojiId){
 const el = document.getElementById(selectId);
 const dict = I18N[currentLang] || I18N.ru;
@@ -757,14 +728,12 @@ emoji_char: opt ? (opt.dataset.char || '') : '',
 };
 }
 
-function loadSavedEmojis(preselectAuction, preselectGiveaway){
+function loadSavedEmojis(preselectAuction){
 adminApiFetch('/api/admin/emojis')
 .then(data => {
 savedEmojisList = data.items || [];
 populateEmojiSelect('aEmoji', preselectAuction);
-populateEmojiSelect('adminGwEmoji', preselectGiveaway);
 renderEmojiInsertRow('aEmojiInsertRow', 'aCustomPostText');
-renderEmojiInsertRow('gwEmojiInsertRow', 'adminGwCustomPostText');
 })
 .catch(() => {});
 }
@@ -780,49 +749,46 @@ const box = document.getElementById('adminGwPrizeSkin');
 if (!adminGwPrizeSkin){
 box.style.display = 'none';
 box.innerHTML = '';
-if (document.getElementById('adminGwMediaHint')) updateAdminGwMediaHint();
+updateAdminGwMediaHint();
 return;
 }
 box.innerHTML = prizeSkinHtml(adminGwPrizeSkin, true);
 box.style.display = '';
-if (document.getElementById('adminGwMediaHint')) updateAdminGwMediaHint();
+const titleInput = document.getElementById('adminRfTitle');
+if (!titleInput.value.trim() || titleInput.dataset.auto === '1'){
+titleInput.value = adminGwPrizeSkin.title.slice(0, 100);
+titleInput.dataset.auto = '1';
+}
+updateAdminGwMediaHint();
 }
 
 document.getElementById('adminGwPrizeSkin').addEventListener('click', (e) => {
 if (e.target.closest('[data-gps-clear]')) setAdminGwPrizeSkin(null);
 });
 
+document.getElementById('adminRfTitle').addEventListener('input', (e) => {
+e.target.dataset.auto = '';
+});
+
 document.getElementById('adminGwPickPrizeBtn').addEventListener('click', () => {
 if (!tg || !tg.initData) return;
 inventoryPickHandler = (item) => {
-const prizeInput = document.getElementById('adminGwPrize');
-const title = (item.stattrak ? 'StatTrak™ ' : '') + (item.title || '');
 setAdminGwPrizeSkin({
-title,
+title: (item.stattrak ? 'StatTrak™ ' : '') + (item.title || ''),
 photo_url: item.photo_url || null,
 float_value: item.float_value ?? null,
 wear: item.wear || null,
 stattrak: !!item.stattrak,
 rarity: item.rarity || null,
 });
-// Текст приза — название скина с износом, если админ не написал своё.
-const withWear = item.wear ? `${title} (${item.wear})` : title;
-if (!prizeInput.value.trim() || prizeInput.dataset.auto === '1'){
-prizeInput.value = withWear.slice(0, 60);
-prizeInput.dataset.auto = '1';
-}
 };
 inventoryOverlay.classList.add('show');
 loadInventory(false);
 });
 
-document.getElementById('adminGwPrize').addEventListener('input', (e) => {
-e.target.dataset.auto = '';
-});
-
-// ---------- картинка к посту розыгрыша ----------
-// «card» — карточку приза рисует бот (как у лотов); «gif» — GIF с
-// 3D-рендером приза рендерим здесь и загружаем боту перед сохранением.
+// ---------- GIF с 3D-рендером приза ----------
+// Рендерим здесь и загружаем боту перед запуском: GIF показывается на
+// странице розыгрыша, в приглашениях и в посте.
 let adminGwGif = null; // { key, bytes }
 
 function adminGwPrizeEntry(){
@@ -832,40 +798,36 @@ return loadModelIndex().then(map => map[modelIndexKey(adminGwPrizeSkin.title)] |
 
 function updateAdminGwMediaHint(){
 const dict = I18N[currentLang] || I18N.ru;
-const mode = document.getElementById('adminGwPostMedia').value;
 const hint = document.getElementById('adminGwMediaHint');
-const preview = document.getElementById('adminGwGifPreview');
-if (mode !== 'gif'){ preview.style.display = 'none'; }
-if (mode === 'none'){ hint.textContent = dict.admin_gw_media_hint_none; return; }
+if (!document.getElementById('adminRfUseGif').checked){ hint.textContent = ''; return; }
 if (!adminGwPrizeSkin){ hint.textContent = dict.admin_gw_media_need_prize; return; }
-if (mode === 'card'){ hint.textContent = dict.admin_gw_media_hint_card; return; }
 adminGwPrizeEntry().then(entry => {
 hint.textContent = entry ? dict.admin_gw_media_hint_gif : dict.admin_gw_media_no_3d;
 });
 }
 
-document.getElementById('adminGwPostMedia').addEventListener('change', updateAdminGwMediaHint);
+document.getElementById('adminRfUseGif').addEventListener('change', updateAdminGwMediaHint);
 
-function ensureAdminGwMedia(status){
+// Возвращает true, если GIF загружен боту.
+function ensureAdminGwGif(status){
 const dict = I18N[currentLang] || I18N.ru;
-const mode = document.getElementById('adminGwPostMedia').value;
-if (mode === 'none') return Promise.resolve();
-if (!adminGwPrizeSkin) return Promise.reject(new Error(dict.admin_gw_media_need_prize));
-if (mode === 'card') return Promise.resolve();
+if (!document.getElementById('adminRfUseGif').checked || !adminGwPrizeSkin) return Promise.resolve(false);
 const key = JSON.stringify([adminGwPrizeSkin.title, adminGwPrizeSkin.float_value]);
 return adminGwPrizeEntry().then(entry => {
-if (!entry) throw new Error(dict.admin_gw_media_no_3d);
+if (!entry) return null;
 if (adminGwGif && adminGwGif.key === key) return adminGwGif.bytes;
 return render3DGif(entry, Number(adminGwPrizeSkin.float_value) || 0, adminGwPrizeSkin.title,
 p => { status.textContent = dict.share_gif_preparing.replace('{p}', Math.round(p * 100)); })
 .then(bytes => { adminGwGif = { key, bytes }; return bytes; });
 })
 .then(bytes => {
+if (!bytes) return false;
 const preview = document.getElementById('adminGwGifPreview');
 preview.src = URL.createObjectURL(new Blob([bytes], { type: 'image/gif' }));
 preview.style.display = '';
 status.textContent = '...';
-return adminApiFetch('/api/admin/giveaway/gif', { method: 'POST', body: { gif_base64: bytesToBase64(bytes) } });
+return adminApiFetch('/api/admin/giveaway/gif', { method: 'POST', body: { gif_base64: bytesToBase64(bytes) } })
+.then(() => true);
 });
 }
 
@@ -876,170 +838,156 @@ const dict = I18N[currentLang] || I18N.ru;
 const type = btn.dataset.clearHistory;
 showConfirm(type === 'auction' ? dict.admin_history_clear_confirm_auction : dict.admin_history_clear_confirm_giveaway, () => {
 adminApiFetch('/api/admin/events/history/clear', { method: 'POST', body: { event_type: type } })
-.then(() => { showToast(dict.status_done_ok); loadAdminEventsHistory(); })
+.then(() => {
+showToast(dict.status_done_ok);
+loadAdminEventsHistory();
+if (type === 'giveaway') loadAdminGiveawayPanel();
+})
 .catch(err => showErrorToast(err));
 });
 });
 });
 
-function loadAdminGiveawayPanel(){
-fetch(API_BASE + '/api/giveaway')
-.then(r => r.json())
-.then(data => {
+// ---------- розыгрыш: текущий, запуск, история ----------
+
+let adminRfTimer = null;
+
+function adminRfStatusLabel(status){
 const dict = I18N[currentLang] || I18N.ru;
-document.getElementById('adminGwTitle').value = data.title || '';
-document.getElementById('adminGwSubtitle').value = data.subtitle || '';
-document.getElementById('adminGwPrize').value = data.prize || '';
-setAdminGwPrizeSkin(data.prize_skin || null);
-document.getElementById('adminGwPostMedia').value = data.post_media || 'none';
-updateAdminGwMediaHint();
-document.getElementById('adminGwCustomPostText').value = data.custom_post_text || '';
-
-loadSavedEmojis(null, data.emoji_id || null);
-loadAdminGwParticipants();
-document.getElementById('adminGwWinnerResult').textContent = '';
-
-const startBtn = document.getElementById('adminGwStartBtn');
-const stopBtn = document.getElementById('adminGwStopBtn');
-const statusEl = document.getElementById('adminGiveawayStatus2');
-
-if (adminGwCountdownTimer){ clearInterval(adminGwCountdownTimer); adminGwCountdownTimer = null; }
-
-if (data.active){
-adminGwEndTime = data.end_time;
-adminGwTick();
-adminGwCountdownTimer = setInterval(adminGwTick, 1000);
-startBtn.style.display = 'none';
-stopBtn.style.display = '';
-} else {
-adminGwEndTime = null;
-statusEl.textContent = data.end_time ? dict.admin_gw_idle_scheduled : dict.admin_gw_idle;
-startBtn.style.display = '';
-stopBtn.style.display = 'none';
+return status === 'finished' ? dict.admin_rf_status_finished
+: status === 'cancelled' ? dict.admin_rf_status_cancelled : status;
 }
+
+function renderAdminRaffleActive(data){
+const dict = I18N[currentLang] || I18N.ru;
+const box = document.getElementById('adminRfActive');
+const a = data.active;
+if (adminRfTimer){ clearInterval(adminRfTimer); adminRfTimer = null; }
+document.getElementById('adminRfCreate').style.display = a ? 'none' : '';
+if (!a){
+box.innerHTML = `<div class="shop-hint" style="margin-bottom:10px;">${dict.admin_rf_none}</div>`;
+return;
+}
+const participants = data.participants || [];
+box.innerHTML = `<div class="admin-rf-active">
+<div class="admin-rf-title">🎁 ${escapeHtml(a.title)}</div>
+<div class="shop-hint">${dict.admin_rf_left} <b id="adminRfLeft">—</b></div>
+<div class="shop-hint">${dict.admin_rf_counts.replace('{p}', a.participants).replace('{t}', a.tickets).replace('{w}', data.pending_invites || 0)}</div>
+<div class="edit-row" style="margin-top:8px;">
+<button type="button" class="steam-link-btn" id="adminRfFinishBtn">${dict.admin_rf_finish_now}</button>
+<button type="button" class="steam-link-btn secondary" id="adminRfCancelBtn">${dict.admin_rf_cancel}</button>
+</div>
+<div class="edit-status" id="adminRfActiveStatus"></div>
+<div class="profile-section-title" style="font-size:13px; margin-top:12px;">${dict.admin_gw_participants}</div>
+${participants.length ? participants.map(p => `<div class="history-row"><span class="history-row-note">#${p.entry} ${escapeHtml(p.username || String(p.user_id))}</span><span>👥 ${p.invites} · 🎟 ${p.tickets}</span></div>`).join('')
+: `<div class="skins-empty" style="padding:12px 4px;">${dict.admin_gw_no_participants}</div>`}
+</div>`;
+const tick = () => {
+const el = document.getElementById('adminRfLeft');
+if (!el){ clearInterval(adminRfTimer); return; }
+el.textContent = formatRaffleLeft(new Date(a.ends_at).getTime() - Date.now());
+};
+tick();
+adminRfTimer = setInterval(tick, 1000);
+document.getElementById('adminRfFinishBtn').onclick = () => {
+showConfirm(dict.admin_rf_confirm_finish, () => {
+const status = document.getElementById('adminRfActiveStatus');
+status.textContent = '...';
+adminApiFetch('/api/admin/giveaway/finish_now', { method: 'POST' })
+.then(res => {
+const r = res.raffle || {};
+showToast(r.winner ? `${dict.admin_gw_winner_is} ${r.winner}` : dict.status_done_ok);
+loadAdminGiveawayPanel(); loadAdminStatus();
+if (typeof loadRaffle === 'function') loadRaffle();
+})
+.catch(err => { status.textContent = friendlyErrorMessage(err); });
+});
+};
+document.getElementById('adminRfCancelBtn').onclick = () => {
+showConfirm(dict.admin_rf_confirm_cancel, () => {
+adminApiFetch('/api/admin/giveaway/cancel', { method: 'POST' })
+.then(() => { showToast(dict.status_done_ok); loadAdminGiveawayPanel(); loadAdminStatus(); })
+.catch(err => showErrorToast(err));
+});
+};
+}
+
+function renderAdminRaffleHistory(items){
+const dict = I18N[currentLang] || I18N.ru;
+const box = document.getElementById('adminGiveawayHistoryList');
+if (!items || !items.length){
+box.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.admin_rf_history_empty}</div>`;
+return;
+}
+box.innerHTML = items.map(h => `
+<div class="deal-card" style="flex-direction:column; align-items:stretch;">
+<div class="deal-info">
+<div class="deal-title">#${h.id} ${escapeHtml(h.title)}</div>
+<div class="deal-meta">${adminRfStatusLabel(h.status)} · 👥 ${h.participants} · 🎟 ${h.tickets}</div>
+${h.winner ? `<div class="deal-meta">🏆 ${escapeHtml(h.winner)}${h.winner_id ? ' · ID ' + h.winner_id : ''}</div>` : ''}
+<div class="deal-meta">${formatHistoryDate(h.drawn_at || h.ends_at)}</div>
+${h.winner_id ? (h.delivered
+? `<div class="deal-meta">✅ ${dict.admin_rf_delivered}</div>`
+: `<button type="button" class="steam-link-btn secondary" style="margin-top:6px;" data-rf-delivered="${h.id}">${dict.admin_rf_mark_delivered}</button>`) : ''}
+</div>
+</div>`).join('');
+}
+
+document.getElementById('adminGiveawayHistoryList').addEventListener('click', (e) => {
+const btn = e.target.closest('[data-rf-delivered]');
+if (!btn) return;
+btn.disabled = true;
+adminApiFetch('/api/admin/giveaway/delivered', { method: 'POST', body: { id: Number(btn.dataset.rfDelivered) } })
+.then(() => { showToast((I18N[currentLang] || I18N.ru).status_done_ok); loadAdminGiveawayPanel(); })
+.catch(err => { btn.disabled = false; showErrorToast(err); });
+});
+
+function loadAdminGiveawayPanel(){
+adminApiFetch('/api/admin/giveaway')
+.then(data => {
+renderAdminRaffleActive(data);
+renderAdminRaffleHistory(data.history);
 })
 .catch(() => {});
 }
 
-document.getElementById('adminGwSaveBtn').addEventListener('click', () => {
-const status = document.getElementById('adminGwStatus');
-const title = document.getElementById('adminGwTitle').value.trim();
-const subtitle = document.getElementById('adminGwSubtitle').value.trim();
-const prize = document.getElementById('adminGwPrize').value.trim();
-const minutes = document.getElementById('adminGwMinutes').value;
-
-status.textContent = '...';
-
-const gwEmojiSave = getSelectedEmoji('adminGwEmoji');
-
-const gwCustomTextSave = document.getElementById('adminGwCustomPostText').value.trim();
-
-ensureAdminGwMedia(status)
-.then(() => adminApiFetch('/api/giveaway', {
-method: 'POST',
-body: {
-title: title || undefined,
-subtitle: subtitle || undefined,
-prize: prize || undefined,
-minutes: minutes ? Number(minutes) : undefined,
-emoji_id: gwEmojiSave.emoji_id,
-emoji_char: gwEmojiSave.emoji_char,
-custom_post_text: gwCustomTextSave,
-prize_skin: adminGwPrizeSkin,
-post_media: document.getElementById('adminGwPostMedia').value,
-}
-}))
-.then(() => { status.textContent = (I18N[currentLang] || I18N.ru).status_done_ok; loadAdminGiveawayPanel(); })
-.catch(err => { status.textContent = friendlyErrorMessage(err); });
-});
-
 document.getElementById('adminGwStartBtn').addEventListener('click', () => {
+const dict = I18N[currentLang] || I18N.ru;
 const status = document.getElementById('adminGwStatus');
-const title = document.getElementById('adminGwTitle').value.trim();
-const subtitle = document.getElementById('adminGwSubtitle').value.trim();
-const prize = document.getElementById('adminGwPrize').value.trim();
-const minutes = document.getElementById('adminGwMinutes').value;
-
-if (!minutes || Number(minutes) <= 0){
-status.textContent = (I18N[currentLang] || I18N.ru).admin_gw_need_minutes;
-return;
-}
-
-const gwCustomTextStart = document.getElementById('adminGwCustomPostText').value.trim();
-
-if (!gwCustomTextStart){
-status.textContent = (I18N[currentLang] || I18N.ru).admin_need_giveaway_post;
-return;
-}
-
+const btn = document.getElementById('adminGwStartBtn');
+const title = document.getElementById('adminRfTitle').value.trim();
+const hours = Number(document.getElementById('adminRfDays').value || 0) * 24
++ Number(document.getElementById('adminRfHours').value || 0);
+if (!adminGwPrizeSkin && !title){ status.textContent = dict.admin_gw_media_need_prize; return; }
+if (!(hours > 0)){ status.textContent = dict.admin_rf_need_duration; return; }
+const post = document.getElementById('adminRfPost').checked;
+const media = document.getElementById('adminGwPostMedia').value;
+btn.disabled = true;
 status.textContent = '...';
-
-const gwEmoji = getSelectedEmoji('adminGwEmoji');
-
-// Сохраняем текущие значения формы и сразу запускаем — раньше
-// нужно было отдельно жать "Сохранить" перед "Запустить", иначе
-// сервер не знал время окончания и запуск падал с ошибкой.
-ensureAdminGwMedia(status)
-.then(() => adminApiFetch('/api/giveaway', {
+ensureAdminGwGif(status)
+.then(hasGif => adminApiFetch('/api/admin/giveaway/create', {
 method: 'POST',
 body: {
 title: title || undefined,
-subtitle: subtitle || undefined,
-prize: prize || undefined,
-minutes: Number(minutes),
-emoji_id: gwEmoji.emoji_id,
-emoji_char: gwEmoji.emoji_char,
-custom_post_text: gwCustomTextStart,
 prize_skin: adminGwPrizeSkin,
-post_media: document.getElementById('adminGwPostMedia').value,
+prize_value: Number(document.getElementById('adminRfValue').value) || null,
+hours,
+use_gif: hasGif,
+post_to_channels: post,
+post_media: media === 'gif' && !hasGif ? 'card' : media,
 }
 }))
-.then(() => adminApiFetch('/api/admin/giveaway/start', { method: 'POST' }))
-.then(() => { status.textContent = (I18N[currentLang] || I18N.ru).status_done_ok; loadAdminGiveawayPanel(); loadAdminStatus(); })
-.catch(err => { status.textContent = friendlyErrorMessage(err); });
-});
-
-document.getElementById('adminGwStopBtn').addEventListener('click', () => {
-const status = document.getElementById('adminGwStatus');
-showConfirm((I18N[currentLang] || I18N.ru).admin_gw_confirm_stop, () => {
-status.textContent = '...';
-adminApiFetch('/api/admin/giveaway/stop', { method: 'POST' })
-.then(() => { status.textContent = (I18N[currentLang] || I18N.ru).status_done_ok; setTimeout(loadAdminGiveawayPanel, 1500); loadAdminStatus(); })
-.catch(err => { status.textContent = friendlyErrorMessage(err); });
-});
-});
-
-// ---------------- Участники розыгрыша ----------------
-
-function loadAdminGwParticipants(){
-const list = document.getElementById('adminGwParticipantsList');
-adminApiFetch('/api/admin/giveaway/participants')
-.then(data => {
-const dict = I18N[currentLang] || I18N.ru;
-const items = data.items || [];
-if (!items.length){
-list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.admin_gw_no_participants}</div>`;
-return;
-}
-list.innerHTML = `<div class="shop-hint" style="margin-bottom:6px;">${dict.admin_gw_participants_count.replace('{n}', items.length)}</div>` +
-items.map(p => `<div class="history-row"><span class="history-row-note">${escapeHtml(p.username || String(p.user_id))}</span></div>`).join('');
+.then(res => {
+status.textContent = res.post_failed ? dict.admin_rf_post_failed : dict.status_done_ok;
+setAdminGwPrizeSkin(null);
+document.getElementById('adminRfTitle').value = '';
+document.getElementById('adminRfValue').value = '';
+document.getElementById('adminGwGifPreview').style.display = 'none';
+loadAdminGiveawayPanel(); loadAdminStatus();
+if (typeof loadRaffle === 'function') loadRaffle();
 })
-.catch(() => {
-list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).load_failed}</div>`;
-});
-}
-
-document.getElementById('adminGwPickWinnerBtn').addEventListener('click', () => {
-const result = document.getElementById('adminGwWinnerResult');
-const dict = I18N[currentLang] || I18N.ru;
-result.textContent = '...';
-adminApiFetch('/api/admin/giveaway/pick_winner', { method: 'POST' })
-.then(data => {
-const w = data.winner;
-result.innerHTML = `${dict.admin_gw_winner_is} <b>${escapeHtml(w.username || String(w.user_id))}</b>`;
-loadAdminEventsHistory();
-})
-.catch(err => { result.textContent = friendlyErrorMessage(err); });
+.catch(err => { status.textContent = friendlyErrorMessage(err); })
+.finally(() => { btn.disabled = false; });
 });
 
 // ---------------- Балансы ----------------
@@ -1490,74 +1438,3 @@ adminApiFetch('/api/admin/people/block_user', { method: 'POST', body: { user_id:
 .catch(err => { status.textContent = friendlyErrorMessage(err); });
 });
 });
-
-
-// ---------- проверка способов «Поделиться» ----------
-// Все способы открыть отправку на телефонах вели себя «тихо». Эта
-// панель вызывает каждый по отдельности и пишет в журнал, что вызвано
-// и какие события вернул Telegram — видно, какой способ реально работает.
-(function setupShareDiag(){
-const box = document.getElementById('shareDiag');
-if (!box) return;
-const logEl = document.getElementById('shareDiagLog');
-const log = (msg) => {
-const t = new Date().toTimeString().slice(0, 8);
-logEl.textContent = `${t} ${msg}\n` + logEl.textContent;
-};
-const info = () => {
-if (!tg){ return 'Telegram.WebApp нет'; }
-return `version ${tg.version} · platform ${tg.platform} · 8.0+: ${tg.isVersionAtLeast ? tg.isVersionAtLeast('8.0') : '?'}`
-+ ` · shareMessage: ${typeof tg.shareMessage} · switchInlineQuery: ${typeof tg.switchInlineQuery}`;
-};
-box.addEventListener('toggle', () => { document.getElementById('shareDiagInfo').textContent = info(); });
-
-if (tg && typeof tg.onEvent === 'function'){
-['shareMessageSent', 'shareMessageFailed', 'activated', 'deactivated', 'viewportChanged', 'popupClosed', 'writeAccessRequested']
-.forEach(name => tg.onEvent(name, (e) => log(`событие ${name} ${e ? JSON.stringify(e) : ''}`)));
-}
-document.addEventListener('visibilitychange', () => log(`страница ${document.hidden ? 'скрыта' : 'снова видна'}`));
-
-const me = () => tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : 0;
-const shareUrl = () => 'https://t.me/share/url?url=' + encodeURIComponent(API_BASE + '/s/1?r=' + me()) + '&text=' + encodeURIComponent('Проверка');
-
-const run = {
-link(){ tg.openTelegramLink(shareUrl()); },
-inline_pick(){ tg.switchInlineQuery('invite', ['users', 'groups', 'channels']); },
-inline_here(){ tg.switchInlineQuery('invite'); },
-async share_message(){
-const r = await fetch(API_BASE + '/api/giveaway/invite_prepare', {
-method: 'POST', headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ init_data: tg.initData }),
-});
-const data = await r.json().catch(() => ({}));
-log(`invite_prepare → ${r.status} ${data.prepared_id ? 'id ' + data.prepared_id : (data.error || '')}`);
-if (data.prepared_id) tg.shareMessage(data.prepared_id, (sent) => log(`shareMessage колбэк: ${sent}`));
-},
-open_link(){ tg.openLink(shareUrl()); },
-async native(){
-if (!navigator.share) throw new Error('navigator.share нет');
-await navigator.share({ text: 'Проверка', url: API_BASE + '/s/1' });
-},
-async dm(){
-const r = await fetch(API_BASE + '/api/giveaway/invite_send', {
-method: 'POST', headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ init_data: tg.initData }),
-});
-const data = await r.json().catch(() => ({}));
-log(`invite_send → ${r.status} ${data.ok ? 'отправлено в чат с ботом' : (data.error || '')}`);
-},
-};
-
-box.querySelectorAll('[data-diag]').forEach(btn => {
-btn.addEventListener('click', async () => {
-const name = btn.dataset.diag;
-log(`▶ ${btn.textContent.trim()}`);
-try {
-await run[name]();
-log(`  вызов прошёл без исключения`);
-} catch (e) {
-log(`  ИСКЛЮЧЕНИЕ: ${(e && e.message) || e}`);
-}
-});
-});
-})();

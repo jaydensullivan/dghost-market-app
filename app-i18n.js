@@ -104,6 +104,73 @@ au_extended: "⏱ Продлён",
 au_snipe_hint: "⏱ Ставка в последнюю минуту продлевает аукцион ещё на минуту — выиграть «в последнюю секунду» не получится.",
 watch_btn: "Следить",
 btn_3d: "3D",
+nav_giveaway: "Розыгрыш",
+rf_now: "🔥 Сейчас разыгрывается",
+rf_page_title: "🎁 Розыгрыш",
+rf_empty: "Сейчас розыгрыша нет — следующий скоро. Загляни позже!",
+rf_value: "💰 Стоимость",
+rf_participants: "👥 Участников",
+rf_left: "⏱ Осталось",
+rf_drawn_at: "⏱ Итоги",
+rf_invited: "👥 Приглашено",
+rf_invite_btn: "👥 Пригласить друзей",
+rf_how: "Как это работает",
+rf_proof_title: "🔐 Проверка честности",
+rf_left_days: "{d} дн. {h} ч",
+rf_drawing: "подводим итоги…",
+rf_open_3d: "🖼 Смотреть в 3D",
+rf_condition: "Условие: пригласи {n} друзей в DGhost",
+rf_you_in: "🎉 Вы участвуете в розыгрыше!",
+rf_entry_number: "Ваш номер участника:",
+rf_tickets: "билетов: {n}",
+rf_more_tickets: "Каждые {n} новых друга — ещё один билет.",
+rf_need_more: "Осталось пригласить: {n}. Друг засчитывается, когда впервые откроет DGhost по твоей ссылке и примет правила.",
+rf_pending: "⏳ Ждут регистрации: {n}",
+rf_rules_html: "<p>🎟 Пригласи {n} друзей — получишь билет и номер участника. Каждые {t} новых друга — ещё один билет: {n} → 1, {n}×2 → 2, {n}×3 → 3.</p><p>👥 Друг засчитывается, только если он перешёл по твоей ссылке, впервые открыл DGhost и принял правила. Уже зарегистрированные и сам ты не считаются.</p><p>🏆 Когда таймер закончится, система сама выберет победителя случайно среди всех билетов. Результат можно проверить в блоке «Проверка честности».</p>",
+rf_finished: "🏆 Розыгрыш завершён!",
+rf_finished_eyebrow: "⏱ Розыгрыш завершён",
+rf_finished_short: "завершён",
+rf_winner: "Победитель",
+rf_no_winner: "Никто не выполнил условия — победителя нет.",
+rf_prize: "Приз",
+rf_you_won: "Администратор свяжется с вами, чтобы передать скин.",
+rf_delivered: "✅ Приз передан.",
+rf_not_won: "Не выиграл? Посмотри похожие скины на маркетплейсе.",
+rf_open_market: "🛒 Открыть маркетплейс",
+rf_proof_id: "ID розыгрыша",
+rf_proof_hash: "Хеш секрета (SHA-256)",
+rf_proof_seed: "Секрет (seed)",
+rf_proof_time: "Время розыгрыша",
+rf_proof_tickets: "Всего билетов",
+rf_proof_ticket: "Выигрышный билет",
+rf_proof_how_active: "Секрет выбран при запуске, его хеш опубликован заранее — подменить результат нельзя. Сам секрет откроется после розыгрыша.",
+rf_proof_how_done: "Проверка: SHA-256(секрет) совпадает с хешем, опубликованным до розыгрыша. Выигрышный билет = HMAC-SHA256(секрет, «ID:билетов») по модулю числа билетов + 1. Билеты выданы по порядку номеров участников.",
+rf_proof_list: "Список билетов",
+rf_history: "Предыдущие розыгрыши",
+rf_share_text: "🎁 Я участвую в розыгрыше {title} в DGhost! Присоединяйся по ссылке 👇",
+admin_rf_prize: "Приз",
+admin_rf_title: "Название (по умолчанию — название скина)",
+admin_rf_value: "Примерная стоимость, сум",
+admin_rf_duration: "Длительность",
+admin_rf_duration_hint: "Дни и часы. Итоги система подведёт сама, когда время выйдет.",
+admin_rf_use_gif: "🎞 GIF с 3D-рендером приза (страница, приглашения, пост)",
+admin_rf_post: "📣 Опубликовать анонс в каналах",
+admin_rf_start: "🚀 Запустить розыгрыш",
+admin_rf_status_finished: "завершён",
+admin_rf_status_cancelled: "отменён",
+admin_rf_none: "Сейчас розыгрыш не идёт — создай новый ниже.",
+admin_rf_left: "До итогов:",
+admin_rf_counts: "Участников: {p} · билетов: {t} · ждут регистрации: {w}",
+admin_rf_finish_now: "🏁 Подвести итоги сейчас",
+admin_rf_cancel: "Отменить",
+admin_rf_confirm_finish: "Подвести итоги прямо сейчас? Победитель будет выбран из текущих билетов.",
+admin_rf_confirm_cancel: "Отменить розыгрыш без победителя?",
+admin_rf_history_empty: "Розыгрышей пока не было.",
+admin_rf_delivered: "приз выдан",
+admin_rf_mark_delivered: "🎁 Отметить: приз выдан",
+admin_rf_need_duration: "Укажи длительность — дни и/или часы.",
+admin_rf_post_failed: "Розыгрыш запущен, но пост в каналы не ушёл.",
+admin_section_giveaway: "Розыгрыш",
 header_menu_legal: "Правила и оферты",
 legal_tab_terms: "Правила",
 legal_tab_buyer: "Покупателю",
@@ -328,7 +395,6 @@ admin_status_topups: 'Заявки на пополнение',
 admin_status_withdrawals: 'Заявки на вывод',
 admin_status_gw_active: 'Идёт',
 admin_status_gw_idle: 'Не запущен',
-admin_section_giveaway: 'Розыгрыш / таймер',
 admin_gw_title: 'Название',
 admin_gw_subtitle: 'Подзаголовок',
 admin_gw_prize: 'Приз',
@@ -935,6 +1001,73 @@ au_extended: "⏱ Uzaytirildi",
 au_snipe_hint: "⏱ Oxirgi daqiqadagi stavka auksionni yana bir daqiqaga uzaytiradi — «oxirgi soniyada» yutib bo'lmaydi.",
 watch_btn: "Kuzatish",
 btn_3d: "3D",
+nav_giveaway: "Yutuq o'yini",
+rf_now: "🔥 Hozir o'ynalmoqda",
+rf_page_title: "🎁 Yutuq o'yini",
+rf_empty: "Hozir o'yin yo'q — keyingisi tez orada. Keyinroq kiring!",
+rf_value: "💰 Narxi",
+rf_participants: "👥 Ishtirokchilar",
+rf_left: "⏱ Qoldi",
+rf_drawn_at: "⏱ Natija",
+rf_invited: "👥 Taklif qilingan",
+rf_invite_btn: "👥 Do'stlarni taklif qilish",
+rf_how: "Bu qanday ishlaydi",
+rf_proof_title: "🔐 Halollik tekshiruvi",
+rf_left_days: "{d} kun {h} soat",
+rf_drawing: "natijalar hisoblanmoqda…",
+rf_open_3d: "🖼 3D'da ko'rish",
+rf_condition: "Shart: DGhost'ga {n} do'stingizni taklif qiling",
+rf_you_in: "🎉 Siz o'yinda ishtirok etyapsiz!",
+rf_entry_number: "Ishtirokchi raqamingiz:",
+rf_tickets: "chiptalar: {n}",
+rf_more_tickets: "Har {n} yangi do'st — yana bitta chipta.",
+rf_need_more: "Yana taklif qilish kerak: {n}. Do'st havolangiz orqali DGhost'ni birinchi marta ochib, qoidalarni qabul qilganda hisoblanadi.",
+rf_pending: "⏳ Ro'yxatdan o'tishni kutmoqda: {n}",
+rf_rules_html: "<p>🎟 {n} do'stingizni taklif qiling — chipta va ishtirokchi raqamini olasiz. Har {t} yangi do'st — yana bitta chipta.</p><p>👥 Do'st faqat havolangiz orqali kelib, DGhost'ni birinchi marta ochib, qoidalarni qabul qilsa hisoblanadi.</p><p>🏆 Taymer tugagach, tizim g'olibni barcha chiptalar orasidan tasodifiy tanlaydi. Natijani «Halollik tekshiruvi» blokida tekshirish mumkin.</p>",
+rf_finished: "🏆 O'yin yakunlandi!",
+rf_finished_eyebrow: "⏱ O'yin yakunlandi",
+rf_finished_short: "yakunlandi",
+rf_winner: "G'olib",
+rf_no_winner: "Hech kim shartlarni bajarmadi — g'olib yo'q.",
+rf_prize: "Sovrin",
+rf_you_won: "Administrator skinni topshirish uchun siz bilan bog'lanadi.",
+rf_delivered: "✅ Sovrin topshirildi.",
+rf_not_won: "Yutmadingizmi? Marketpleysda o'xshash skinlarni ko'ring.",
+rf_open_market: "🛒 Marketpleysni ochish",
+rf_proof_id: "O'yin ID",
+rf_proof_hash: "Sir xeshi (SHA-256)",
+rf_proof_seed: "Sir (seed)",
+rf_proof_time: "O'yin vaqti",
+rf_proof_tickets: "Jami chiptalar",
+rf_proof_ticket: "Yutuqli chipta",
+rf_proof_how_active: "Sir ishga tushirishda tanlangan, uning xeshi oldindan e'lon qilingan. Sirning o'zi o'yindan keyin ochiladi.",
+rf_proof_how_done: "Tekshirish: SHA-256(sir) oldindan e'lon qilingan xesh bilan mos keladi. Yutuqli chipta = HMAC-SHA256(sir, «ID:chiptalar») chiptalar soniga bo'linganda qoldiq + 1.",
+rf_proof_list: "Chiptalar ro'yxati",
+rf_history: "Oldingi o'yinlar",
+rf_share_text: "🎁 Men DGhost'da {title} o'yinida ishtirok etyapman! Havola orqali qo'shiling 👇",
+admin_rf_prize: "Sovrin",
+admin_rf_title: "Nomi (standart — skin nomi)",
+admin_rf_value: "Taxminiy narxi, so'm",
+admin_rf_duration: "Davomiyligi",
+admin_rf_duration_hint: "Kun va soat. Vaqt tugagach, tizim natijani o'zi chiqaradi.",
+admin_rf_use_gif: "🎞 Sovrinning 3D-renderli GIF",
+admin_rf_post: "📣 Kanallarda e'lon qilish",
+admin_rf_start: "🚀 O'yinni boshlash",
+admin_rf_status_finished: "yakunlandi",
+admin_rf_status_cancelled: "bekor qilindi",
+admin_rf_none: "Hozir o'yin yo'q — quyida yangisini yarating.",
+admin_rf_left: "Natijagacha:",
+admin_rf_counts: "Ishtirokchilar: {p} · chiptalar: {t} · kutmoqda: {w}",
+admin_rf_finish_now: "🏁 Natijani hozir chiqarish",
+admin_rf_cancel: "Bekor qilish",
+admin_rf_confirm_finish: "Natijani hozir chiqarasizmi? G'olib joriy chiptalardan tanlanadi.",
+admin_rf_confirm_cancel: "O'yinni g'olibsiz bekor qilasizmi?",
+admin_rf_history_empty: "Hali o'yinlar bo'lmagan.",
+admin_rf_delivered: "sovrin berildi",
+admin_rf_mark_delivered: "🎁 Belgilash: sovrin berildi",
+admin_rf_need_duration: "Davomiylikni kiriting — kun va/yoki soat.",
+admin_rf_post_failed: "O'yin boshlandi, lekin kanallarga post ketmadi.",
+admin_section_giveaway: "Yutuq o'yini",
 header_menu_legal: "Qoidalar va ofertalar",
 legal_tab_terms: "Qoidalar",
 legal_tab_buyer: "Xaridorga",
@@ -1159,7 +1292,6 @@ admin_status_topups: "To'ldirish so'rovlari",
 admin_status_withdrawals: 'Yechish so\'rovlari',
 admin_status_gw_active: 'Boradi',
 admin_status_gw_idle: 'Ishga tushmagan',
-admin_section_giveaway: "Yutuq o'yini / taymer",
 admin_gw_title: 'Nomi',
 admin_gw_subtitle: 'Subtitr',
 admin_gw_prize: 'Sovg\'a',
@@ -1766,6 +1898,73 @@ au_extended: "⏱ Extended",
 au_snipe_hint: "⏱ A bid in the last minute extends the auction by another minute — no last-second sniping.",
 watch_btn: "Watch",
 btn_3d: "3D",
+nav_giveaway: "Giveaway",
+rf_now: "🔥 Now giving away",
+rf_page_title: "🎁 Giveaway",
+rf_empty: "No giveaway right now — the next one is coming soon. Check back later!",
+rf_value: "💰 Value",
+rf_participants: "👥 Participants",
+rf_left: "⏱ Time left",
+rf_drawn_at: "⏱ Drawn",
+rf_invited: "👥 Invited",
+rf_invite_btn: "👥 Invite friends",
+rf_how: "How it works",
+rf_proof_title: "🔐 Fairness check",
+rf_left_days: "{d}d {h}h",
+rf_drawing: "drawing the winner…",
+rf_open_3d: "🖼 View in 3D",
+rf_condition: "Condition: invite {n} friends to DGhost",
+rf_you_in: "🎉 You're in the giveaway!",
+rf_entry_number: "Your entry number:",
+rf_tickets: "tickets: {n}",
+rf_more_tickets: "Every {n} new friends give one more ticket.",
+rf_need_more: "Friends left to invite: {n}. A friend counts once they open DGhost for the first time via your link and accept the terms.",
+rf_pending: "⏳ Waiting for sign-up: {n}",
+rf_rules_html: "<p>🎟 Invite {n} friends to get a ticket and an entry number. Every {t} new friends give one more ticket.</p><p>👥 A friend counts only if they came via your link, opened DGhost for the first time and accepted the terms.</p><p>🏆 When the timer ends, the system picks a random winner among all tickets. You can verify the result under «Fairness check».</p>",
+rf_finished: "🏆 Giveaway finished!",
+rf_finished_eyebrow: "⏱ Giveaway finished",
+rf_finished_short: "finished",
+rf_winner: "Winner",
+rf_no_winner: "Nobody met the conditions — no winner.",
+rf_prize: "Prize",
+rf_you_won: "An admin will contact you to hand over the skin.",
+rf_delivered: "✅ Prize delivered.",
+rf_not_won: "Didn't win? Check out similar skins on the marketplace.",
+rf_open_market: "🛒 Open marketplace",
+rf_proof_id: "Giveaway ID",
+rf_proof_hash: "Secret hash (SHA-256)",
+rf_proof_seed: "Secret (seed)",
+rf_proof_time: "Draw time",
+rf_proof_tickets: "Total tickets",
+rf_proof_ticket: "Winning ticket",
+rf_proof_how_active: "The secret was chosen at launch and its hash is published in advance, so the result cannot be changed. The secret is revealed after the draw.",
+rf_proof_how_done: "Check: SHA-256(secret) matches the hash published before the draw. Winning ticket = HMAC-SHA256(secret, \"ID:tickets\") mod tickets + 1.",
+rf_proof_list: "Ticket list",
+rf_history: "Previous giveaways",
+rf_share_text: "🎁 I'm in the {title} giveaway on DGhost! Join via the link 👇",
+admin_rf_prize: "Prize",
+admin_rf_title: "Title (defaults to skin name)",
+admin_rf_value: "Approximate value, UZS",
+admin_rf_duration: "Duration",
+admin_rf_duration_hint: "Days and hours. The system draws the winner when time runs out.",
+admin_rf_use_gif: "🎞 3D-render GIF of the prize (page, invites, post)",
+admin_rf_post: "📣 Post an announcement to channels",
+admin_rf_start: "🚀 Start giveaway",
+admin_rf_status_finished: "finished",
+admin_rf_status_cancelled: "cancelled",
+admin_rf_none: "No giveaway is running — create one below.",
+admin_rf_left: "Draw in:",
+admin_rf_counts: "Participants: {p} · tickets: {t} · pending sign-up: {w}",
+admin_rf_finish_now: "🏁 Draw now",
+admin_rf_cancel: "Cancel",
+admin_rf_confirm_finish: "Draw the winner now from the current tickets?",
+admin_rf_confirm_cancel: "Cancel the giveaway without a winner?",
+admin_rf_history_empty: "No giveaways yet.",
+admin_rf_delivered: "prize delivered",
+admin_rf_mark_delivered: "🎁 Mark prize as delivered",
+admin_rf_need_duration: "Set the duration — days and/or hours.",
+admin_rf_post_failed: "Giveaway started, but the channel post failed.",
+admin_section_giveaway: "Giveaway",
 header_menu_legal: "Terms & offers",
 legal_tab_terms: "Terms",
 legal_tab_buyer: "Buyers",
@@ -1990,7 +2189,6 @@ admin_status_topups: 'Top-up requests',
 admin_status_withdrawals: 'Withdrawal requests',
 admin_status_gw_active: 'Running',
 admin_status_gw_idle: 'Not started',
-admin_section_giveaway: 'Giveaway / timer',
 admin_gw_title: 'Title',
 admin_gw_subtitle: 'Subtitle',
 admin_gw_prize: 'Prize',
@@ -2559,6 +2757,10 @@ if (typeof loadReferralInfo === 'function'){
 loadReferralInfo();
 }
 
+if (typeof raffleData !== 'undefined' && raffleData){
+renderRaffle();
+}
+
 if (typeof lastDeals !== 'undefined' && lastDeals.length){
 document.getElementById('dealsList').innerHTML = lastDeals.map(dealCardHtml).join('');
 }
@@ -2578,288 +2780,6 @@ document.getElementById('langBtnEn').addEventListener('click', () => setLanguage
 
 applyTranslations();
 applyFeePercents();
-
-const clockEl = document.getElementById('clock');
-const ringEl = document.getElementById('ring');
-const startedBadge = document.getElementById('startedBadge');
-const labelDays = document.getElementById('labelDays');
-const ctaBtn = document.getElementById('ctaBtn');
-const RING_LEN = 578; // 2 * PI * 92, rounded
-
-function pad(n){ return n.toString().padStart(2,'0'); }
-
-function render(){
-const now = Date.now();
-const remainingMs = endTime - now;
-
-if (remainingMs <= 0){
-clockEl.style.display = 'none';
-document.querySelector('.time-labels').style.display = 'none';
-startedBadge.style.display = 'block';
-ringEl.setAttribute('stroke-dashoffset', '0');
-ctaBtn.textContent = (I18N[currentLang] || I18N.ru).timer_cta_open_channel;
-ctaBtn.classList.add('live');
-clearInterval(timerId);
-return;
-}
-
-const totalSeconds = Math.floor(remainingMs / 1000);
-const days = Math.floor(totalSeconds / 86400);
-const hours = Math.floor((totalSeconds % 86400) / 3600);
-const minutes = Math.floor((totalSeconds % 3600) / 60);
-const seconds = totalSeconds % 60;
-
-if (days > 0){
-labelDays.style.display = 'inline';
-clockEl.textContent = `${days}д ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-} else {
-clockEl.textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-}
-
-const progress = Math.max(0, Math.min(1, remainingMs / totalDuration));
-ringEl.setAttribute('stroke-dashoffset', String(RING_LEN * (1 - progress)));
-}
-
-render();
-const timerId = setInterval(render, 1000);
-
-ctaBtn.addEventListener('click', () => {
-if (ctaBtn.classList.contains('live')){
-// Розыгрыш завершился — просто открыть канал, как раньше
-if (tg && tg.openTelegramLink) {
-tg.openTelegramLink(joinUrl);
-} else {
-window.open(joinUrl, '_blank');
-}
-return;
-}
-
-// Условие «пригласи друзей» ещё не выполнено — ведём к приглашению.
-if (gwInviteLocked){
-shareGiveawayInvite();
-return;
-}
-
-// Розыгрыш ещё идёт — реальная регистрация участника
-if (!tg || !tg.initData){
-showAlert(errorMessage('unauthorized'));
-return;
-}
-
-if (ctaBtn.disabled) return;
-
-ctaBtn.disabled = true;
-
-fetch(API_BASE + '/api/giveaway/register', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ init_data: tg.initData })
-})
-.then(async r => {
-if (!r.ok){
-const data = await r.json().catch(() => ({}));
-if (data.error === 'need_invites'){
-renderInviteProgress(data);
-ctaBtn.disabled = false;
-shareGiveawayInvite();
-return null;
-}
-throw new Error(errorMessage(data.error));
-}
-return r.json();
-})
-.then(res => {
-if (!res) return;
-ctaBtn.textContent = (I18N[currentLang] || I18N.ru).giveaway_registered;
-ctaBtn.classList.add('registered');
-gwInvite.style.display = 'none';
-})
-.catch(err => {
-showErrorToast(err);
-ctaBtn.disabled = false;
-});
-});
-
-// ---------- условие «пригласи друзей» ----------
-// Бот отдаёт invites / invites_required. Пока приглашённых меньше
-// нужного, кнопка «Участвовать» ведёт к приглашению, а под ней виден
-// прогресс 0/2 → 1/2 → 2/2.
-const gwInvite = document.getElementById('gwInvite');
-let gwInviteLocked = false;
-
-function renderInviteProgress(data){
-if (!data || !data.invites_required || data.registered || ctaBtn.classList.contains('live')){
-gwInvite.style.display = 'none';
-gwInviteLocked = false;
-ctaBtn.classList.remove('locked');
-return;
-}
-const dict = I18N[currentLang] || I18N.ru;
-const need = data.invites_required;
-const have = Math.min(data.invites || 0, need);
-gwInvite.style.display = '';
-gwInvite.classList.toggle('done', have >= need);
-document.getElementById('gwInviteCount').textContent = have + '/' + need;
-document.getElementById('gwInviteBar').style.width = Math.round(have / need * 100) + '%';
-document.getElementById('gwInviteHint').textContent = have >= need
-? dict.gw_invite_done
-: dict.gw_invite_hint.replace('{n}', need - have);
-gwInviteLocked = have < need;
-ctaBtn.classList.toggle('locked', gwInviteLocked);
-if (gwInviteLocked) prefetchInviteLink();
-}
-
-function loadGiveawayStatus(){
-if (!tg || !tg.initData) return;
-fetch(API_BASE + '/api/giveaway/status?init_data=' + encodeURIComponent(tg.initData))
-.then(r => r.json())
-.then(data => {
-// Если пользователь уже был зарегистрирован раньше (перезашёл в
-// мини-апп) — сразу показываем это в кнопке, не даём жать заново.
-if (data.registered && !ctaBtn.classList.contains('live')){
-ctaBtn.textContent = (I18N[currentLang] || I18N.ru).giveaway_registered;
-ctaBtn.classList.add('registered');
-ctaBtn.disabled = true;
-}
-renderInviteProgress(data);
-})
-.catch(() => {});
-}
-
-let gwInviteLink = '';
-let gwInviteLinkLoading = null;
-
-// Ссылку грузим заранее: тогда по нажатию окно отправки открывается
-// сразу, в том же касании. openTelegramLink, вызванный уже после
-// сетевого запроса, Telegram молча игнорировал — «Пригласить» ничего
-// не делал.
-function prefetchInviteLink(){
-if (gwInviteLink || gwInviteLinkLoading || !tg || !tg.initData) return gwInviteLinkLoading;
-gwInviteLinkLoading = fetch(API_BASE + '/api/referral_info?init_data=' + encodeURIComponent(tg.initData))
-.then(r => r.json())
-.then(data => {
-if (data.link) setInviteLink(data.link);
-return gwInviteLink;
-})
-.catch(() => null)
-.finally(() => { gwInviteLinkLoading = null; });
-return gwInviteLinkLoading;
-}
-
-function setInviteLink(link){
-gwInviteLink = link;
-document.getElementById('gwInviteLinkText').textContent = link.replace(/^https:\/\//, '');
-document.getElementById('gwInviteLinkRow').style.display = '';
-}
-
-function openInviteShareLink(){
-const dict = I18N[currentLang] || I18N.ru;
-const url = 'https://t.me/share/url?url=' + encodeURIComponent(gwInviteLink) + '&text=' + encodeURIComponent(dict.gw_invite_share_text);
-if (tg && tg.openTelegramLink) tg.openTelegramLink(url);
-else window.open(url, '_blank');
-}
-
-function copyInviteLink(){
-const dict = I18N[currentLang] || I18N.ru;
-const done = () => showToast(dict.gw_invite_copied);
-if (navigator.clipboard && navigator.clipboard.writeText){
-navigator.clipboard.writeText(gwInviteLink).then(done).catch(() => fallbackCopy());
-} else {
-fallbackCopy();
-}
-function fallbackCopy(){
-const ta = document.createElement('textarea');
-ta.value = gwInviteLink;
-document.body.appendChild(ta);
-ta.select();
-try { document.execCommand('copy'); done(); } catch (e) {}
-ta.remove();
-}
-}
-
-function canShareMessage(){
-return !!(tg && typeof tg.shareMessage === 'function' && (!tg.isVersionAtLeast || tg.isVersionAtLeast('8.0')));
-}
-
-// Что Telegram ответил на shareMessage (событие shareMessageFailed).
-let gwShareError = '';
-if (tg && typeof tg.onEvent === 'function'){
-tg.onEvent('shareMessageFailed', (e) => { gwShareError = (e && e.error) || 'UNKNOWN_ERROR'; });
-}
-
-// Запасной путь, который работает на любом устройстве: бот присылает
-// готовое приглашение в личку, пользователь пересылает его друзьям.
-async function sendInviteToDm(){
-const dict = I18N[currentLang] || I18N.ru;
-if (!tg || !tg.initData) return;
-const btn = document.getElementById('gwInviteDmBtn');
-if (btn.disabled) return;
-btn.disabled = true;
-try {
-const r = await fetch(API_BASE + '/api/giveaway/invite_send', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ init_data: tg.initData }),
-});
-const data = await r.json().catch(() => ({}));
-if (data.link) setInviteLink(data.link);
-if (r.ok){
-showToast(dict.gw_invite_dm_sent);
-} else if (data.error === 'too_often'){
-showToast(dict.gw_invite_dm_wait);
-} else if (data.error === 'dm_failed'){
-showErrorToast(new Error(dict.gw_invite_dm_need_start));
-} else {
-showErrorToast(new Error(dict.gw_invite_failed.replace('{code}', data.error || ('HTTP ' + r.status))));
-}
-} catch (e) {
-showErrorToast(e);
-} finally {
-btn.disabled = false;
-}
-}
-
-document.getElementById('gwInviteDmBtn').addEventListener('click', sendInviteToDm);
-
-// Без inline-режима — как «Поделиться» у карточек лотов: обычное
-// окно Telegram «Поделиться ссылкой» (t.me/share/url), открытое прямо
-// в касании. Ссылка грузится заранее, поэтому здесь нет ни одного
-// сетевого запроса до открытия окна.
-function shareGiveawayInvite(){
-if (!tg || !tg.initData){
-showAlert(errorMessage('unauthorized'));
-return;
-}
-// Лучший вариант (проверено на Android и iOS): выбор чата, куда бот
-// сам вставляет карточку розыгрыша с GIF и кнопкой «Участвовать»
-// по реферальной ссылке. Работает, только если у бота включён
-// Inline Mode, и начиная с Telegram 6.7.
-if (typeof tg.switchInlineQuery === 'function' && (!tg.isVersionAtLeast || tg.isVersionAtLeast('6.7'))){
-try {
-tg.switchInlineQuery('invite', ['users', 'groups', 'channels']);
-return;
-} catch (e) {}
-}
-if (gwInviteLink){
-openInviteShareLink();
-return;
-}
-// Ссылка ещё не успела загрузиться — присылаем приглашение в личку.
-sendInviteToDm();
-prefetchInviteLink();
-}
-
-document.getElementById('gwInviteBtn').addEventListener('click', shareGiveawayInvite);
-document.getElementById('gwInviteCopyBtn').addEventListener('click', () => {
-if (gwInviteLink) copyInviteLink();
-});
-
-// Вернулся из чата после отправки приглашения — обновляем прогресс.
-document.addEventListener('visibilitychange', () => {
-if (!document.hidden) loadGiveawayStatus();
-});
-
-loadGiveawayStatus();
 
 // ---- matrix-style digital rain — now scoped to the profile hero
 // card instead of the whole page, for a calmer, more minimal feel ----

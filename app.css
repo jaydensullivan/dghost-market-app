@@ -3518,3 +3518,157 @@ text-align:center;
 .legal-note a,
 .legal-links a{ color:var(--silver); text-decoration:underline; }
 .legal-accept button:disabled{ opacity:0.45; }
+
+/* ---------- розыгрыш ---------- */
+.raffle-screen{
+justify-content:flex-start;
+/* сверху — место под колокольчик и аватар в углу */
+padding:72px 16px 110px;
+}
+.raffle-screen > *{ width:100%; max-width:420px; }
+.raffle-screen > .raffle-back{
+position:absolute;
+top:18px;
+left:16px;
+width:38px;
+max-width:38px;
+}
+.raffle-eyebrow{
+font-family:'JetBrains Mono', monospace;
+font-size:11px;
+letter-spacing:0.12em;
+text-transform:uppercase;
+color:var(--red);
+}
+.raffle-title{
+margin:6px 0 14px;
+font-family:'Inter', sans-serif;
+font-size:22px;
+line-height:1.25;
+font-weight:800;
+color:var(--silver);
+word-wrap:break-word;
+}
+.raffle-empty{
+padding:40px 12px;
+color:var(--muted);
+font-size:14px;
+line-height:1.5;
+}
+.raffle-hero{
+position:relative;
+border-radius:16px;
+overflow:hidden;
+border:1px solid var(--red-dim);
+background:radial-gradient(circle at 50% 40%, rgba(123,44,255,0.35), rgba(8,7,13,0) 70%), var(--surface);
+aspect-ratio:16 / 10;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+.raffle-hero img{ width:100%; height:100%; object-fit:contain; }
+.raffle-hero-empty{ font-size:64px; }
+.raffle-3d-btn{
+position:absolute;
+right:10px;
+bottom:10px;
+padding:7px 12px;
+border-radius:999px;
+border:1px solid rgba(255,255,255,0.25);
+background:rgba(8,7,13,0.7);
+color:#fff;
+font-size:12px;
+font-weight:600;
+cursor:pointer;
+}
+.raffle-meta{ margin-top:8px; font-size:12px; color:var(--muted); }
+.raffle-stats{
+display:grid;
+grid-template-columns:repeat(3, 1fr);
+gap:8px;
+margin:14px 0;
+}
+.raffle-stat{
+display:flex;
+flex-direction:column;
+gap:4px;
+padding:10px 6px;
+border-radius:12px;
+background:var(--surface);
+border:1px solid var(--red-dim);
+min-width:0;
+}
+.raffle-stat span{ font-size:11px; color:var(--muted); }
+.raffle-stat b{
+font-family:'JetBrains Mono', monospace;
+font-size:14px;
+color:var(--silver);
+white-space:nowrap;
+overflow:hidden;
+text-overflow:ellipsis;
+}
+.raffle-card{
+text-align:left;
+padding:14px;
+border-radius:14px;
+background:var(--surface);
+border:1px solid var(--red-dim);
+margin-bottom:12px;
+display:flex;
+flex-direction:column;
+gap:10px;
+}
+.raffle-card.done{ border-color:rgba(74,222,128,0.5); }
+.raffle-card.done .gw-invite-bar > div{ background:#4ade80; }
+.raffle-cond{ font-size:14px; font-weight:600; color:var(--silver); }
+.raffle-progress-head{ display:flex; justify-content:space-between; font-size:13px; color:var(--muted); }
+.raffle-progress-head b{ color:var(--silver); font-family:'JetBrains Mono', monospace; }
+.raffle-in{ font-size:15px; font-weight:700; color:#4ade80; }
+.raffle-ticket{ font-size:14px; color:var(--silver); margin-top:4px; }
+.raffle-hint{ font-size:12px; line-height:1.45; color:var(--muted); }
+.raffle-pending{ font-size:12px; color:#f5c542; }
+.raffle-cta{
+border-color:var(--red);
+background:var(--cta-gradient);
+color:#fff;
+}
+.raffle-rules summary,
+.raffle-proof summary{ cursor:pointer; font-size:13px; color:var(--silver); }
+.raffle-rules p{ margin:8px 0 0; font-size:12px; line-height:1.5; color:var(--muted); }
+.raffle-result-title{ font-size:17px; font-weight:800; color:var(--silver); }
+.raffle-result-row{ font-size:14px; color:var(--silver); }
+.raffle-lost{ font-size:13px; color:var(--muted); }
+.raffle-proof-row{
+display:flex;
+justify-content:space-between;
+gap:10px;
+padding:6px 0;
+border-bottom:1px solid rgba(255,255,255,0.06);
+font-size:12px;
+color:var(--muted);
+}
+.raffle-proof-row b{ color:var(--silver); font-weight:600; text-align:right; min-width:0; word-break:break-all; }
+.raffle-proof-row code{ font-size:11px; }
+.raffle-proof-row.win b{ color:#f5c542; }
+.raffle-proof #rfProofBody{ display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+.raffle-history{ padding:0; }
+.raffle-history .gw-winner-icon img{ width:44px; height:32px; object-fit:contain; }
+
+/* баннер на главном экране */
+.welcome-raffle{
+display:flex;
+flex-direction:column;
+align-items:flex-start;
+gap:4px;
+width:100%;
+margin-top:14px;
+padding:12px 14px;
+border-radius:12px;
+border:1px solid var(--red);
+background:linear-gradient(135deg, rgba(123,44,255,0.25), rgba(255,43,214,0.12));
+color:#fff;
+text-align:left;
+cursor:pointer;
+}
+.welcome-raffle-label{ font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--red-glow); }
+.welcome-raffle-title{ font-size:15px; font-weight:700; }
