@@ -142,60 +142,151 @@ withdrawSubmitBtn.disabled = false;
 });
 });
 
-function renderInventory(items){
-if (!items || !items.length){
-inventoryStatus.textContent = (I18N[currentLang] || I18N.ru).inventory_empty;
+// ============================================================
+// ИНВЕНТАРЬ STEAM
+//
+// Поиск, фильтры (тип, износ, только без трейд-бана), сортировка.
+// «Выбрать» отмечает предметы (до INV_PICK_MAX), внизу — панель с
+// миниатюрами и «Продолжить»: выбранные выставляются по очереди,
+// каждый в компактном окне «Выставить лот». В режиме выбора приза
+// (inventoryPickHandler) «Выбрать» сразу отдаёт предмет обработчику.
+// ============================================================
+
+const INV_PICK_MAX = 50;
+
+// Порядок редкости — для сортировки «сначала редкие».
+const RARITY_RANK = {
+'Consumer Grade': 1, 'Base Grade': 1, 'Stock': 1,
+'Industrial Grade': 2,
+'Mil-Spec Grade': 3, 'High Grade': 3, 'Distinguished': 3,
+'Restricted': 4, 'Remarkable': 4, 'Exceptional': 4,
+'Classified': 5, 'Exotic': 5, 'Superior': 5,
+'Covert': 6, 'Master': 6,
+'Contraband': 7, 'Extraordinary': 7,
+};
+
+const HEART_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.8 3.9 4.5 7.3 4.5c2 0 3.6 1.1 4.7 2.7 1.1-1.6 2.7-2.7 4.7-2.7 3.4 0 5.7 3.3 4.5 6.7-1.7 4.7-9.2 9.3-9.2 9.3z"/></svg>';
+
+let invPicked = [];          // выбранные предметы (объекты из lastInventoryItems)
+let invTradableOnly = false;
+
+function invKey(item){
+return String(item.asset_id || item.title);
+}
+
+function isInvPicked(item){
+return invPicked.some(p => invKey(p) === invKey(item));
+}
+
+function invSplitTitle(item){
+const rawTitle = String(item.title || '').replace(/^★\s*/, '');
+const parts = rawTitle.split('|');
+return {
+weapon: parts.length > 1 ? parts[0].trim() : '',
+skin: parts.length > 1 ? parts.slice(1).join('|').trim() : rawTitle,
+};
+}
+
+function invFilteredItems(){
+const q = document.getElementById('invSearch').value.trim().toLowerCase();
+const type = document.getElementById('invTypeFilter').value;
+const wear = document.getElementById('invWearFilter').value;
+const sort = document.getElementById('invSort').value;
+let list = lastInventoryItems.map((item, i) => ({ item, i }));
+if (q) list = list.filter(({ item }) => String(item.title || '').toLowerCase().includes(q));
+if (type !== 'all') list = list.filter(({ item }) => categorizeSkin(item) === type);
+if (wear !== 'all') list = list.filter(({ item }) => item.wear === wear);
+if (invTradableOnly) list = list.filter(({ item }) => item.tradable !== false);
+if (sort === 'rare' || sort === 'common'){
+const dir = sort === 'rare' ? -1 : 1;
+list.sort((a, b) => dir * ((RARITY_RANK[a.item.rarity] || 0) - (RARITY_RANK[b.item.rarity] || 0)) || a.i - b.i);
+} else if (sort === 'float'){
+const f = x => (x.item.float_value === null || x.item.float_value === undefined) ? 2 : Number(x.item.float_value);
+list.sort((a, b) => f(a) - f(b) || a.i - b.i);
+}
+return list;
+}
+
+function renderInventory(){
+const dict = I18N[currentLang] || I18N.ru;
+if (!lastInventoryItems.length){
+inventoryStatus.textContent = dict.inventory_empty;
 inventoryGrid.innerHTML = '';
 return;
 }
-inventoryStatus.textContent = '';
-inventoryGrid.innerHTML = items.map((item, i) => {
-const photo = item.photo_url
-? `<img src="${item.photo_url}" alt="" loading="lazy">`
-: '';
+const list = invFilteredItems();
+inventoryStatus.textContent = list.length ? '' : dict.inv_nothing_found;
+const pickMode = !!inventoryPickHandler;
+inventoryGrid.innerHTML = list.map(({ item, i }) => {
+const photo = item.photo_url ? `<img src="${item.photo_url}" alt="" loading="lazy">` : '';
 const wearText = item.wear ? WEAR_LABELS[item.wear] || '' : '';
 const isTradable = item.tradable !== false;
-const bannedClass = isTradable ? '' : ' inv-item-banned';
 const rarityClass = RARITY_CLASS[item.rarity] || 'rarity-consumer';
-
 const hasFloat = item.float_value !== null && item.float_value !== undefined;
+const picked = isInvPicked(item);
+const { weapon, skin } = invSplitTitle(item);
 
 // Полоска износа с меткой на месте точного float — как в CSFloat.
-const wearBar = hasFloat
+const floatBlock = hasFloat
 ? `<div class="inv-item-wearbar"><div class="inv-item-wearbar-mark" style="left:${(Math.min(1, Math.max(0, item.float_value)) * 100).toFixed(2)}%"></div></div>
-<div class="inv-item-floatrow"><span>${Number(item.float_value).toFixed(4)}</span>${item.pattern ? `<span>#${escapeHtml(String(item.pattern))}</span>` : ''}</div>`
+<div class="inv-float-line">Float: <b>${Number(item.float_value).toFixed(4)}</b>${item.pattern ? ` <span>#${escapeHtml(String(item.pattern))}</span>` : ''}</div>`
 : '';
 
-// Название предмета делим на две строки: оружие сверху обычным
-// шрифтом, раскраска снизу крупно — так карточка читается с
-// одного взгляда, как в инвентаре Steam.
-const rawTitle = String(item.title || '');
-const parts = rawTitle.split('|');
-const weaponName = parts.length > 1 ? parts[0].trim() : '';
-const skinName = parts.length > 1 ? parts.slice(1).join('|').trim() : rawTitle;
-
-// Метки поверх картинки: износ и StatTrak — как в Steam.
 const badges = [];
-if (item.stattrak) badges.push('<span class="inv-badge st">ST™</span>');
 if (wearText) badges.push(`<span class="inv-badge">${wearText}</span>`);
+if (item.stattrak) badges.push('<span class="inv-badge st">ST™</span>');
 if (!isTradable) badges.push('<span class="inv-badge ban">🔒</span>');
 
-const stickerStrip = stickersHtml(item.stickers, 'mini');
+const pickLabel = !isTradable && !pickMode ? '🔒'
+: picked ? dict.inv_picked_btn : dict.inv_pick;
 
 return `
-<div class="inv-item ${rarityClass}${bannedClass}" data-idx="${i}" data-tradable="${isTradable ? '1' : '0'}">
+<div class="inv-item ${rarityClass}${isTradable ? '' : ' inv-item-banned'}${picked ? ' selected' : ''}" data-idx="${i}">
 <div class="inv-item-photo">
 <div class="inv-badges">${badges.join('')}</div>
+<button type="button" class="skin-fav inv-fav${isFavSkin(item) ? ' on' : ''}" data-inv-fav="${i}" aria-label="Следить">${HEART_SVG}</button>
 ${photo}
-${stickerStrip ? `<div class="inv-stickers-over">${stickerStrip}</div>` : ''}
 </div>
 <div class="inv-item-body">
-${weaponName ? `<div class="inv-item-weapon">${escapeHtml(weaponName)}</div>` : ''}
-<div class="inv-item-skin">${escapeHtml(skinName)}</div>
-${wearBar}
+${weapon ? `<div class="inv-item-weapon">${escapeHtml(weapon)}</div>` : ''}
+<div class="inv-item-skin">${escapeHtml(skin)}</div>
+${floatBlock}
+<div class="inv-item-actions">
+<button type="button" class="inv-more" data-inv-more="${i}">${dict.inv_more}</button>
+<button type="button" class="inv-pick${picked ? ' on' : ''}" data-inv-pick="${i}"${!isTradable && !pickMode ? ' disabled' : ''}>${pickLabel}</button>
+</div>
 </div>
 </div>`;
 }).join('');
+renderInvPicked();
+}
+
+function renderInvPicked(){
+const dict = I18N[currentLang] || I18N.ru;
+const box = document.getElementById('invPicked');
+box.style.display = invPicked.length && !inventoryPickHandler ? '' : 'none';
+document.getElementById('invPickedCount').textContent = dict.inv_of.replace('{n}', invPicked.length).replace('{max}', INV_PICK_MAX);
+document.getElementById('invPickedThumbs').innerHTML = invPicked.map(item => `
+<div class="inv-thumb">${item.photo_url ? `<img src="${item.photo_url}" alt="">` : ''}<button type="button" data-inv-unpick="${escapeHtml(invKey(item))}">✕</button></div>`).join('')
++ '<button type="button" class="inv-thumb add" id="invPickMore">+</button>';
+}
+
+function toggleInvPick(item){
+const dict = I18N[currentLang] || I18N.ru;
+if (item.tradable === false){
+showAlert(dict.inv_trade_ban);
+return;
+}
+if (isInvPicked(item)){
+invPicked = invPicked.filter(p => invKey(p) !== invKey(item));
+} else if (invPicked.length >= INV_PICK_MAX){
+showToast(dict.inv_limit.replace('{max}', INV_PICK_MAX));
+return;
+} else {
+invPicked.push(item);
+}
+haptic('light');
+renderInventory();
 }
 
 let lastInventoryItems = [];
@@ -209,6 +300,20 @@ function formatWaitHours(hours){
 const dict = I18N[currentLang] || I18N.ru;
 if (hours >= 1) return `${Math.ceil(hours)} ${dict.unit_hours_short}`;
 return `${Math.max(1, Math.ceil(hours * 60))} ${dict.unit_minutes_short}`;
+}
+
+// Окно инвентаря открывается заново — выбор и фильтры сбрасываем.
+function openInventory(){
+const dict = I18N[currentLang] || I18N.ru;
+invPicked = [];
+document.getElementById('invSearch').value = '';
+document.getElementById('invTypeFilter').value = 'all';
+document.getElementById('invWearFilter').value = 'all';
+document.getElementById('invSort').value = 'steam';
+document.getElementById('invHeadSub').textContent = inventoryPickHandler ? dict.inv_subtitle_pick : dict.inv_subtitle;
+renderInvPicked();
+inventoryOverlay.classList.add('show');
+loadInventory(false);
 }
 
 function loadInventory(forceRefresh){
@@ -240,7 +345,9 @@ return r.json();
 })
 .then(data => {
 lastInventoryItems = data.items || [];
-renderInventory(lastInventoryItems);
+// После обновления выбранные остаются выбранными, если они ещё есть.
+invPicked = invPicked.filter(p => lastInventoryItems.some(it => invKey(it) === invKey(p)));
+renderInventory();
 })
 .catch(err => {
 const msg = friendlyErrorMessage(err);
@@ -248,7 +355,7 @@ const msg = friendlyErrorMessage(err);
 // загруженный ранее инвентарь и показываем причину тостом.
 if (err.noRetry){
 inventoryStatus.textContent = '';
-if (lastInventoryItems.length) renderInventory(lastInventoryItems);
+if (lastInventoryItems.length) renderInventory();
 else renderErrorState(inventoryGrid, msg, null);
 showToast(msg, { type: 'error' });
 return;
@@ -261,8 +368,7 @@ renderErrorState(inventoryGrid, msg, () => loadInventory(forceRefresh));
 openInventoryBtn.addEventListener('click', () => {
 if (!tg || !tg.initData) return;
 inventoryPickHandler = null;
-inventoryOverlay.classList.add('show');
-loadInventory(false);
+openInventory();
 });
 
 inventoryRefreshBtn.addEventListener('click', () => {
@@ -275,12 +381,21 @@ inventoryPickHandler = null;
 inventoryOverlay.classList.remove('show');
 });
 
-inventoryGrid.addEventListener('click', (e) => {
-const card = e.target.closest('.inv-item');
-if (!card) return;
-const item = lastInventoryItems[Number(card.dataset.idx)];
-if (!item) return;
+['invSearch', 'invTypeFilter', 'invWearFilter', 'invSort'].forEach(id => {
+document.getElementById(id).addEventListener(id === 'invSearch' ? 'input' : 'change', () => {
+if (lastInventoryItems.length) renderInventory();
+});
+});
 
+document.getElementById('invTradableBtn').addEventListener('click', (e) => {
+invTradableOnly = !invTradableOnly;
+e.currentTarget.classList.toggle('active', invTradableOnly);
+showToast((I18N[currentLang] || I18N.ru)[invTradableOnly ? 'inv_tradable_on' : 'inv_tradable_off']);
+if (lastInventoryItems.length) renderInventory();
+});
+
+// Выбор предмета: в режиме приза — сразу обработчику, иначе — отметка.
+function pickInventoryItem(item){
 if (inventoryPickHandler){
 const handler = inventoryPickHandler;
 inventoryPickHandler = null;
@@ -288,12 +403,128 @@ inventoryOverlay.classList.remove('show');
 handler(item);
 return;
 }
-
-if (item.tradable === false){
-showAlert('Этот предмет сейчас в трейд-бане Steam — выбрать его для продажи нельзя, пока бан не закончится.');
-return;
+toggleInvPick(item);
 }
 
+inventoryGrid.addEventListener('click', (e) => {
+const card = e.target.closest('.inv-item');
+if (!card) return;
+const item = lastInventoryItems[Number(card.dataset.idx)];
+if (!item) return;
+if (e.target.closest('[data-inv-fav]')){
+openWatchSheet(item);
+return;
+}
+if (e.target.closest('[data-inv-more]')){
+openInvDetail(item);
+return;
+}
+// «Выбрать» и нажатие на саму карточку — одно и то же.
+pickInventoryItem(item);
+});
+
+document.getElementById('invPickedThumbs').addEventListener('click', (e) => {
+const un = e.target.closest('[data-inv-unpick]');
+if (un){
+invPicked = invPicked.filter(p => invKey(p) !== un.dataset.invUnpick);
+renderInventory();
+return;
+}
+if (e.target.closest('#invPickMore')) inventoryGrid.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// ---------- подробнее о предмете ----------
+
+let invDetailItem = null;
+
+function openInvDetail(item){
+const dict = I18N[currentLang] || I18N.ru;
+invDetailItem = item;
+const { weapon, skin } = invSplitTitle(item);
+document.getElementById('invDetailWeapon').textContent = weapon;
+document.getElementById('invDetailTitle').textContent = (item.stattrak ? 'StatTrak™ ' : '') + skin;
+const hasFloat = item.float_value !== null && item.float_value !== undefined;
+const rows = [
+[dict.inv_detail_wear, item.wear ? `${WEAR_LABELS[item.wear] || item.wear}` : '—'],
+['Float', hasFloat ? Number(item.float_value).toFixed(6) : '—'],
+[dict.inv_detail_pattern, item.pattern ? '#' + item.pattern : '—'],
+[dict.inv_detail_rarity, item.rarity || '—'],
+[dict.inv_detail_trade, item.tradable === false ? dict.inv_detail_banned : dict.inv_detail_ok],
+];
+const rarityClass = RARITY_CLASS[item.rarity] || 'rarity-consumer';
+document.getElementById('invDetailBody').innerHTML = `
+<div class="inv-item ${rarityClass} inv-detail-photo"><div class="inv-item-photo">${item.photo_url ? `<img src="${item.photo_url}" alt="">` : ''}</div></div>
+${hasFloat ? `<div class="inv-item-wearbar" style="margin-top:10px;"><div class="inv-item-wearbar-mark" style="left:${(Math.min(1, Math.max(0, item.float_value)) * 100).toFixed(2)}%"></div></div>` : ''}
+${rows.map(([k, v]) => `<div class="raffle-proof-row"><span>${k}</span><b>${escapeHtml(String(v))}</b></div>`).join('')}
+${stickersHtml(item.stickers, 'full')}`;
+const pickBtn = document.getElementById('invDetailPick');
+pickBtn.textContent = isInvPicked(item) ? dict.inv_picked_btn : dict.inv_pick;
+pickBtn.disabled = item.tradable === false && !inventoryPickHandler;
+const btn3d = document.getElementById('invDetail3d');
+btn3d.style.display = 'none';
+if (typeof loadModelIndex === 'function'){
+loadModelIndex().then(map => {
+const entry = map[modelIndexKey((item.stattrak ? 'StatTrak™ ' : '') + item.title)] || map[modelIndexKey(item.title)];
+if (!entry || invDetailItem !== item) return;
+btn3d.style.display = '';
+btn3d.onclick = () => open3DViewer(entry.model, item.title, entry.skin, Number(item.float_value) || 0, entry.weapon || null, 'none');
+}).catch(() => {});
+}
+document.getElementById('invDetailOverlay').classList.add('show');
+}
+
+document.getElementById('invDetailClose').addEventListener('click', () => {
+document.getElementById('invDetailOverlay').classList.remove('show');
+});
+
+document.getElementById('invDetailPick').addEventListener('click', () => {
+document.getElementById('invDetailOverlay').classList.remove('show');
+if (invDetailItem) pickInventoryItem(invDetailItem);
+});
+
+// ---------- выставление выбранных по очереди ----------
+
+let sellQueue = [];
+let sellQueueTotal = 0;
+
+document.getElementById('invContinueBtn').addEventListener('click', () => {
+if (!invPicked.length) return;
+sellQueue = invPicked.slice();
+sellQueueTotal = sellQueue.length;
+invPicked = [];
+inventoryOverlay.classList.remove('show');
+sellNextFromQueue();
+});
+
+function sellNextFromQueue(){
+const item = sellQueue.shift();
+if (!item){
+sellQueueTotal = 0;
+return;
+}
+prepareSellItem(item);
+openQuickSell(item);
+const dict = I18N[currentLang] || I18N.ru;
+const queueEl = document.getElementById('qsQueue');
+const multi = sellQueueTotal > 1;
+queueEl.style.display = multi ? '' : 'none';
+queueEl.textContent = dict.qs_queue.replace('{n}', sellQueueTotal - sellQueue.length).replace('{total}', sellQueueTotal);
+document.getElementById('quickSellSkip').style.display = sellQueue.length ? '' : 'none';
+}
+
+// Вызывается из publishSkin после успешной публикации из окна «Выставить лот».
+function onQuickSellPublished(){
+if (sellQueue.length) setTimeout(sellNextFromQueue, 700);
+else sellQueueTotal = 0;
+}
+
+document.getElementById('quickSellSkip').addEventListener('click', () => {
+closeQuickSell();
+sellNextFromQueue();
+});
+
+// Заполняет форму лота данными предмета и подтягивает float/паттерн.
+function prepareSellItem(item){
 sTitle.value = item.title || '';
 sWeaponType.value = item.weapon_type || '';
 sWear.value = item.wear || '';
@@ -367,17 +598,7 @@ addSkinStatus.textContent = '';
 }
 
 scheduleSellMarketPreview();
-
-// Раньше здесь сразу открывалась большая форма редактирования —
-// но у выбранного предмета уже известно всё (фото, название, износ,
-// float, паттерн, редкость), продавцу нужно решить только цену.
-// Поэтому вместо формы показываем компактное окно "Выставить лот"
-// с готовой карточкой и одним полем — ценой. Полная форма
-// (addSkinOverlay) никуда не делась: она открывается по ссылке
-// "Подробные настройки", если авто-данные надо поправить руками.
-inventoryOverlay.classList.remove('show');
-openQuickSell(item);
-});
+}
 
 // ---------------- Компактное окно "Выставить лот" ----------------
 
@@ -427,8 +648,15 @@ function closeQuickSell(){
 quickSellOverlay.classList.remove('show');
 }
 
-document.getElementById('quickSellCloseBtn').addEventListener('click', closeQuickSell);
-document.getElementById('quickSellCancel').addEventListener('click', closeQuickSell);
+// Закрыли окно — остальные выбранные скины не выставляем.
+function stopQuickSell(){
+sellQueue = [];
+sellQueueTotal = 0;
+closeQuickSell();
+}
+
+document.getElementById('quickSellCloseBtn').addEventListener('click', stopQuickSell);
+document.getElementById('quickSellCancel').addEventListener('click', stopQuickSell);
 
 // Цена вводится в компактном окне, но публикует её та же самая
 // функция publishSkin, что читает sPrice — держим их синхронно.
@@ -447,6 +675,8 @@ publishSkin(document.getElementById('quickSellConfirm'), qsStatus, quickSellOver
 // у нестандартного предмета) — открывает ту же большую форму, что
 // была тут раньше, уже с теми же данными внутри.
 document.getElementById('quickSellAdvanced').addEventListener('click', () => {
+sellQueue = [];
+sellQueueTotal = 0;
 closeQuickSell();
 addSkinOverlay.classList.add('show');
 });
@@ -484,8 +714,8 @@ sHasStickers.checked = false;
 sDescription.value = '';
 sPrice.value = '';
 sPhoto.value = '';
-inventoryOverlay.classList.add('show');
-loadInventory(false);
+inventoryPickHandler = null;
+openInventory();
 });
 
 const welcomeOverlay = document.getElementById('welcomeOverlay');
@@ -598,8 +828,8 @@ addSkinOverlay.classList.add('show');
 // лишнего тапа на «Выбрать из инвентаря Steam». Если не привязан —
 // addSkinOverlay сам покажет подсказку привязать его сначала.
 if (hasSteamLink){
-inventoryOverlay.classList.add('show');
-loadInventory(false);
+inventoryPickHandler = null;
+openInventory();
 }
 });
 
@@ -727,6 +957,7 @@ loadSkins();
 setTimeout(() => {
 overlayEl.classList.remove('show');
 statusEl.textContent = '';
+if (overlayEl === quickSellOverlay) onQuickSellPublished();
 }, 600);
 })
 .catch(err => {

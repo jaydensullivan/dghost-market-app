@@ -782,8 +782,7 @@ stattrak: !!item.stattrak,
 rarity: item.rarity || null,
 });
 };
-inventoryOverlay.classList.add('show');
-loadInventory(false);
+openInventory();
 });
 
 // ---------- GIF с 3D-рендером приза ----------
