@@ -9,6 +9,7 @@ if (activeFilters.priceMax !== null) n++;
 if (activeFilters.floatMin !== null) n++;
 if (activeFilters.floatMax !== null) n++;
 if (activeFilters.stickers !== 'any') n++;
+if (skinSort.value !== 'auto') n++;
 return n;
 }
 
@@ -905,6 +906,7 @@ document.getElementById('filterPriceMax').value = '';
 document.getElementById('filterFloatMin').value = '';
 document.getElementById('filterFloatMax').value = '';
 document.getElementById('filterStickers').value = 'any';
+skinSort.value = 'auto';
 updateFiltersBadge();
 applyFiltersAndRender();
 document.getElementById('filtersOverlay').classList.remove('show');
@@ -2169,6 +2171,11 @@ return data;
 watchOverlay.classList.remove('show');
 showToast(data.updated ? dict.watch_updated : dict.watch_ok, { type: 'success' });
 if (typeof loadWishlist === 'function') loadWishlist();
+// ❤️ на карточке сразу становится заполненным.
+if (typeof favQueries !== 'undefined'){
+favQueries.add(String(watchSkin.title || '').trim().toLowerCase());
+applyFiltersAndRender();
+}
 })
 .catch(err => { status.textContent = friendlyErrorMessage(err); })
 .finally(() => { btn.disabled = false; });
