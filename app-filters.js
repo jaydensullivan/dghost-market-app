@@ -104,6 +104,11 @@ document.getElementById('sellerStatusPending').style.display = (status === 'pend
 document.getElementById('sellerStatusRejected').style.display = (status === 'rejected') ? '' : 'none';
 document.getElementById('sellerStatusVerified').style.display = (status === 'verified') ? '' : 'none';
 document.getElementById('profileMoneyButtons').style.display = (status === 'verified') ? '' : 'none';
+// Проверенному продавцу блок «Стать продавцом» не нужен — вместо него
+// галочка у имени; история и CSV — только продавцам.
+document.getElementById('profileSellerSection').style.display = (status === 'verified') ? 'none' : '';
+document.getElementById('profileVerified').style.display = (status === 'verified') ? '' : 'none';
+document.querySelectorAll('.pf-seller-only').forEach(el => { el.style.display = (status === 'verified') ? '' : 'none'; });
 }
 
 function openKycOverlay(){
@@ -501,6 +506,10 @@ updateTotp2faUI();
 }
 
 function updateTotp2faUI(){
+const dict = I18N[currentLang] || I18N.ru;
+const summary = document.getElementById('totpSummaryStatus');
+summary.classList.toggle('ok', !!totp2faStatus.confirmed);
+summary.lastElementChild.textContent = totp2faStatus.confirmed ? dict.pf_2fa_on : dict.pf_2fa_off;
 const notSetUp = document.getElementById('totp2faNotSetUp');
 const setupBox = document.getElementById('totp2faSetupBox');
 const toggles = document.getElementById('totp2faToggles');

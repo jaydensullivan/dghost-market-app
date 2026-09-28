@@ -58,9 +58,11 @@ ${f.earned ? `<div class="rd-friend-earned">+${formatCoins(f.earned)}</div>` : '
 const more = (!referralFriendsExpanded && d.friends.length > 5)
 ? `<button type="button" class="rd-more" id="referralShowAll">${dict.rd_show_all.replace('{n}', d.friends.length)}</button>` : '';
 
-box.innerHTML = grid + convBar
-+ `<div class="similar-title" style="margin-top:14px;">${dict.rd_friends}</div>${friends}${more}`
-+ `<div class="shop-hint" style="margin-top:8px;">${dict.rd_note}</div>`;
+// Список друзей свёрнут — в профиле сверху только цифры.
+box.innerHTML = grid
++ `<details class="rd-details"${referralFriendsExpanded ? ' open' : ''}><summary>${dict.rd_friends} (${d.friends.length})</summary>`
++ convBar + friends + more
++ `<div class="shop-hint" style="margin-top:8px;">${dict.rd_note}</div></details>`;
 }
 
 document.getElementById('referralDashboard').addEventListener('click', (e) => {
@@ -94,6 +96,7 @@ referralLinkText.textContent = referralLinkRaw;
 referralInvitedCount.textContent = data.invited_count;
 referralBonusText.textContent = dict.referral_bonus_text(data.bonus_percent);
 referralWalletValue.textContent = `${formatCoins(data.wallet)} / ${formatCoins(data.wallet_cap)}`;
+document.getElementById('referralWalletBar').style.width = (data.wallet_cap ? Math.min(100, data.wallet / data.wallet_cap * 100) : 0) + '%';
 referralClaimBtn.style.display = data.wallet > 0 ? '' : 'none';
 if (data.dashboard) renderReferralDashboard(data.dashboard);
 })

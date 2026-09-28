@@ -4131,3 +4131,235 @@ cursor:pointer;
 .inv-detail-photo{ cursor:default; }
 .inv-detail-photo .inv-item-photo{ aspect-ratio:16 / 10; }
 .qs-queue{ margin-top:2px; font-size:12px; color:var(--red-glow); }
+
+/* ============================================================
+   ПРОФИЛЬ
+   Пользователь → баланс → активность → Steam → безопасность →
+   избранное → рефералы → настройки.
+   ============================================================ */
+#screenProfile{ padding:72px 14px calc(env(safe-area-inset-bottom, 0px) + 92px); }
+
+/* баланс в шапке только на главной — в профиле он свой */
+body:not([data-tab="shop"]) .brand-tr .balance-pill{ display:none !important; }
+
+.pf-hero{
+align-items:stretch;
+text-align:left;
+padding:18px 16px;
+border-radius:18px;
+border:1px solid rgba(168,85,247,0.45);
+background:
+radial-gradient(circle at 90% 20%, rgba(255,43,214,0.28), transparent 55%),
+linear-gradient(135deg, #24123d, #0f0a1c);
+}
+.pf-hero-row{ display:flex; align-items:center; gap:14px; }
+.pf-hero .profile-avatar{
+flex:0 0 72px;
+width:72px;
+height:72px;
+margin:0;
+border:2px solid var(--red);
+box-shadow:0 0 18px rgba(168,85,247,0.45);
+}
+.pf-hero-info{ flex:1; min-width:0; }
+.pf-name-row{ display:flex; align-items:center; gap:6px; min-width:0; }
+.pf-hero .profile-name{ margin:0; font-size:19px; font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.pf-verified{ flex:none; color:#a855f7; display:flex; }
+.pf-hero .trust-badge{
+margin:6px 0 4px;
+background:rgba(74,222,128,0.12);
+border-color:rgba(74,222,128,0.45);
+color:#4ade80;
+font-size:12px;
+padding:4px 10px;
+}
+.pf-hero .trust-progress{ margin:0; font-size:11px; }
+
+.pf-card{
+position:relative;
+margin-bottom:12px;
+padding:14px;
+border-radius:16px;
+border:1px solid var(--red-dim);
+background:var(--surface);
+text-align:left;
+}
+.pf-card-head{ display:flex; align-items:center; gap:12px; }
+.pf-card-title{ flex:1; min-width:0; }
+.pf-title{ font-size:16px; font-weight:700; color:var(--silver); }
+.pf-sub{ margin-top:3px; font-size:12px; line-height:1.4; color:var(--muted); }
+.pf-label{ font-size:12px; color:var(--muted); }
+.pf-ico{
+flex:0 0 44px;
+height:44px;
+border-radius:12px;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+.pf-ico.violet{ background:rgba(123,44,255,0.18); color:#b98bff; }
+.pf-ico.green{ background:rgba(74,222,128,0.14); color:#4ade80; }
+.pf-ico.blue{ background:rgba(59,130,246,0.18); color:#6ea8ff; }
+.pf-ico.orange{ background:rgba(249,115,22,0.16); color:#fb923c; }
+.pf-ico.teal{ background:rgba(20,184,166,0.16); color:#2dd4bf; }
+.pf-ico.gold{ background:rgba(245,197,66,0.16); color:#f5c542; }
+.pf-ico.steam{ border-radius:50%; background:linear-gradient(145deg, #1b2838, #2a475e); color:#fff; }
+
+.pf-status{ display:flex; align-items:center; gap:6px; margin-top:3px; font-size:12px; color:var(--muted); }
+.pf-dot{ width:8px; height:8px; border-radius:50%; background:var(--muted); }
+.pf-status.ok{ color:#4ade80; }
+.pf-status.ok .pf-dot{ background:#4ade80; }
+.pf-card .profile-steam-status{ margin-top:4px; font-size:12px; color:var(--muted); }
+.pf-card .profile-steam-status svg{ color:#4ade80; vertical-align:-2px; }
+
+/* баланс */
+.pf-balance{ border-color:rgba(168,85,247,0.45); background:linear-gradient(135deg, rgba(123,44,255,0.16), rgba(23,16,34,0.95)); }
+.pf-balance-top{ display:flex; gap:12px; align-items:flex-start; }
+.pf-balance-info{ flex:1; min-width:0; }
+.pf-balance-amount{
+margin-top:2px;
+font-family:'JetBrains Mono', monospace;
+font-size:26px;
+font-weight:700;
+color:var(--silver);
+line-height:1.15;
+}
+.pf-held-row{ display:flex; align-items:center; gap:4px; margin-top:4px; }
+.pf-held-row .profile-held{ margin:0; font-size:12px; }
+.pf-info-btn{ border:none; background:none; color:var(--muted); font-size:15px; padding:0 4px; cursor:pointer; }
+.pf-money-row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
+.pf-money-btn{
+display:flex;
+align-items:center;
+justify-content:center;
+gap:8px;
+min-height:46px;
+padding:0 12px;
+border-radius:12px;
+border:1px solid var(--red-dim);
+background:rgba(8,7,13,0.6);
+color:var(--silver);
+font-size:14px;
+font-weight:700;
+cursor:pointer;
+}
+.pf-money-btn.primary{ border:none; background:var(--cta-gradient); color:#fff; }
+
+/* активность */
+.pf-stats{ gap:8px; margin-bottom:12px; }
+.pf-stats .stat-box{
+display:flex;
+flex-direction:column;
+align-items:flex-start;
+gap:8px;
+padding:12px 10px;
+border-radius:14px;
+background:var(--surface);
+text-align:left;
+cursor:pointer;
+color:inherit;
+font:inherit;
+}
+.pf-stats .pf-ico{ flex-basis:auto; width:36px; height:36px; border-radius:10px; }
+.pf-stats .stat-value{ font-size:22px; }
+.pf-stats .stat-label{ font-family:'Inter', sans-serif; font-size:11px; letter-spacing:0; text-transform:none; margin-top:0; }
+
+/* кнопки внутри карточек */
+.pf-btn-row{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
+.pf-btn{
+display:flex;
+align-items:center;
+justify-content:center;
+gap:6px;
+min-height:40px;
+padding:0 8px;
+border-radius:10px;
+border:1px solid var(--red-dim);
+background:transparent;
+color:var(--silver);
+font-size:12px;
+font-weight:600;
+cursor:pointer;
+}
+.pf-btn:first-child{ border-color:var(--red); color:var(--red-glow); }
+.pf-add-btn{
+flex:none;
+align-self:flex-start;
+padding:8px 12px;
+border-radius:10px;
+border:1px solid var(--red);
+background:transparent;
+color:var(--red-glow);
+font-size:12px;
+font-weight:700;
+cursor:pointer;
+}
+
+/* сворачиваемая безопасность */
+.pf-collapse summary{ list-style:none; cursor:pointer; }
+.pf-collapse summary::-webkit-details-marker{ display:none; }
+.pf-chevron{ font-size:22px; color:var(--muted); transition:transform .2s; }
+.pf-collapse[open] .pf-chevron{ transform:rotate(90deg); }
+.pf-toggles{ display:grid; gap:8px; margin-top:12px; }
+.pf-toggle{
+display:flex;
+align-items:center;
+gap:8px;
+padding:10px 12px;
+border-radius:10px;
+border:1px solid var(--red-dim);
+font-size:13px;
+color:var(--silver);
+}
+.pf-toggle span{ flex:1; }
+.pf-toggle input{ width:20px; height:20px; accent-color:#4ade80; }
+
+/* избранное */
+.pf-wishlist{ margin-top:10px; }
+.pf-wishlist:empty{ display:none; }
+
+/* рефералы */
+.pf-ref-link{ margin-top:12px; }
+.pf-ref-link .topup-details-text{ font-size:12px; word-break:break-all; }
+.pf-wallet-row{ display:flex; flex-direction:column; gap:10px; margin-top:12px; }
+/* цифры рефералов в одну строку: пришли, купили, заработано */
+#referralDashboard .sp-grid{ grid-template-columns:repeat(3, 1fr); }
+#referralDashboard .sp-cell:nth-child(4){ display:none; }
+.rd-details{ margin-top:10px; }
+.rd-details summary{ cursor:pointer; font-size:13px; color:var(--red-glow); }
+.pf-wallet{
+flex:1;
+min-width:0;
+padding:10px 12px;
+border-radius:12px;
+border:1px solid var(--red-dim);
+}
+.pf-wallet-head{ display:flex; justify-content:space-between; gap:8px; font-size:11px; color:var(--muted); }
+.pf-wallet-head b{ font-family:'JetBrains Mono', monospace; color:var(--silver); font-weight:600; white-space:nowrap; }
+.pf-wallet-bar{ height:6px; margin-top:8px; border-radius:3px; background:rgba(255,255,255,0.08); overflow:hidden; }
+.pf-wallet-bar div{ height:100%; width:0; background:var(--cta-gradient); }
+.pf-wallet-row .pf-money-btn{ width:100%; }
+
+/* настройки */
+.pf-lang .lang-switch{ margin-top:10px; gap:8px; }
+.pf-lang .lang-btn{ padding:10px 4px; font-size:12px; border-radius:10px; }
+.pf-lang-head{ display:flex; align-items:center; gap:8px; font-size:15px; font-weight:700; color:var(--silver); }
+.pf-lang-head svg{ color:var(--red-glow); }
+.pf-settings{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.pf-set-btn{
+display:flex;
+align-items:center;
+gap:10px;
+min-height:50px;
+padding:0 12px;
+border-radius:14px;
+border:1px solid var(--red-dim);
+background:var(--surface);
+color:var(--silver);
+font-size:13px;
+text-align:left;
+cursor:pointer;
+}
+.pf-set-btn svg{ flex:none; color:var(--muted); }
+.pf-set-btn.danger{ color:#f87171; border-color:rgba(248,113,113,0.35); }
+.pf-set-btn.danger svg{ color:#f87171; }

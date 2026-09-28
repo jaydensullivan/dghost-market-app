@@ -35,6 +35,7 @@ return STEAM_ERROR_MESSAGES[code] || errorMessage(code);
 function updateProfileSteamBlock(){
 profileSteamLinked.style.display = hasSteamLink ? 'block' : 'none';
 profileSteamUnlinked.style.display = hasSteamLink ? 'none' : 'block';
+document.getElementById('profileRelinkBtn').style.display = hasSteamLink ? '' : 'none';
 }
 
 function submitTradeLink(opts){
