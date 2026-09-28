@@ -1226,6 +1226,7 @@ buyOfferEdit.style.display = 'none';
 buyOfferInput.value = '';
 
 buyStatus.textContent = '';
+if (typeof update3DButton === 'function') update3DButton(skin);
 buyOverlay.classList.add('show');
 
 loadMarketPriceComparison(skin.id);

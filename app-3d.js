@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 21;
+const APP3D_VERSION = 22;
 
 let threeLoading = null;
 
@@ -980,5 +980,64 @@ const wear = Number(document.getElementById('d3Float').value) || 0;
 const weaponDir = document.getElementById('d3WeaponDir').value.trim();
 const maskChannel = document.getElementById('d3MaskChannel').value;
 open3DViewer(url, null, skinDir || null, wear, weaponDir || null, maskChannel);
+});
+}
+
+// ---------- 3D в окне покупки ----------
+// models/index.json (его строит build-index.sh) сопоставляет название
+// лота «AK-47 | Redline» с моделью и раскраской. Кнопка «3D» видна
+// только у тех лотов, для которых всё это лежит в репозитории.
+let modelIndexLoading = null;
+
+function loadModelIndex(){
+if (!modelIndexLoading){
+modelIndexLoading = fetch('models/index.json', { cache: 'no-cache' })
+.then(r => r.ok ? r.json() : {})
+.catch(() => ({}))
+.then(index => {
+// Ключи без учёта регистра — названия в базе и в игре иногда
+// расходятся заглавными буквами.
+const map = {};
+Object.keys(index || {}).forEach(name => { map[name.toLowerCase()] = index[name]; });
+return map;
+});
+}
+return modelIndexLoading;
+}
+
+// «StatTrak™ AK-47 | Redline (Field-Tested)» → «ak-47 | redline».
+function modelIndexKey(title){
+return String(title || '')
+.replace(/^\s*(★\s*)?(StatTrak™\s*|Souvenir\s+)?/i, '')
+.replace(/\s*\([^)]*\)\s*$/, '')
+.trim()
+.toLowerCase();
+}
+
+const buy3dBtn = document.getElementById('buy3dBtn');
+let buy3dEntry = null;
+let buy3dSkin = null;
+
+function update3DButton(skin){
+if (!buy3dBtn) return;
+buy3dBtn.style.display = 'none';
+buy3dEntry = null;
+buy3dSkin = skin;
+loadModelIndex().then(map => {
+// Пока грузился индекс, могли открыть другой лот.
+if (buy3dSkin !== skin) return;
+const entry = map[modelIndexKey(skin && skin.title)];
+if (!entry || !entry.model || !entry.skin) return;
+buy3dEntry = entry;
+buy3dBtn.style.display = '';
+});
+}
+
+if (buy3dBtn){
+buy3dBtn.addEventListener('click', () => {
+if (!buy3dEntry || !buy3dSkin) return;
+const skin = buy3dSkin;
+const title = skin.stattrak ? 'StatTrak™ ' + skin.title : skin.title;
+open3DViewer(buy3dEntry.model, title, buy3dEntry.skin, Number(skin.float_value) || 0, buy3dEntry.weapon || null, 'none');
 });
 }
