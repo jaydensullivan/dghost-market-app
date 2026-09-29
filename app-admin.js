@@ -31,7 +31,7 @@ const ADMIN_ONLY_SECTIONS = new Set([
 'adminTopupsSection','adminWithdrawalsSection','adminTopupDetailsSection',
 'adminCommissionSection','adminFinanceSummarySection','adminPromoSection','adminReferralSection',
 'adminPeopleSection','adminDealsSection','adminBalanceSection',
-'adminHoldsSection','adminApiUsageSection',
+'adminHoldsSection','adminReportSection','adminApiUsageSection',
 'adminStatusSection','adminGiveawaySection'
 ]);
 
@@ -1437,3 +1437,21 @@ adminApiFetch('/api/admin/people/block_user', { method: 'POST', body: { user_id:
 .catch(err => { status.textContent = friendlyErrorMessage(err); });
 });
 });
+
+// ---------- отчёт в Excel ----------
+
+function adminSendReport(day, btn){
+const dict = I18N[currentLang] || I18N.ru;
+const status = document.getElementById('adminReportStatus');
+btn.disabled = true;
+status.textContent = dict.admin_report_sending;
+adminApiFetch('/api/admin/finance/report_send', { method: 'POST', body: { day: day } })
+.then(data => {
+status.textContent = data.to_channel ? dict.admin_report_sent_channel : dict.admin_report_sent_dm;
+})
+.catch(err => { status.textContent = friendlyErrorMessage(err); })
+.finally(() => { btn.disabled = false; });
+}
+
+document.getElementById('adminReportTodayBtn').addEventListener('click', (e) => adminSendReport('today', e.currentTarget));
+document.getElementById('adminReportYesterdayBtn').addEventListener('click', (e) => adminSendReport('yesterday', e.currentTarget));
