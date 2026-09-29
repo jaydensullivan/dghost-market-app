@@ -78,6 +78,8 @@ not_accepted: 'Это предложение ещё не принято.',
 seller_kyc_required: 'Эта функция доступна только продавцам, прошедшим проверку. Подай заявку в Профиле.',
 seller_offer_required: 'Сначала прими оферту для продавца.',
 already_submitted: 'Заявка уже отправлена или уже одобрена.',
+steam_login_required: 'Чтобы выставлять лоты, подтверди аккаунт Steam: Профиль → «Войти через Steam».',
+trade_link_not_yours: 'Эта ссылка на обмен ведёт на другой аккаунт Steam. Привяжи ссылку того аккаунта, с которым вошёл через Steam.',
 item_not_tradable: 'Этот предмет сейчас нельзя передать (трейд-бан или защита обмена Steam). Выставь его, когда ограничение снимется.',
 phone_not_verified: 'Подтверди номер телефона кнопкой «Подтвердить номер через Telegram».',
 kyc_photos_required: 'Приложи фото документа и селфи с документом.',
@@ -120,6 +122,11 @@ return Number(n || 0).toLocaleString('ru-RU') + ' сум';
 }
 
 let hasSteamLink = false;
+// Аккаунт Steam подтверждён официальным входом Steam (OpenID).
+let steamVerified = false;
+let steamPersona = null;
+let steamAvatar = null;
+let steamLoginRequired = true;
 let steamLinkSkippedThisSession = false;
 let agreementAccepted = false;
 let sellerOfferAccepted = false;
@@ -231,6 +238,7 @@ document.getElementById('headerMenuAdmin').style.display = (isAdmin || isAuction
 if (typeof applyChipVisibility === 'function') applyChipVisibility();
 currentUserId = data.user_id;
 hasSteamLink = !!data.has_steam_link;
+applySteamVerification(data);
 agreementAccepted = !!data.agreement_accepted;
 sellerOfferAccepted = !!data.seller_offer_accepted;
 changelogSeen = !!data.changelog_seen;
@@ -319,6 +327,7 @@ document.getElementById('headerMenuAdmin').style.display = (isAdmin || isAuction
 if (typeof applyChipVisibility === 'function') applyChipVisibility();
 currentUserId = data.user_id;
 hasSteamLink = !!data.has_steam_link;
+applySteamVerification(data);
 agreementAccepted = !!data.agreement_accepted;
 sellerOfferAccepted = !!data.seller_offer_accepted;
 changelogSeen = !!data.changelog_seen;

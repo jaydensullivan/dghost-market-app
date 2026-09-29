@@ -4130,3 +4130,12 @@ object-fit:cover;
 .kyc-lightbox{ position:fixed; inset:0; z-index:20000; background:rgba(0,0,0,0.92); display:flex; align-items:center; justify-content:center; padding:12px; }
 .kyc-lightbox[hidden]{ display:none; }
 .kyc-lightbox img{ max-width:100%; max-height:100%; object-fit:contain; }
+
+/* ---------- Вход через Steam ---------- */
+.steam-verify{ margin:12px 0 4px; }
+.steam-verified{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.35); }
+.steam-verified img{ width:36px; height:36px; border-radius:8px; }
+.steam-verified-name{ font-weight:700; font-size:14px; }
+.steam-verified-note{ font-size:12px; color:var(--muted); }
+.deal-partner-steam{ display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); margin-top:4px; }
+.deal-partner-steam img{ width:18px; height:18px; border-radius:4px; }

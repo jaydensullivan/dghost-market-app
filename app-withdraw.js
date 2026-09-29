@@ -692,6 +692,11 @@ if (sellerKycStatus !== 'verified'){
 showAlert('Чтобы выставлять лоты, нужно пройти проверку продавца — открой Профиль → «Стать продавцом».');
 return;
 }
+if (steamLoginRequired && !steamVerified){
+const dict = I18N[currentLang] || I18N.ru;
+showConfirm(dict.steam_login_required_q, startSteamLogin);
+return;
+}
 if (!hasSteamLink){
 showAlert('Сначала привяжи трейд-ссылку Steam в Профиле.');
 return;
