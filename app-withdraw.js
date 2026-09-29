@@ -8,8 +8,6 @@ const withdrawSubmitBtn = document.getElementById('withdrawSubmitBtn');
 const withdrawStatus = document.getElementById('withdrawStatus');
 const withdrawPayoutPreview = document.getElementById('withdrawPayoutPreview');
 
-const WITHDRAW_FEE_PERCENT = 2.5;
-
 let withdrawMethod = 'card';
 
 function setWithdrawMethod(method){
@@ -38,8 +36,12 @@ if (!amount || amount <= 0){
 withdrawPayoutPreview.textContent = '';
 return;
 }
-const payout = Math.round(amount * (100 - WITHDRAW_FEE_PERCENT) / 100);
-withdrawPayoutPreview.textContent = `На карту придёт: ${formatCoins(payout)} (после комиссии ${WITHDRAW_FEE_PERCENT}%)`;
+// Ставка приходит с сервера (withdrawFeePercent) — по оферте она нулевая.
+const fee = Number(withdrawFeePercent) || 0;
+const payout = Math.round(amount * (100 - fee) / 100);
+withdrawPayoutPreview.textContent = fee
+? `На карту придёт: ${formatCoins(payout)} (после комиссии ${fee}%)`
+: `На карту придёт: ${formatCoins(payout)} (без комиссии)`;
 }
 
 wAmount.addEventListener('input', updateWithdrawPayoutPreview);
