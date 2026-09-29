@@ -87,7 +87,11 @@ if (failed) hint = dict['hint_' + failed];
 else if (allDone) hint = dict.hint_done;
 else {
 const key = DEAL_STEP_KEYS[currentIdx];
-if (key === 'transfer') hint = selling ? dict.hint_seller_send : dict.hint_buyer_wait_send;
+if (key === 'transfer'){
+if (selling) hint = deal.trade_requested_at ? dict.hint_seller_accept : dict.hint_seller_send;
+else if (deal.trade_requested_at) hint = dict.hint_buyer_requested;
+else hint = deal.request_trade_url ? dict.hint_buyer_request : dict.hint_buyer_wait_send;
+}
 else if (key === 'receive') hint = selling ? dict.hint_seller_wait_confirm : dict.hint_buyer_confirm;
 else if (key === 'hold') hint = (selling ? dict.hint_hold_seller : dict.hint_hold_buyer).replace('{time}', timeLeft);
 else if (key === 'payout') hint = dict.hint_payout_wait;
@@ -137,15 +141,22 @@ statusHtml = `<div class="deal-status sent">${dict.status_hold_running}</div>`;
 statusHtml = `<div class="deal-status sent">${dict.status_waiting_buyer_confirm}</div>`;
 } else {
 statusHtml = `<div class="deal-status pending">${dict.status_need_to_send}</div>`;
+if (deal.trade_requested_at){
+// Покупатель уже прислал обмен с этим предметом — продавцу только
+// принять его в Steam и подтвердить в Steam Guard.
+actionHtml = `<button class="deal-action" data-open-incoming="${deal.id}" type="button">${dict.btn_open_incoming}</button>
+<button class="deal-action" data-accepted-trade="${deal.id}" type="button">${dict.btn_accepted_trade}</button>`;
+} else {
 // Кнопка обмена — только если у покупателя есть ссылка. Иначе
 // показываем причину, чтобы продавец не искал кнопку впустую.
 if (deal.partner_trade_link){
-actionHtml = `<button class="deal-action" data-open-trade="${deal.id}" type="button">${dict.btn_open_trade}</button>` + actionHtml;
+actionHtml = `<button class="deal-action" data-open-trade="${deal.id}" type="button">${dict.btn_open_trade}</button>`;
 } else {
 statusHtml += `<div class="deal-hint">${dict.dlv_no_link}</div>`;
 }
-actionHtml = `<button class="deal-action" data-mark-sent="${deal.id}" type="button">${dict.btn_sent}</button>
-<button class="deal-action secondary" data-cancel-sale="${deal.id}" type="button">${dict.btn_cancel_sale}</button>`;
+actionHtml += `<button class="deal-action" data-mark-sent="${deal.id}" type="button">${dict.btn_sent}</button>`;
+}
+actionHtml += `<button class="deal-action secondary" data-cancel-sale="${deal.id}" type="button">${dict.btn_cancel_sale}</button>`;
 if (deal.inspect_link){
 actionHtml += `<button class="deal-action secondary" data-inspect-skin="${deal.id}" type="button">${dict.btn_inspect_item}</button>`;
 }
@@ -165,6 +176,16 @@ actionHtml = `<button class="deal-action" data-mark-received="${deal.id}" type="
 <button class="deal-action secondary" data-mark-disputed="${deal.id}" type="button">${dict.btn_not_received}</button>`;
 } else {
 statusHtml = `<div class="deal-status pending">${dict.status_waiting_send}</div>`;
+if (deal.request_trade_url){
+if (deal.trade_requested_at){
+actionHtml = `<button class="deal-action secondary" data-request-trade="${deal.id}" type="button">${dict.btn_request_again}</button>`;
+} else {
+actionHtml = `<button class="deal-action" data-request-trade="${deal.id}" type="button">${dict.btn_request_trade}</button>`;
+if (tradeRequestOpened.has(deal.id)){
+actionHtml += `<button class="deal-action" data-request-done="${deal.id}" type="button">${dict.btn_request_done}</button>`;
+}
+}
+}
 }
 }
 
@@ -213,6 +234,10 @@ if (deal && el) el.innerHTML = dealProgressHtml(deal);
 }
 
 let lastDeals = [];
+
+// Сделки, где покупатель уже открыл ссылку «Запросить предмет» — для
+// них показываем кнопку «Я отправил запрос».
+const tradeRequestOpened = new Set();
 
 function loadDeals(){
 const dict = I18N[currentLang] || I18N.ru;
@@ -698,4 +723,102 @@ const skinId = pendingDeliveryCheck;
 pendingDeliveryCheck = null;
 // Небольшая пауза: Steam не мгновенно обновляет инвентарь.
 setTimeout(() => checkDelivery(skinId, false), 3000);
+});
+
+
+// ============================================================
+// ЗАПРОС ПРЕДМЕТА ПОКУПАТЕЛЕМ
+//
+// Покупатель открывает обмен с продавцом по ссылке с for_item —
+// проданный предмет уже указан, остаётся нажать «Предложить обмен».
+// Продавцу приходит входящий обмен: принять и подтвердить в Steam
+// Guard, без выбора предмета. Если Steam предмет сам не выберет,
+// покупатель найдёт его в инвентаре продавца — по его ответу мы
+// узнаём, работает ли for_item.
+// ============================================================
+
+function postTradeRequested(skinId, preselected){
+const dict = I18N[currentLang] || I18N.ru;
+fetch(API_BASE + '/api/skins/' + skinId + '/trade_requested', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData, preselected: preselected })
+})
+.then(r => { if (!r.ok) throw new Error(); return r.json(); })
+.then(() => {
+tradeRequestOpened.delete(skinId);
+showToast(dict.req_sent_ok, { type: 'success' });
+loadDeals();
+})
+.catch(() => showErrorToast(new Error(dict.load_failed)));
+}
+
+document.addEventListener('click', (e) => {
+const dict = I18N[currentLang] || I18N.ru;
+
+const reqBtn = e.target.closest('[data-request-trade]');
+if (reqBtn){
+const deal = lastDeals.find(d => d.id === Number(reqBtn.dataset.requestTrade));
+if (!deal || !deal.request_trade_url) return;
+haptic('light');
+showToast(dict.req_open_hint, { type: 'info', duration: 7000 });
+if (!deal.trade_requested_at){
+tradeRequestOpened.add(deal.id);
+reqBtn.insertAdjacentHTML('afterend', `<button class="deal-action" data-request-done="${deal.id}" type="button">${dict.btn_request_done}</button>`);
+}
+if (tg && tg.openLink) tg.openLink(deal.request_trade_url);
+else window.open(deal.request_trade_url, '_blank');
+return;
+}
+
+const doneBtn = e.target.closest('[data-request-done]');
+if (doneBtn){
+const skinId = Number(doneBtn.dataset.requestDone);
+if (tg && tg.showPopup){
+tg.showPopup({
+message: dict.req_preselected_q,
+buttons: [
+{ id: 'yes', type: 'default', text: dict.req_yes },
+{ id: 'no', type: 'default', text: dict.req_no },
+{ id: 'cancel', type: 'cancel' },
+]
+}, (id) => {
+if (id === 'yes') postTradeRequested(skinId, true);
+else if (id === 'no') postTradeRequested(skinId, false);
+});
+} else {
+postTradeRequested(skinId, null);
+}
+return;
+}
+
+const incomingBtn = e.target.closest('[data-open-incoming]');
+if (incomingBtn){
+const deal = lastDeals.find(d => d.id === Number(incomingBtn.dataset.openIncoming));
+if (!deal || !deal.incoming_offers_url) return;
+haptic('light');
+showToast(dict.hint_seller_accept, { type: 'info', duration: 7000 });
+if (tg && tg.openLink) tg.openLink(deal.incoming_offers_url);
+else window.open(deal.incoming_offers_url, '_blank');
+return;
+}
+
+const acceptedBtn = e.target.closest('[data-accepted-trade]');
+if (acceptedBtn){
+const skinId = Number(acceptedBtn.dataset.acceptedTrade);
+showConfirm(dict.accepted_confirm, () => {
+fetch(API_BASE + '/api/skins/' + skinId + '/mark_sent', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData, accepted: true })
+})
+.then(r => { if (!r.ok) throw new Error(); return r.json(); })
+.then(() => {
+loadDeals();
+// Предмет уже у покупателя — сразу пробуем засчитать передачу.
+setTimeout(() => checkDelivery(skinId, true), 4000);
+})
+.catch(() => showErrorToast(new Error(dict.load_failed)));
+});
+}
 });
