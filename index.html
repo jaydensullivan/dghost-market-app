@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="stylesheet" href="app.css?v=36">
+<link rel="stylesheet" href="app.css?v=37">
 </head>
 <body data-tab="shop">
 
@@ -800,6 +800,13 @@
 <div id="adminApiUsageResult" class="shop-hint" style="margin-top:8px;"></div>
 </div>
 
+<div class="profile-section admin-group" id="adminKycSection" data-group="requests" style="margin-top:10px; display:none;">
+<div class="profile-section-title" data-i18n="admin_section_kyc">Заявки продавцов</div>
+<div class="shop-hint" style="margin-bottom:8px;" data-i18n="admin_kyc_hint">Сверь ФИО с документом и лицо на селфи с фото в документе. Фото открываются только здесь и в Telegram не пересылаются.</div>
+<div id="adminKycList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+<div id="adminKycRecent"></div>
+</div>
+
 <div class="profile-section admin-group" id="adminTopupsSection" data-group="requests" style="margin-top:10px; display:none;">
 <div class="profile-section-title" data-i18n="admin_section_topups">Заявки на пополнение</div>
 <div id="adminTopupsList"><div class="skins-empty" style="padding:16px 4px;" data-i18n="loading">Загрузка...</div></div>
@@ -943,6 +950,8 @@
 <button type="button" id="totp2faPromptCancelBtn" style="width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_cancel">Отмена</button>
 </div>
 </div>
+
+<div class="kyc-lightbox" id="kycLightbox" hidden><img id="kycLightboxImg" alt=""></div>
 
 <div class="edit-overlay" id="kycOverlay">
 <div class="edit-sheet">
@@ -1809,7 +1818,7 @@
 </div>
 
 <script src="app-core.js?v=5"></script>
-<script src="app-i18n.js?v=42"></script>
+<script src="app-i18n.js?v=43"></script>
 <script src="app-navigation.js?v=11"></script>
 <script src="app-shop.js?v=12"></script>
 <script src="app-legal.js?v=2"></script>
@@ -1822,7 +1831,7 @@
 <script src="app-history.js?v=5"></script>
 <script src="app-referral.js?v=4"></script>
 <script src="app-withdraw.js?v=12"></script>
-<script src="app-admin.js?v=9"></script>
+<script src="app-admin.js?v=10"></script>
 <script src="app-auctions.js?v=5"></script>
 <script src="app-reviews.js?v=2"></script>
 <script src="app-notifications.js?v=3"></script>
