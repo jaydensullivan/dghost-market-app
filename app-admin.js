@@ -1441,12 +1441,12 @@ adminApiFetch('/api/admin/people/block_user', { method: 'POST', body: { user_id:
 
 // ---------- отчёт в Excel ----------
 
-function adminSendReport(day, btn){
+function adminSendReport(day, btn, period){
 const dict = I18N[currentLang] || I18N.ru;
 const status = document.getElementById('adminReportStatus');
 btn.disabled = true;
 status.textContent = dict.admin_report_sending;
-adminApiFetch('/api/admin/finance/report_send', { method: 'POST', body: { day: day } })
+adminApiFetch('/api/admin/finance/report_send', { method: 'POST', body: period || { day: day } })
 .then(data => {
 status.textContent = data.to_channel ? dict.admin_report_sent_channel : dict.admin_report_sent_dm;
 })
@@ -1456,6 +1456,50 @@ status.textContent = data.to_channel ? dict.admin_report_sent_channel : dict.adm
 
 document.getElementById('adminReportTodayBtn').addEventListener('click', (e) => adminSendReport('today', e.currentTarget));
 document.getElementById('adminReportYesterdayBtn').addEventListener('click', (e) => adminSendReport('yesterday', e.currentTarget));
+
+// Период — даты по Ташкенту, обе включительно.
+function tashkentToday(){
+return new Date(Date.now() + (5 * 60 + new Date().getTimezoneOffset()) * 60000);
+}
+
+function isoDate(d){
+return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function setReportPeriod(preset){
+const today = tashkentToday();
+let from = new Date(today), to = new Date(today);
+if (preset === '7'){
+from.setDate(from.getDate() - 6);
+} else if (preset === 'month'){
+from = new Date(today.getFullYear(), today.getMonth(), 1);
+} else if (preset === 'prev_month'){
+from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+to = new Date(today.getFullYear(), today.getMonth(), 0);
+}
+document.getElementById('adminReportFrom').value = isoDate(from);
+document.getElementById('adminReportTo').value = isoDate(to);
+document.getElementById('adminReportFrom').max = isoDate(today);
+document.getElementById('adminReportTo').max = isoDate(today);
+}
+
+setReportPeriod('month');
+
+document.querySelector('.report-presets').addEventListener('click', (e) => {
+const b = e.target.closest('[data-report-preset]');
+if (b) setReportPeriod(b.dataset.reportPreset);
+});
+
+document.getElementById('adminReportPeriodBtn').addEventListener('click', (e) => {
+const dict = I18N[currentLang] || I18N.ru;
+const from = document.getElementById('adminReportFrom').value;
+const to = document.getElementById('adminReportTo').value;
+if (!from || !to || from > to){
+document.getElementById('adminReportStatus').textContent = dict.admin_report_bad_period;
+return;
+}
+adminSendReport(null, e.currentTarget, { date_from: from, date_to: to });
+});
 
 
 // ---------------- Заявки продавцов (KYC) ----------------

@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="stylesheet" href="app.css?v=39">
+<link rel="stylesheet" href="app.css?v=40">
 </head>
 <body data-tab="shop">
 
@@ -796,6 +796,18 @@
 <div class="edit-row">
 <button type="button" id="adminReportTodayBtn" class="steam-link-btn" data-i18n="admin_btn_report_today">За сегодня</button>
 <button type="button" id="adminReportYesterdayBtn" class="steam-link-btn secondary" data-i18n="admin_btn_report_yesterday">За вчера</button>
+</div>
+<div class="report-period">
+<div class="edit-row">
+<div class="edit-field"><label for="adminReportFrom" data-i18n="admin_report_from">С</label><input id="adminReportFrom" type="date"></div>
+<div class="edit-field"><label for="adminReportTo" data-i18n="admin_report_to">По</label><input id="adminReportTo" type="date"></div>
+</div>
+<div class="report-presets">
+<button type="button" class="category-chip" data-report-preset="7" data-i18n="admin_report_preset_7">7 дней</button>
+<button type="button" class="category-chip" data-report-preset="month" data-i18n="admin_report_preset_month">Этот месяц</button>
+<button type="button" class="category-chip" data-report-preset="prev_month" data-i18n="admin_report_preset_prev_month">Прошлый месяц</button>
+</div>
+<button type="button" id="adminReportPeriodBtn" class="steam-link-btn" style="width:100%;" data-i18n="admin_btn_report_period">📅 Отчёт за период</button>
 </div>
 <div class="edit-status" id="adminReportStatus"></div>
 </div>
@@ -1840,9 +1852,9 @@
 </div>
 
 <script src="app-core.js?v=5"></script>
-<script src="app-i18n.js?v=47"></script>
+<script src="app-i18n.js?v=48"></script>
 <script src="app-navigation.js?v=11"></script>
-<script src="app-shop.js?v=16"></script>
+<script src="app-shop.js?v=17"></script>
 <script src="app-legal.js?v=2"></script>
 <script src="app-deals.js?v=11"></script>
 <script src="app-catalog.js?v=8"></script>
@@ -1853,7 +1865,7 @@
 <script src="app-history.js?v=5"></script>
 <script src="app-referral.js?v=4"></script>
 <script src="app-withdraw.js?v=14"></script>
-<script src="app-admin.js?v=10"></script>
+<script src="app-admin.js?v=11"></script>
 <script src="app-auctions.js?v=5"></script>
 <script src="app-reviews.js?v=2"></script>
 <script src="app-notifications.js?v=3"></script>
