@@ -20,6 +20,7 @@ const profileSteamUnlinked = document.getElementById('profileSteamUnlinked');
 
 const STEAM_ERROR_MESSAGES = {
 bad_trade_link: 'Не похоже на трейд-ссылку — проверь, что скопировал целиком.',
+trade_link_not_yours: 'Эта ссылка на обмен ведёт на другой аккаунт Steam. Привяжи ссылку того аккаунта, с которым вошёл через Steam.',
 not_linked: 'Сначала привяжи трейд-ссылку.',
 inventory_private: 'Инвентарь закрыт. В настройках приватности Steam выставь инвентарь на "Открытый".',
 inventory_private_or_empty: 'Инвентарь закрыт или пуст (или в нём нет предметов CS2).',
@@ -158,3 +159,75 @@ profileSteamLinked.style.display = 'none';
 profileSteamUnlinked.style.display = 'block';
 });
 
+
+
+// ============================================================
+// ВХОД ЧЕРЕЗ STEAM
+//
+// Сервер выдаёт одноразовую ссылку; она открывается в браузере и
+// ведёт на официальный вход Steam. Пароль вводится только у Steam,
+// мы получаем лишь подтверждённый SteamID. Пока человек в браузере,
+// мини-апп опрашивает статус и обновляется сам.
+// ============================================================
+
+let steamLoginPoll = null;
+
+function applySteamVerification(data){
+steamVerified = !!data.steam_verified;
+steamPersona = data.steam_persona || null;
+steamAvatar = data.steam_avatar || null;
+if (typeof data.steam_login_required === 'boolean') steamLoginRequired = data.steam_login_required;
+updateSteamVerifyBlock();
+}
+
+function updateSteamVerifyBlock(){
+const ok = document.getElementById('steamVerified');
+if (!ok) return;
+ok.style.display = steamVerified ? 'flex' : 'none';
+document.getElementById('steamNotVerified').style.display = steamVerified ? 'none' : '';
+document.getElementById('steamVerifiedName').textContent = steamPersona || 'Steam';
+const img = document.getElementById('steamVerifiedAvatar');
+if (steamAvatar){ img.src = steamAvatar; img.hidden = false; } else { img.hidden = true; }
+}
+
+function pollSteamStatus(){
+clearInterval(steamLoginPoll);
+let tries = 0;
+steamLoginPoll = setInterval(() => {
+if (++tries > 100){ clearInterval(steamLoginPoll); return; }
+fetch(API_BASE + '/api/steam/status?init_data=' + encodeURIComponent(tg.initData))
+.then(r => r.ok ? r.json() : null)
+.then(data => {
+if (!data || !data.steam_verified) return;
+clearInterval(steamLoginPoll);
+const dict = I18N[currentLang] || I18N.ru;
+applySteamVerification(data);
+hasSteamLink = !!data.has_steam_link;
+updateProfileSteamBlock();
+document.getElementById('steamLoginStatus').textContent = data.has_steam_link ? '' : dict.steam_login_relink;
+showToast(dict.steam_login_ok, { type: 'success' });
+})
+.catch(() => {});
+}, 3000);
+}
+
+function startSteamLogin(){
+const dict = I18N[currentLang] || I18N.ru;
+const status = document.getElementById('steamLoginStatus');
+if (!tg || !tg.initData){ status.textContent = errorMessage('unauthorized'); return; }
+status.textContent = dict.steam_login_opening;
+fetch(API_BASE + '/api/steam/login_start', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+})
+.then(r => { if (!r.ok) throw new Error(); return r.json(); })
+.then(data => {
+status.textContent = dict.steam_login_waiting;
+if (tg.openLink) tg.openLink(data.url); else window.open(data.url, '_blank');
+pollSteamStatus();
+})
+.catch(() => { status.textContent = dict.load_failed; });
+}
+
+document.getElementById('steamLoginBtn').addEventListener('click', startSteamLogin);

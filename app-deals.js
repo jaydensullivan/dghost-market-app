@@ -124,6 +124,17 @@ return `<div class="dstep ${s.state}"><div class="dstep-dot">${icon}</div><div c
 }).join('') + '</div>';
 }
 
+// Подтверждённый Steam собеседника — чтобы сверить ник с окном
+// обмена в Steam и не попасть на подменённый аккаунт.
+function partnerSteamHtml(deal){
+const dict = I18N[currentLang] || I18N.ru;
+const ps = deal.partner_steam;
+if (!ps) return '';
+if (!ps.steam_verified) return `<div class="deal-partner-steam">${dict.deal_partner_steam_unverified}</div>`;
+const avatar = ps.steam_avatar ? `<img src="${escapeHtml(ps.steam_avatar)}" alt="">` : '';
+return `<div class="deal-partner-steam">${avatar}<span>${dict.deal_partner_steam}: <b>${escapeHtml(ps.steam_persona || 'Steam')}</b> ✅</span></div>`;
+}
+
 function dealCardHtml(deal){
 const dict = I18N[currentLang] || I18N.ru;
 
@@ -213,6 +224,7 @@ ${photo}
 <div class="deal-info">
 <div class="deal-title">${escapeHtml(deal.title)}</div>
 <div class="deal-meta">${roleLabel} · ${escapeHtml(counterpartyLabel)} · ${formatCoins(deal.price)}</div>
+${partnerSteamHtml(deal)}
 </div>
 </div>
 <div id="dealProgress-${deal.id}">${dealProgressHtml(deal)}</div>
