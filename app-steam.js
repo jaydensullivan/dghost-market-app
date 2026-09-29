@@ -231,3 +231,62 @@ pollSteamStatus();
 }
 
 document.getElementById('steamLoginBtn').addEventListener('click', startSteamLogin);
+
+
+// ============================================================
+// ПОДТВЕРЖДЕНИЕ ПОКУПАТЕЛЯ ДЛЯ КРУПНЫХ ПОКУПОК
+//
+// Сервер требует вход через Steam и номер телефона, когда покупки
+// за сутки превышают порог. Окно показывает, чего не хватает, и
+// само обновляется, пока человек подтверждает.
+// ============================================================
+
+let bvPoll = null;
+
+function refreshBuyerVerify(){
+Promise.all([
+fetch(API_BASE + '/api/steam/status?init_data=' + encodeURIComponent(tg.initData)).then(r => r.ok ? r.json() : {}).catch(() => ({})),
+fetch(API_BASE + '/api/kyc/phone?init_data=' + encodeURIComponent(tg.initData)).then(r => r.ok ? r.json() : {}).catch(() => ({})),
+]).then(([steam, phone]) => {
+const dict = I18N[currentLang] || I18N.ru;
+if (steam.steam_verified) applySteamVerification(steam);
+const steamOk = !!steam.steam_verified, phoneOk = !!phone.phone;
+document.getElementById('bvSteamMark').textContent = steamOk ? '✅' : '❌';
+document.getElementById('bvPhoneMark').textContent = phoneOk ? '✅' : '❌';
+document.getElementById('bvSteamBtn').style.display = steamOk ? 'none' : '';
+document.getElementById('bvPhoneBtn').style.display = phoneOk ? 'none' : '';
+if (steamOk && phoneOk){
+document.getElementById('bvStatus').textContent = dict.bv_done;
+clearInterval(bvPoll);
+}
+});
+}
+
+function openBuyerVerify(data){
+const dict = I18N[currentLang] || I18N.ru;
+document.getElementById('bvHint').textContent = dict.bv_hint.replace('{sum}', formatCoins((data && data.threshold) || 0));
+document.getElementById('bvStatus').textContent = '';
+document.getElementById('buyerVerifyOverlay').classList.add('show');
+refreshBuyerVerify();
+clearInterval(bvPoll);
+let tries = 0;
+bvPoll = setInterval(() => {
+if (++tries > 100 || !document.getElementById('buyerVerifyOverlay').classList.contains('show')){ clearInterval(bvPoll); return; }
+refreshBuyerVerify();
+}, 3000);
+}
+
+document.getElementById('bvSteamBtn').addEventListener('click', startSteamLogin);
+
+document.getElementById('bvPhoneBtn').addEventListener('click', () => {
+const dict = I18N[currentLang] || I18N.ru;
+if (!tg || !tg.requestContact){ showAlert(dict.kyc_phone_unsupported); return; }
+tg.requestContact(() => {
+document.getElementById('bvStatus').textContent = dict.kyc_phone_checking;
+});
+});
+
+document.getElementById('bvCloseBtn').addEventListener('click', () => {
+clearInterval(bvPoll);
+document.getElementById('buyerVerifyOverlay').classList.remove('show');
+});

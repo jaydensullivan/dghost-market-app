@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="stylesheet" href="app.css?v=38">
+<link rel="stylesheet" href="app.css?v=39">
 </head>
 <body data-tab="shop">
 
@@ -33,7 +33,7 @@
 <button type="button" class="header-menu-item" data-header-action="profile">👤 <span data-i18n="header_menu_profile">Профиль</span></button>
 <button type="button" class="header-menu-item" data-header-action="balance">💰 <span data-i18n="header_menu_balance">Баланс</span></button>
 <button type="button" class="header-menu-item" data-header-action="history">📜 <span data-i18n="header_menu_history">История сделок</span></button>
-<button type="button" class="header-menu-item" data-header-action="giveaway">🎁 <span data-i18n="nav_giveaway">Розыгрыш</span></button>
+<button type="button" class="header-menu-item" data-header-action="giveaway">🎁 <span data-i18n="nav_giveaway">Раздача</span></button>
 <button type="button" class="header-menu-item" data-header-action="buyRequests">🔍 <span data-i18n="header_menu_buy_requests">Ищут</span></button>
 <button type="button" class="header-menu-item" data-header-action="sell">🏷️ <span data-i18n="header_menu_sell">Продать скин</span></button>
 <button type="button" class="header-menu-item" data-header-action="support">🆘 <span data-i18n="header_menu_support">Поддержка</span></button>
@@ -143,9 +143,9 @@
 <button type="button" class="back-btn raffle-back" id="rfBackBtn">←</button>
 
 <div class="raffle-eyebrow" id="rfEyebrow">🔥 Сейчас разыгрывается</div>
-<h1 class="raffle-title" id="rfTitle">🎁 Розыгрыш</h1>
+<h1 class="raffle-title" id="rfTitle">🎁 Бесплатная раздача</h1>
 
-<div class="raffle-empty" id="rfEmpty" style="display:none;" data-i18n="rf_empty">Сейчас розыгрыша нет — следующий скоро. Загляни позже!</div>
+<div class="raffle-empty" id="rfEmpty" style="display:none;" data-i18n="rf_empty">Сейчас раздачи нет — следующая скоро. Загляни позже!</div>
 
 <div id="rfCurrent" style="display:none;">
 <div class="raffle-hero" id="rfHero"></div>
@@ -567,7 +567,7 @@
 <div class="category-chips" id="adminChips">
 <button type="button" class="category-chip active" data-admin-group="overview" data-i18n="admin_chip_overview">Обзор</button>
 <button type="button" class="category-chip" data-admin-group="auction" data-i18n="admin_chip_auction">Аукцион</button>
-<button type="button" class="category-chip" data-admin-group="giveaway" data-i18n="admin_chip_giveaway">Розыгрыш</button>
+<button type="button" class="category-chip" data-admin-group="giveaway" data-i18n="admin_chip_giveaway">Раздача</button>
 <button type="button" class="category-chip" data-admin-group="sets" data-i18n="admin_chip_sets">Сеты</button>
 <button type="button" class="category-chip" data-admin-group="deals" data-i18n="admin_chip_deals">Сделки</button>
 <button type="button" class="category-chip" data-admin-group="requests" data-i18n="admin_chip_requests">Заявки</button>
@@ -626,7 +626,7 @@
 </div>
 
 <div class="profile-section admin-group" data-group="giveaway" id="adminGiveawaySection" style="display:none;">
-<div class="profile-section-title" data-i18n="admin_section_giveaway">Розыгрыш</div>
+<div class="profile-section-title" data-i18n="admin_section_giveaway">Раздача</div>
 
 <!-- Идущий розыгрыш: итоги, участники с билетами. -->
 <div id="adminRfActive"></div>
@@ -667,12 +667,12 @@
 <option value="none" data-i18n="admin_gw_media_none">Без картинки</option>
 </select>
 </div>
-<button type="button" id="adminGwStartBtn" class="steam-link-btn" data-i18n="admin_rf_start">🚀 Запустить розыгрыш</button>
+<button type="button" id="adminGwStartBtn" class="steam-link-btn" data-i18n="admin_rf_start">🚀 Запустить раздачу</button>
 <div class="edit-status" id="adminGwStatus"></div>
 </div>
 
 <div class="admin-history-head">
-<div class="profile-section-title" data-i18n="admin_section_giveaway_history">История розыгрышей</div>
+<div class="profile-section-title" data-i18n="admin_section_giveaway_history">История раздач</div>
 <button type="button" class="admin-history-clear" data-clear-history="giveaway" data-i18n="admin_history_clear">🗑 Очистить</button>
 </div>
 <div id="adminGiveawayHistoryList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
@@ -963,6 +963,17 @@
 </div>
 
 <div class="kyc-lightbox" id="kycLightbox" hidden><img id="kycLightboxImg" alt=""></div>
+
+<div class="edit-overlay" id="buyerVerifyOverlay">
+<div class="edit-sheet">
+<h2 style="margin:0 0 6px;" data-i18n="bv_title">🔐 Подтверди аккаунт</h2>
+<div class="shop-hint" id="bvHint" style="margin-bottom:12px;"></div>
+<div class="bv-row"><span id="bvSteamMark">❌</span><span class="bv-label" data-i18n="bv_steam">Аккаунт Steam</span><button type="button" id="bvSteamBtn" class="steam-link-btn secondary" data-i18n="steam_login_btn">🔐 Войти через Steam</button></div>
+<div class="bv-row"><span id="bvPhoneMark">❌</span><span class="bv-label" data-i18n="bv_phone">Номер телефона</span><button type="button" id="bvPhoneBtn" class="steam-link-btn secondary" data-i18n="bv_phone_btn">📱 Подтвердить</button></div>
+<div class="edit-status" id="bvStatus" style="margin-top:8px;"></div>
+<button type="button" id="bvCloseBtn" style="width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_close">Закрыть</button>
+</div>
+</div>
 
 <div class="edit-overlay" id="kycOverlay">
 <div class="edit-sheet">
@@ -1829,19 +1840,19 @@
 </div>
 
 <script src="app-core.js?v=5"></script>
-<script src="app-i18n.js?v=45"></script>
+<script src="app-i18n.js?v=47"></script>
 <script src="app-navigation.js?v=11"></script>
-<script src="app-shop.js?v=14"></script>
+<script src="app-shop.js?v=16"></script>
 <script src="app-legal.js?v=2"></script>
 <script src="app-deals.js?v=11"></script>
 <script src="app-catalog.js?v=8"></script>
 <script src="app-cart.js?v=3"></script>
 <script src="app-filters.js?v=16"></script>
-<script src="app-steam.js?v=4"></script>
+<script src="app-steam.js?v=5"></script>
 <script src="app-topup.js?v=2"></script>
 <script src="app-history.js?v=5"></script>
 <script src="app-referral.js?v=4"></script>
-<script src="app-withdraw.js?v=13"></script>
+<script src="app-withdraw.js?v=14"></script>
 <script src="app-admin.js?v=10"></script>
 <script src="app-auctions.js?v=5"></script>
 <script src="app-reviews.js?v=2"></script>

@@ -98,9 +98,9 @@ invalid: 'Проверь название и цену.',
 bad_price: 'Укажи корректную цену.',
 too_low: 'Ставка слишком маленькая — кто-то уже успел поставить больше.',
 not_active: 'Аукцион уже завершился.',
-already_running: 'Розыгрыш уже запущен.',
+already_running: 'Раздача уже запущена.',
 no_end_time: 'Сначала укажи, через сколько минут финал.',
-not_running: 'Розыгрыш сейчас не запущен.',
+not_running: 'Раздача сейчас не запущена.',
 };
 
 function errorMessage(code){
@@ -108,6 +108,11 @@ return ERROR_MESSAGES[code] || 'Что-то пошло не так, попроб
 }
 
 function purchaseTrustLimitMessage(data){
+if (data.error === 'buyer_verification_required'){
+if (typeof openBuyerVerify === 'function') openBuyerVerify(data);
+const dict = I18N[currentLang] || I18N.ru;
+return dict.bv_error.replace('{sum}', formatCoins(data.threshold || 0));
+}
 if (data.error === 'trust_limit_exceeded'){
 const limitText = data.limit ? formatCoins(data.limit) : null;
 return limitText
