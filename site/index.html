@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DGhostMarket — маркетплейс скинов CS2 в Telegram</title>
+<meta name="description" content="Покупайте и продавайте скины CS2 за сумы в Telegram. Оплата удерживается до передачи предмета, продавцы проходят проверку, комиссия 5%.">
+<meta property="og:title" content="DGhostMarket — маркетплейс скинов CS2 в Telegram">
+<meta property="og:description" content="Безопасные сделки со скинами CS2: проверка продавцов, передача за 24 часа, выплата через 8 дней.">
+<meta property="og:image" content="og.jpg">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+--bg:#08070D;
+--surface:#130E1C;
+--surface-2:#1B1428;
+--line:rgba(168,85,247,0.22);
+--accent:#7B2CFF;
+--accent-2:#FF2BD6;
+--violet:#A855F7;
+--text:#F2F0F5;
+--muted:#A8A4B3;
+--grad:linear-gradient(135deg,#7B2CFF,#FF2BD6);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+margin:0;background:var(--bg);color:var(--text);
+font:16px/1.6 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+overflow-x:hidden;
+}
+a{color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+/* шапка */
+header{
+position:sticky;top:0;z-index:10;
+background:rgba(8,7,13,0.82);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.bar{display:flex;align-items:center;gap:18px;height:64px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:Orbitron,Inter,sans-serif;font-weight:900;letter-spacing:.02em;font-size:18px}
+.brand img{width:34px;height:34px}
+.brand b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+nav.links{display:flex;gap:22px;margin-left:auto}
+nav.links a{text-decoration:none;color:var(--muted);font-size:14px;font-weight:500}
+nav.links a:hover{color:var(--text)}
+.langs{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.langs button{background:none;border:0;color:var(--muted);font:600 12px Inter,sans-serif;padding:6px 10px;cursor:pointer}
+.langs button.on{background:var(--accent);color:#fff}
+.btn{
+display:inline-flex;align-items:center;justify-content:center;gap:8px;
+padding:12px 22px;border-radius:12px;font-weight:700;font-size:15px;text-decoration:none;
+border:1px solid transparent;cursor:pointer;white-space:nowrap;
+}
+.btn.primary{background:var(--grad);color:#fff;box-shadow:0 8px 30px rgba(123,44,255,0.35)}
+.btn.ghost{border-color:var(--line);color:var(--text);background:rgba(255,255,255,0.02)}
+.btn.small{padding:8px 14px;font-size:14px;border-radius:10px}
+/* первый экран */
+.hero{position:relative;padding-top:72px;padding-bottom:56px}
+.hero::before{
+content:"";position:absolute;top:-120px;left:50%;width:100vw;transform:translateX(-50%);height:620px;z-index:-1;pointer-events:none;
+background:radial-gradient(600px 320px at 75% 40%,rgba(123,44,255,0.28),transparent 70%),
+radial-gradient(420px 260px at 20% 20%,rgba(255,43,214,0.14),transparent 70%);
+}
+.hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
+.kicker{display:inline-block;font-size:13px;font-weight:600;color:var(--violet);border:1px solid var(--line);border-radius:999px;padding:5px 12px;margin-bottom:18px}
+h1{font-size:clamp(32px,5vw,52px);line-height:1.1;margin:0 0 18px;letter-spacing:-0.02em}
+h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:var(--muted);font-size:18px;max-width:560px;margin:0 0 28px}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.facts{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px}
+.fact{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.fact b{display:block;font-size:18px}
+.fact span{font-size:13px;color:var(--muted)}
+.hero-art{display:flex;justify-content:center}
+.hero-art img{width:100%;max-width:440px;height:auto;filter:drop-shadow(0 20px 60px rgba(123,44,255,0.45))}
+/* секции */
+section{padding:64px 0}
+.sec-head{max-width:640px;margin-bottom:32px}
+h2{font-size:clamp(26px,3.4vw,36px);margin:0 0 10px;letter-spacing:-0.01em}
+.sec-head p{color:var(--muted);margin:0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.panel{background:var(--surface);border:1px solid rgba(255,255,255,0.06);border-radius:18px;padding:26px}
+.panel h3{margin:0 0 16px;font-size:19px;display:flex;align-items:center;gap:10px}
+.steps{list-style:none;margin:0;padding:0;counter-reset:s}
+.steps li{position:relative;padding:0 0 18px 48px;counter-increment:s}
+.steps li:last-child{padding-bottom:0}
+.steps li::before{
+content:counter(s);position:absolute;left:0;top:0;width:32px;height:32px;border-radius:10px;
+display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;
+background:rgba(123,44,255,0.16);color:#cfa8ff;border:1px solid var(--line);
+}
+.steps b{display:block;margin-bottom:2px}
+.steps span{color:var(--muted);font-size:15px}
+/* комиссии */
+.fees{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.fee{background:var(--surface);border:1px solid rgba(255,255,255,0.06);border-radius:18px;padding:24px}
+.fee .who{font-size:13px;font-weight:600;color:var(--violet);text-transform:uppercase;letter-spacing:.06em}
+.fee .num{font-size:40px;font-weight:800;margin:8px 0 6px;letter-spacing:-0.02em}
+.fee p{margin:0;color:var(--muted);font-size:15px}
+/* безопасность */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:var(--surface);border:1px solid rgba(255,255,255,0.06);border-radius:18px;padding:22px}
+.card .ic{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:rgba(123,44,255,0.16);border:1px solid var(--line);margin-bottom:14px}
+.card .ic svg{width:22px;height:22px;stroke:#cfa8ff}
+.card h3{margin:0 0 6px;font-size:17px}
+.card p{margin:0;color:var(--muted);font-size:15px}
+.note{margin-top:20px;padding:16px 18px;border-radius:14px;border:1px solid var(--line);background:rgba(123,44,255,0.07);color:var(--text);font-size:15px}
+/* вопросы */
+details{background:var(--surface);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:4px 20px;margin-bottom:10px}
+summary{cursor:pointer;font-weight:600;padding:14px 0;list-style:none;display:flex;justify-content:space-between;gap:16px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--violet);font-size:20px;line-height:1}
+details[open] summary::after{content:"−"}
+details p{margin:0 0 16px;color:var(--muted)}
+/* документы и контакты */
+.docs{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.doc{display:flex;flex-direction:column;gap:6px;text-decoration:none;background:var(--surface);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:18px;transition:border-color .15s}
+.doc:hover{border-color:var(--violet)}
+.doc b{font-size:15px}
+.doc span{color:var(--muted);font-size:13px}
+.req{display:grid;grid-template-columns:auto 1fr;gap:8px 20px;margin:0}
+.req dt{color:var(--muted);font-size:14px}
+.req dd{margin:0;font-size:15px}
+.cta-final{text-align:center;padding:56px 24px;border-radius:24px;background:radial-gradient(500px 220px at 50% 0%,rgba(123,44,255,0.35),transparent 70%),var(--surface);border:1px solid var(--line)}
+.cta-final h2{margin-bottom:8px}
+.cta-final p{color:var(--muted);margin:0 0 24px}
+footer{border-top:1px solid rgba(255,255,255,0.06);padding:28px 0 40px;color:var(--muted);font-size:13px}
+footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+@media (max-width:900px){
+nav.links{display:none}
+.langs{margin-left:auto}
+.hero{padding-top:40px;padding-bottom:24px}
+.hero-grid{grid-template-columns:1fr}
+.hero-art{order:-1}
+.hero-art img{max-width:260px}
+.two,.fees,.cards{grid-template-columns:1fr}
+.docs{grid-template-columns:1fr 1fr}
+section{padding:44px 0}
+}
+@media (max-width:520px){
+.wrap{padding:0 16px}
+.bar .btn.small{display:none}
+.docs{grid-template-columns:1fr}
+.cta .btn{flex:1}
+.req{grid-template-columns:1fr;gap:2px}
+.req dd{margin-bottom:10px}
+}
+</style>
+</head>
+<body>
+
+<header>
+<div class="wrap bar">
+<a class="brand" href="#top"><img src="favicon.png" alt=""><span>DGhost<b>Market</b></span></a>
+<nav class="links">
+<a href="#how" data-i18n="nav_how">Как это работает</a>
+<a href="#fees" data-i18n="nav_fees">Комиссии</a>
+<a href="#safety" data-i18n="nav_safety">Безопасность</a>
+<a href="#docs" data-i18n="nav_docs">Документы</a>
+<a href="#contacts" data-i18n="nav_contacts">Контакты</a>
+</nav>
+<div class="langs" role="group" aria-label="Язык">
+<button type="button" data-lang="ru" class="on">RU</button>
+<button type="button" data-lang="uz">UZ</button>
+<button type="button" data-lang="en">EN</button>
+</div>
+<a class="btn primary small" href="https://t.me/dghostmarketbot" data-i18n="cta_open_short">Открыть</a>
+</div>
+</header>
+
+<main id="top">
+
+<div class="wrap hero">
+<div class="hero-grid">
+<div>
+<span class="kicker" data-i18n="hero_kicker">Маркетплейс в Telegram</span>
+<h1 data-i18n-html="hero_title">Покупайте и продавайте скины <span>CS2</span> за сумы</h1>
+<p class="lead" data-i18n="hero_lead">DGhostMarket соединяет покупателей и продавцов скинов. Оплата удерживается площадкой, пока предмет не дойдёт до покупателя, а продавцы проходят проверку личности.</p>
+<div class="cta">
+<a class="btn primary" href="https://t.me/dghostmarketbot" data-i18n="cta_open">Открыть в Telegram</a>
+<a class="btn ghost" href="#how" data-i18n="cta_how">Как это работает</a>
+</div>
+<div class="facts">
+<div class="fact"><b>5%</b><span data-i18n="fact_fee">комиссия с продажи</span></div>
+<div class="fact"><b data-i18n="fact_24_v">24 часа</b><span data-i18n="fact_24">на передачу предмета</span></div>
+<div class="fact"><b data-i18n="fact_8_v">8 дней</b><span data-i18n="fact_8">до выплаты продавцу</span></div>
+</div>
+</div>
+<div class="hero-art"><img src="logo.webp" width="720" height="576" alt="DGhostMarket"></div>
+</div>
+</div>
+
+<section id="how">
+<div class="wrap">
+<div class="sec-head">
+<h2 data-i18n="how_title">Как проходит сделка</h2>
+<p data-i18n="how_sub">Предмет передаётся напрямую между аккаунтами Steam, а площадка следит за сроками и держит оплату до завершения сделки.</p>
+</div>
+<div class="two">
+<div class="panel">
+<h3 data-i18n="how_buyer">🛒 Покупателю</h3>
+<ol class="steps">
+<li><b data-i18n="b1_t">Выберите скин</b><span data-i18n="b1">Каталог с фильтрами по оружию, качеству, float и цене.</span></li>
+<li><b data-i18n="b2_t">Оплатите заказ</b><span data-i18n="b2">Способом из приложения. Деньги удерживает площадка — продавец их пока не получает.</span></li>
+<li><b data-i18n="b3_t">Получите предмет</b><span data-i18n="b3">Продавец отправляет обмен в Steam в течение 24 часов. Не отправил — деньги возвращаются.</span></li>
+<li><b data-i18n="b4_t">Подтвердите получение</b><span data-i18n="b4">Примите обмен в Steam и нажмите «Получил». Если что-то не так — откройте спор.</span></li>
+</ol>
+</div>
+<div class="panel">
+<h3 data-i18n="how_seller">💼 Продавцу</h3>
+<ol class="steps">
+<li><b data-i18n="s1_t">Пройдите проверку</b><span data-i18n="s1">Номер телефона через Telegram, фото документа и селфи — один раз перед первым лотом.</span></li>
+<li><b data-i18n="s2_t">Выставьте предмет</b><span data-i18n="s2">Прямо из инвентаря Steam: фото, float и наклейки подтянутся автоматически.</span></li>
+<li><b data-i18n="s3_t">Передайте за 24 часа</b><span data-i18n="s3">После оплаты отправьте обмен в Steam и отметьте «Отправил».</span></li>
+<li><b data-i18n="s4_t">Получите деньги</b><span data-i18n="s4">Через 8 дней с оплаты сумма за вычетом 5% приходит на баланс. Вывод на карту — без комиссии.</span></li>
+</ol>
+</div>
+</div>
+</div>
+</section>
+
+<section id="fees">
+<div class="wrap">
+<div class="sec-head">
+<h2 data-i18n="fees_title">Комиссии</h2>
+<p data-i18n="fees_sub">Никаких скрытых платежей: все суммы видны до подтверждения.</p>
+</div>
+<div class="fees">
+<div class="fee"><div class="who" data-i18n="fee_buyer">Покупателю</div><div class="num">0%</div><p data-i18n="fee_buyer_p">Вы платите цену, указанную на карточке лота. Если способ оплаты берёт сбор, итог показывается до оплаты.</p></div>
+<div class="fee"><div class="who" data-i18n="fee_seller">Продавцу</div><div class="num">5%</div><p data-i18n="fee_seller_p">Вознаграждение площадки с проданного лота. Это единственный доход площадки по сделке.</p></div>
+<div class="fee"><div class="who" data-i18n="fee_withdraw">Вывод</div><div class="num">0%</div><p data-i18n="fee_withdraw_p">Вывод с баланса на карту или криптокошелёк без комиссии площадки. Минимум — 50 000 сум.</p></div>
+</div>
+</div>
+</section>
+
+<section id="safety">
+<div class="wrap">
+<div class="sec-head">
+<h2 data-i18n="safe_title">Безопасность сделок</h2>
+<p data-i18n="safe_sub">Правила площадки защищают обе стороны: и покупателя, и продавца.</p>
+</div>
+<div class="cards">
+<div class="card"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2.5"/><path d="M14 10h4M14 14h3"/></svg></div><h3 data-i18n="c1_t">Проверка продавцов</h3><p data-i18n="c1">Паспорт или ID, селфи с документом и номер, подтверждённый через Telegram. Решение принимает администратор.</p></div>
+<div class="card"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div><h3 data-i18n="c2_t">Оплата под защитой</h3><p data-i18n="c2">Деньги удерживаются 8 дней с оплаты — дольше, чем Steam позволяет отменить обмен. Только потом они уходят продавцу.</p></div>
+<div class="card"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><h3 data-i18n="c3_t">Жёсткие сроки</h3><p data-i18n="c3">24 часа на передачу предмета. Не успел — заказ отменяется, а покупатель получает деньги обратно.</p></div>
+<div class="card"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M9 12l2 2 4-4"/></svg></div><h3 data-i18n="c4_t">Споры</h3><p data-i18n="c4">Если предмет не пришёл, покупатель открывает спор. Выплата замораживается, пока администрация не разберётся.</p></div>
+<div class="card"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></div><h3 data-i18n="c5_t">Антифрод</h3><p data-i18n="c5">Система ищет связанные аккаунты, повторные номера и подозрительные сделки. Краденые предметы — блокировка и заморозка средств.</p></div>
+<div class="card"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div><h3 data-i18n="c6_t">Прозрачная история</h3><p data-i18n="c6">Каждый шаг сделки фиксируется: оплата, передача, подтверждение, выплата. История всегда доступна в приложении.</p></div>
+</div>
+<div class="note" data-i18n="no_gambling">🚫 DGhostMarket — площадка для сделок между игроками. Мы не проводим азартных игр, не продаём кейсы и не принимаем ставок. Розыгрыши бесплатны: участие не требует оплаты.</div>
+</div>
+</section>
+
+<section id="faq">
+<div class="wrap">
+<div class="sec-head"><h2 data-i18n="faq_title">Частые вопросы</h2></div>
+<details><summary data-i18n="q1">Что, если продавец не передаст предмет?</summary><p data-i18n="a1">Если за 24 часа после оплаты продавец не отметил передачу и предмет не появился у вас в Steam, заказ отменяется автоматически, а деньги возвращаются.</p></details>
+<details><summary data-i18n="q2">Почему деньги продавцу приходят через 8 дней?</summary><p data-i18n="a2">Steam позволяет отменить обмен в течение 7 дней. Площадка держит оплату чуть дольше, чтобы покупатель не остался без предмета, а продавец — без денег.</p></details>
+<details><summary data-i18n="q3">Нужно ли покупателю проходить проверку?</summary><p data-i18n="a3">Нет. Покупателю достаточно войти через Telegram и привязать ссылку на обмен Steam. Проверку проходят только продавцы.</p></details>
+<details><summary data-i18n="q4">Связана ли площадка с Valve или Steam?</summary><p data-i18n="a4">Нет. DGhostMarket — независимая площадка. Предметы передаются стандартными обменами Steam между аккаунтами пользователей.</p></details>
+<details><summary data-i18n="q5">Как связаться с поддержкой?</summary><p data-i18n="a5">Напишите на support@dghostmarket.com — отвечаем в течение 24 часов. По конкретной сделке удобнее писать прямо из приложения.</p></details>
+</div>
+</section>
+
+<section id="docs">
+<div class="wrap">
+<div class="sec-head">
+<h2 data-i18n="docs_title">Документы</h2>
+<p data-i18n="docs_sub">Правила, по которым работает площадка. Действующие редакции — всегда по этим ссылкам.</p>
+</div>
+<div class="docs">
+<a class="doc" href="https://api.dghostmarket.com/legal?doc=terms"><b data-i18n="d1">Общие условия использования</b><span data-i18n="d1s">Для всех пользователей</span></a>
+<a class="doc" href="https://api.dghostmarket.com/legal?doc=buyer"><b data-i18n="d2">Оферта для покупателя</b><span data-i18n="d2s">Оплата, получение, возвраты</span></a>
+<a class="doc" href="https://api.dghostmarket.com/legal?doc=seller"><b data-i18n="d3">Оферта для продавца</b><span data-i18n="d3s">Комиссия, холд, вывод</span></a>
+<a class="doc" href="https://api.dghostmarket.com/legal?doc=privacy"><b data-i18n="d4">Политика конфиденциальности</b><span data-i18n="d4s">Какие данные мы храним и зачем</span></a>
+</div>
+</div>
+</section>
+
+<section id="contacts">
+<div class="wrap two">
+<div class="panel">
+<h3 data-i18n="ct_title">Контакты</h3>
+<dl class="req">
+<dt data-i18n="ct_mail">Поддержка</dt><dd><a href="mailto:support@dghostmarket.com">support@dghostmarket.com</a></dd>
+<dt data-i18n="ct_bot">Telegram-бот</dt><dd><a href="https://t.me/dghostmarketbot">@dghostmarketbot</a></dd>
+<dt data-i18n="ct_time">Ответ</dt><dd data-i18n="ct_time_v">в течение 24 часов</dd>
+</dl>
+</div>
+<div class="panel">
+<h3 data-i18n="rq_title">Реквизиты</h3>
+<dl class="req">
+<dt data-i18n="rq_owner">Владелец</dt><dd data-i18n="rq_owner_v">ИП Ахмадбеков Нодирбек Сардорбек угли</dd>
+<dt data-i18n="rq_cert">Свидетельство</dt><dd>№ 8026051</dd>
+<dt data-i18n="rq_inn">ИНН</dt><dd>633585243</dd>
+<dt data-i18n="rq_addr">Адрес</dt><dd data-i18n="rq_addr_v">Мирзо-Улугбекский р-н, г. Ташкент, Узбекистан</dd>
+</dl>
+</div>
+</div>
+</section>
+
+<section>
+<div class="wrap">
+<div class="cta-final">
+<h2 data-i18n="final_title">Готовы к первой сделке?</h2>
+<p data-i18n="final_sub">Откройте DGhostMarket в Telegram — регистрация не нужна.</p>
+<a class="btn primary" href="https://t.me/dghostmarketbot" data-i18n="cta_open">Открыть в Telegram</a>
+</div>
+</div>
+</section>
+
+</main>
+
+<footer>
+<div class="wrap">
+<div>© 2026 DGhostMarket</div>
+<div data-i18n="disclaimer">DGhostMarket не связан с Valve Corporation. CS2, Counter-Strike и Steam — товарные знаки Valve Corporation.</div>
+</div>
+</footer>
+
+<script>
+// Русский текст — прямо в разметке (его видят поисковики и проверяющие),
+// узбекский и английский подставляются по кнопке языка.
+const T = {
+uz: {
+nav_how:"Qanday ishlaydi", nav_fees:"Komissiyalar", nav_safety:"Xavfsizlik", nav_docs:"Hujjatlar", nav_contacts:"Kontaktlar",
+cta_open_short:"Ochish", cta_open:"Telegramda ochish", cta_how:"Qanday ishlaydi",
+hero_kicker:"Telegramdagi marketpleys",
+hero_title:"CS2 skinlarini <span>so'mga</span> soting va sotib oling",
+hero_lead:"DGhostMarket skin xaridorlari va sotuvchilarini bog'laydi. Buyum xaridorga yetib bormaguncha to'lov platformada ushlab turiladi, sotuvchilar esa shaxsini tasdiqlaydi.",
+fact_fee:"sotuvdan komissiya", fact_24_v:"24 soat", fact_24:"buyumni yuborish uchun", fact_8_v:"8 kun", fact_8:"sotuvchiga to'lovgacha",
+how_title:"Bitim qanday o'tadi", how_sub:"Buyum Steam akkauntlari o'rtasida to'g'ridan-to'g'ri o'tkaziladi, platforma esa muddatlarni kuzatadi va bitim tugaguncha to'lovni ushlab turadi.",
+how_buyer:"🛒 Xaridorga", how_seller:"💼 Sotuvchiga",
+b1_t:"Skin tanlang", b1:"Qurol, sifat, float va narx bo'yicha filtrlari bor katalog.",
+b2_t:"Buyurtmani to'lang", b2:"Ilovadagi usul bilan. Pulni platforma ushlab turadi — sotuvchi uni hali olmaydi.",
+b3_t:"Buyumni oling", b3:"Sotuvchi 24 soat ichida Steam'da almashuv yuboradi. Yubormasa — pul qaytariladi.",
+b4_t:"Qabul qilishni tasdiqlang", b4:"Steam'da almashuvni qabul qiling va «Oldim»ni bosing. Muammo bo'lsa — nizo oching.",
+s1_t:"Tekshiruvdan o'ting", s1:"Telegram orqali telefon raqami, hujjat surati va selfi — birinchi lotdan oldin bir marta.",
+s2_t:"Buyumni joylang", s2:"To'g'ridan-to'g'ri Steam inventaridan: surat, float va stikerlar avtomatik qo'shiladi.",
+s3_t:"24 soat ichida yuboring", s3:"To'lovdan keyin Steam'da almashuv yuboring va «Yubordim»ni belgilang.",
+s4_t:"Pulingizni oling", s4:"To'lovdan 8 kun o'tgach, 5% chegirilgan summa balansga tushadi. Kartaga yechish — komissiyasiz.",
+fees_title:"Komissiyalar", fees_sub:"Yashirin to'lovlar yo'q: barcha summalar tasdiqlashdan oldin ko'rinadi.",
+fee_buyer:"Xaridorga", fee_buyer_p:"Lot kartochkasidagi narxni to'laysiz. To'lov usuli yig'im olsa, yakuniy summa to'lovdan oldin ko'rsatiladi.",
+fee_seller:"Sotuvchiga", fee_seller_p:"Sotilgan lotdan platforma mukofoti. Bu platformaning bitimdan yagona daromadi.",
+fee_withdraw:"Yechish", fee_withdraw_p:"Balansdan karta yoki kriptohamyonga platforma komissiyasisiz. Minimal — 50 000 so'm.",
+safe_title:"Bitimlar xavfsizligi", safe_sub:"Platforma qoidalari ikkala tomonni ham himoya qiladi: xaridorni ham, sotuvchini ham.",
+c1_t:"Sotuvchilarni tekshirish", c1:"Pasport yoki ID, hujjat bilan selfi va Telegram orqali tasdiqlangan raqam. Qarorni administrator qabul qiladi.",
+c2_t:"Himoyalangan to'lov", c2:"Pul to'lovdan keyin 8 kun ushlab turiladi — Steam almashuvni bekor qilishga ruxsat beradigan muddatdan uzoqroq. Shundan keyingina sotuvchiga o'tadi.",
+c3_t:"Qat'iy muddatlar", c3:"Buyumni yuborish uchun 24 soat. Ulgurmasa — buyurtma bekor qilinadi, xaridor pulini qaytarib oladi.",
+c4_t:"Nizolar", c4:"Buyum kelmasa, xaridor nizo ochadi. Administratsiya ko'rib chiqmaguncha to'lov muzlatiladi.",
+c5_t:"Antifrod", c5:"Tizim bog'langan akkauntlar, takroriy raqamlar va shubhali bitimlarni qidiradi. O'g'irlangan buyumlar — bloklash va mablag'larni muzlatish.",
+c6_t:"Shaffof tarix", c6:"Bitimning har bir qadami qayd etiladi: to'lov, yuborish, tasdiqlash, to'lov. Tarix ilovada doim mavjud.",
+no_gambling:"🚫 DGhostMarket — o'yinchilar o'rtasidagi bitimlar uchun platforma. Biz qimor o'yinlari o'tkazmaymiz, keyslar sotmaymiz va stavkalar qabul qilmaymiz. O'yinlar bepul: ishtirok uchun to'lov talab qilinmaydi.",
+faq_title:"Ko'p so'raladigan savollar",
+q1:"Sotuvchi buyumni yubormasa-chi?", a1:"To'lovdan keyin 24 soat ichida sotuvchi yuborishni belgilamasa va buyum Steam'ingizda paydo bo'lmasa, buyurtma avtomatik bekor qilinadi va pul qaytariladi.",
+q2:"Nega sotuvchiga pul 8 kundan keyin tushadi?", a2:"Steam almashuvni 7 kun ichida bekor qilishga ruxsat beradi. Platforma to'lovni biroz uzoqroq ushlab turadi — xaridor buyumsiz, sotuvchi esa pulsiz qolmasligi uchun.",
+q3:"Xaridor tekshiruvdan o'tishi kerakmi?", a3:"Yo'q. Xaridorga Telegram orqali kirish va Steam almashuv havolasini bog'lash kifoya. Tekshiruvdan faqat sotuvchilar o'tadi.",
+q4:"Platforma Valve yoki Steam bilan bog'liqmi?", a4:"Yo'q. DGhostMarket — mustaqil platforma. Buyumlar foydalanuvchi akkauntlari o'rtasida standart Steam almashuvlari orqali o'tkaziladi.",
+q5:"Qo'llab-quvvatlash bilan qanday bog'lanish mumkin?", a5:"support@dghostmarket.com manziliga yozing — 24 soat ichida javob beramiz. Muayyan bitim bo'yicha to'g'ridan-to'g'ri ilovadan yozish qulayroq.",
+docs_title:"Hujjatlar", docs_sub:"Platforma ishlaydigan qoidalar. Amaldagi tahrirlar — doim shu havolalarda.",
+d1:"Umumiy foydalanish shartlari", d1s:"Barcha foydalanuvchilar uchun", d2:"Xaridor uchun oferta", d2s:"To'lov, olish, qaytarish", d3:"Sotuvchi uchun oferta", d3s:"Komissiya, hold, yechish", d4:"Maxfiylik siyosati", d4s:"Qaysi ma'lumotlarni va nima uchun saqlaymiz",
+ct_title:"Kontaktlar", ct_mail:"Qo'llab-quvvatlash", ct_bot:"Telegram-bot", ct_time:"Javob", ct_time_v:"24 soat ichida",
+rq_title:"Rekvizitlar", rq_owner:"Egasi", rq_owner_v:"YaTT Axmadbekov Nodirbek Sardorbek o'g'li", rq_cert:"Guvohnoma", rq_inn:"STIR", rq_addr:"Manzil", rq_addr_v:"Mirzo Ulug'bek tumani, Toshkent sh., O'zbekiston",
+final_title:"Birinchi bitimga tayyormisiz?", final_sub:"DGhostMarket'ni Telegramda oching — ro'yxatdan o'tish shart emas.",
+disclaimer:"DGhostMarket Valve Corporation bilan bog'liq emas. CS2, Counter-Strike va Steam — Valve Corporation tovar belgilari."
+},
+en: {
+nav_how:"How it works", nav_fees:"Fees", nav_safety:"Safety", nav_docs:"Documents", nav_contacts:"Contacts",
+cta_open_short:"Open", cta_open:"Open in Telegram", cta_how:"How it works",
+hero_kicker:"Marketplace in Telegram",
+hero_title:"Buy and sell <span>CS2</span> skins for sum",
+hero_lead:"DGhostMarket connects skin buyers and sellers. The platform holds the payment until the item reaches the buyer, and sellers verify their identity.",
+fact_fee:"fee on sales", fact_24_v:"24 hours", fact_24:"to transfer the item", fact_8_v:"8 days", fact_8:"until seller payout",
+how_title:"How a deal works", how_sub:"The item moves directly between Steam accounts, while the platform watches the deadlines and holds the payment until the deal is complete.",
+how_buyer:"🛒 For buyers", how_seller:"💼 For sellers",
+b1_t:"Pick a skin", b1:"A catalog with filters by weapon, quality, float and price.",
+b2_t:"Pay for the order", b2:"With a method from the app. The platform holds the money — the seller doesn't get it yet.",
+b3_t:"Receive the item", b3:"The seller sends a Steam trade within 24 hours. If not — you get a refund.",
+b4_t:"Confirm receipt", b4:"Accept the trade in Steam and tap “Received”. Something wrong — open a dispute.",
+s1_t:"Get verified", s1:"Phone number via Telegram, a document photo and a selfie — once, before your first listing.",
+s2_t:"List an item", s2:"Straight from your Steam inventory: photo, float and stickers are filled in automatically.",
+s3_t:"Transfer within 24 hours", s3:"After payment, send the Steam trade and mark it as “Sent”.",
+s4_t:"Get paid", s4:"8 days after payment, the amount minus 5% lands on your balance. Card withdrawals are free.",
+fees_title:"Fees", fees_sub:"No hidden charges: every amount is shown before you confirm.",
+fee_buyer:"Buyers", fee_buyer_p:"You pay the price on the listing. If a payment method charges a fee, the total is shown before payment.",
+fee_seller:"Sellers", fee_seller_p:"The platform's fee on a sold item. It's the platform's only income from a deal.",
+fee_withdraw:"Withdrawals", fee_withdraw_p:"From your balance to a card or crypto wallet with no platform fee. Minimum — 50,000 sum.",
+safe_title:"Deal safety", safe_sub:"Platform rules protect both sides: the buyer and the seller.",
+c1_t:"Verified sellers", c1:"Passport or ID, a selfie with the document and a phone number confirmed via Telegram. An admin makes the decision.",
+c2_t:"Protected payment", c2:"Money is held for 8 days from payment — longer than Steam allows a trade to be reversed. Only then does it go to the seller.",
+c3_t:"Strict deadlines", c3:"24 hours to transfer the item. Miss it — the order is cancelled and the buyer is refunded.",
+c4_t:"Disputes", c4:"If the item doesn't arrive, the buyer opens a dispute. The payout is frozen until the admins sort it out.",
+c5_t:"Anti-fraud", c5:"The system looks for linked accounts, reused numbers and suspicious deals. Stolen items mean a ban and frozen funds.",
+c6_t:"Clear history", c6:"Every step is recorded: payment, transfer, confirmation, payout. The history is always available in the app.",
+no_gambling:"🚫 DGhostMarket is a platform for deals between players. We don't run gambling, don't sell cases and don't accept bets. Giveaways are free: no payment is required to take part.",
+faq_title:"FAQ",
+q1:"What if the seller doesn't transfer the item?", a1:"If within 24 hours of payment the seller hasn't marked the transfer and the item isn't in your Steam inventory, the order is cancelled automatically and you get your money back.",
+q2:"Why does the seller get paid after 8 days?", a2:"Steam allows a trade to be reversed within 7 days. The platform holds the payment a little longer so the buyer isn't left without the item, and the seller isn't left without the money.",
+q3:"Do buyers need to get verified?", a3:"No. Buyers just sign in with Telegram and add their Steam trade link. Only sellers get verified.",
+q4:"Is the platform affiliated with Valve or Steam?", a4:"No. DGhostMarket is an independent platform. Items move via standard Steam trades between users' accounts.",
+q5:"How do I contact support?", a5:"Email support@dghostmarket.com — we reply within 24 hours. For a specific deal, it's easiest to write from the app.",
+docs_title:"Documents", docs_sub:"The rules the platform runs on. The current versions are always at these links.",
+d1:"Terms of use", d1s:"For all users", d2:"Buyer offer", d2s:"Payment, delivery, refunds", d3:"Seller offer", d3s:"Fee, hold, withdrawals", d4:"Privacy policy", d4s:"What data we keep and why",
+ct_title:"Contacts", ct_mail:"Support", ct_bot:"Telegram bot", ct_time:"Response", ct_time_v:"within 24 hours",
+rq_title:"Company details", rq_owner:"Owner", rq_owner_v:"Sole proprietor Akhmadbekov Nodirbek Sardorbek ugli", rq_cert:"Certificate", rq_inn:"TIN", rq_addr:"Address", rq_addr_v:"Mirzo Ulugbek district, Tashkent, Uzbekistan",
+final_title:"Ready for your first deal?", final_sub:"Open DGhostMarket in Telegram — no sign-up needed.",
+disclaimer:"DGhostMarket is not affiliated with Valve Corporation. CS2, Counter-Strike and Steam are trademarks of Valve Corporation."
+}
+};
+const RU = {};
+document.querySelectorAll('[data-i18n]').forEach(el => { RU[el.dataset.i18n] = el.textContent; });
+document.querySelectorAll('[data-i18n-html]').forEach(el => { RU[el.dataset.i18nHtml] = el.innerHTML; });
+const TITLES = {
+ru: document.title,
+uz: "DGhostMarket — Telegramdagi CS2 skinlari marketpleysi",
+en: "DGhostMarket — CS2 skin marketplace in Telegram"
+};
+
+function setLang(lang){
+const dict = lang === 'ru' ? RU : Object.assign({}, RU, T[lang]);
+document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = dict[el.dataset.i18n]; });
+document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = dict[el.dataset.i18nHtml]; });
+document.querySelectorAll('[data-lang]').forEach(b => b.classList.toggle('on', b.dataset.lang === lang));
+document.documentElement.lang = lang;
+document.title = TITLES[lang];
+try { localStorage.setItem('dgm_lang', lang); } catch (e) {}
+}
+
+document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
+
+let saved = null;
+try { saved = localStorage.getItem('dgm_lang'); } catch (e) {}
+if (!saved){
+const nav = (navigator.language || '').toLowerCase();
+saved = nav.startsWith('uz') ? 'uz' : (nav.startsWith('ru') ? 'ru' : null);
+}
+if (saved && saved !== 'ru' && T[saved]) setLang(saved);
+</script>
+</body>
+</html>
