@@ -48,6 +48,7 @@ wAmount.addEventListener('input', updateWithdrawPayoutPreview);
 
 const WITHDRAW_ERROR_MESSAGES = {
 no_payment_details: 'Укажи карту и Ф.И.О. владельца карты.',
+payout_name_mismatch: 'Вывод возможен только на свою карту: Ф.И.О. держателя должно совпадать с Ф.И.О. из проверки продавца. Впиши имя так, как на карте (можно латиницей). Если всё верно, а ошибка остаётся — напиши в поддержку.',
 no_crypto_details: 'Укажи адрес кошелька.',
 below_minimum: 'Сумма меньше минимальной для вывода.',
 insufficient_funds: 'Недостаточно средств на балансе.',
