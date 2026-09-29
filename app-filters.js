@@ -111,13 +111,128 @@ document.getElementById('profileVerified').style.display = (status === 'verified
 document.querySelectorAll('.pf-seller-only').forEach(el => { el.style.display = (status === 'verified') ? '' : 'none'; });
 }
 
+// Фото документа и селфи — сжатые в JPEG (base64), номер — только
+// тот, что пользователь сам отправил боту кнопкой Telegram.
+let kycPhotos = { doc: '', selfie: '' };
+let kycPhonePollTimer = null;
+
+function setKycPhone(phone){
+const ok = document.getElementById('kycPhoneOk');
+const btn = document.getElementById('kycPhoneBtn');
+if (phone){
+ok.textContent = '✅ ' + phone;
+ok.style.display = '';
+btn.style.display = 'none';
+} else {
+ok.style.display = 'none';
+btn.style.display = '';
+}
+}
+
+function fetchKycPhone(){
+if (!tg || !tg.initData) return Promise.resolve('');
+return fetch(API_BASE + '/api/kyc/phone?init_data=' + encodeURIComponent(tg.initData))
+.then(r => r.ok ? r.json() : {})
+.then(data => data.phone || '')
+.catch(() => '');
+}
+
+function pollKycPhone(){
+clearInterval(kycPhonePollTimer);
+let tries = 0;
+kycPhonePollTimer = setInterval(() => {
+if (++tries > 20 || !kycOverlay.classList.contains('show')){
+clearInterval(kycPhonePollTimer);
+return;
+}
+fetchKycPhone().then(phone => {
+if (phone){
+clearInterval(kycPhonePollTimer);
+setKycPhone(phone);
+}
+});
+}, 2000);
+}
+
+function resetKycPhoto(kind){
+kycPhotos[kind] = '';
+const box = document.getElementById(kind === 'doc' ? 'kycDocBox' : 'kycSelfieBox');
+const img = document.getElementById(kind === 'doc' ? 'kycDocPreview' : 'kycSelfiePreview');
+box.classList.remove('has-photo');
+img.hidden = true;
+img.removeAttribute('src');
+}
+
+// Уменьшаем до 1600 px по длинной стороне: так файл ~200–400 КБ
+// вместо 3–8 МБ с камеры, а текст документа остаётся читаемым.
+function compressKycPhoto(file){
+return new Promise((resolve, reject) => {
+const url = URL.createObjectURL(file);
+const img = new Image();
+img.onload = () => {
+const scale = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+const canvas = document.createElement('canvas');
+canvas.width = Math.round(img.naturalWidth * scale);
+canvas.height = Math.round(img.naturalHeight * scale);
+canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+URL.revokeObjectURL(url);
+resolve(canvas.toDataURL('image/jpeg', 0.85));
+};
+img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('bad_image')); };
+img.src = url;
+});
+}
+
+function bindKycPhotoInput(kind){
+const input = document.getElementById(kind === 'doc' ? 'kycDocInput' : 'kycSelfieInput');
+input.addEventListener('change', () => {
+const file = input.files && input.files[0];
+input.value = '';
+if (!file) return;
+const dict = I18N[currentLang] || I18N.ru;
+compressKycPhoto(file).then(dataUrl => {
+kycPhotos[kind] = dataUrl;
+const box = document.getElementById(kind === 'doc' ? 'kycDocBox' : 'kycSelfieBox');
+const img = document.getElementById(kind === 'doc' ? 'kycDocPreview' : 'kycSelfiePreview');
+img.src = dataUrl;
+img.hidden = false;
+box.classList.add('has-photo');
+kycStatus.textContent = '';
+}).catch(() => {
+resetKycPhoto(kind);
+kycStatus.textContent = dict.kyc_photo_bad;
+});
+});
+}
+bindKycPhotoInput('doc');
+bindKycPhotoInput('selfie');
+
+document.getElementById('kycPhoneBtn').addEventListener('click', () => {
+const dict = I18N[currentLang] || I18N.ru;
+if (!tg || !tg.requestContact){
+showAlert(dict.kyc_phone_unsupported);
+return;
+}
+// Контакт уходит боту в чат; бот проверяет, что номер принадлежит
+// самому пользователю, и сохраняет его — мини-апп лишь забирает итог.
+tg.requestContact((sent) => {
+if (sent){
+kycStatus.textContent = dict.kyc_phone_checking;
+pollKycPhone();
+}
+});
+});
+
 function openKycOverlay(){
 document.getElementById('kycFullName').value = '';
-document.getElementById('kycPhone').value = '';
 document.getElementById('kycCountry').value = '';
 document.getElementById('kycAddress').value = '';
+resetKycPhoto('doc');
+resetKycPhoto('selfie');
+setKycPhone('');
 kycStatus.textContent = '';
 kycOverlay.classList.add('show');
+fetchKycPhone().then(setKycPhone);
 }
 
 document.getElementById('openKycBtn').addEventListener('click', openKycOverlay);
@@ -653,6 +768,7 @@ toggle2fa('admin', e.target.checked, e.target);
 });
 
 document.getElementById('kycCloseBtn').addEventListener('click', () => {
+clearInterval(kycPhonePollTimer);
 kycOverlay.classList.remove('show');
 });
 
@@ -660,11 +776,18 @@ document.getElementById('kycSubmitBtn').addEventListener('click', () => {
 if (!tg || !tg.initData) return;
 const dict = I18N[currentLang] || I18N.ru;
 const fullName = document.getElementById('kycFullName').value.trim();
-const phone = document.getElementById('kycPhone').value.trim();
 const country = document.getElementById('kycCountry').value.trim();
 const address = document.getElementById('kycAddress').value.trim();
-if (!fullName || !phone || !country || !address){
+if (!fullName || !country || !address){
 kycStatus.textContent = dict.kyc_fill_all;
+return;
+}
+if (document.getElementById('kycPhoneOk').style.display === 'none'){
+kycStatus.textContent = errorMessage('phone_not_verified');
+return;
+}
+if (!kycPhotos.doc || !kycPhotos.selfie){
+kycStatus.textContent = errorMessage('kyc_photos_required');
 return;
 }
 const btn = document.getElementById('kycSubmitBtn');
@@ -675,7 +798,8 @@ method: 'POST',
 headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({
 init_data: tg.initData,
-full_name: fullName, phone: phone, country: country, address: address,
+full_name: fullName, country: country, address: address,
+doc_photo: kycPhotos.doc, selfie_photo: kycPhotos.selfie,
 })
 })
 .then(async r => {
