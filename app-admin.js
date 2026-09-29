@@ -28,7 +28,7 @@ return r.json();
 }
 
 const ADMIN_ONLY_SECTIONS = new Set([
-'adminTopupsSection','adminWithdrawalsSection','adminTopupDetailsSection',
+'adminKycSection','adminTopupsSection','adminWithdrawalsSection','adminTopupDetailsSection',
 'adminCommissionSection','adminFinanceSummarySection','adminPromoSection','adminReferralSection',
 'adminPeopleSection','adminDealsSection','adminBalanceSection',
 'adminHoldsSection','adminReportSection','adminApiUsageSection',
@@ -278,6 +278,7 @@ loadAdminGiveawayPanel();
 loadAdminEventsHistory();
 loadAdminSetSkinPicker();
 loadAdminSetsList();
+loadAdminKyc();
 loadAdminTopups();
 loadAdminWithdrawals();
 loadAdminSettings();
@@ -1455,3 +1456,96 @@ status.textContent = data.to_channel ? dict.admin_report_sent_channel : dict.adm
 
 document.getElementById('adminReportTodayBtn').addEventListener('click', (e) => adminSendReport('today', e.currentTarget));
 document.getElementById('adminReportYesterdayBtn').addEventListener('click', (e) => adminSendReport('yesterday', e.currentTarget));
+
+
+// ---------------- Заявки продавцов (KYC) ----------------
+// Фото документов грузятся прямо с сервера по запросу админа и в
+// Telegram не пересылаются; решение принимается здесь.
+
+function kycPhotoUrl(id, kind){
+return API_BASE + '/api/admin/kyc/photo?id=' + id + '&kind=' + kind + '&init_data=' + encodeURIComponent(tg.initData);
+}
+
+function kycDateLabel(iso){
+return iso ? new Date(iso).toLocaleString(currentLang === 'en' ? 'en-US' : 'ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+}
+
+function loadAdminKyc(){
+const dict = I18N[currentLang] || I18N.ru;
+const list = document.getElementById('adminKycList');
+const recentBox = document.getElementById('adminKycRecent');
+adminApiFetch('/api/admin/kyc/list')
+.then(data => {
+const pending = data.pending || [];
+list.innerHTML = pending.length ? pending.map(k => `
+<div class="deal-card kyc-card">
+<div class="deal-title">#${k.id} · ${escapeHtml(k.username || '')} <span class="deal-meta">id ${k.user_id} · ${kycDateLabel(k.submitted_at)}</span></div>
+<dl class="kyc-fields">
+<dt>${dict.kyc_label_fullname}</dt><dd>${escapeHtml(k.full_name)}</dd>
+<dt>${dict.kyc_label_phone}</dt><dd>${escapeHtml(k.phone)}</dd>
+<dt>${dict.kyc_label_country}</dt><dd>${escapeHtml(k.country)}</dd>
+<dt>${dict.kyc_label_address}</dt><dd>${escapeHtml(k.address)}</dd>
+</dl>
+${k.checks ? `<div class="kyc-checks">${escapeHtml(k.checks)}</div>` : ''}
+${k.has_photos ? `<div class="kyc-shots">
+<figure><img src="${kycPhotoUrl(k.id, 'doc')}" data-kyc-zoom alt=""><figcaption>${dict.kyc_photo_doc}</figcaption></figure>
+<figure><img src="${kycPhotoUrl(k.id, 'selfie')}" data-kyc-zoom alt=""><figcaption>${dict.kyc_photo_selfie}</figcaption></figure>
+</div>` : `<div class="deal-hint">${dict.admin_kyc_no_photos}</div>`}
+<div class="deal-actions">
+<button class="deal-action" data-kyc-decide="approve" data-kyc-id="${k.id}" type="button">${dict.admin_btn_approve}</button>
+<button class="deal-action secondary" data-kyc-decide="reject" data-kyc-id="${k.id}" type="button">${dict.admin_btn_reject}</button>
+</div>
+</div>`).join('') : `<div class="skins-empty" style="padding:12px 4px;">${dict.admin_no_requests}</div>`;
+const recent = data.recent || [];
+recentBox.innerHTML = recent.length
+? `<div class="kyc-recent"><b>${dict.admin_kyc_recent}</b><br>` + recent.map(k =>
+`#${k.id} · id ${k.user_id} · ${k.status === 'verified' ? '✅' : '❌'} ${kycDateLabel(k.reviewed_at)}`).join('<br>') + '</div>'
+: '';
+})
+.catch(() => { list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.load_failed}</div>`; });
+}
+
+document.getElementById('adminKycList').addEventListener('click', (e) => {
+const zoom = e.target.closest('[data-kyc-zoom]');
+if (zoom){
+document.getElementById('kycLightboxImg').src = zoom.src;
+document.getElementById('kycLightbox').hidden = false;
+return;
+}
+const btn = e.target.closest('[data-kyc-decide]');
+if (!btn) return;
+const dict = I18N[currentLang] || I18N.ru;
+const approve = btn.dataset.kycDecide === 'approve';
+const ask = (approve ? dict.admin_kyc_confirm_approve : dict.admin_kyc_confirm_reject).replace('{id}', btn.dataset.kycId);
+const go = () => {
+btn.disabled = true;
+adminApiFetch('/api/admin/kyc/decide', { method: 'POST', body: { id: Number(btn.dataset.kycId), decision: btn.dataset.kycDecide } })
+.then(loadAdminKyc)
+.catch(err => { btn.disabled = false; showErrorToast(err); });
+};
+if (tg && tg.showConfirm) tg.showConfirm(ask, ok => { if (ok) go(); });
+else if (confirm(ask)) go();
+});
+
+document.getElementById('kycLightbox').addEventListener('click', () => {
+document.getElementById('kycLightbox').hidden = true;
+document.getElementById('kycLightboxImg').removeAttribute('src');
+});
+
+// Кнопка «Открыть заявку» в уведомлении бота ведёт сюда (startapp=admin_kyc).
+(function openKycFromDeepLink(){
+if (!(tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param === 'admin_kyc')) return;
+let tries = 0;
+const timer = setInterval(() => {
+if (++tries > 40){ clearInterval(timer); return; }
+if (!isAdmin) return;
+clearInterval(timer);
+currentAdminChip = 'requests';
+document.querySelectorAll('#adminChips .category-chip').forEach(c => c.classList.toggle('active', c.dataset.adminGroup === 'requests'));
+goToScreen('admin');
+setTimeout(() => {
+const sec = document.getElementById('adminKycSection');
+if (sec && sec.style.display !== 'none') sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}, 600);
+}, 250);
+})();
