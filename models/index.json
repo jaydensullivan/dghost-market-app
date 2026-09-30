@@ -494,6 +494,26 @@
   "skin": "models/skins/aq_awp_twine",
   "weapon": "models/weapons/awp"
  },
+ "Charm Detachments | Army Sheen": {
+  "model": "models/cz75a.glb",
+  "skin": "models/skins/am_army_shine",
+  "weapon": null
+ },
+ "Charm Detachments | Green Plaid": {
+  "model": "models/cz75a.glb",
+  "skin": "models/skins/hy_plaid2",
+  "weapon": null
+ },
+ "Charm Detachments | Hexane": {
+  "model": "models/cz75a.glb",
+  "skin": "models/skins/hy_bluehex",
+  "weapon": null
+ },
+ "Charm Detachments | Jungle Dashed": {
+  "model": "models/cz75a.glb",
+  "skin": "models/skins/sp_tape_short_jungle",
+  "weapon": null
+ },
  "Desert Eagle | Blaze": {
   "model": "models/deagle.glb",
   "skin": "models/skins/aa_flames",
@@ -1934,6 +1954,151 @@
   "skin": "models/skins/cu_mp9_island_floral",
   "weapon": "models/weapons/mp9"
  },
+ "P2000 | Acid Etched": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/aq_p2000_acid_clover",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Amber Fade": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/aa_fade_metallic",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Chainmail": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/am_chainmail",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Coach Class": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/cu_luggage_p2000",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Corticera": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/cu_favela_p2000",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Dispatch": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/am_numbers_red_blue",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Fire Elemental": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/cu_p2000_fire_elemental",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Gnarled": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/aq_p2000_lost_world",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Granite Marbleized": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/hy_granite",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Grassland Leaves": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/sp_leaves_grassland",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Handgun": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/aq_p2000_boom",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Imperial": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/am_p2000_imperial_red",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Imperial Dragon": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/gs_p2000_imperial_dragon",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Ivory": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/cu_p2000_ivory",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Lifted Spirits": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/cu_p2k_flying_dream",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Obsidian": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/cu_p2000_obsidian",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Ocean Foam": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/am_ossify_blue_p2000_bravo",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Oceanic": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/hy_p2000_oceani",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Panther Camo": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/am_black_panther",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Pathfinder": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/sp_labyrinth2",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Pulse": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/cu_p2000_pulse",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Red FragCam": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/hy_poly_camo",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Red Wing": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/p2000_deep_red",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Scorpion": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/am_scorpion_p2000",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Space Race": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/aa_spacerace_orange",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Sure Grip": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/p2k_fractal",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Urban Hazard": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/cu_p2000_urban_hazard",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Wicked Sick": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/cu_p2000_decline",
+  "weapon": "models/weapons/hkp2000"
+ },
+ "P2000 | Woodsman": {
+  "model": "models/hkp2000.glb",
+  "skin": "models/skins/cu_p2000_hunter",
+  "weapon": "models/weapons/hkp2000"
+ },
  "P250 | Apep's Curse": {
   "model": "models/p250.glb",
   "skin": "models/skins/gs_p250_apep",
@@ -2967,6 +3132,11 @@
  "USP-S | Dark Water": {
   "model": "models/usp_silencer.glb",
   "skin": "models/skins/am_zebra_dark",
+  "weapon": null
+ },
+ "USP-S | Pathfinder": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/sp_labyrinth2",
   "weapon": null
  }
 }
