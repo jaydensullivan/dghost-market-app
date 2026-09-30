@@ -493,5 +493,180 @@
   "model": "models/awp.glb",
   "skin": "models/skins/aq_awp_twine",
   "weapon": "models/weapons/awp"
+ },
+ "M4A4 | Asiimov": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/cu_m4_asimov",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Bullet Rain": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/cu_bullet_rain_m4a1",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Choppa": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/m4a4_green_camo",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Converter": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/hy_red_hex",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Cyber Security": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/cu_m4a4_cyberpunk",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Dark Blossom": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/sp_bud_blue",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Dark Operative": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/m4a4_black_side_matte",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Daybreak": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/am_kimono_sunrise",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Desert Storm": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/hy_desert",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Desolate Space": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/cu_m4a4_desolate_space",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Etch Lord": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/m4a4_snakebite",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Evil Daimyo": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/cu_m4a4_evil_daimyo",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Faded Zebra": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/sp_zebracam_bw",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Falak": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/m4a4_falak",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Full Throttle": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/m4a4_skrrrt_green",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Global Offensive": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/cu_csgo_camo",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Griffin": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/cu_m4a4_griffin",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Hellfire": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/cu_m4a4_hellfire",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Howl": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/cu_m4a1_howling",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | In Living Color": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/cu_m4a4_love",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Jungle Tiger": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/hy_v_tiger",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Mainframe": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/am_circuitboard_silver",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Modern Hunter": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/hy_hunter_modern",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Neo-Noir": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/cu_m4a4_neo_noir",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Poly Mag": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/cu_m4a4_elite_tactical",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Radiation Hazard": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/sp_nukestripe_orange",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Red DDPAT": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/hy_ddpat_urban_red",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Temukau": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/cu_m4a4_temukau",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Tooth Fairy": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/cu_m4a4_queenfairy",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Turbine": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/m4a4_fusion",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Urban DDPAT": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/hy_ddpat_urb",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | X-Ray": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/cu_xray_m4",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Zirka": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/sp_star_bravo",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Zubastick": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/m4a4_zubastick_bw",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | 龍王 (Dragon King)": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/cu_m4a4_ancestral",
+  "weapon": "models/weapons/m4a1"
  }
 }
