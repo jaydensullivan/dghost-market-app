@@ -714,6 +714,171 @@
   "skin": "models/skins/hy_varicamo_urban",
   "weapon": "models/weapons/deagle"
  },
+ "Dual Berettas | Angel Eyes": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/dual_elite_biblical_angel",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Balance": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/gs_dual_elites_rose",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Black Limba": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/cu_season_elites_bravo",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Briar": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/hy_vines",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Cartel": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/aq_dualberettas_cartel",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Cobalt Quartz": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/am_crystallized_blue",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Cobra Strike": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/gs_dualberettas_cobra",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Dezastre": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/gs_dual_elites_dezastre",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Drift Wood": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/sp_dry_wood",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Dualing Dragons": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/cu_dualberretta_dragons",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Duelist": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/gs_mother_of_pearl_elite",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Elite 1.6": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/gs_dual_elites_classic",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Flora Carnivora": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/cu_dual_elites_evil_flora",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Heist": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/am_heist_plans_green",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Hemoglobin": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/am_ossify_red",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Hideout": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/dual_berettas_lethal_grin",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Hydro Strike": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/dual_elite_hydro_strike",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Marina": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/hy_marina_sunrise",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Melondrama": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/cu_elites_beware",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Moon in Libra": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/hy_zodiac1",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Mystic Conjunction": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/dualies_mystic_conjunction_v3",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Oil Change": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/sp_engine_dirty",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Pyre": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/hy_gelpen_dark",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Retribution": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/cu_retribution",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Royal Consorts": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/gs_dual_berettas_golden_venice",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Shred": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/sp_elites_winter_raider",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Stained": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/aq_forced",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Sweet Little Angels": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/cu_overpass_baby_dualies",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Switch Board": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/hy_numbers_green",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Tread": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/gs_dual_berettas_tread",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Twin Turbo": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/cu_dual_elites_rally",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Urban Shock": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/cu_elites_urbanstorm",
+  "weapon": "models/weapons/elite"
+ },
+ "Dual Berettas | Ventilators": {
+  "model": "models/elite.glb",
+  "skin": "models/skins/gs_dualberettas_ventilators",
+  "weapon": "models/weapons/elite"
+ },
  "FAMAS | Afterimage": {
   "model": "models/famas.glb",
   "skin": "models/skins/cu_broken_path_famas",
