@@ -264,6 +264,141 @@
   "skin": "models/skins/cu_ak_xray",
   "weapon": "models/weapons/ak47"
  },
+ "AUG | Akihabara Accept": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/cu_anime_aug",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Amber Fade": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/aa_fade_metallic",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Arctic Wolf": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/cu_aug_whitefang",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Aristocrat": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/gs_aug_aristocrat",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Carved Jade": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/am_jade",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Chameleon": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/cu_aug_chameleonaire",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Death by Puppy": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/am_aug_death_by_doggy",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Eye of Zapems": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/cu_overpass_graf_aug",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Flame Jörmungandr": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/am_jorm_orange",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Fleet Flock": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/cu_aug_swallows",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Lil' Pig": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/gs_lilpig_aug",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Luxe Trim": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/aug_puffer",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Midnight Lily": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/am_bloom_blue",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Momentum": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/cu_aug_momentum",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Plague": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/gs_aug_plague",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Random Access": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/am_circuitboard_orange",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Ricochet": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/am_aug_jumble",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Sand Storm": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/gs_aug_sand_storm",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Signal Scanner": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/aug_ghost_signal",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Steel Sentinel": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/aug_cold_sentinel",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Stymphalian": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/gs_aug_stymphalian_birds",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Surveillance": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/am_intelligence_grey",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Syd Mead": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/gs_aug_syd_mead",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Tom Cat": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/gs_aug_thunderstorm",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Torque": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/cu_aug_progressiv",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Trigger Discipline": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/aug_trigger_discipline_velco",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Triqua": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/cu_aug_orange_triangle",
+  "weapon": "models/weapons/aug"
+ },
  "AWP | Acheron": {
   "model": "models/awp.glb",
   "skin": "models/skins/hy_nuclear_skulls_redblue",
