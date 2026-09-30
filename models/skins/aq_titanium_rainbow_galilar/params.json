@@ -1,0 +1,11 @@
+{
+  "finish": "aq_titanium_rainbow_galilar",
+  "material": "weapons/paints/set_realism_camo/aq_titanium_rainbow_galilar.vcompmat",
+  "format": "vcompmat",
+  "textures": {
+    "pattern": "pattern.webp",
+    "normal": "normal.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp"
+  },
+  "shader": {}
+}
