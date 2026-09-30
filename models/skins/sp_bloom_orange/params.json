@@ -1,0 +1,39 @@
+{
+  "finish": "sp_bloom_orange",
+  "shader": {
+    "paint_style": 2,
+    "pattern_scale": 1.7,
+    "pattern_rotation": 120.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 2.5,
+    "colors": [
+      [
+        0.1569,
+        0.1451,
+        0.1647
+      ],
+      [
+        0.1294,
+        0.0667,
+        0.0588
+      ],
+      [
+        0.3569,
+        0.1529,
+        0.0745
+      ],
+      [
+        0.3686,
+        0.2627,
+        0.102
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
