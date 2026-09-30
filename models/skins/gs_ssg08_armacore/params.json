@@ -1,0 +1,39 @@
+{
+  "finish": "gs_ssg08_armacore",
+  "shader": {
+    "paint_style": 8,
+    "pattern_scale": 1.0,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1,
+    "grunge_scale": 1,
+    "paint_metalness": 0,
+    "color_brightness": 1.0,
+    "colors": [
+      [
+        0.502,
+        0.502,
+        0.502
+      ],
+      [
+        1.0,
+        1.0,
+        1.0
+      ],
+      [
+        0.9176,
+        0.9176,
+        0.9176
+      ],
+      [
+        0.6,
+        0.6,
+        0.6
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
