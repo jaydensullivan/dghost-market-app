@@ -1864,6 +1864,226 @@
   "skin": "models/skins/cu_xray_p250",
   "weapon": "models/weapons/p250"
  },
+ "P90 | Ancient Earth": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/aa_ancient_brown",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Ash Wood": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/sp_twigs",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Astral Jörmungandr": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/am_jorm_blue",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Attack Vector": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/cu_poly_violet_p90",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Baroque Red": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/am_veneto_red",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Blind Spot": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/hy_modspots",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Chopper": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/gs_p90_full_throttle",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Cocoa Rampage": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/hy_p90_dino_rampage",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Cold Blooded": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/am_slither_p90",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Death Grip": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/hy_p90_barebones_blue",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Death by Kitty": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/cu_catskulls_p90",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Deathgaze": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/p90_deathgaze",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Desert DDPAT": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/hy_ddpat_desert",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Desert Warfare": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/cu_p90_scorpius",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Elite Build": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/cu_p90_mastery",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Emerald Dragon": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/cu_dragon_p90_bravo",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Facility Negative": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/hy_blueprint_aqua",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Fallout Warning": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/sp_nukestripe_maroon",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Freight": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/gs_p90_container",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Glacier Mesh": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/sp_mesh_glacier",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Grim": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/cu_p90_grimm",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Leather": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/cu_brown_leather_p90",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Module": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/an_royalbleed",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Neoqueen": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/gs_p90_neoqueen",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Nostalgia": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/cu_p90_nostalgia",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Off World": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/cu_p90_offworld",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Randy Rush": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/p90_randy_rush",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Run and Hide": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/cu_jaguar_p90",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Sand Spray": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/sp_spray_sand",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | ScaraB Rush": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/cu_p90_scarab_of_wisdom",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Schematic": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/hy_vertigogeo",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Scorched": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/sp_dapple",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Shallow Grave": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/gs_p90_shallow_grave",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Shapewood": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/cu_p90_shapewood",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Straight Dimes": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/p90_steelcraft",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Sunset Lily": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/sp_bloom_orange",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Teardown": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/sp_mesh_hot_and_cold",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Tiger Pit": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/am_tigers_brown",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Traction": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/gs_p90_tread",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Trigon": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/cu_p90_trigon",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Vent Rush": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/gs_p90_tangled",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Verdant Growth": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/sp_moro_textile_green_vine",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Virus": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/hy_zombie",
+  "weapon": "models/weapons/p90"
+ },
+ "P90 | Wave Breaker": {
+  "model": "models/p90.glb",
+  "skin": "models/skins/p90_boost_blue",
+  "weapon": "models/weapons/p90"
+ },
  "Trade Up Contract | Boreal Forest": {
   "model": "models/m4a1_silencer.glb",
   "skin": "models/skins/hy_forest_boreal",
