@@ -1,0 +1,13 @@
+{
+  "finish": "cu_glitter_deagle",
+  "material": "weapons/paints/set_graphic_design/cu_glitter_deagle.vcompmat",
+  "format": "vcompmat",
+  "textures": {
+    "pattern": "pattern.webp",
+    "normal": "normal.webp",
+    "roughness": "roughness.webp",
+    "sfx": "sfx.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp"
+  },
+  "shader": {}
+}
