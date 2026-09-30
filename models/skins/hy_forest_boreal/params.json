@@ -1,0 +1,39 @@
+{
+  "finish": "hy_forest_boreal",
+  "shader": {
+    "paint_style": 1,
+    "pattern_scale": 3.0,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1,
+    "grunge_scale": 1,
+    "paint_metalness": 0,
+    "color_brightness": 1.0,
+    "colors": [
+      [
+        0.4706,
+        0.4784,
+        0.302
+      ],
+      [
+        0.2196,
+        0.1961,
+        0.149
+      ],
+      [
+        0.3686,
+        0.3412,
+        0.302
+      ],
+      [
+        0.2353,
+        0.3686,
+        0.2784
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
