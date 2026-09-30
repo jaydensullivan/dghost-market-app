@@ -1,0 +1,14 @@
+{
+  "finish": "mp7_binary_green",
+  "material": "weapons/paints/set_spy_tech/mp7_binary_green.vcompmat",
+  "format": "vcompmat",
+  "textures": {
+    "pattern": "pattern.webp",
+    "normal": "normal.webp",
+    "ao": "ao.webp",
+    "material_mask": "material_mask.webp",
+    "roughness": "roughness.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp"
+  },
+  "shader": {}
+}
