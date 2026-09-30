@@ -2249,6 +2249,171 @@
   "skin": "models/skins/p90_boost_blue",
   "weapon": "models/weapons/p90"
  },
+ "SSG 08 | Abyss": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/aq_leviathan",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Acid Fade": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/aa_fade_grassland",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Azure Glyph": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/gs_ssg08_anubis",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Big Iron": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/cu_ssg08_technicality",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Blood in the Water": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/cu_shark",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Bloodshot": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/cu_ssg08_tickler",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Carbon Fiber": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/am_carbon_fiber",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Dark Water": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/am_zebra_dark",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Death Strike": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/cu_ssg08_scorpion",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Death's Head": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/cu_ssg08_deathshead",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Detour": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/hy_ssg08_marker",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Dezastre": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/ssg08_dezastre",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Dragonfire": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/cu_ssg08_dragonfire_scope",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Fever Dream": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/cu_ssg08_fever_dream",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Ghost Crusader": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/gs_ssg08_armacore",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Hand Brake": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/gs_ssg08_checker",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Jungle Dashed": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/sp_tape_short_jungle",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Lichen Dashed": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/sp_short_tape",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Mainframe 001": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/cu_ssg08_mainframe",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Mayan Dreams": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/hy_mayan_dreams_bravo",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Memorial": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/ssg08_brutalist",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Necropos": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/cu_ssg08_necropos",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Orange Filigree": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/hy_ren_orange",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Parallax": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/cu_ssg08_chromatic",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Prey": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/sp_zebracam_red",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Rapid Transit": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/ssg08_transit_white",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Sea Calico": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/hy_flowers_stmarc",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Slashed": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/cu_ssg08_immortal",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Spring Twilly": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/hy_trainarchitect_green",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Threat Detected": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/am_intelligence_orange",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Tropical Storm": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/sp_palm_shadow",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Turbo Peek": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/cu_ssg_overtake",
+  "weapon": "models/weapons/ssg08"
+ },
+ "SSG 08 | Zeno": {
+  "model": "models/ssg08.glb",
+  "skin": "models/skins/gsch_zeno_ssg08",
+  "weapon": "models/weapons/ssg08"
+ },
  "Trade Up Contract | Boreal Forest": {
   "model": "models/m4a1_silencer.glb",
   "skin": "models/skins/hy_forest_boreal",
