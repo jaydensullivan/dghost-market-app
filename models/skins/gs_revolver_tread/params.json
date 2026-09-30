@@ -1,0 +1,39 @@
+{
+  "finish": "gs_revolver_tread",
+  "shader": {
+    "paint_style": 8,
+    "pattern_scale": 1.0,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 2.0,
+    "colors": [
+      [
+        0.6471,
+        0.6471,
+        0.6471
+      ],
+      [
+        0.6902,
+        0.6902,
+        0.6902
+      ],
+      [
+        0.6039,
+        0.5294,
+        0.4784
+      ],
+      [
+        0.3569,
+        0.3882,
+        0.3961
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
