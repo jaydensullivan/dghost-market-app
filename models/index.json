@@ -874,6 +874,171 @@
   "skin": "models/skins/cu_famas_spectron",
   "weapon": "models/weapons/famas"
  },
+ "Galil AR | Akoben": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/sp_galil_akoben",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Amber Fade": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/aa_fade_metallic",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Aqua Terrace": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/am_geometric_steps",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | CAUTION!": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/sp_galil_caution",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Cerberus": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/cu_cerbrus_galil",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Chatterbox": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/cu_galil_abrasion",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Chromatic Aberration": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/cu_galil_chroma_pink",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Cold Fusion": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/hy_nuclear_skulls_aqua",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Connexion": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/gs_galil_phoenix",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Control": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/galil_control_strike",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Crimson Tsunami": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/sp_galil_wave",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Destroyer": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/cu_galil_destroyer",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Dusk Ruins": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/hy_ruins_red",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Eco": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/cu_galil_eco",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Firefight": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/gs_galilar_incenerator",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Galigator": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/galil_galigator",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Hunting Blind": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/sp_mesh_slashes",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Kami": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/hy_galil_kami",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | NV": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/cu_poly_green_galil",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Orange DDPAT": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/hy_ddpat_orange",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Phoenix Blacklight": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/sp_phoenix_tags_purple",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Rainbow Spoon": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/aq_titanium_rainbow_galilar",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Rocket Pop": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/cu_galilar_particles",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Sage Spray": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/sp_spray_desert_sage",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Sandstorm": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/cu_sandstorm",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Shattered": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/hy_crumple_bravo",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Signal": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/hy_galil_signal_red",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Stone Cold": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/gs_galil_nightwing",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Sugar Rush": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/cu_galil_candychaos",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Urban Rubble": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/hy_varicamo_urban",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Vandal": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/gs_galil_vandal",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | VariCamo": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/hy_varicamo",
+  "weapon": "models/weapons/galilar"
+ },
+ "Galil AR | Winter Forest": {
+  "model": "models/galilar.glb",
+  "skin": "models/skins/hy_forest_winter",
+  "weapon": "models/weapons/galilar"
+ },
  "M4A4 | Asiimov": {
   "model": "models/m4a1.glb",
   "skin": "models/skins/cu_m4_asimov",
@@ -1302,6 +1467,11 @@
  "Trade Up Contract | Dark Water": {
   "model": "models/m4a1_silencer.glb",
   "skin": "models/skins/am_zebra_dark",
+  "weapon": null
+ },
+ "Trade Up Contract | VariCamo": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/hy_varicamo",
   "weapon": null
  },
  "USP-S | Dark Water": {
