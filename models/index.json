@@ -1214,6 +1214,236 @@
   "skin": "models/skins/cu_m4a4_ancestral",
   "weapon": "models/weapons/m4a1"
  },
+ "MAC-10 | Allure": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/cu_mac10_isoonna",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Aloha": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/am_mac10_aloha",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Amber Fade": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/aa_fade_metallic",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Button Masher": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/cu_mac10_portable",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Calf Skin": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/gs_mac10_checker",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Carnivore": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/aq_mac_10_alien_camo",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Case Hardened": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/aq_oiled",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Cat Fight": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/mac10_kamicatze",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Classic Crate": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/gs_mac10_dust_crate",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Commuter": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/cu_luggage_mac10",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Copper Borre": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/am_knots_brown",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Curse": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/cu_mac10_decay",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Derailment": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/mac10_train_crash",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Disco Tech": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/cu_mac10_nacre",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Echoing Sands": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/cu_mac10_scarab",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Ensnared": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/cu_mac10_pixie",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Fade": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/aa_fade",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Gold Brick": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/am_gold_brick",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Graven": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/aq_etched_mac10_bravo",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Heat": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/cu_mac10_redhot",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Hot Snakes": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/gs_mac10_snake",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Lapis Gator": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/am_mac10_electricity",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Last Dive": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/aa_mac10_the_last_dive",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Light Box": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/mac10_illusion",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Malachite": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/am_mac10_malachite",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Monkeyflage": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/cu_mac10_monkeyflage",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Neon Rider": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/cu_mac10_neonrider",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Nuclear Garden": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/am_nuclear_skulls3_mac10",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Oceanic": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/am_mac10_oceani",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Palm": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/sp_palm",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Pipe Down": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/gs_mac10_exo_pipes",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Pipsqueak": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/cu_overpass_squeak_mac10",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Propaganda": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/cu_mac10_propaganda",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Rangeen": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/cu_mac10_alekhya_duo",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Red Filigree": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/am_ren_red",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Saibā Oni": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/mac10_ozaki",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Sakkaku": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/cu_mac10_sakkaku",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Sienna Damask": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/sp_mirage_flowers_tan",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Stalker": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/gs_mac10_stalker",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Strats": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/hy_vertigospray_blue",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Surfwood": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/sp_twigs_beach",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Tatter": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/cu_korupt",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Toybox": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/cu_mac10_toybox",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Urban DDPAT": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/hy_ddpat_urb",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Video Cam": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/mac10_video_cam",
+  "weapon": "models/weapons/mac10"
+ },
+ "MAC-10 | Whitefish": {
+  "model": "models/mac10.glb",
+  "skin": "models/skins/gs_mac10_fish_bait",
+  "weapon": "models/weapons/mac10"
+ },
  "MP9 | Airlock": {
   "model": "models/mp9.glb",
   "skin": "models/skins/cu_mp9_narcis",
