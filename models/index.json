@@ -499,6 +499,11 @@
   "skin": "models/skins/am_army_shine",
   "weapon": null
  },
+ "Charm Detachments | Crimson Web": {
+  "model": "models/cz75a.glb",
+  "skin": "models/skins/hy_webs",
+  "weapon": null
+ },
  "Charm Detachments | Green Plaid": {
   "model": "models/cz75a.glb",
   "skin": "models/skins/hy_plaid2",
@@ -2728,6 +2733,111 @@
   "model": "models/p90.glb",
   "skin": "models/skins/p90_boost_blue",
   "weapon": "models/weapons/p90"
+ },
+ "R8 Revolver | Amber Fade": {
+  "model": "models/revolver.glb",
+  "skin": "models/skins/aa_fade_metallic_revolver",
+  "weapon": "models/weapons/revolver"
+ },
+ "R8 Revolver | Banana Cannon": {
+  "model": "models/revolver.glb",
+  "skin": "models/skins/gs_r8_banana",
+  "weapon": "models/weapons/revolver"
+ },
+ "R8 Revolver | Blaze": {
+  "model": "models/revolver.glb",
+  "skin": "models/skins/aa_flames",
+  "weapon": "models/weapons/revolver"
+ },
+ "R8 Revolver | Bone Forged": {
+  "model": "models/revolver.glb",
+  "skin": "models/skins/gs_r8_leviathan",
+  "weapon": "models/weapons/revolver"
+ },
+ "R8 Revolver | Bone Mask": {
+  "model": "models/revolver.glb",
+  "skin": "models/skins/sp_tape",
+  "weapon": "models/weapons/revolver"
+ },
+ "R8 Revolver | Canal Spray": {
+  "model": "models/revolver.glb",
+  "skin": "models/skins/sp_spray_water",
+  "weapon": "models/weapons/revolver"
+ },
+ "R8 Revolver | Crazy 8": {
+  "model": "models/revolver.glb",
+  "skin": "models/skins/gs_revolver_purple_elite",
+  "weapon": "models/weapons/revolver"
+ },
+ "R8 Revolver | Crimson Web": {
+  "model": "models/revolver.glb",
+  "skin": "models/skins/hy_webs",
+  "weapon": "models/weapons/revolver"
+ },
+ "R8 Revolver | Desert Brush": {
+  "model": "models/revolver.glb",
+  "skin": "models/skins/hy_brush_camo_tan",
+  "weapon": "models/weapons/revolver"
+ },
+ "R8 Revolver | Fade": {
+  "model": "models/revolver.glb",
+  "skin": "models/skins/aa_fade_revolver",
+  "weapon": "models/weapons/revolver"
+ },
+ "R8 Revolver | Grip": {
+  "model": "models/revolver.glb",
+  "skin": "models/skins/gs_revolver_tread",
+  "weapon": "models/weapons/revolver"
+ },
+ "R8 Revolver | Inlay": {
+  "model": "models/revolver.glb",
+  "skin": "models/skins/gs_revolver_acanthus_bronze",
+  "weapon": "models/weapons/revolver"
+ },
+ "R8 Revolver | Junk Yard": {
+  "model": "models/revolver.glb",
+  "skin": "models/skins/gs_r8_rustking",
+  "weapon": "models/weapons/revolver"
+ },
+ "R8 Revolver | Llama Cannon": {
+  "model": "models/revolver.glb",
+  "skin": "models/skins/gs_r8_llamacannon",
+  "weapon": "models/weapons/revolver"
+ },
+ "R8 Revolver | Memento": {
+  "model": "models/revolver.glb",
+  "skin": "models/skins/gs_r8_memento",
+  "weapon": "models/weapons/revolver"
+ },
+ "R8 Revolver | Monarch": {
+  "model": "models/revolver.glb",
+  "skin": "models/skins/r8_monarch_extended",
+  "weapon": "models/weapons/revolver"
+ },
+ "R8 Revolver | Phoenix Marker": {
+  "model": "models/revolver.glb",
+  "skin": "models/skins/am_phoenix_tags_blue",
+  "weapon": "models/weapons/revolver"
+ },
+ "R8 Revolver | Reboot": {
+  "model": "models/revolver.glb",
+  "skin": "models/skins/cu_r8_cybersport",
+  "weapon": "models/weapons/revolver"
+ },
+ "R8 Revolver | Skull Crusher": {
+  "model": "models/revolver.glb",
+  "skin": "models/skins/cu_revolver_oppressor",
+  "weapon": "models/weapons/revolver"
+ },
+ "R8 Revolver | Survivalist": {
+  "model": "models/revolver.glb",
+  "skin": "models/skins/cu_r8_survivalist",
+  "weapon": "models/weapons/revolver"
+ },
+ "R8 Revolver | Tango": {
+  "model": "models/revolver.glb",
+  "skin": "models/skins/r8_roses_and_guns",
+  "weapon": "models/weapons/revolver"
  },
  "SSG 08 | Abyss": {
   "model": "models/ssg08.glb",
