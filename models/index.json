@@ -1879,6 +1879,201 @@
   "skin": "models/skins/hy_varicamo",
   "weapon": null
  },
+ "UMP-45 | Arctic Wolf": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/cu_ump45_white_fang",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Blaze": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/aa_flames",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Bone Pile": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/sp_skull_diagram_bravo",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Briefing": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/cu_ump45_metritera",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Carbon Fiber": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/am_carbon_fiber",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Continuum": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/ump45_illumina_v2",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Corporal": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/cu_ump_corporal",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Crime Scene": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/cu_ump_crime_scene",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Crimson Foil": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/gsch_sport_ump45",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Day Lily": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/hy_bloom_red",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Facility Dark": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/hy_blueprint_bluered",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Fade": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/aa_fade_ump",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Fallout Warning": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/sp_nukestripe_maroon",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Fragment": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/ump_fragment",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Full Stop": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/hy_varicamo_red",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Gold Bismuth": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/gs_ump_gold_bismuth",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Grand Prix": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/am_ump_racer",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Gunsmoke": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/hy_gelpen",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Houndstooth": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/hy_houndstooth_brown",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | K.O. Factory": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/ump45_old_cartoon",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Labyrinth": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/hy_lines_orange",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Late Night Transit": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/ump_transit",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Mechanism": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/aa_engine_performance",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Metal Flowers": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/aq_ump45_flameflower",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Minotaur's Labyrinth": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/cu_labyrinth",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Momentum": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/cu_ump_arrows",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Moonrise": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/aa_ump45_moonrise_sunset",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Motorized": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/ump45_assembled_engine",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Mudder": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/hy_mottled_sand",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Neo-Noir": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/ump45_neo_noir",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Oscillator": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/am_ump45_electrowave",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Plastique": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/cu_ump_bomb",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Primal Saber": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/cu_ump45_primalsaber",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Riot": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/cu_ump45_uproar",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Roadblock": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/gs_ump_roadblock",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Scaffold": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/gs_ump_abyss",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Scorched": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/sp_dapple",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Urban DDPAT": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/hy_ddpat_urb",
+  "weapon": "models/weapons/ump45"
+ },
+ "UMP-45 | Wild Child": {
+  "model": "models/ump45.glb",
+  "skin": "models/skins/cu_ump_clutch_kick",
+  "weapon": "models/weapons/ump45"
+ },
  "USP-S | Dark Water": {
   "model": "models/usp_silencer.glb",
   "skin": "models/skins/am_zebra_dark",
