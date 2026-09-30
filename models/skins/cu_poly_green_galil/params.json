@@ -1,0 +1,12 @@
+{
+  "finish": "cu_poly_green_galil",
+  "material": "weapons/paints/set_graphic_design/cu_poly_green_galil.vcompmat",
+  "format": "vcompmat",
+  "textures": {
+    "pattern": "pattern.webp",
+    "normal": "normal.webp",
+    "roughness": "roughness.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp"
+  },
+  "shader": {}
+}
