@@ -487,6 +487,11 @@ return [1, 2, 3, 4].indexOf(params.paint_style) !== -1
 && Array.isArray(params.colors) && params.colors.length >= 4;
 }
 
+function skinIsSingleColor(params){
+const list = Array.isArray(params.colors) ? params.colors.slice(1, 4) : [];
+return list.every(c => !c || Math.max(c[0] || 0, c[1] || 0, c[2] || 0) < 0.01);
+}
+
 function skinColors(THREE, params){
 const list = Array.isArray(params.colors) ? params.colors : [];
 const out = [];
@@ -511,8 +516,19 @@ const CHANNELS = { r: 0, g: 1, b: 2, none: 3, debug: 4 };
 // зоны покраски, а свойства поверхности.
 const channel = CHANNELS[String(maskChannel || 'none').toLowerCase()] ?? 3;
 
+// Однотонной раскраске узор не нужен, но сэмплер в шейдере должен
+// на что-то указывать — подставляем чёрный пиксель.
+let pattern = skin.pattern;
+if (!pattern){
+pattern = new THREE.DataTexture(new Uint8Array([0, 0, 0, 255]), 1, 1);
+pattern.needsUpdate = true;
+}
+
 const uniforms = {
-uPattern: { value: skin.pattern },
+uPattern: { value: pattern },
+// 1 — несколько цветов по зонам ствола, 2 — один цвет (анодирование:
+// остальные цвета в материале нулевые) только на окрашиваемых деталях.
+uSolid: { value: !skin.solid ? 0 : (skinIsSingleColor(skin.params) ? 2 : 1) },
 uWearMask: { value: skin.wear },
 uGrunge: { value: skin.grunge },
 uSkinMask: { value: skin.mask },
@@ -532,7 +548,7 @@ uPatternRotation: { value: (skin.params.pattern_rotation || 0) * Math.PI / 180 }
 uWearScale: { value: skin.params.wear_scale || 1 },
 uGrungeScale: { value: skin.params.grunge_scale || 1 },
 uPaintMetalness: { value: Number(skin.params.paint_metalness) || 0 },
-uUseColors: { value: skinUsesColorMask(skin.params) ? 1 : 0 },
+uUseColors: { value: skin.solid || skinUsesColorMask(skin.params) ? 1 : 0 },
 uColors: { value: skinColors(THREE, skin.params) },
 // Узор грузится как sRGB, а маске нужны исходные значения каналов.
 uMaskGamma: { value: THREE.SRGBColorSpace ? 1 / 2.2 : 1 },
@@ -594,6 +610,7 @@ uniform float uWearScale;
 uniform float uGrungeScale;
 uniform float uPaintMetalness;
 uniform int uUseColors;
+uniform int uSolid;
 uniform vec3 uColors[4];
 uniform float uMaskGamma;
 uniform float uColorBrightness;
@@ -628,7 +645,10 @@ puv = vec2(rc * puv.x - rs * puv.y, rs * puv.x + rc * puv.y) + 0.5;
 vec3 pattern = texture2D(uPattern, puv * uPatternScale).rgb;
 if (uUseColors == 1){
 // Первый цвет — основа, остальные ложатся по каналам маски.
-vec3 m = pow(pattern, vec3(uMaskGamma));
+// У однотонных раскрасок маской служат зоны покраски самого ствола.
+vec3 m = uSolid == 1 && uHasWeapon == 1 ? masks.rgb
+: (uSolid == 2 ? vec3(0.0) : pow(pattern, vec3(uMaskGamma)));
+if (uSolid == 2 && uHasWeapon == 1) paintable *= masks.r;
 pattern = uColors[0];
 pattern = mix(pattern, uColors[1], m.r);
 pattern = mix(pattern, uColors[2], m.g);
@@ -763,6 +783,9 @@ return loadSkinTexture(THREE, resolveSkinPath(base, file), isColor);
 })).then(loaded => {
 const pack = { params: meta.shader || {}, format: meta.format || null };
 names.forEach((name, i) => { pack[name] = loaded[i]; });
+// Однотонные раскраски (so_, an_ и т. п.): узора у них в игре нет,
+// есть только цвета из материала — красим ими по маскам ствола.
+pack.solid = !pack.pattern && Array.isArray(pack.params.colors) && pack.params.colors.length >= 4;
 console.log('3D: слои раскраски —',
 names.filter(n => pack[n]).join(', ') || 'ничего не загрузилось');
 return pack;
@@ -893,7 +916,7 @@ loadSkinPack(THREE, skinDir),
 weaponDir ? loadWeaponPack(THREE, weaponDir).catch(() => null) : Promise.resolve(null),
 ])
 .then(([skin, weapon]) => {
-if (!skin.pattern) throw new Error('не загрузился узор');
+if (!skin.pattern && !skin.solid) throw new Error('не загрузился узор');
 applySkinToModel(THREE, object, skin, wearValue, weapon, maskChannel);
 status.textContent = `${dict.v3_skin_on} · float ${Number(wearValue || 0).toFixed(4)}`;
 setTimeout(() => { status.textContent = ''; }, 3000);
@@ -1096,7 +1119,7 @@ const [skin, weapon] = await Promise.all([
 loadSkinPack(THREE, entry.skin),
 entry.weapon ? loadWeaponPack(THREE, entry.weapon).catch(() => null) : null,
 ]);
-if (!skin.pattern) throw new Error('не загрузился узор');
+if (!skin.pattern && !skin.solid) throw new Error('не загрузился узор');
 
 const glCanvas = document.createElement('canvas');
 glCanvas.width = W;
