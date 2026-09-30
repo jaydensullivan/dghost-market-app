@@ -3528,6 +3528,9 @@ align-content:start;
 .inv-fav{ z-index:3; top:5px; right:5px; width:28px; height:28px; }
 .inv-float-line{ margin-top:4px; font-size:11px; color:var(--muted); }
 .inv-float-line b{ color:var(--silver); font-weight:600; font-family:'JetBrains Mono', monospace; }
+/* Float показываем целиком (до 17 знаков) — отдельной строкой, чтобы
+   во всех карточках сетки он стоял одинаково, а не переносился местами. */
+.inv-float-line b{ display:block; font-size:10.5px; letter-spacing:-0.2px; overflow-wrap:anywhere; }
 .inv-float-line span{ margin-left:6px; }
 .inv-item-actions{ display:flex; gap:6px; margin-top:9px; }
 .inv-item-actions button{

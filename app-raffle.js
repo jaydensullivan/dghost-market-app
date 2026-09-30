@@ -15,7 +15,7 @@ const dict = I18N[currentLang] || I18N.ru;
 const meta = [
 ps.stattrak ? 'ST™' : '',
 ps.wear || '',
-(ps.float_value !== null && ps.float_value !== undefined) ? 'float ' + Number(ps.float_value).toFixed(4) : '',
+(ps.float_value !== null && ps.float_value !== undefined) ? 'float ' + formatFloat(ps.float_value) : '',
 ].filter(Boolean).join(' · ');
 return (ps.photo_url ? `<img src="${escapeHtml(ps.photo_url)}" alt="">` : '')
 + `<div class="gps-body"><div class="gps-title">${escapeHtml(ps.title)}</div>`
@@ -93,7 +93,7 @@ hero.innerHTML = (img ? `<img src="${escapeHtml(img)}" alt="">` : `<div class="r
 const meta = [
 ps.stattrak ? 'StatTrak™' : '',
 ps.wear || '',
-(ps.float_value !== null && ps.float_value !== undefined) ? 'float ' + Number(ps.float_value).toFixed(4) : '',
+(ps.float_value !== null && ps.float_value !== undefined) ? 'float ' + formatFloat(ps.float_value) : '',
 ].filter(Boolean).join(' · ');
 const metaEl = document.getElementById('rfMeta');
 metaEl.textContent = meta;
