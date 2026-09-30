@@ -868,5 +868,255 @@
   "model": "models/m4a1.glb",
   "skin": "models/skins/cu_m4a4_ancestral",
   "weapon": "models/weapons/m4a1"
+ },
+ "P250 | Apep's Curse": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/gs_p250_apep",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Asiimov": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/cu_p250_asiimov",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Bengal Tiger": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/hy_p250_tiger",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Black & Tan": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/hy_desert_multicam",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Bone Mask": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/sp_tape",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Boreal Forest": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/hy_forest_boreal",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Bullfrog": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/p250_bullfrog",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Cartel": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/aq_p250_cartel",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Cassette": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/cu_p250_cassette",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Contaminant": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/cu_p250_infect",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Contamination": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/hy_nuclear_skulls4_p250",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Crimson Kimono": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/hy_kimono_diamonds_red",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Cyber Shell": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/gs_p250_cybershell",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Dark Filigree": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/am_ren_dark",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Digital Architect": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/aa_vertigogeo_neon",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Drought": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/sp_desert_skulls_dawn",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Epicenter": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/p250_impact",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Exchanger": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/hy_ducts_blue",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Facets": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/hy_crumple_dark_bravo",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Facility Draft": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/hy_blueprint_red",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Forest Night": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/hy_forest_night",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Franklin": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/cu_money",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Gunsmoke": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/hy_gelpen",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Hive": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/hy_redhex",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Inferno": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/gs_p250_inferno",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Iron Clad": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/gs_p250_metal_panels",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Kintsugi": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/p250_kintsugi",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Lotus Imprint": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/p250_lotus_imprint_glitter_purple",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Mehndi": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/cu_p250_refined",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Metallic DDPAT": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/am_urban",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Mint Kimono": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/sp_kimono_diamonds",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Modern Hunter": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/hy_hunter_modern",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Muertos": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/cu_p250_mandala",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Nevermore": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/aa_p250_gravediggers",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Nuclear Threat": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/sp_nukestripe_green",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Re.built": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/cu_p250_rebuilt",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Red Rock": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/cu_p250_axiom",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Ripple": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/am_p250_sputnik",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | See Ya Later": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/cu_p250_cybercroc",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Splash": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/sp_splash_p250",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Steel Disruption": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/am_ddpatdense_silver",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Supernova": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/cu_bittersweet",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Undertow": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/am_p250_beaded_paint",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Valence": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/aq_p250_contour",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Verdigris": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/aq_p250_verdigris",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Vino Primo": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/gs_p250_checker",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Visions": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/gs_p250_visions",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | Wingshot": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/hy_p250_crackshot",
+  "weapon": "models/weapons/p250"
+ },
+ "P250 | X-Ray": {
+  "model": "models/p250.glb",
+  "skin": "models/skins/cu_xray_p250",
+  "weapon": "models/weapons/p250"
+ },
+ "Trade Up Contract | Boreal Forest": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/hy_forest_boreal",
+  "weapon": null
  }
 }
