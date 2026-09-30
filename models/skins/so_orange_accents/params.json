@@ -1,0 +1,38 @@
+{
+  "finish": "so_orange_accents",
+  "shader": {
+    "paint_style": 0,
+    "pattern_scale": 1,
+    "pattern_rotation": 0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 1,
+    "colors": [
+      [
+        0.2824,
+        0.2824,
+        0.2824
+      ],
+      [
+        0.3294,
+        0.3294,
+        0.3294
+      ],
+      [
+        0.9529,
+        0.4627,
+        0.3176
+      ],
+      [
+        0.9529,
+        0.4627,
+        0.3176
+      ]
+    ]
+  },
+  "textures": {
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
