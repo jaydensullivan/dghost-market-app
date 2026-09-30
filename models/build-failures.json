@@ -14,5 +14,7 @@
   "soe_metallic_green_2": 1,
   "soe_varicamo": 1
  },
- "weapons": {}
+ "weapons": {
+  "m4a1_silencer": 1
+ }
 }
