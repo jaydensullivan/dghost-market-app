@@ -4,6 +4,11 @@
   "skin": "models/skins/ak47_autoexec_camo",
   "weapon": "models/weapons/ak47"
  },
+ "AK-47 | Aphrodite": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/gsch_ak_djiin",
+  "weapon": "models/weapons/ak47"
+ },
  "AK-47 | Aquamarine Revenge": {
   "model": "models/ak47.glb",
   "skin": "models/skins/cu_ak47_courage_alt",
@@ -12,6 +17,11 @@
  "AK-47 | Asiimov": {
   "model": "models/ak47.glb",
   "skin": "models/skins/cu_ak47_asiimov",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | B the Monster": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/cu_overpass_monster_ak47",
   "weapon": "models/weapons/ak47"
  },
  "AK-47 | Baroque Purple": {
@@ -42,6 +52,16 @@
  "AK-47 | Case Hardened": {
   "model": "models/ak47.glb",
   "skin": "models/skins/aq_oiled",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Consequence of the Jinn": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/ak47_jinn_consequence",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Crossfade": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/cu_graphic_overlay_ak47",
   "weapon": "models/weapons/ak47"
  },
  "AK-47 | Elite Build": {
@@ -99,6 +119,11 @@
   "skin": "models/skins/cu_ak47_cogthings",
   "weapon": "models/weapons/ak47"
  },
+ "AK-47 | Inheritance": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/ak_porcelain",
+  "weapon": "models/weapons/ak47"
+ },
  "AK-47 | Jaguar": {
   "model": "models/ak47.glb",
   "skin": "models/skins/cu_panther_ak47",
@@ -154,6 +179,11 @@
   "skin": "models/skins/cu_ak47_point_disarray",
   "weapon": "models/weapons/ak47"
  },
+ "AK-47 | Predator": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/sp_zebracam",
+  "weapon": "models/weapons/ak47"
+ },
  "AK-47 | Rat Rod": {
   "model": "models/ak47.glb",
   "skin": "models/skins/gs_ak47_nibbler",
@@ -179,6 +209,11 @@
   "skin": "models/skins/hy_mesh_safetyorange",
   "weapon": "models/weapons/ak47"
  },
+ "AK-47 | Searing Rage": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/ak47_explosive",
+  "weapon": "models/weapons/ak47"
+ },
  "AK-47 | Slate": {
   "model": "models/ak47.glb",
   "skin": "models/skins/gs_ak47_professional",
@@ -192,6 +227,16 @@
  "AK-47 | The Empress": {
   "model": "models/ak47.glb",
   "skin": "models/skins/gs_ak47_empress",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | The Oligarch": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/ak47_puffer_custom",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | The Outsiders": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/ak47_t_bus",
   "weapon": "models/weapons/ak47"
  },
  "AK-47 | Uncharted": {
