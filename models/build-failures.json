@@ -12,7 +12,7 @@
   "aq_titanium_acid": 1,
   "aug_lapis_lazuli": 1,
   "awp_longdog": 2,
-  "brutalist_architecture": 1,
+  "brutalist_architecture": 2,
   "cu_m4a4_train_hell": 1,
   "cu_mp9_latte": 1,
   "cu_poseidon": 1,
@@ -146,8 +146,8 @@
  },
  "weapons": {
   "cz75a": 1,
-  "glock": 1,
+  "glock": 2,
   "m4a1_silencer": 2,
-  "usp_silencer": 1
+  "usp_silencer": 2
  }
 }
