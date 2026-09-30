@@ -1,0 +1,11 @@
+{
+  "finish": "aq_deagle_case_hardened_2",
+  "material": "weapons/paints/limited_time/aq_deagle_case_hardened_2.vcompmat",
+  "format": "vcompmat",
+  "textures": {
+    "pattern": "pattern.webp",
+    "normal": "normal.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp"
+  },
+  "shader": {}
+}
