@@ -2564,6 +2564,196 @@
   "skin": "models/skins/gsch_zeno_ssg08",
   "weapon": "models/weapons/ssg08"
  },
+ "Tec-9 | Army Mesh": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/sp_mesh_army",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Avalanche": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/cu_tec9_avalanche",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Bamboo Forest": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/hy_bamboo_jungle",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Bamboozle": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/cu_tec9_bamboo",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Blast From the Past": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/hy_ancient_tiles_peach",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Brass": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/aq_brass",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Brother": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/gs_tec9_guerilla",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Cracked Opal": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/cu_tec9_cracked_opal",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Cut Out": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/aq_tec9_chalk_pattern",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Decimator": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/gs_tec9_decimator",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Flash Out": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/cu_tec9_flash",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Fubar": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/gs_tec9_fubar",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Fuel Injector": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/gs_tec9_supercharged",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Hades": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/hy_hades",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Ice Cap": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/am_tec_9_sea_salt",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Isaac": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/cu_tec9_asiimov",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Jambiya": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/gs_tec9_jambiya",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Mummy's Rot": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/cu_tec9_mummy",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Nuclear Threat": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/sp_nukestripe_green_tec9",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Orange Murano": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/hy_murano_orange",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Ossified": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/am_ossify",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Perimeter": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/tec9_perimeter_urban",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Phoenix Chalk": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/hy_phoenix_tags_lilac",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Re-Entry": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/am_tec9_redblast",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Rebel": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/cu_tec9_freedom",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Red Quartz": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/am_crystallized",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Remote Control": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/gs_tec9_envoy",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Rust Leaf": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/sp_leaf_orange",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Safety Net": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/hy_mesh_safetyorange",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Sandstorm": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/cu_tec9_sandstorm",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Slag": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/tec9_junkyard_engineering",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Snek-9": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/cu_tec9_snake",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Sultan": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/tec9_sultan",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Terrace": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/hy_geometric_steps_yellow",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Titanium Bit": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/am_fluted_tec9",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Toxic": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/hy_nuclear_skulls5_tec9",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | Urban DDPAT": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/hy_ddpat_urb",
+  "weapon": "models/weapons/tec9"
+ },
+ "Tec-9 | VariCamo": {
+  "model": "models/tec9.glb",
+  "skin": "models/skins/hy_varicamo",
+  "weapon": "models/weapons/tec9"
+ },
  "Trade Up Contract | Boreal Forest": {
   "model": "models/m4a1_silencer.glb",
   "skin": "models/skins/hy_forest_boreal",
