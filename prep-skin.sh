@@ -241,6 +241,11 @@ for layer, (key, max_side) in LAYERS.items():
     png = locate(game_path)
     if not png:
         print(f'  {layer}: не нашёл вынутый файл для {game_path}')
+        # Без узора params.json означал бы «однотонная раскраска», и
+        # build-all.sh счёл бы её готовой. Узор в материале есть — значит,
+        # это сбой выемки, а не однотонный скин.
+        if layer == 'pattern':
+            sys.exit(1)
         continue
 
     img = Image.open(png)

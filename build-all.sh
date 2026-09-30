@@ -232,11 +232,20 @@ if [ ! -s "$PLAN" ]; then
     exit 1
 fi
 
+# Раскраска готова, если есть узор. У однотонных (so_, an_ и т. п.)
+# узора в игре нет вовсе — им хватает params.json с цветами.
+skin_ready() {
+    local dir="$REPO/models/skins/$1"
+    [ -f "$dir/pattern.webp" ] && return 0
+    [ -f "$dir/params.json" ] && grep -q '"colors"' "$dir/params.json" \
+        && ! grep -q '"pattern"' "$dir/params.json"
+}
+
 # Состояние ствола: сколько раскрасок уже есть, сколько не хватает.
 weapon_state() {
     local weapon="$1" kits="$2" have=0 missing="" gave_up=0 kit
     for kit in $kits; do
-        if [ -f "$REPO/models/skins/$kit/pattern.webp" ]; then
+        if skin_ready "$kit"; then
             have=$((have + 1))
         elif [ "${FAIL_SKIN[$kit]:-0}" -ge "$MAX_ATTEMPTS" ]; then
             gave_up=$((gave_up + 1))
@@ -336,7 +345,7 @@ build_skin() {
 
     bash prep-skin.sh "$kit" 2>&1 | grep -E '^\s+(pattern|rough|wear|grunge|normal|ao|material_mask|roughness|sfx)' || true
 
-    [ -f "$REPO/models/skins/$kit/pattern.webp" ]
+    skin_ready "$kit"
 }
 
 START=$(date +%s)
@@ -450,7 +459,7 @@ done 3< "$PLAN" | wc -l)
 
 GAVE_UP=$(while IFS=$'\t' read -r -u 3 weapon kits; do
     for k in $kits; do
-        [ ! -f "$REPO/models/skins/$k/pattern.webp" ] && [ "${FAIL_SKIN[$k]:-0}" -ge "$MAX_ATTEMPTS" ] && echo x
+        ! skin_ready "$k" && [ "${FAIL_SKIN[$k]:-0}" -ge "$MAX_ATTEMPTS" ] && echo x
     done
 done 3< "$PLAN" | wc -l)
 
