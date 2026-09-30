@@ -1,0 +1,39 @@
+{
+  "finish": "aa_fade_ump",
+  "shader": {
+    "paint_style": 5,
+    "pattern_scale": 1.15,
+    "pattern_rotation": -55.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 1.0,
+    "colors": [
+      [
+        0.8627,
+        0.8275,
+        0.8078
+      ],
+      [
+        0.9882,
+        0.702,
+        0.3961
+      ],
+      [
+        0.9451,
+        0.3373,
+        0.4588
+      ],
+      [
+        0.4353,
+        0.4824,
+        0.8549
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
