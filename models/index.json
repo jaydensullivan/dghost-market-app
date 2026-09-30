@@ -694,6 +694,186 @@
   "skin": "models/skins/hy_varicamo_urban",
   "weapon": "models/weapons/deagle"
  },
+ "FAMAS | Afterimage": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/cu_broken_path_famas",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Bad Trip": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/famas_badtrip",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | CaliCamo": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/hy_varicamo_desert",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Commemoration": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/gs_famas_legacy_gold",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Contrast Spray": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/sp_spray",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Corp Defense": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/famas_corp_defense",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Crypsis": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/sp_famas_ghost_insects",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Cyanospatter": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/hy_reef",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Dark Water": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/am_zebra_dark",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Decommissioned": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/cu_famas_nuke_tension",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Djinn": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/aq_famas_jinn",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Doomkitty": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/hy_doomkitty",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Eye of Athena": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/cu_famas_owl_orange",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Faulty Wiring": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/aa_wiring_yellow",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Half Sleeve": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/gs_gamebred_famas",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Hexane": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/hy_bluehex",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Macabre": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/sp_famas_macabre",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Mecha Industries": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/gs_famas_mecha",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Meltdown": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/am_nuclear_pattern4_famas",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Meow 36": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/gs_famas_corp_meow",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Neural Net": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/am_famas_dots",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Night Borre": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/sp_knots_blue",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Prime Conspiracy": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/am_numbers_magenta",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Pulse": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/cu_famas_pulse",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Rapid Eye Movement": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/gs_famas_rapid_eyes",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Roll Cage": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/gs_famas_rally",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Sergeant": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/an_famas_sgt",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Snake Song": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/famas_snake_song",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Spitfire": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/sp_spitfire_famas_bravo",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Styx": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/am_nuclear_skulls2_famas",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Sundown": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/sp_palm_sunset",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Survivor Z": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/cu_famas_lenta",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Teardown": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/sp_mesh_hot_and_cold",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Valence": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/aq_famas_contour",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | Waters of Nephthys": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/cu_famas_holo_ocean",
+  "weapon": "models/weapons/famas"
+ },
+ "FAMAS | ZX Spectron": {
+  "model": "models/famas.glb",
+  "skin": "models/skins/cu_famas_spectron",
+  "weapon": "models/weapons/famas"
+ },
  "M4A4 | Asiimov": {
   "model": "models/m4a1.glb",
   "skin": "models/skins/cu_m4_asimov",
@@ -1117,6 +1297,16 @@
  "Trade Up Contract | Boreal Forest": {
   "model": "models/m4a1_silencer.glb",
   "skin": "models/skins/hy_forest_boreal",
+  "weapon": null
+ },
+ "Trade Up Contract | Dark Water": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/am_zebra_dark",
+  "weapon": null
+ },
+ "USP-S | Dark Water": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/am_zebra_dark",
   "weapon": null
  }
 }
