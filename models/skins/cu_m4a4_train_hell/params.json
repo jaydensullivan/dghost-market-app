@@ -1,0 +1,13 @@
+{
+  "finish": "cu_m4a4_train_hell",
+  "material": "weapons/paints/set_train_2025/cu_m4a4_train_hell.vcompmat",
+  "format": "vcompmat",
+  "textures": {
+    "pattern": "pattern.webp",
+    "normal": "normal.webp",
+    "material_mask": "material_mask.webp",
+    "roughness": "roughness.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp"
+  },
+  "shader": {}
+}
