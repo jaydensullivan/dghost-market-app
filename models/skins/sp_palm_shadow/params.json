@@ -1,0 +1,39 @@
+{
+  "finish": "sp_palm_shadow",
+  "shader": {
+    "paint_style": 2,
+    "pattern_scale": 1.0,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 1.0,
+    "colors": [
+      [
+        0.1686,
+        0.2275,
+        0.302
+      ],
+      [
+        0.4353,
+        0.4706,
+        0.4824
+      ],
+      [
+        0.3922,
+        0.4353,
+        0.5255
+      ],
+      [
+        0.251,
+        0.3412,
+        0.3098
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
