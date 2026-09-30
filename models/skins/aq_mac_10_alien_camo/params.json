@@ -1,0 +1,39 @@
+{
+  "finish": "aq_mac_10_alien_camo",
+  "shader": {
+    "paint_style": 7,
+    "pattern_scale": 3.0,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 1.5,
+    "colors": [
+      [
+        0.8392,
+        0.7608,
+        0.8667
+      ],
+      [
+        0.9608,
+        0.6157,
+        0.5569
+      ],
+      [
+        0.6784,
+        0.5255,
+        0.4784
+      ],
+      [
+        0.1294,
+        0.0745,
+        0.0471
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
