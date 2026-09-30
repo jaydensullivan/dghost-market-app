@@ -920,7 +920,7 @@ return `<div class="bld-item${slot === builderAltSlot ? ' active' : ''} ${RARITY
 ${item.photo_url ? `<img src="${item.photo_url}" alt="">` : ''}
 </div>
 <div class="bld-item-title">${escapeHtml((item.stattrak ? 'StatTrak™ ' : '') + String(item.title || '').replace(/^★\s*/, ''))}</div>
-${hasFloat ? `<div class="bld-item-float">Float: ${Number(item.float_value).toFixed(4)}${item.pattern ? ` · #${escapeHtml(String(item.pattern))}` : ''}</div>` : ''}
+${hasFloat ? `<div class="bld-item-float">Float: ${formatFloat(item.float_value)}${item.pattern ? ` · #${escapeHtml(String(item.pattern))}` : ''}</div>` : ''}
 <div class="bld-item-price">${formatCoins(item.price)}</div>
 <button type="button" class="bld-more" data-bld-more="${slot}">${dict.inv_more}</button>
 </div>`;
@@ -1418,7 +1418,7 @@ isOwn ? '' : buyDetailRow(dict.detail_seller, dict.value_anon),
 buyDetailRow(dict.detail_wear, skin.wear ? (wearMap[skin.wear] || skin.wear) : null),
 buyDetailRow(dict.detail_rarity, skin.rarity ? (rarityMap[skin.rarity] || skin.rarity) : null),
 buyDetailRow('StatTrak', skin.stattrak ? dict.value_yes : null),
-buyDetailRow('Float', (skin.float_value !== null && skin.float_value !== undefined) ? Number(skin.float_value).toFixed(4) : null),
+buyDetailRow('Float', (skin.float_value !== null && skin.float_value !== undefined) ? formatFloat(skin.float_value) : null),
 buyDetailRow(dict.detail_price, formatCoins(skin.price)),
 ].join('');
 

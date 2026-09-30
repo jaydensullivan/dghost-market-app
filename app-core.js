@@ -56,3 +56,15 @@ update();
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attach);
 else attach();
 })();
+
+// Float предмета показываем целиком, как его отдаёт игра
+// (0.07123456788063049), а не обрезанным до 4 знаков: покупатели
+// сравнивают именно полное значение. Очень маленькие числа JS
+// пишет как 1e-7 — такие раскрываем в обычную запись.
+function formatFloat(value){
+const n = Number(value);
+if (!isFinite(n)) return '';
+const s = String(n);
+if (s.indexOf('e') === -1) return s;
+return n.toFixed(20).replace(/0+$/, '').replace(/\.$/, '');
+}

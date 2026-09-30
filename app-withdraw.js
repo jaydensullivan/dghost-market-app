@@ -232,7 +232,7 @@ const { weapon, skin } = invSplitTitle(item);
 // Полоска износа с меткой на месте точного float — как в CSFloat.
 const floatBlock = hasFloat
 ? `<div class="inv-item-wearbar"><div class="inv-item-wearbar-mark" style="left:${(Math.min(1, Math.max(0, item.float_value)) * 100).toFixed(2)}%"></div></div>
-<div class="inv-float-line">Float: <b>${Number(item.float_value).toFixed(4)}</b>${item.pattern ? ` <span>#${escapeHtml(String(item.pattern))}</span>` : ''}</div>`
+<div class="inv-float-line">Float: <b>${formatFloat(item.float_value)}</b>${item.pattern ? ` <span>#${escapeHtml(String(item.pattern))}</span>` : ''}</div>`
 : '';
 
 const badges = [];
@@ -449,7 +449,7 @@ document.getElementById('invDetailTitle').textContent = (item.stattrak ? 'StatTr
 const hasFloat = item.float_value !== null && item.float_value !== undefined;
 const rows = [
 [dict.inv_detail_wear, item.wear ? `${WEAR_LABELS[item.wear] || item.wear}` : '—'],
-['Float', hasFloat ? Number(item.float_value).toFixed(6) : '—'],
+['Float', hasFloat ? formatFloat(item.float_value) : '—'],
 [dict.inv_detail_pattern, item.pattern ? '#' + item.pattern : '—'],
 [dict.inv_detail_rarity, item.rarity || '—'],
 [dict.inv_detail_trade, item.tradable === false ? dict.inv_detail_banned : dict.inv_detail_ok],
@@ -634,7 +634,7 @@ if (hasFloat){
 qsWearBar.style.display = '';
 qsWearMark.style.left = (Math.min(1, Math.max(0, item.float_value)) * 100).toFixed(2) + '%';
 qsFloatRow.style.display = 'flex';
-qsFloatRow.innerHTML = `<span>${Number(item.float_value).toFixed(4)}</span>${item.pattern ? `<span>#${escapeHtml(String(item.pattern))}</span>` : ''}`;
+qsFloatRow.innerHTML = `<span>${formatFloat(item.float_value)}</span>${item.pattern ? `<span>#${escapeHtml(String(item.pattern))}</span>` : ''}`;
 } else {
 qsWearBar.style.display = 'none';
 qsFloatRow.style.display = 'none';

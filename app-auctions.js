@@ -24,7 +24,7 @@ function auctionCardHtml(a){
 const dict = I18N[currentLang] || I18N.ru;
 const wearMap = currentLang === 'uz' ? WEAR_LABEL_FULL_UZ : (currentLang === 'en' ? WEAR_LABEL_FULL_EN : WEAR_LABEL_FULL);
 const wearLabel = a.wear ? (wearMap[a.wear] || a.wear) : null;
-const floatStr = (a.float_value !== null && a.float_value !== undefined) ? Number(a.float_value).toFixed(4) : null;
+const floatStr = (a.float_value !== null && a.float_value !== undefined) ? formatFloat(a.float_value) : null;
 const photo = a.photo_url ? `<img src="${a.photo_url}" class="auction-card-photo" alt="" onerror="this.style.display='none'">` : '';
 const chips = [
 wearLabel ? `<span>${escapeHtml(wearLabel)}</span>` : '',
@@ -235,7 +235,7 @@ const dict = I18N[currentLang] || I18N.ru;
 const wearMap = currentLang === 'uz' ? WEAR_LABEL_FULL_UZ : (currentLang === 'en' ? WEAR_LABEL_FULL_EN : WEAR_LABEL_FULL);
 document.getElementById('auctionBidDetails').innerHTML = [
 buyDetailRow(dict.detail_wear, a.wear ? (wearMap[a.wear] || a.wear) : null),
-buyDetailRow('Float', (a.float_value !== null && a.float_value !== undefined) ? Number(a.float_value).toFixed(4) : null),
+buyDetailRow('Float', (a.float_value !== null && a.float_value !== undefined) ? formatFloat(a.float_value) : null),
 buyDetailRow('Pattern', a.pattern || null),
 buyDetailRow(dict.auction_current_price_label, formatCoins(a.current_price)),
 buyDetailRow(dict.auction_min_bid, formatCoins(a.minimum_bid)),

@@ -918,7 +918,7 @@ weaponDir ? loadWeaponPack(THREE, weaponDir).catch(() => null) : Promise.resolve
 .then(([skin, weapon]) => {
 if (!skin.pattern && !skin.solid) throw new Error('не загрузился узор');
 applySkinToModel(THREE, object, skin, wearValue, weapon, maskChannel);
-status.textContent = `${dict.v3_skin_on} · float ${Number(wearValue || 0).toFixed(4)}`;
+status.textContent = `${dict.v3_skin_on} · float ${formatFloat(wearValue || 0)}`;
 setTimeout(() => { status.textContent = ''; }, 3000);
 })
 .catch(err => {
