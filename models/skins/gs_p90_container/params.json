@@ -1,0 +1,39 @@
+{
+  "finish": "gs_p90_container",
+  "shader": {
+    "paint_style": 8,
+    "pattern_scale": 1.0,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 1.0,
+    "colors": [
+      [
+        0.8941,
+        0.8941,
+        0.8941
+      ],
+      [
+        1.0,
+        1.0,
+        1.0
+      ],
+      [
+        0.8706,
+        0.8706,
+        0.8706
+      ],
+      [
+        0.4235,
+        0.4235,
+        0.4235
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
