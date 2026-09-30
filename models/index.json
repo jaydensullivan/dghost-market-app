@@ -494,6 +494,206 @@
   "skin": "models/skins/aq_awp_twine",
   "weapon": "models/weapons/awp"
  },
+ "Desert Eagle | Blaze": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/aa_flames",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Blue Ply": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/cu_deagle_replica",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Bronze Deco": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/am_bronze_sparkle",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Calligraffiti": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/deagle_calligraff",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Cobalt Disruption": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/am_ddpatdense_peacock",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Code Red": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/gs_deagle_aggressor",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Conspiracy": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/cu_deagle_aureus",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Corinthian": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/aq_deagle_corinthian",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Crimson Web": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/hy_webs_darker",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Directive": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/aq_desert_eagle_constable",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Eastern Enigma": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/deagle_eastern_enigma_blue",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Emerald Jörmungandr": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/am_jorm_green",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Fennec Fox": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/gs_deagle_fennec",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Firebreathing": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/deagle_firebreathing",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Golden Koi": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/am_scales_bravo",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Hand Cannon": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/aq_handcannon",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Heat Treated": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/aq_deagle_case_hardened_2",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Heirloom": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/aq_engraved_deagle",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Hypnotic": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/aa_vertigo",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Kumicho Dragon": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/aq_deserteagle_kumichodragon",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Light Rail": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/gs_deagle_exo",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Mecha Industries": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/gs_deagle_mecha",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Meteorite": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/am_crystallized_dark",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Midnight Storm": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/am_seastorm",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Mudder": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/hy_mottled_sand",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Naga": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/aq_deagle_naga",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Night Heist": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/am_heist_plans_purple",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Ocean Drive": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/cu_deagle_kitch",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Oxide Blaze": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/cu_desert_eagle_corroden",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Pilot": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/aq_pilot_deagle",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Printstream": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/cu_deag_printstream",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Sputnik": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/sp_spacerace_blue",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Starcade": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/cu_glitter_deagle",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Sunset Storm 壱": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/am_seastorm_blood",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Sunset Storm 弐": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/am_seastorm_shojo",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | The Bronze": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/am_numbers_bronze",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Tilted": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/cu_overpass_aqua_deagle",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Trigger Discipline": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/cu_deag_trigger_discipline",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Urban DDPAT": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/hy_ddpat_urb",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | Urban Rubble": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/hy_varicamo_urban",
+  "weapon": "models/weapons/deagle"
+ },
  "M4A4 | Asiimov": {
   "model": "models/m4a1.glb",
   "skin": "models/skins/cu_m4_asimov",
