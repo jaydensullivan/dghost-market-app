@@ -1,0 +1,39 @@
+{
+  "finish": "gs_r8_llamacannon",
+  "shader": {
+    "paint_style": 8,
+    "pattern_scale": 1.0,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 1.0,
+    "colors": [
+      [
+        0.6314,
+        0.6314,
+        0.6314
+      ],
+      [
+        0.7333,
+        0.8275,
+        1.0
+      ],
+      [
+        1.0,
+        0.9843,
+        0.7412
+      ],
+      [
+        0.7451,
+        0.7294,
+        0.6824
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
