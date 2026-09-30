@@ -1,0 +1,39 @@
+{
+  "finish": "aq_leviathan",
+  "shader": {
+    "paint_style": 7,
+    "pattern_scale": 2.5,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 2.5,
+    "colors": [
+      [
+        1.0,
+        1.0,
+        1.0
+      ],
+      [
+        0.502,
+        0.6392,
+        0.7294
+      ],
+      [
+        0.5333,
+        0.6235,
+        0.5333
+      ],
+      [
+        0.6039,
+        0.6784,
+        0.6039
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
