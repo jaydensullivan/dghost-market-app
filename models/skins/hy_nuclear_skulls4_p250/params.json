@@ -1,0 +1,39 @@
+{
+  "finish": "hy_nuclear_skulls4_p250",
+  "shader": {
+    "paint_style": 1,
+    "pattern_scale": 2.3,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 1.0,
+    "colors": [
+      [
+        0.2157,
+        0.2353,
+        0.2784
+      ],
+      [
+        0.7882,
+        0.7529,
+        0.5804
+      ],
+      [
+        0.5333,
+        0.4353,
+        0.2784
+      ],
+      [
+        0.1059,
+        0.1216,
+        0.1882
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
