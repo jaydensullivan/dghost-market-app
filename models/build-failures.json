@@ -37,6 +37,8 @@
   "spe_lightning": 1
  },
  "weapons": {
-  "m4a1_silencer": 1
+  "glock": 1,
+  "m4a1_silencer": 1,
+  "usp_silencer": 1
  }
 }
