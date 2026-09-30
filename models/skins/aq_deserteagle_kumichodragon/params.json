@@ -1,0 +1,40 @@
+{
+  "finish": "aq_deserteagle_kumichodragon",
+  "shader": {
+    "paint_style": 7,
+    "pattern_scale": 1.0,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 1.35,
+    "colors": [
+      [
+        0.8,
+        0.7647,
+        0.7294
+      ],
+      [
+        0.898,
+        0.9961,
+        1.0
+      ],
+      [
+        0.4275,
+        0.3843,
+        0.3412
+      ],
+      [
+        0.2039,
+        0.1882,
+        0.1686
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "rough": "rough.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
