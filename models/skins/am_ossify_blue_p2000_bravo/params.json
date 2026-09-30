@@ -1,0 +1,39 @@
+{
+  "finish": "am_ossify_blue_p2000_bravo",
+  "shader": {
+    "paint_style": 4,
+    "pattern_scale": 1.315,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 2.0,
+    "colors": [
+      [
+        0.3216,
+        0.4196,
+        0.5922
+      ],
+      [
+        0.3686,
+        0.5098,
+        0.8745
+      ],
+      [
+        0.6196,
+        0.6706,
+        0.7804
+      ],
+      [
+        0.4078,
+        0.4118,
+        0.4353
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
