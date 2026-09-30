@@ -1,0 +1,39 @@
+{
+  "finish": "hy_bamboo_jungle",
+  "shader": {
+    "paint_style": 1,
+    "pattern_scale": 1.4,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1,
+    "grunge_scale": 1,
+    "paint_metalness": 0,
+    "color_brightness": 1.0,
+    "colors": [
+      [
+        0.8078,
+        0.8118,
+        0.7569
+      ],
+      [
+        0.3451,
+        0.0118,
+        0.0118
+      ],
+      [
+        0.1882,
+        0.149,
+        0.1216
+      ],
+      [
+        0.4471,
+        0.5412,
+        0.1137
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
