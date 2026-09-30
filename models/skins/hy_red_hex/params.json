@@ -1,0 +1,39 @@
+{
+  "finish": "hy_red_hex",
+  "shader": {
+    "paint_style": 1,
+    "pattern_scale": 1.5,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 1.0,
+    "colors": [
+      [
+        0.1451,
+        0.1647,
+        0.1882
+      ],
+      [
+        0.4078,
+        0.3843,
+        0.349
+      ],
+      [
+        0.1804,
+        0.1882,
+        0.2196
+      ],
+      [
+        0.4902,
+        0.0667,
+        0.0667
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
