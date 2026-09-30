@@ -1,0 +1,39 @@
+{
+  "finish": "hy_blueprint_aqua",
+  "shader": {
+    "paint_style": 1,
+    "pattern_scale": 2.2,
+    "pattern_rotation": 120.0,
+    "wear_scale": 1,
+    "grunge_scale": 1,
+    "paint_metalness": 0,
+    "color_brightness": 1.0,
+    "colors": [
+      [
+        0.2118,
+        0.2196,
+        0.2196
+      ],
+      [
+        0.6471,
+        0.6157,
+        0.498
+      ],
+      [
+        0.3765,
+        0.6157,
+        0.6784
+      ],
+      [
+        0.1882,
+        0.1765,
+        0.1529
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
