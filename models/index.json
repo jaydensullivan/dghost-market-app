@@ -1444,6 +1444,171 @@
   "skin": "models/skins/gs_mac10_fish_bait",
   "weapon": "models/weapons/mac10"
  },
+ "MP7 | Abyssal Apparition": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/cu_mp7_fear",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Akoben": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/sp_mp7_tribal_yellow",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Armor Core": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/aq_mp7_ultramodern",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Army Recon": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/sp_spray_army",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Asterion": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/sp_labyrinth",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Astrolabe": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/gs_constellation_dark_mp7",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Base-2": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/mp7_binary_green",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Bloodsport": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/gs_mp7_bloodsport",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Cirrus": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/gs_final_pooldeadv2",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Fade": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/aa_fade_mp7",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Forest DDPAT": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/hy_ddpat",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Full Stop": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/hy_varicamo_red",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Guerrilla": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/cu_mp7_khaki",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Gunsmoke": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/hy_gelpen",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Impire": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/sp_mp7_impire",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Just Smile": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/mp7_just_smile",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Mischief": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/cu_mp7_racketeer",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Motherboard": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/am_circuitboard_green",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Nemesis": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/cu_mp7_nemsis",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Neon Ply": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/cu_mp7_replica",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Ocean Foam": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/am_ossify_blue",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Olive Plaid": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/hy_plaid1",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Orange Peel": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/sp_tape_orange",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Powercore": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/gs_powercore_mp7",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Prey": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/sp_zebracam_red",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Scorched": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/sp_dapple",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Skulls": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/hy_skulls",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Smoking Kills": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/mp7_smoking_kills_v2",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Special Delivery": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/cu_mp7_classified",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Sunbaked": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/gs_mp7_strone",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Tall Grass": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/hy_drywood_green",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Teal Blossom": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/sp_bud_green",
+  "weapon": "models/weapons/mp7"
+ },
+ "MP7 | Vault Heist": {
+  "model": "models/mp7.glb",
+  "skin": "models/skins/am_heist_plans_yellow",
+  "weapon": "models/weapons/mp7"
+ },
  "MP9 | Airlock": {
   "model": "models/mp9.glb",
   "skin": "models/skins/cu_mp9_narcis",
