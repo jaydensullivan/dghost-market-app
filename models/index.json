@@ -1524,6 +1524,11 @@
   "skin": "models/skins/cu_bullet_rain_m4a1",
   "weapon": "models/weapons/m4a1"
  },
+ "M4A4 | Buzz Kill": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/gs_m4a4_sector",
+  "weapon": "models/weapons/m4a1"
+ },
  "M4A4 | Choppa": {
   "model": "models/m4a1.glb",
   "skin": "models/skins/m4a4_green_camo",
@@ -1559,6 +1564,11 @@
   "skin": "models/skins/hy_desert",
   "weapon": "models/weapons/m4a1"
  },
+ "M4A4 | Desert-Strike": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/cu_titanstorm",
+  "weapon": "models/weapons/m4a1"
+ },
  "M4A4 | Desolate Space": {
   "model": "models/m4a1.glb",
   "skin": "models/skins/cu_m4a4_desolate_space",
@@ -1572,6 +1582,11 @@
  "M4A4 | Evil Daimyo": {
   "model": "models/m4a1.glb",
   "skin": "models/skins/cu_m4a4_evil_daimyo",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Eye of Horus": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/gs_m4a4_ra",
   "weapon": "models/weapons/m4a1"
  },
  "M4A4 | Faded Zebra": {
@@ -1604,6 +1619,11 @@
   "skin": "models/skins/cu_m4a4_hellfire",
   "weapon": "models/weapons/m4a1"
  },
+ "M4A4 | Hellish": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/cu_m4a4_train_hell",
+  "weapon": "models/weapons/m4a1"
+ },
  "M4A4 | Howl": {
   "model": "models/m4a1.glb",
   "skin": "models/skins/cu_m4a1_howling",
@@ -1617,6 +1637,11 @@
  "M4A4 | Jungle Tiger": {
   "model": "models/m4a1.glb",
   "skin": "models/skins/hy_v_tiger",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Magnesium": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/gs_m4a4_chopper_ghost",
   "weapon": "models/weapons/m4a1"
  },
  "M4A4 | Mainframe": {
@@ -1639,6 +1664,11 @@
   "skin": "models/skins/cu_m4a4_elite_tactical",
   "weapon": "models/weapons/m4a1"
  },
+ "M4A4 | Poseidon": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/cu_poseidon",
+  "weapon": "models/weapons/m4a1"
+ },
  "M4A4 | Radiation Hazard": {
   "model": "models/m4a1.glb",
   "skin": "models/skins/sp_nukestripe_orange",
@@ -1649,9 +1679,34 @@
   "skin": "models/skins/hy_ddpat_urban_red",
   "weapon": "models/weapons/m4a1"
  },
+ "M4A4 | Royal Paladin": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/gs_m4a4_royal_squire",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Spider Lily": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/gs_m4_flowers",
+  "weapon": "models/weapons/m4a1"
+ },
  "M4A4 | Temukau": {
   "model": "models/m4a1.glb",
   "skin": "models/skins/cu_m4a4_temukau",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | The Battlestar": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/gs_m4a4_pioneer",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | The Coalition": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/gs_m4a4_coalition",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | The Emperor": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/gs_m4a4_emperor",
   "weapon": "models/weapons/m4a1"
  },
  "M4A4 | Tooth Fairy": {
