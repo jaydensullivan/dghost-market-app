@@ -874,6 +874,156 @@
   "skin": "models/skins/cu_famas_spectron",
   "weapon": "models/weapons/famas"
  },
+ "Five-SeveN | Angry Mob": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/cu_five_seven_angry",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Berries And Cherries": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/aa_fade_red_blue",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Boost Protocol": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/gs_five_seven_efusion",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Buddy": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/cu_fiveseven_gsg9",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Capillary": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/cu_fiveseven_vein",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Case Hardened": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/aq_oiled",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Coolant": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/hy_ducts_green",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Copper Galaxy": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/am_copper_flecks",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Crimson Blossom": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/hy_bud_red",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Desert Seal": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/fiveseven_desert_seal",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Fairy Tale": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/cu_five_seven_diary",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Fall Hazard": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/cu_vertigo_fiveseven",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Flame Test": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/gs_fiveseven_hot_rod_violet",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Forest Night": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/hy_forest_night",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Fowl Play": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/aq_57_feathers",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Heat Treated": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/aq_case_hardened_fiveseven",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Hybrid": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/fiveseven_hybrid",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Hyper Beast": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/cu_fiveseven_hyperbeast",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Kami": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/hy_kami",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Monkey Business": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/cu_fiveseven_banana",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Neon Kimono": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/hy_kimono_diamonds",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Nightshade": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/hy_flowers",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Orange Peel": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/sp_tape_orange",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Retrobution": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/cu_fiveseven_retrobution",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Scrawl": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/cu_fiveseven_alpha_omega",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Scumbria": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/aq_five_seven_scumbria",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Silver Quartz": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/am_crystallized_silver",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Triumvirate": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/cu_fiveseven_augmented",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Violent Daimyo": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/cu_five_seven_daimyo",
+  "weapon": "models/weapons/fiveseven"
+ },
+ "Five-SeveN | Withered Vine": {
+  "model": "models/fiveseven.glb",
+  "skin": "models/skins/sp_moro_textile_purple_yellow",
+  "weapon": "models/weapons/fiveseven"
+ },
  "Galil AR | Akoben": {
   "model": "models/galilar.glb",
   "skin": "models/skins/sp_galil_akoben",
