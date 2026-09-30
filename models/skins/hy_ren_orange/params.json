@@ -1,0 +1,39 @@
+{
+  "finish": "hy_ren_orange",
+  "shader": {
+    "paint_style": 1,
+    "pattern_scale": 4.0,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1,
+    "grunge_scale": 1,
+    "paint_metalness": 0,
+    "color_brightness": 2.0,
+    "colors": [
+      [
+        0.302,
+        0.2,
+        0.0
+      ],
+      [
+        0.2824,
+        0.1647,
+        0.0549
+      ],
+      [
+        0.149,
+        0.102,
+        0.098
+      ],
+      [
+        0.2745,
+        0.1373,
+        0.0471
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
