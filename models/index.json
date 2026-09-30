@@ -264,9 +264,19 @@
   "skin": "models/skins/cu_ak_xray",
   "weapon": "models/weapons/ak47"
  },
+ "AWP | Acheron": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/hy_nuclear_skulls_redblue",
+  "weapon": "models/weapons/awp"
+ },
  "AWP | Asiimov": {
   "model": "models/awp.glb",
   "skin": "models/skins/cu_awp_asimov",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Atheris": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/cu_awp_viper",
   "weapon": "models/weapons/awp"
  },
  "AWP | BOOM": {
@@ -274,9 +284,24 @@
   "skin": "models/skins/hy_blam_simple",
   "weapon": "models/weapons/awp"
  },
+ "AWP | Black Box": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/awp_black_box",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Black Nile": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/gs_awp_strone",
+  "weapon": "models/weapons/awp"
+ },
  "AWP | CMYK": {
   "model": "models/awp.glb",
   "skin": "models/skins/gs_independe_awp",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Capillary": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/cu_awp_vein",
   "weapon": "models/weapons/awp"
  },
  "AWP | Chromatic Aberration": {
@@ -327,6 +352,11 @@
  "AWP | Elite Build": {
   "model": "models/awp.glb",
   "skin": "models/skins/cu_awp_mastery",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Exoskeleton": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/gs_awp_exoskeleton",
   "weapon": "models/weapons/awp"
  },
  "AWP | Fade": {
@@ -389,6 +419,26 @@
   "skin": "models/skins/cu_awp_hannya",
   "weapon": "models/weapons/awp"
  },
+ "AWP | POP AWP": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/hy_technowar_rwb",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Phobos": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/gs_awp_phobos",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Pink DDPAT": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/hy_ddpat_pink",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Pit Viper": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/hy_snakeskin",
+  "weapon": "models/weapons/awp"
+ },
  "AWP | Printstream": {
   "model": "models/awp.glb",
   "skin": "models/skins/awp_printstream",
@@ -414,9 +464,19 @@
   "skin": "models/skins/am_tigers_blue",
   "weapon": "models/weapons/awp"
  },
+ "AWP | Snake Camo": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/sp_snake",
+  "weapon": "models/weapons/awp"
+ },
  "AWP | Sovereign Flame": {
   "model": "models/awp.glb",
   "skin": "models/skins/awp_sovereign_flame",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Sun in Leo": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/hy_zodiac2",
   "weapon": "models/weapons/awp"
  },
  "AWP | The Prince": {
@@ -427,6 +487,11 @@
  "AWP | Wildfire": {
   "model": "models/awp.glb",
   "skin": "models/skins/cu_awp_wildfire",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Worm God": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/aq_awp_twine",
   "weapon": "models/weapons/awp"
  }
 }
