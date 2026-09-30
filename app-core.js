@@ -57,14 +57,20 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 else attach();
 })();
 
-// Float предмета показываем целиком, как его отдаёт игра
-// (0.07123456788063049), а не обрезанным до 4 знаков: покупатели
-// сравнивают именно полное значение. Очень маленькие числа JS
-// пишет как 1e-7 — такие раскрываем в обычную запись.
+// Float предмета показываем так же, как Steam («Wear Rating»): в игре
+// это число одинарной точности, и Steam выводит его с 9 значащими
+// цифрами — 0.127000004. Сервисы инвентаря отдают его округлённым
+// (0.127), поэтому сначала восстанавливаем точное значение через
+// Math.fround, потом печатаем 9 цифр без хвостовых нулей.
 function formatFloat(value){
-const n = Number(value);
+const n = Math.fround(Number(value));
 if (!isFinite(n)) return '';
-const s = String(n);
-if (s.indexOf('e') === -1) return s;
-return n.toFixed(20).replace(/0+$/, '').replace(/\.$/, '');
+if (n === 0) return '0';
+let s = n.toPrecision(9);
+if (s.indexOf('e') !== -1){
+const exp = Math.floor(Math.log10(Math.abs(n)));
+s = n.toFixed(Math.min(20, 8 - exp));
+}
+if (s.indexOf('.') !== -1) s = s.replace(/0+$/, '').replace(/\.$/, '');
+return s;
 }
