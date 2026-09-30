@@ -1,0 +1,39 @@
+{
+  "finish": "sp_zebracam_red",
+  "shader": {
+    "paint_style": 2,
+    "pattern_scale": 1.28,
+    "pattern_rotation": -10.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 1.0,
+    "colors": [
+      [
+        0.4471,
+        0.4471,
+        0.4471
+      ],
+      [
+        0.4471,
+        0.1804,
+        0.1804
+      ],
+      [
+        0.2353,
+        0.2353,
+        0.2353
+      ],
+      [
+        0.1961,
+        0.1373,
+        0.1373
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
