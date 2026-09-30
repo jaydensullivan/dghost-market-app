@@ -1,0 +1,39 @@
+{
+  "finish": "hy_hunter_modern",
+  "shader": {
+    "paint_style": 1,
+    "pattern_scale": 3.0,
+    "pattern_rotation": -3.6,
+    "wear_scale": 1,
+    "grunge_scale": 1,
+    "paint_metalness": 0,
+    "color_brightness": 1.0,
+    "colors": [
+      [
+        0.549,
+        0.549,
+        0.4863
+      ],
+      [
+        0.902,
+        0.7059,
+        0.3765
+      ],
+      [
+        0.3922,
+        0.3922,
+        0.3922
+      ],
+      [
+        0.1882,
+        0.1882,
+        0.1882
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
