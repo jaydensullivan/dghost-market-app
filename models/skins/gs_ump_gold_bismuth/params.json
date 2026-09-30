@@ -1,0 +1,39 @@
+{
+  "finish": "gs_ump_gold_bismuth",
+  "shader": {
+    "paint_style": 8,
+    "pattern_scale": 1.0,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 1.5,
+    "colors": [
+      [
+        0.3569,
+        0.3569,
+        0.3569
+      ],
+      [
+        1.0,
+        1.0,
+        1.0
+      ],
+      [
+        0.8471,
+        0.8745,
+        0.902
+      ],
+      [
+        0.4431,
+        0.4157,
+        0.3804
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
