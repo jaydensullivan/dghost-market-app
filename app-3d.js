@@ -478,12 +478,14 @@ return pack;
 });
 }
 
-// Гидрография (1), спрей (2) и анодирование (3, 4): узор в таких
-// скинах — маска, где R/G/B говорят, какой из четырёх цветов
-// материала лежит в этой точке. Цвета генератор кладёт в
-// params.json → shader.colors; без них показываем узор как есть.
+// Стили CS2 (F_PAINT_STYLE): 0 однотонный, 1 гидрография, 2 спрей,
+// 3 анодирование, 4 анодирование мультицвет, 5 аэрография (Fade),
+// 6 кастомная, 7 патина, 8 Gunsmith. У 1, 2, 4 и 5 узор — маска,
+// где R/G/B говорят, какой из четырёх цветов материала лежит в этой
+// точке; цвета генератор кладёт в params.json → shader.colors. Без
+// стиля 5 Fade-скины (Acid Fade, Fade) показывали саму маску радугой.
 function skinUsesColorMask(params){
-return [1, 2, 3, 4].indexOf(params.paint_style) !== -1
+return [1, 2, 4, 5].indexOf(params.paint_style) !== -1
 && Array.isArray(params.colors) && params.colors.length >= 4;
 }
 
@@ -557,6 +559,28 @@ uMaskChannel: { value: channel },
 uHasWeapon: { value: weapon && weapon.color ? 1 : 0 },
 };
 
+// Спрей (2) и аэрография (5) в CS наносятся проекцией сбоку на всё
+// оружие, а не по развёртке: развёртка разрезана на куски, и Fade по
+// ней ложился пятнами. Проекция — по двум самым длинным осям модели
+// (длина и высота), нормированным на её габариты.
+const projected = [2, 5].indexOf(skin.params.paint_style) !== -1 && !!skin.pattern;
+object.updateMatrixWorld(true);
+const rootInverse = new THREE.Matrix4().copy(object.matrixWorld).invert();
+const box = new THREE.Box3();
+object.traverse(node => {
+if (!node.isMesh || !node.geometry) return;
+if (!node.geometry.boundingBox) node.geometry.computeBoundingBox();
+const local = node.geometry.boundingBox.clone()
+.applyMatrix4(new THREE.Matrix4().multiplyMatrices(rootInverse, node.matrixWorld));
+box.union(local);
+});
+const boxSize = new THREE.Vector3();
+box.getSize(boxSize);
+const axes = [0, 1, 2].sort((a, b) => boxSize.getComponent(b) - boxSize.getComponent(a));
+const projU = new THREE.Vector3(); projU.setComponent(axes[0], 1);
+const projV = new THREE.Vector3(); projV.setComponent(axes[1], 1);
+const projLen = Math.max(boxSize.getComponent(axes[0]), 1e-6);
+
 object.traverse(node => {
 if (!node.isMesh) return;
 
@@ -579,17 +603,37 @@ node.geometry.setAttribute('uv2', node.geometry.attributes.uv);
 }
 }
 
+const toRoot = new THREE.Matrix4().multiplyMatrices(rootInverse, node.matrixWorld);
+const meshUniforms = {
+uProjected: { value: projected ? 1 : 0 },
+uToRoot: { value: toRoot },
+uProjU: { value: projU },
+uProjV: { value: projV },
+uProjMin: { value: box.min.clone() },
+uProjLen: { value: projLen },
+};
+
 material.onBeforeCompile = (shader) => {
-Object.assign(shader.uniforms, uniforms);
+Object.assign(shader.uniforms, uniforms, meshUniforms);
 
 // Своя UV-переменная: в three r152+ общий vUv убрали, у каждой
 // текстуры теперь своя (vMapUv, vRoughnessMapUv…), и ссылка на
 // vUv роняла компиляцию шейдера — меш просто исчезал.
 shader.vertexShader = shader.vertexShader
 .replace('#include <common>', `#include <common>
-varying vec2 vSkinUv;`)
+varying vec2 vSkinUv;
+varying vec2 vProjUv;
+uniform mat4 uToRoot;
+uniform vec3 uProjU;
+uniform vec3 uProjV;
+uniform vec3 uProjMin;
+uniform float uProjLen;`)
 .replace('#include <begin_vertex>', `#include <begin_vertex>
-vSkinUv = uv;`);
+vSkinUv = uv;
+// Проекция сбоку: обе оси делим на длину оружия, чтобы узор не
+// растягивался по высоте.
+vec3 rootPos = (uToRoot * vec4(position, 1.0)).xyz - uProjMin;
+vProjUv = vec2(dot(rootPos, uProjU), dot(rootPos, uProjV)) / uProjLen;`);
 
 shader.fragmentShader = shader.fragmentShader
 .replace('#include <common>', `#include <common>
@@ -616,7 +660,9 @@ uniform float uMaskGamma;
 uniform float uColorBrightness;
 uniform int uMaskChannel;
 uniform int uHasWeapon;
-varying vec2 vSkinUv;`)
+uniform int uProjected;
+varying vec2 vSkinUv;
+varying vec2 vProjUv;`)
 .replace('#include <color_fragment>', `#include <color_fragment>
 // Доля покрытия краской — нужна ниже, для металличности.
 float skinCover = 0.0;
@@ -640,7 +686,7 @@ diffuseColor.rgb = masks.rgb;
 
 // Поворот узора — вокруг центра развёртки, как в игре.
 float rc = cos(uPatternRotation), rs = sin(uPatternRotation);
-vec2 puv = vSkinUv - 0.5;
+vec2 puv = (uProjected == 1 ? vProjUv : vSkinUv) - 0.5;
 puv = vec2(rc * puv.x - rs * puv.y, rs * puv.x + rc * puv.y) + 0.5;
 vec3 pattern = texture2D(uPattern, puv * uPatternScale).rgb;
 if (uUseColors == 1){
