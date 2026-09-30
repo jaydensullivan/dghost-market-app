@@ -1214,6 +1214,181 @@
   "skin": "models/skins/cu_m4a4_ancestral",
   "weapon": "models/weapons/m4a1"
  },
+ "MP9 | Airlock": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/cu_mp9_narcis",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Arctic Tri-Tone": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/gs_arctic_mp9",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Army Sheen": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/am_army_shine",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Bioleak": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/am_mp9_bioleak",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Black Sand": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/cu_mp9_black_sand",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Broken Record": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/mp9_vinyl",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Capillary": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/cu_mp9_vein",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Dark Age": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/am_metal_inlay",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Dart": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/cu_mp9_chevron",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Deadly Poison": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/cu_mp9_deadly_poison",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Dry Season": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/sp_tape_dots_bravo",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Dune Asp": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/mp9_dune_asp",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Featherweight": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/cu_mp9_superlight",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Food Chain": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/cu_mp9_food_chain",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Goo": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/cu_mp9_goo",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Green Plaid": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/hy_plaid2",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Hydra": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/cu_mp9_hydra",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Hypnotic": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/aa_vertigo",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Modest Threat": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/gs_mp9_colony01",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Mount Fuji": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/aa_mp9_fuji_pink",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Music Box": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/am_mirage_flowers_metalic",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Nexus": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/mp9_nexus",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Old Roots": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/sp_moro_carving_yellow",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Orange Peel": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/sp_tape_orange",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Pandora's Box": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/aa_pandora",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Rose Iron": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/am_thorny_rose_mp9",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Ruby Poison Dart": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/am_mp9_nitrogen",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Sand Dashed": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/sp_tape_short_sand",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Setting Sun": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/hy_nuclear_pattern2_mp9",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Slide": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/hy_splatter3",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Spy Prototype": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/mp9_prototype_extended",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Stained Glass": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/am_stained_glass",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Starlight Protector": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/gs_mp9_starlight",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Urban Sovereign": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/mp9_urban_sovereign",
+  "weapon": "models/weapons/mp9"
+ },
+ "MP9 | Wild Lily": {
+  "model": "models/mp9.glb",
+  "skin": "models/skins/cu_mp9_island_floral",
+  "weapon": "models/weapons/mp9"
+ },
  "P250 | Apep's Curse": {
   "model": "models/p250.glb",
   "skin": "models/skins/gs_p250_apep",
