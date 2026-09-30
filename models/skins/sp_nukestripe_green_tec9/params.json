@@ -1,0 +1,39 @@
+{
+  "finish": "sp_nukestripe_green_tec9",
+  "shader": {
+    "paint_style": 2,
+    "pattern_scale": 1.6,
+    "pattern_rotation": 3.5,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 1.0,
+    "colors": [
+      [
+        0.3333,
+        0.4941,
+        0.2549
+      ],
+      [
+        0.2,
+        0.2627,
+        0.2078
+      ],
+      [
+        0.2471,
+        0.9176,
+        0.1294
+      ],
+      [
+        0.1961,
+        0.1961,
+        0.1961
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
