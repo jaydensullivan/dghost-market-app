@@ -1,0 +1,39 @@
+{
+  "finish": "gs_galilar_incenerator",
+  "shader": {
+    "paint_style": 8,
+    "pattern_scale": 1.0,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1,
+    "grunge_scale": 1,
+    "paint_metalness": 0,
+    "color_brightness": 1.1,
+    "colors": [
+      [
+        0.6157,
+        0.5529,
+        0.4627
+      ],
+      [
+        0.9137,
+        0.9765,
+        0.9922
+      ],
+      [
+        0.9922,
+        0.9137,
+        0.8627
+      ],
+      [
+        0.9059,
+        0.6588,
+        0.4745
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
