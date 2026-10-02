@@ -76,7 +76,13 @@ commit_if_changed() {
     if [ -n "$(git status --porcelain models)" ]; then
         git add models >/dev/null 2>&1
         git commit -q -m "3D: $1" >/dev/null 2>&1
-        git push -q 2>/dev/null && echo "   ✅ отправлено" || echo "   ⚠️ push не прошёл, отправится со следующим коммитом"
+        # Параллельно мог пушить кто-то ещё (сайт, Codespace) — тогда
+        # подтягиваем чужие коммиты поверх и пробуем ещё раз.
+        if git push -q 2>/dev/null || { git pull -q --rebase 2>/dev/null && git push -q 2>/dev/null; }; then
+            echo "   ✅ отправлено"
+        else
+            echo "   ⚠️ push не прошёл, отправится со следующим коммитом"
+        fi
     fi
 }
 

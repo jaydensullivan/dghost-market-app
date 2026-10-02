@@ -1,0 +1,170 @@
+# Сборка 3D-моделей и раскрасок на серверах GitHub — вместо Codespaces.
+#
+# Запускается сама каждые 6 часов и вручную (Actions → «3D: сборка
+# моделей» → Run workflow). Каждый запуск продолжает с того места, где
+# остановился прошлый: build-all.sh пропускает готовое и коммитит
+# после каждой раскраски.
+#
+# Нужны секреты репозитория (Settings → Secrets and variables →
+# Actions): STEAM_USERNAME и STEAM_PASSWORD — ОТДЕЛЬНЫЙ аккаунт Steam
+# без мобильного Steam Guard, с бесплатной CS2 в библиотеке. Сервер
+# не может ввести код подтверждения.
+name: "3D: сборка моделей"
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "Только эти стволы, через пробел (пусто — все)"
+        required: false
+        default: ""
+
+# Два запуска одновременно писали бы в одни и те же файлы.
+concurrency:
+  group: build-3d
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pages: write
+
+env:
+  WORK: /tmp/cs2-assets
+  STEAM_USERNAME: ${{ secrets.STEAM_USERNAME }}
+
+jobs:
+  # Пока секретов нет, запуск по расписанию тихо пропускается (без
+  # писем об ошибке); ручной запуск честно падает с подсказкой.
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.secrets.outputs.ready }}
+    steps:
+      - name: Секреты Steam на месте?
+        id: secrets
+        env:
+          STEAM_PASSWORD: ${{ secrets.STEAM_PASSWORD }}
+        run: |
+          if [ -n "$STEAM_USERNAME" ] && [ -n "$STEAM_PASSWORD" ]; then
+            echo "ready=1" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "::error::Нет секретов STEAM_USERNAME / STEAM_PASSWORD (Settings → Secrets and variables → Actions)."
+            exit 1
+          else
+            echo "::notice::Секретов Steam ещё нет — сборка пропущена."
+          fi
+
+  build:
+    needs: check
+    if: needs.check.outputs.ready == '1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Освободить место на диске
+        run: |
+          sudo rm -rf /usr/local/lib/android /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL /usr/share/swift || true
+          df -h / /tmp
+
+      - name: Python-зависимости
+        run: pip install --quiet Pillow
+
+      # Токен входа DepotDownloader (-remember-password) лежит в
+      # IsolatedStorage — сохраняем между запусками, чтобы не входить
+      # по паролю каждый раз.
+      - name: Токен Steam из прошлого запуска
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/IsolatedStorage
+          key: steam-login-${{ github.run_id }}
+          restore-keys: steam-login-
+
+      - name: Инструменты (DepotDownloader, Source2Viewer)
+        run: |
+          mkdir -p "$WORK/tools" "$WORK/game"
+          cd "$WORK/tools"
+          dd=$(curl -s https://api.github.com/repos/SteamRE/DepotDownloader/releases/latest \
+               | grep -o 'https://[^"]*DepotDownloader-framework.zip' | head -1)
+          curl -fsSL "${dd:-https://github.com/SteamRE/DepotDownloader/releases/download/DepotDownloader_3.4.0/DepotDownloader-framework.zip}" -o dd.zip
+          s2v=$(curl -s https://api.github.com/repos/ValveResourceFormat/ValveResourceFormat/releases/latest \
+               | grep -o 'https://[^"]*cli-linux-x64.zip' | head -1)
+          curl -fsSL "${s2v:-https://github.com/ValveResourceFormat/ValveResourceFormat/releases/download/20.0/cli-linux-x64.zip}" -o s2v.zip
+          unzip -oq dd.zip && unzip -oq s2v.zip && rm dd.zip s2v.zip
+          chmod +x Source2Viewer-CLI
+          ls -la
+
+      # Первый вход — по паролю (stdin закрыт: если Steam попросит код,
+      # шаг упадёт с понятной ошибкой, а не зависнет). Дальше скрипты
+      # входят по сохранённому токену.
+      - name: Вход в Steam и индекс игры
+        env:
+          STEAM_PASSWORD: ${{ secrets.STEAM_PASSWORD }}
+        run: |
+          printf 'regex:^game/csgo/pak01_dir\\.vpk$\n' > "$WORK/filelist-dir.txt"
+          cd "$WORK/tools"
+          dotnet DepotDownloader.dll -app 730 -username "$STEAM_USERNAME" -password "$STEAM_PASSWORD" \
+            -remember-password -filelist "$WORK/filelist-dir.txt" -dir "$WORK/game" < /dev/null
+          ls -la "$WORK/game/game/csgo/pak01_dir.vpk"
+
+      - name: Git
+        run: |
+          git config user.name "DGhost 3D bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      # Останавливаемся за полчаса до лимита задачи: всё собранное уже
+      # закоммичено, следующий запуск продолжит.
+      - name: Сборка
+        env:
+          REPO: ${{ github.workspace }}
+          ONLY: ${{ inputs.only }}
+        run: |
+          code=0
+          timeout --signal=INT 320m bash build-all.sh || code=$?
+          if [ "$code" = "124" ]; then
+            echo "⏱ Время запуска вышло — продолжим в следующий раз."
+            code=0
+          fi
+          exit $code
+
+      # Логи того, что не собралось в этом запуске, — прямо в журнал
+      # задачи, чтобы разбирать ошибки без доступа к серверу.
+      - name: Логи неудач
+        if: always()
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          shown=0
+          for f in $(ls -t "$WORK"/build-*.log 2>/dev/null); do
+            name=$(basename "$f" .log); name=${name#build-}
+            case "$name" in
+              index|plan) continue ;;
+              skin-*) kit=${name#skin-}
+                      if [ -f "models/skins/$kit/pattern.webp" ] || [ -f "models/skins/$kit/params.json" ]; then continue; fi ;;
+              *)      if [ -f "models/weapons/$name/masks.webp" ]; then continue; fi ;;
+            esac
+            echo "::group::$name"
+            tail -60 "$f"
+            echo "::endgroup::"
+            shown=$((shown + 1))
+            [ "$shown" -ge 25 ] && break
+          done
+          echo "Показано логов неудач: $shown"
+
+      # Пуши от GITHUB_TOKEN не запускают публикацию GitHub Pages сами —
+      # просим пересобрать сайт, чтобы новые модели стали видны в мини-аппе.
+      - name: Обновить GitHub Pages
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl -s -o /dev/null -w "Pages build: %{http_code}\n" -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/pages/builds" || true
