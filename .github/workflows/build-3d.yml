@@ -111,8 +111,18 @@ jobs:
         run: |
           printf 'regex:^game/csgo/pak01_dir\\.vpk$\n' > "$WORK/filelist-dir.txt"
           cd "$WORK/tools"
-          dotnet DepotDownloader.dll -app 730 -username "$STEAM_USERNAME" -password "$STEAM_PASSWORD" \
-            -remember-password -filelist "$WORK/filelist-dir.txt" -dir "$WORK/game" < /dev/null
+          if ! dotnet DepotDownloader.dll -app 730 -username "$STEAM_USERNAME" -password "$STEAM_PASSWORD" \
+               -remember-password -filelist "$WORK/filelist-dir.txt" -dir "$WORK/game" < /dev/null 2>&1 | tee "$WORK/login.log"; then
+            :
+          fi
+          if grep -q "STEAM GUARD" "$WORK/login.log"; then
+            echo "::error::На аккаунте включён Steam Guard (код на почту или в приложении) — сервер не может его ввести. Отключите Steam Guard на этом отдельном аккаунте: Steam → Настройки → Безопасность → Управление Steam Guard → «Отключить Steam Guard»."
+            exit 1
+          fi
+          if grep -qiE "InvalidPassword|Failed to authenticate" "$WORK/login.log"; then
+            echo "::error::Steam не принял логин или пароль — проверьте секреты STEAM_USERNAME / STEAM_PASSWORD."
+            exit 1
+          fi
           ls -la "$WORK/game/game/csgo/pak01_dir.vpk"
 
       - name: Git
