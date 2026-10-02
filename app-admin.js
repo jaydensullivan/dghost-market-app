@@ -974,6 +974,7 @@ prize_value: Number(document.getElementById('adminRfValue').value) || null,
 hours,
 use_gif: hasGif,
 post_to_channels: post,
+require_sub: document.getElementById('adminRfRequireSub').checked,
 post_media: media === 'gif' && !hasGif ? 'card' : media,
 }
 }))

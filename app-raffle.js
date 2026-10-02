@@ -111,7 +111,13 @@ const dict = rfDict();
 const need = raffleData.invites_required;
 const perTicket = raffleData.invites_per_ticket;
 const have = me ? me.invites : 0;
-document.getElementById('rfCondition').textContent = dict.rf_condition.replace('{n}', need);
+// Второе условие — подписка на канал (флаг раздачи require_sub).
+const needSub = !!(c.require_sub || raffleData.require_sub);
+const subscribed = !!(me && me.subscribed);
+document.getElementById('rfCondition').textContent = (needSub ? dict.rf_condition_sub : dict.rf_condition).replace('{n}', need);
+document.getElementById('rfSub').style.display = needSub ? '' : 'none';
+document.getElementById('rfSubState').textContent = subscribed ? dict.rf_sub_yes : dict.rf_sub_no;
+document.getElementById('rfSubActions').style.display = needSub && !subscribed ? '' : 'none';
 document.getElementById('rfInvCount').textContent = have >= need ? `${have} ✅` : `${have}/${need}`;
 document.getElementById('rfInvBar').style.width = Math.min(100, Math.round(have / need * 100)) + '%';
 document.getElementById('rfJoin').classList.toggle('done', !!(me && me.entered));
@@ -120,13 +126,15 @@ if (me && me.entered){
 status.innerHTML = `<div class="raffle-in">${dict.rf_you_in}</div>`
 + `<div class="raffle-ticket">🎟️ ${dict.rf_entry_number} <b>#${me.entry_number}</b> · ${dict.rf_tickets.replace('{n}', me.tickets)}</div>`
 + `<div class="raffle-hint">${dict.rf_more_tickets.replace('{n}', perTicket)}</div>`;
+} else if (needSub && !subscribed && have >= need){
+status.innerHTML = `<div class="raffle-hint">${dict.rf_need_sub}</div>`;
 } else {
 status.innerHTML = `<div class="raffle-hint">${dict.rf_need_more.replace('{n}', Math.max(0, need - have))}</div>`;
 }
 const pending = document.getElementById('rfPending');
 pending.textContent = me && me.invites_pending ? dict.rf_pending.replace('{n}', me.invites_pending) : '';
 pending.style.display = pending.textContent ? '' : 'none';
-document.getElementById('rfRules').innerHTML = dict.rf_rules_html
+document.getElementById('rfRules').innerHTML = (needSub ? dict.rf_rules_sub_html : '') + dict.rf_rules_html
 .replace(/\{n\}/g, need).replace(/\{t\}/g, perTicket);
 }
 
@@ -324,6 +332,43 @@ btn.disabled = false;
 }
 }
 
+// ---------- подписка на канал ----------
+
+function openRaffleChannel(){
+const url = raffleData && raffleData.channel_url;
+if (!url) return;
+haptic('light');
+if (tg && tg.openTelegramLink && /^https:\/\/t\.me\//.test(url)) tg.openTelegramLink(url);
+else window.open(url, '_blank');
+}
+
+async function checkRaffleSub(){
+const dict = rfDict();
+if (!tg || !tg.initData) return;
+const btn = document.getElementById('rfSubCheckBtn');
+if (btn.disabled) return;
+btn.disabled = true;
+try {
+const r = await fetch(API_BASE + '/api/giveaway/check_sub', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData }),
+});
+const data = await r.json().catch(() => ({}));
+if (!r.ok) throw new Error(errorMessage(data.error));
+raffleData.me = data.me;
+renderRaffle();
+if (data.me.entered) showToast(dict.rf_sub_ok_in);
+else if (data.me.subscribed) showToast(dict.rf_sub_ok);
+else if (data.me.subscribed === false) showErrorToast(new Error(dict.rf_sub_not_found));
+else showErrorToast(new Error(dict.rf_sub_unknown));
+} catch (e) {
+showErrorToast(e);
+} finally {
+btn.disabled = false;
+}
+}
+
 function copyRaffleLink(){
 if (!raffleInviteLink) return;
 const done = () => showToast(rfDict().gw_invite_copied);
@@ -345,6 +390,8 @@ ta.remove();
 document.getElementById('rfInviteBtn').addEventListener('click', inviteToRaffle);
 document.getElementById('rfDmBtn').addEventListener('click', sendRaffleInviteToDm);
 document.getElementById('rfCopyBtn').addEventListener('click', copyRaffleLink);
+document.getElementById('rfSubBtn').addEventListener('click', openRaffleChannel);
+document.getElementById('rfSubCheckBtn').addEventListener('click', checkRaffleSub);
 document.getElementById('rfBackBtn').addEventListener('click', () => goToScreen('welcome'));
 
 // Вернулся из чата после приглашения — обновляем прогресс.
