@@ -132,7 +132,11 @@ status.innerHTML = `<div class="raffle-hint">${dict.rf_need_sub}</div>`;
 status.innerHTML = `<div class="raffle-hint">${dict.rf_need_more.replace('{n}', Math.max(0, need - have))}</div>`;
 }
 const pending = document.getElementById('rfPending');
-pending.textContent = me && me.invites_pending ? dict.rf_pending.replace('{n}', me.invites_pending) : '';
+pending.textContent = [
+me && me.invites_pending ? dict.rf_pending.replace('{n}', me.invites_pending) : '',
+me && me.invites_waiting_sub ? dict.rf_waiting_sub.replace('{n}', me.invites_waiting_sub) : '',
+me && me.invites_rejected ? dict.rf_rejected.replace('{n}', me.invites_rejected) : '',
+].filter(Boolean).join(' · ');
 pending.style.display = pending.textContent ? '' : 'none';
 document.getElementById('rfRules').innerHTML = (needSub ? dict.rf_rules_sub_html : '') + dict.rf_rules_html
 .replace(/\{n\}/g, need).replace(/\{t\}/g, perTicket);
