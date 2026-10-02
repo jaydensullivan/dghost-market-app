@@ -31,7 +31,7 @@
   "gs_train_car_famas": 3,
   "ht_blue_edges": 3,
   "ht_earth_fans": 3,
-  "ht_facet_p2000": 2,
+  "ht_facet_p2000": 3,
   "ht_metal_edges": 3,
   "ht_poly_camo_ak47": 3,
   "ht_red_edges_fineline": 3,
@@ -158,7 +158,7 @@
   "spo_palm": 3
  },
  "weapons": {
-  "cz75a": 2,
+  "cz75a": 3,
   "glock": 3,
   "m4a1_silencer": 3,
   "usp_silencer": 3
