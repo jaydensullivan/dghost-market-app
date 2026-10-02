@@ -74,3 +74,65 @@ s = n.toFixed(Math.min(20, 8 - exp));
 if (s.indexOf('.') !== -1) s = s.replace(/0+$/, '').replace(/\.$/, '');
 return s;
 }
+
+// ---------- устройство (антифрод раздачи) ----------
+// Бот ищет твинков — вторые аккаунты Telegram того же человека — по
+// устройству. device_id — случайный id в localStorage (несколько
+// аккаунтов на одном телефоне его делят), fp — хеш характеристик
+// устройства. Ничего личного: ни контактов, ни геолокации.
+function dgDeviceId(){
+try {
+let id = localStorage.getItem('dg_device_id');
+if (!id){
+id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+: Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12);
+localStorage.setItem('dg_device_id', id);
+}
+return id;
+} catch (e) { return null; }
+}
+
+async function dgFingerprint(){
+const parts = [
+navigator.userAgent, navigator.platform, (navigator.languages || []).join(','),
+Intl.DateTimeFormat().resolvedOptions().timeZone,
+screen.width + 'x' + screen.height + 'x' + screen.colorDepth, window.devicePixelRatio,
+navigator.hardwareConcurrency, navigator.deviceMemory, navigator.maxTouchPoints,
+tg ? tg.platform : '',
+];
+try {
+const gl = document.createElement('canvas').getContext('webgl');
+const ext = gl && gl.getExtension('WEBGL_debug_renderer_info');
+if (ext) parts.push(gl.getParameter(ext.UNMASKED_VENDOR_WEBGL), gl.getParameter(ext.UNMASKED_RENDERER_WEBGL));
+} catch (e) {}
+try {
+const c = document.createElement('canvas');
+c.width = 200; c.height = 40;
+const ctx = c.getContext('2d');
+ctx.font = '16px Arial'; ctx.fillStyle = '#7B2CFF'; ctx.fillText('DGhost ✓ 2026', 4, 24);
+parts.push(c.toDataURL());
+} catch (e) {}
+const text = parts.join('|');
+if (window.crypto && crypto.subtle){
+const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+return null;
+}
+
+const dgDevicePromise = (async () => {
+const device_id = dgDeviceId();
+let fp = null;
+try { fp = await dgFingerprint(); } catch (e) {}
+return device_id ? { device_id, fp } : {};
+})();
+
+dgDevicePromise.then(dev => {
+if (!dev.device_id || !tg || !tg.initData) return;
+fetch(API_BASE + '/api/device', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify(Object.assign({ init_data: tg.initData }, dev)),
+}).catch(() => {});
+});
+

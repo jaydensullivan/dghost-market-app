@@ -3134,6 +3134,9 @@ gap:10px;
 .raffle-ticket{ font-size:14px; color:var(--silver); margin-top:4px; }
 .raffle-hint{ font-size:12px; line-height:1.45; color:var(--muted); }
 .raffle-pending{ font-size:12px; color:#f5c542; }
+.raffle-sub{ display:flex; flex-direction:column; gap:8px; }
+.raffle-sub-actions{ display:flex; gap:8px; }
+.raffle-sub-actions .steam-link-btn{ flex:1; margin:0; }
 .raffle-cta{
 border-color:var(--red);
 background:var(--cta-gradient);

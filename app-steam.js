@@ -115,11 +115,13 @@ const btn = document.getElementById('mandatoryAcceptAgreementBtn');
 const status = document.getElementById('mandatoryAgreementStatus');
 btn.disabled = true;
 status.textContent = dict.agreement_saving;
-fetch(API_BASE + '/api/agreement/accept', {
+// Устройство — вместе с принятием правил: по нему бот проверяет,
+// не второй ли это аккаунт пригласившего (антифрод раздачи).
+dgDevicePromise.catch(() => ({})).then(dev => fetch(API_BASE + '/api/agreement/accept', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ init_data: tg.initData })
-})
+body: JSON.stringify(Object.assign({ init_data: tg.initData }, dev))
+}))
 .then(async r => {
 if (!r.ok){
 const data = await r.json().catch(() => ({}));
