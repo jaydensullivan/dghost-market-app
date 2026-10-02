@@ -161,7 +161,12 @@ if [ ! -s "$ITEMS" ]; then
 
         (cd "$TOOLS" && dotnet DepotDownloader.dll -app 730 \
             -username "${STEAM_USER:-landofdinasty}" -no-mobile -remember-password \
-            -filelist "$WORK/fl-items.txt" -dir "$WORK/game") >/dev/null 2>&1
+            -filelist "$WORK/fl-items.txt" -dir "$WORK/game") > "$WORK/dd-last.log" 2>&1 < /dev/null
+
+        if grep -qE "RateLimitExceeded|InitializeSteam failed|Unable to get steam3 credentials" "$WORK/dd-last.log"; then
+            echo "❌ STEAM_LOGIN_FAILED: Steam не пустил — попробуй позже."
+            exit 3
+        fi
 
     done
 

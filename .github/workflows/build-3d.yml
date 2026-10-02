@@ -102,14 +102,15 @@ jobs:
           chmod +x Source2Viewer-CLI
           ls -la
 
-      # Первый вход — по паролю (stdin закрыт: если Steam попросит код,
-      # шаг упадёт с понятной ошибкой, а не зависнет). Дальше скрипты
-      # входят по сохранённому токену.
-      - name: Вход в Steam и индекс игры
+      # Один вход — и сразу весь архив игры (pak01_*.vpk, десятки ГБ —
+      # место на сервере есть). Раньше скрипты входили в Steam ради
+      # каждого куска, и Steam отвечал RateLimitExceeded. stdin закрыт:
+      # если Steam попросит код, шаг упадёт с понятной ошибкой.
+      - name: Вход в Steam и архив игры
         env:
           STEAM_PASSWORD: ${{ secrets.STEAM_PASSWORD }}
         run: |
-          printf 'regex:^game/csgo/pak01_dir\\.vpk$\n' > "$WORK/filelist-dir.txt"
+          printf 'regex:^game/csgo/pak01_.*\\.vpk$\n' > "$WORK/filelist-dir.txt"
           cd "$WORK/tools"
           if ! dotnet DepotDownloader.dll -app 730 -username "$STEAM_USERNAME" -password "$STEAM_PASSWORD" \
                -remember-password -filelist "$WORK/filelist-dir.txt" -dir "$WORK/game" < /dev/null 2>&1 | tee "$WORK/login.log"; then
@@ -124,6 +125,8 @@ jobs:
             exit 1
           fi
           ls -la "$WORK/game/game/csgo/pak01_dir.vpk"
+          echo "Кусков архива: $(ls "$WORK"/game/game/csgo/pak01_*.vpk | wc -l), размер: $(du -sh "$WORK/game" | cut -f1)"
+          df -h /tmp
 
       - name: Git
         run: |
@@ -136,6 +139,7 @@ jobs:
         env:
           REPO: ${{ github.workspace }}
           ONLY: ${{ inputs.only }}
+          KEEP_CHUNKS: "1"
         run: |
           code=0
           timeout --signal=INT 320m bash build-all.sh || code=$?

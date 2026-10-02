@@ -32,7 +32,14 @@ download_chunk() {
     printf 'regex:^game/csgo/pak01_%s\\.vpk$\n' "$1" > "$WORK/fl-one.txt"
     (cd "$TOOLS" && dotnet DepotDownloader.dll -app 730 \
         -username "$STEAM_USER" -no-mobile -remember-password \
-        -filelist "$WORK/fl-one.txt" -dir "$GAME") >/dev/null 2>&1
+        -filelist "$WORK/fl-one.txt" -dir "$GAME") > "$WORK/dd-last.log" 2>&1 < /dev/null
+    # Steam не пустил (лимит входов, протухший вход) — это не ошибка
+    # раскраски: метка для build-all.sh, чтобы остановиться, а не
+    # записывать раскраску в неудачи.
+    if grep -qE "RateLimitExceeded|InitializeSteam failed|Unable to get steam3 credentials" "$WORK/dd-last.log"; then
+        echo "❌ STEAM_LOGIN_FAILED: $(grep -m1 -E 'RateLimitExceeded|Unable to login|InitializeSteam' "$WORK/dd-last.log")"
+        exit 3
+    fi
 }
 
 mkdir -p "$OUT"
