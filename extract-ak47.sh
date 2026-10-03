@@ -211,11 +211,18 @@ fi
 download_chunks() {
     : > "$WORK/filelist-chunks.txt"
     for i in $1; do
+        # Уже скачанные куски не просим: каждый запуск загрузчика —
+        # это вход в Steam, а частые входы Steam ограничивает.
+        [ -s "$GAME/game/csgo/$(printf 'pak01_%03d.vpk' "$i")" ] && continue
         printf 'regex:^game/csgo/pak01_%03d\\.vpk$\n' "$i" >> "$WORK/filelist-chunks.txt"
     done
+    if [ ! -s "$WORK/filelist-chunks.txt" ]; then
+        echo "Все куски уже на диске."
+        return 0
+    fi
     cat "$WORK/filelist-chunks.txt"
 
-    dd_run -filelist "$WORK/filelist-chunks.txt" -dir "$GAME"
+    dd_run -filelist "$WORK/filelist-chunks.txt" -dir "$GAME" < /dev/null
 }
 
 echo "==> 5/6 Качаю только эти куски"

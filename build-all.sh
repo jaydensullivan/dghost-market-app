@@ -58,6 +58,8 @@ models_mb() { du -sm "$REPO/models" 2>/dev/null | cut -f1; }
 
 purge_chunks() {
     local before after
+    # На сервере GitHub архив скачан целиком одним входом — не удаляем.
+    [ "${KEEP_CHUNKS:-0}" = "1" ] && return 0
     before=$(free_gb)
     find "$GAME" -name 'pak01_[0-9]*.vpk' -delete 2>/dev/null
     after=$(free_gb)
@@ -90,6 +92,12 @@ commit_if_changed() {
 # Steam Guard) происходит на шаге подготовки, дальше — по токену.
 export STEAM_USER="${STEAM_USER:-${STEAM_USERNAME:-landofdinasty}}"
 export STEAM_USERNAME="${STEAM_USERNAME:-$STEAM_USER}"
+
+# Steam не пустил (лимит входов) — признак в логе шага.
+steam_refused() {
+    grep -qE "STEAM_LOGIN_FAILED|RateLimitExceeded|InitializeSteam failed|Unable to get steam3 credentials" "$1" 2>/dev/null
+}
+STEAM_DOWN=0
 
 # Счётчик неудач хранится в models/build-failures.json (едет в
 # репозиторий вместе с прогрессом), в памяти — в двух массивах.
@@ -393,6 +401,10 @@ while IFS=$'\t' read -r -u 3 weapon kits; do
         check_disk
 
         if ! build_model "$weapon"; then
+            if steam_refused "$WORK/build-$weapon.log"; then
+                STEAM_DOWN=1
+                break
+            fi
             FAIL_WEAPON["$weapon"]=$(bump_failure weapons "$weapon")
             FAILED_NOW=$((FAILED_NOW + 1))
             continue
@@ -420,6 +432,10 @@ while IFS=$'\t' read -r -u 3 weapon kits; do
         if build_skin "$kit"; then
             commit_if_changed "раскраска $kit ($weapon)"
             NEW_SKINS=$((NEW_SKINS + 1))
+        elif steam_refused "$WORK/build-skin-$kit.log"; then
+            # Не вина раскраски — в неудачи не пишем, останавливаемся.
+            STEAM_DOWN=1
+            break
         else
             n=$(bump_failure skins "$kit")
             FAIL_SKIN["$kit"]=$n
@@ -436,6 +452,8 @@ while IFS=$'\t' read -r -u 3 weapon kits; do
 
     [ "$STOPPED_FOR_SIZE" = "1" ] && break
 
+    [ "$STEAM_DOWN" = "1" ] && break
+
     # Куски архива от этого ствола следующему почти не нужны.
     purge_chunks
 
@@ -448,6 +466,14 @@ echo "   новых моделей: $NEW_MODELS, новых раскрасок: 
 echo "   стволов уже было готово: $SKIPPED_WEAPONS"
 
 print_status
+
+if [ "$STEAM_DOWN" = "1" ]; then
+    echo
+    echo "⏸ Steam временно не пускает (лимит входов). Ничего не записано в неудачи —"
+    echo "   следующий запуск продолжит с этого места."
+    [ -n "${GITHUB_ACTIONS:-}" ] && echo "::warning::Steam временно не пускает (лимит входов) — сборка продолжится в следующий запуск."
+    exit 0
+fi
 
 if [ "$STOPPED_FOR_SIZE" = "1" ]; then
     echo
