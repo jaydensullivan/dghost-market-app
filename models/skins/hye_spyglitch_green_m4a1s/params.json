@@ -1,0 +1,39 @@
+{
+  "finish": "hye_spyglitch_green_m4a1s",
+  "material": "weapons/paints/set_spy_tech/hye_spyglitch_green_m4a1s.vcompmat",
+  "format": "template",
+  "textures": {
+    "normal": "normal.webp",
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp"
+  },
+  "shader": {
+    "paint_style": 1,
+    "pattern_scale": 1.203853,
+    "pattern_rotation": 0.0,
+    "color_brightness": 1.0,
+    "paint_metalness": 0,
+    "colors": [
+      [
+        1.0,
+        0.4275,
+        0.251
+      ],
+      [
+        1.0,
+        0.9647,
+        0.4902
+      ],
+      [
+        0.298,
+        0.3137,
+        0.3451
+      ],
+      [
+        0.7137,
+        0.9137,
+        0.1647
+      ]
+    ]
+  }
+}
