@@ -714,6 +714,11 @@
   "skin": "models/skins/sp_tape_short_jungle",
   "weapon": null
  },
+ "Charm Detachments | Midnight Palm": {
+  "model": "models/cz75a.glb",
+  "skin": "models/skins/sp_palm_night",
+  "weapon": null
+ },
  "Desert Eagle | Blaze": {
   "model": "models/deagle.glb",
   "skin": "models/skins/aa_flames",
@@ -1723,6 +1728,111 @@
   "model": "models/sg556.glb",
   "skin": "models/skins/sp_tape_dots_waves",
   "weapon": "models/weapons/sg556"
+ },
+ "M249 | Aztec": {
+  "model": "models/m249.glb",
+  "skin": "models/skins/aq_m249_aztec",
+  "weapon": "models/weapons/m249"
+ },
+ "M249 | Blizzard Marbleized": {
+  "model": "models/m249.glb",
+  "skin": "models/skins/hy_blizzard",
+  "weapon": "models/weapons/m249"
+ },
+ "M249 | Bock Blocks": {
+  "model": "models/m249.glb",
+  "skin": "models/skins/m249_blocks_purple",
+  "weapon": "models/weapons/m249"
+ },
+ "M249 | Contrast Spray": {
+  "model": "models/m249.glb",
+  "skin": "models/skins/sp_spray",
+  "weapon": "models/weapons/m249"
+ },
+ "M249 | Deep Relief": {
+  "model": "models/m249.glb",
+  "skin": "models/skins/cu_m249_deep_relief",
+  "weapon": "models/weapons/m249"
+ },
+ "M249 | Downtown": {
+  "model": "models/m249.glb",
+  "skin": "models/skins/cu_m249_downvote",
+  "weapon": "models/weapons/m249"
+ },
+ "M249 | Emerald Poison Dart": {
+  "model": "models/m249.glb",
+  "skin": "models/skins/sp_m249_frog_original",
+  "weapon": "models/weapons/m249"
+ },
+ "M249 | Gator Mesh": {
+  "model": "models/m249.glb",
+  "skin": "models/skins/sp_mesh_python",
+  "weapon": "models/weapons/m249"
+ },
+ "M249 | Humidor": {
+  "model": "models/m249.glb",
+  "skin": "models/skins/sp_moro_carving_burnt",
+  "weapon": "models/weapons/m249"
+ },
+ "M249 | Hypnosis": {
+  "model": "models/m249.glb",
+  "skin": "models/skins/m249_hypnosis",
+  "weapon": "models/weapons/m249"
+ },
+ "M249 | Jungle DDPAT": {
+  "model": "models/m249.glb",
+  "skin": "models/skins/hy_ddpat_jungle_bravo",
+  "weapon": "models/weapons/m249"
+ },
+ "M249 | Magma": {
+  "model": "models/m249.glb",
+  "skin": "models/skins/aq_obsidian",
+  "weapon": "models/weapons/m249"
+ },
+ "M249 | Midnight Palm": {
+  "model": "models/m249.glb",
+  "skin": "models/skins/sp_palm_night",
+  "weapon": "models/weapons/m249"
+ },
+ "M249 | Nebula Crusader": {
+  "model": "models/m249.glb",
+  "skin": "models/skins/gs_m249_nebula_crusader",
+  "weapon": "models/weapons/m249"
+ },
+ "M249 | O.S.I.P.R.": {
+  "model": "models/m249.glb",
+  "skin": "models/skins/gs_m249_combine",
+  "weapon": "models/weapons/m249"
+ },
+ "M249 | Predator": {
+  "model": "models/m249.glb",
+  "skin": "models/skins/sp_zebracam",
+  "weapon": "models/weapons/m249"
+ },
+ "M249 | Shipping Forecast": {
+  "model": "models/m249.glb",
+  "skin": "models/skins/hy_zodiac3",
+  "weapon": "models/weapons/m249"
+ },
+ "M249 | Spectre": {
+  "model": "models/m249.glb",
+  "skin": "models/skins/cu_m249_spectre",
+  "weapon": "models/weapons/m249"
+ },
+ "M249 | Submerged": {
+  "model": "models/m249.glb",
+  "skin": "models/skins/cu_m249_scarab",
+  "weapon": "models/weapons/m249"
+ },
+ "M249 | System Lock": {
+  "model": "models/m249.glb",
+  "skin": "models/skins/cu_m249_sektor",
+  "weapon": "models/weapons/m249"
+ },
+ "M249 | Warbird": {
+  "model": "models/m249.glb",
+  "skin": "models/skins/gs_m249_warbird_veteran",
+  "weapon": "models/weapons/m249"
  },
  "M4A4 | Asiimov": {
   "model": "models/m4a1.glb",
