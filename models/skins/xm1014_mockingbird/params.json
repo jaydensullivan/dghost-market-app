@@ -1,0 +1,12 @@
+{
+  "finish": "xm1014_mockingbird",
+  "material": "weapons/paints/community/community_35/xm1014_mockingbird.vcompmat",
+  "format": "vcompmat",
+  "textures": {
+    "pattern": "pattern.webp",
+    "normal": "normal.webp",
+    "material_mask": "material_mask.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp"
+  },
+  "shader": {}
+}
