@@ -1,0 +1,39 @@
+{
+  "finish": "hye_animal_print_90s",
+  "material": "weapons/paints/timed_drops/hye_animal_print_90s.vcompmat",
+  "format": "template",
+  "textures": {
+    "normal": "normal.webp",
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp"
+  },
+  "shader": {
+    "paint_style": 1,
+    "pattern_scale": 1.0,
+    "pattern_rotation": 0.0,
+    "color_brightness": 1.0,
+    "paint_metalness": 0,
+    "colors": [
+      [
+        0.3608,
+        0.1804,
+        0.5294
+      ],
+      [
+        0.6745,
+        0.1137,
+        0.5804
+      ],
+      [
+        0.0706,
+        0.5255,
+        0.5961
+      ],
+      [
+        0.8392,
+        0.5333,
+        0.2471
+      ]
+    ]
+  }
+}
