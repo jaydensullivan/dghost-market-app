@@ -4874,20 +4874,210 @@
   "skin": "models/skins/hy_varicamo",
   "weapon": "models/weapons/tec9"
  },
+ "Trade Up Contract | Basilisk": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/aq_m4a1s_basilisk",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Black Lotus": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/m4a1s_black_lotus",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Blood Tiger": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/hy_redtiger",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Blue Phosphor": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/am_m4a1s_bluesmoke",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
  "Trade Up Contract | Boreal Forest": {
   "model": "models/m4a1_silencer.glb",
   "skin": "models/skins/hy_forest_boreal",
-  "weapon": null
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Briefing": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/cu_m4a1s_metritera",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Bright Water": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/hy_ocean_bravo",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Chantico's Fire": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/cu_m4a1s_soultaker",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Control Panel": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/gs_m4a1s_operator",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Cyrex": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/cu_m4a1s_cyrex",
+  "weapon": "models/weapons/m4a1_silencer"
  },
  "Trade Up Contract | Dark Water": {
   "model": "models/m4a1_silencer.glb",
   "skin": "models/skins/am_zebra_dark",
-  "weapon": null
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Decimator": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/gs_m4a1_decimator",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Electrum": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/m4a1s_electrum",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Emphorosaur-S": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/cu_m4a1s_feeding_frenzy",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Fatal Glitch": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/hye_spyglitch_green_m4a1s",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Fizzy POP": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/sp_technowar_red",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Flashback": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/cu_m4a1_flashback",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Glitched Paint": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/ht_abstract_wind",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Golden Coil": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/gs_m4a1s_snakebite_gold",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Hot Rod": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/an_red_m4a1s",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Hyper Beast": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/cu_m4a1_hyper_beast",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Icarus Fell": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/hy_icarus",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Imminent Danger": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/gs_m4a1_vertigo",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Knight": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/am_metals",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Leaded Glass": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/gs_m4a1_shatter",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Liquidation": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/m4a1s_quick_liquidation",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Mecha Industries": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/gs_m4a1_mecha_industries",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Moss Quartz": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/am_crystallized_dark_green",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Mud-Spec": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/gs_m4a1s_milspec",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Night Terror": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/gs_m4a1s_insomnia",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Nightmare": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/cu_m4a1s_nightmare",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Party Animal": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/hye_animal_print_90s",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Player Two": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/cu_m4a1s_csgo2048",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Printstream": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/cu_m4a1s_printstream",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Rose Hex": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/hy_hexagon",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Solitude": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/soch_mountains_m4a1s",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Stratosphere": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/cue_stratosphere",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Vaporwave": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/m4a1s_vaporwave",
+  "weapon": "models/weapons/m4a1_silencer"
  },
  "Trade Up Contract | VariCamo": {
   "model": "models/m4a1_silencer.glb",
   "skin": "models/skins/hy_varicamo",
-  "weapon": null
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Wash me plz": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/hy_overpass_doodle_m4a1s",
+  "weapon": "models/weapons/m4a1_silencer"
+ },
+ "Trade Up Contract | Welcome to the Jungle": {
+  "model": "models/m4a1_silencer.glb",
+  "skin": "models/skins/cu_m4a1_snake",
+  "weapon": "models/weapons/m4a1_silencer"
  },
  "UMP-45 | Arctic Wolf": {
   "model": "models/ump45.glb",
@@ -5083,6 +5273,11 @@
   "model": "models/ump45.glb",
   "skin": "models/skins/cu_ump_clutch_kick",
   "weapon": "models/weapons/ump45"
+ },
+ "USP-S | Blood Tiger": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/hy_redtiger",
+  "weapon": null
  },
  "USP-S | Dark Water": {
   "model": "models/usp_silencer.glb",
