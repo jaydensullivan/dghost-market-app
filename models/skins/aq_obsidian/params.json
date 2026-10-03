@@ -1,0 +1,39 @@
+{
+  "finish": "aq_obsidian",
+  "shader": {
+    "paint_style": 7,
+    "pattern_scale": 4.0,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 6.0,
+    "colors": [
+      [
+        1.0,
+        0.7804,
+        0.6941
+      ],
+      [
+        0.8196,
+        0.6353,
+        0.6196
+      ],
+      [
+        0.4431,
+        0.5961,
+        0.6471
+      ],
+      [
+        0.5804,
+        0.6275,
+        0.5843
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
