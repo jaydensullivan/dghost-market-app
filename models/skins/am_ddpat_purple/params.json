@@ -1,0 +1,39 @@
+{
+  "finish": "am_ddpat_purple",
+  "shader": {
+    "paint_style": 4,
+    "pattern_scale": 2.0,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 1.0,
+    "colors": [
+      [
+        0.4275,
+        0.3725,
+        0.4824
+      ],
+      [
+        0.8549,
+        0.7569,
+        0.9059
+      ],
+      [
+        0.5686,
+        0.4549,
+        0.7843
+      ],
+      [
+        0.6706,
+        0.6157,
+        0.702
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
