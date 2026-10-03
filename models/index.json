@@ -3219,6 +3219,156 @@
   "skin": "models/skins/p90_boost_blue",
   "weapon": "models/weapons/p90"
  },
+ "PP-Bizon | Anolis": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/hy_lizard_skin",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Antique": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/cu_bizon_antique",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Bamboo Print": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/hy_bamboo_jungle_ink",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Blue Streak": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/hy_splatter",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Brass": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/aq_brass",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Breaker Box": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/aa_wiring",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Carbon Fiber": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/am_carbon_fiber",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Cobalt Halftone": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/am_turqoise_halftone",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Death Rattle": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/hy_nerodia",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Embargo": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/cu_bizon_road_warrior",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Facility Sketch": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/hy_blueprint_white",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Forest Leaves": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/sp_leaves",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Fuel Rod": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/cu_bizon_noxious",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Harvester": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/gs_pp_bizon_harvester",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | High Roller": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/cu_bizon_all_in",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Irradiated Alert": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/sp_nukestripe_brown",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Jungle Slipstream": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/hy_bizon_torn_green",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Lumen": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/gs_bizon_flasher",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Modern Hunter": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/hy_hunter_modern",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Night Ops": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/hy_varicamo_night",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Night Riot": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/cu_bizon_riot",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Photic Zone": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/cu_bizon_citizen",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | RMX": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/bizon_rmx",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Runic": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/gs_bizon_hellraider",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Rust Coat": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/aq_steel_bravo",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Sand Dashed": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/sp_tape_short_sand",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Space Cat": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/cu_bizon_spacecat",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Traitor": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/bizon_traitor",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Urban Dashed": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/sp_tape_short_urban",
+  "weapon": "models/weapons/bizon"
+ },
+ "PP-Bizon | Water Sigil": {
+  "model": "models/bizon.glb",
+  "skin": "models/skins/hy_water_crest",
+  "weapon": "models/weapons/bizon"
+ },
  "R8 Revolver | Amber Fade": {
   "model": "models/revolver.glb",
   "skin": "models/skins/aa_fade_metallic_revolver",
@@ -3892,6 +4042,16 @@
  "USP-S | Dark Water": {
   "model": "models/usp_silencer.glb",
   "skin": "models/skins/am_zebra_dark",
+  "weapon": null
+ },
+ "USP-S | Forest Leaves": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/sp_leaves",
+  "weapon": null
+ },
+ "USP-S | Night Ops": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/hy_varicamo_night",
   "weapon": null
  },
  "USP-S | Pathfinder": {
