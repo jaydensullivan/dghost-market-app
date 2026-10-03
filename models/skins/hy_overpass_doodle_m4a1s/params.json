@@ -1,0 +1,39 @@
+{
+  "finish": "hy_overpass_doodle_m4a1s",
+  "material": "weapons/paints/set_overpass_2024/hy_overpass_doodle_m4a1s.vcompmat",
+  "format": "template",
+  "textures": {
+    "normal": "normal.webp",
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp"
+  },
+  "shader": {
+    "paint_style": 1,
+    "pattern_scale": -3.028572,
+    "pattern_rotation": -170.130539,
+    "color_brightness": 1.0,
+    "paint_metalness": 0,
+    "colors": [
+      [
+        0.2353,
+        0.1922,
+        0.2863
+      ],
+      [
+        0.7294,
+        0.5882,
+        0.4627
+      ],
+      [
+        0.1843,
+        0.2314,
+        0.3294
+      ],
+      [
+        0.3216,
+        0.2,
+        0.2118
+      ]
+    ]
+  }
+}
