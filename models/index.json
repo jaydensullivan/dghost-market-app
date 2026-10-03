@@ -2184,6 +2184,156 @@
   "skin": "models/skins/gs_mac10_fish_bait",
   "weapon": "models/weapons/mac10"
  },
+ "MAG-7 | BI83 Spectrum": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/gs_mag7_bismuth",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Carbon Fiber": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/am_carbon_fiber",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Chainmail": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/am_chainmail",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Cinquedea": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/gs_mag7_glass",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Cobalt Core": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/cu_mag7_myrcene",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Copper Coated": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/gs_mag7_goold",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Core Breach": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/hy_nuclear_hotorange",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Counter Terrace": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/hy_geometric_steps_green",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Firestarter": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/sp_mag7_firebitten",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Foresight": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/cu_mag7_predictor",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Hard Water": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/am_mag7_caustic",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Hazard": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/sp_hazard_bravo",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Heat": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/cu_mag7_redhot",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Heaven Guard": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/cu_mag7_heaven",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Insomnia": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/cu_mag7_insomnia",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Irradiated Alert": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/sp_nukestripe_brown",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Justice": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/gs_mag7_justice",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | MAGnitude": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/mag7_circle_copper",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Memento": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/hy_icosahedron",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Metallic DDPAT": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/am_urban",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Monster Call": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/cu_mag7_monster_call",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Navy Sheen": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/am_navy_shine",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Petroglyph": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/cu_mag7_tribal",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Popdog": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/gs_mag7_popdog",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Praetorian": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/gs_mag7_praetorian",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Prism Terrace": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/hy_geometric_steps_pearl",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Resupply": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/mag7_ammo_box",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Rust Coat": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/aq_steel_inferno",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | SWAG-7": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/aq_mag7_swag7",
+  "weapon": "models/weapons/mag7"
+ },
+ "MAG-7 | Sonar": {
+  "model": "models/mag7.glb",
+  "skin": "models/skins/am_mag7_malform",
+  "weapon": "models/weapons/mag7"
+ },
  "MP5-SD | Acid Wash": {
   "model": "models/mp5sd.glb",
   "skin": "models/skins/gs_mp5_etch",
