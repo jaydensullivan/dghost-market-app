@@ -554,6 +554,11 @@
   "skin": "models/skins/cu_awp_hannya",
   "weapon": "models/weapons/awp"
  },
+ "AWP | PAW": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/am_awp_pawpaw",
+  "weapon": "models/weapons/awp"
+ },
  "AWP | POP AWP": {
   "model": "models/awp.glb",
   "skin": "models/skins/hy_technowar_rwb",
