@@ -4174,6 +4174,141 @@
   "skin": "models/skins/r8_roses_and_guns",
   "weapon": "models/weapons/revolver"
  },
+ "SCAR-20 | Arctic Camo Panels": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/scar_arctic_camo_panels",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Army Sheen": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/am_army_shine",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Assault": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/cu_scar_assault",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Bloodsport": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/gs_scar20_bloodsport",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Blueprint": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/cu_blueprint_scar",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Brass": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/aq_brass",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Caged": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/scar_refraction_v4",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Carbon Fiber": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/am_carbon_fiber",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Cardiac": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/cu_scar20_intervention",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Crimson Web": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/hy_webs_darker",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Cyrex": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/cu_scar_cyrex",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Enforcer": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/gs_scar20_enforcer",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Fragments": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/gs_scar_fragments_black",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Green Marine": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/gs_scar20_peacemaker03",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Grotto": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/aq_scar20_leak",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Jungle Slipstream": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/hy_scar20_jungle_slipstream",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Magna Carta": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/hy_authority_purple",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Outbreak": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/hy_scar20_jungler",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Palm": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/sp_palm",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Poultrygeist": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/sp_scar_chickenfight",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Powercore": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/gs_scar20_powercore",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Sand Mesh": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/sp_mesh_sand",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Splash Jam": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/hy_hunter_blaze_pink",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Stone Mosaico": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/hy_canals_tile",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Torn": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/sp_scar20_striker_dust",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Trail Blazer": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/scar20_fury_topo",
+  "weapon": "models/weapons/scar20"
+ },
+ "SCAR-20 | Wild Berry": {
+  "model": "models/scar20.glb",
+  "skin": "models/skins/cu_chevron_scar20",
+  "weapon": "models/weapons/scar20"
+ },
  "SSG 08 | Abyss": {
   "model": "models/ssg08.glb",
   "skin": "models/skins/aq_leviathan",
