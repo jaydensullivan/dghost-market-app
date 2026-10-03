@@ -1,0 +1,39 @@
+{
+  "finish": "sp_nova_wind_dispersal",
+  "shader": {
+    "paint_style": 2,
+    "pattern_scale": 0.7,
+    "pattern_rotation": 160.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 1.0,
+    "colors": [
+      [
+        0.102,
+        0.0784,
+        0.051
+      ],
+      [
+        0.702,
+        0.6941,
+        0.6667
+      ],
+      [
+        0.7961,
+        0.7686,
+        0.6745
+      ],
+      [
+        0.251,
+        0.4118,
+        0.502
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
