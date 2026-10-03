@@ -1,0 +1,13 @@
+{
+  "finish": "nova_drakkar",
+  "material": "weapons/paints/community/community_33/nova_drakkar.vcompmat",
+  "format": "vcompmat",
+  "textures": {
+    "pattern": "pattern.webp",
+    "normal": "normal.webp",
+    "ao": "ao.webp",
+    "roughness": "roughness.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp"
+  },
+  "shader": {}
+}
