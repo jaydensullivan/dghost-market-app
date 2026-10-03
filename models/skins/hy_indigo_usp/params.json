@@ -1,0 +1,39 @@
+{
+  "finish": "hy_indigo_usp",
+  "shader": {
+    "paint_style": 1,
+    "pattern_scale": 1.0,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 1.0,
+    "colors": [
+      [
+        0.051,
+        0.0274,
+        0.2706
+      ],
+      [
+        0.0941,
+        0.1686,
+        0.3098
+      ],
+      [
+        0.251,
+        0.0902,
+        0.1059
+      ],
+      [
+        0.251,
+        0.251,
+        0.251
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
