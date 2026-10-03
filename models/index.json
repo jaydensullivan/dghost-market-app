@@ -1414,6 +1414,136 @@
   "skin": "models/skins/sp_moro_textile_purple_yellow",
   "weapon": "models/weapons/fiveseven"
  },
+ "G3SG1 | Ancient Ritual": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/am_ancient_wine",
+  "weapon": "models/weapons/g3sg1"
+ },
+ "G3SG1 | Arctic Camo": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/hy_arctic",
+  "weapon": "models/weapons/g3sg1"
+ },
+ "G3SG1 | Azure Zebra": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/sp_zebracam_blue",
+  "weapon": "models/weapons/g3sg1"
+ },
+ "G3SG1 | Black Sand": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/cu_g3sg1_blacksand",
+  "weapon": "models/weapons/g3sg1"
+ },
+ "G3SG1 | Chronos": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/cu_chronos_g3sg1",
+  "weapon": "models/weapons/g3sg1"
+ },
+ "G3SG1 | Demeter": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/hy_bluepolygon_bravo",
+  "weapon": "models/weapons/g3sg1"
+ },
+ "G3SG1 | Desert Storm": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/hy_desert",
+  "weapon": "models/weapons/g3sg1"
+ },
+ "G3SG1 | Digital Mesh": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/gs_g3sg1_disrupt",
+  "weapon": "models/weapons/g3sg1"
+ },
+ "G3SG1 | Dream Glade": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/cu_g3sg1_glade",
+  "weapon": "models/weapons/g3sg1"
+ },
+ "G3SG1 | Flux": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/gs_g3sg1_flux_purple",
+  "weapon": "models/weapons/g3sg1"
+ },
+ "G3SG1 | High Seas": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/gs_g3sg1_buccaneer",
+  "weapon": "models/weapons/g3sg1"
+ },
+ "G3SG1 | Hunter": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/gs_g3sg1_cetme_redux",
+  "weapon": "models/weapons/g3sg1"
+ },
+ "G3SG1 | Jungle Dashed": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/sp_tape_short_jungle",
+  "weapon": "models/weapons/g3sg1"
+ },
+ "G3SG1 | Keeping Tabs": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/cu_g3sg1_tacticalmap",
+  "weapon": "models/weapons/g3sg1"
+ },
+ "G3SG1 | Murky": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/am_g3sg1_murky",
+  "weapon": "models/weapons/g3sg1"
+ },
+ "G3SG1 | New Roots": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/sp_moro_carving_lightblue",
+  "weapon": "models/weapons/g3sg1"
+ },
+ "G3SG1 | Orange Crash": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/sp_g3sg1_militiaorange",
+  "weapon": "models/weapons/g3sg1"
+ },
+ "G3SG1 | Orange Kimono": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/hy_kimono_diamonds_orange",
+  "weapon": "models/weapons/g3sg1"
+ },
+ "G3SG1 | Polar Camo": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/hy_arctic_contrast",
+  "weapon": "models/weapons/g3sg1"
+ },
+ "G3SG1 | Safari Mesh": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/sp_mesh_tan",
+  "weapon": "models/weapons/g3sg1"
+ },
+ "G3SG1 | Scavenger": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/gs_g3sg1_savage",
+  "weapon": "models/weapons/g3sg1"
+ },
+ "G3SG1 | Stinger": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/gs_g3sg1_viper_yellow",
+  "weapon": "models/weapons/g3sg1"
+ },
+ "G3SG1 | The Executioner": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/cu_g3sg1_executioner",
+  "weapon": "models/weapons/g3sg1"
+ },
+ "G3SG1 | VariCamo": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/hy_varicamo",
+  "weapon": "models/weapons/g3sg1"
+ },
+ "G3SG1 | Ventilator": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/gs_g3sg1_ventilator",
+  "weapon": "models/weapons/g3sg1"
+ },
+ "G3SG1 | Violet Murano": {
+  "model": "models/g3sg1.glb",
+  "skin": "models/skins/am_murano_violet",
+  "weapon": "models/weapons/g3sg1"
+ },
  "Galil AR | Akoben": {
   "model": "models/galilar.glb",
   "skin": "models/skins/sp_galil_akoben",
