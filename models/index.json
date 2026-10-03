@@ -2869,6 +2869,116 @@
   "skin": "models/skins/cu_mp9_island_floral",
   "weapon": "models/weapons/mp9"
  },
+ "Negev | Army Sheen": {
+  "model": "models/negev.glb",
+  "skin": "models/skins/am_army_shine",
+  "weapon": "models/weapons/negev"
+ },
+ "Negev | Boroque Sand": {
+  "model": "models/negev.glb",
+  "skin": "models/skins/hy_veneto_tan",
+  "weapon": "models/weapons/negev"
+ },
+ "Negev | Bratatat": {
+  "model": "models/negev.glb",
+  "skin": "models/skins/cu_bratatat_negev",
+  "weapon": "models/weapons/negev"
+ },
+ "Negev | Bulkhead": {
+  "model": "models/negev.glb",
+  "skin": "models/skins/hy_ducts_yellow",
+  "weapon": "models/weapons/negev"
+ },
+ "Negev | CaliCamo": {
+  "model": "models/negev.glb",
+  "skin": "models/skins/hy_varicamo_desert",
+  "weapon": "models/weapons/negev"
+ },
+ "Negev | Dazzle": {
+  "model": "models/negev.glb",
+  "skin": "models/skins/hy_negev_dazzle",
+  "weapon": "models/weapons/negev"
+ },
+ "Negev | Desert-Strike": {
+  "model": "models/negev.glb",
+  "skin": "models/skins/cu_negev_titanstorm",
+  "weapon": "models/weapons/negev"
+ },
+ "Negev | Drop Me": {
+  "model": "models/negev.glb",
+  "skin": "models/skins/cu_negev_clear_sky",
+  "weapon": "models/weapons/negev"
+ },
+ "Negev | Infrastructure": {
+  "model": "models/negev.glb",
+  "skin": "models/skins/hy_vertigospray",
+  "weapon": "models/weapons/negev"
+ },
+ "Negev | Lionfish": {
+  "model": "models/negev.glb",
+  "skin": "models/skins/sp_negev_lionfish",
+  "weapon": "models/weapons/negev"
+ },
+ "Negev | Loudmouth": {
+  "model": "models/negev.glb",
+  "skin": "models/skins/cu_negev_annihilator",
+  "weapon": "models/weapons/negev"
+ },
+ "Negev | Man-o'-war": {
+  "model": "models/negev.glb",
+  "skin": "models/skins/am_negev_glory",
+  "weapon": "models/weapons/negev"
+ },
+ "Negev | Mjölnir": {
+  "model": "models/negev.glb",
+  "skin": "models/skins/gs_negev_thor",
+  "weapon": "models/weapons/negev"
+ },
+ "Negev | Nuclear Waste": {
+  "model": "models/negev.glb",
+  "skin": "models/skins/sp_nuclear_pattern3_negev",
+  "weapon": "models/weapons/negev"
+ },
+ "Negev | Palm": {
+  "model": "models/negev.glb",
+  "skin": "models/skins/sp_palm_bravo",
+  "weapon": "models/weapons/negev"
+ },
+ "Negev | Phoenix Stencil": {
+  "model": "models/negev.glb",
+  "skin": "models/skins/hy_phoenix_tags_red",
+  "weapon": "models/weapons/negev"
+ },
+ "Negev | Power Loader": {
+  "model": "models/negev.glb",
+  "skin": "models/skins/cu_negev_impact",
+  "weapon": "models/weapons/negev"
+ },
+ "Negev | Prototype": {
+  "model": "models/negev.glb",
+  "skin": "models/skins/cu_negev_prototype",
+  "weapon": "models/weapons/negev"
+ },
+ "Negev | Terrain": {
+  "model": "models/negev.glb",
+  "skin": "models/skins/sp_negev_turq_terrain",
+  "weapon": "models/weapons/negev"
+ },
+ "Negev | Ultralight": {
+  "model": "models/negev.glb",
+  "skin": "models/skins/cu_negev_ultralight",
+  "weapon": "models/weapons/negev"
+ },
+ "Negev | Wall Bang": {
+  "model": "models/negev.glb",
+  "skin": "models/skins/cu_overpass_graf_negev",
+  "weapon": "models/weapons/negev"
+ },
+ "Negev | dev_texture": {
+  "model": "models/negev.glb",
+  "skin": "models/skins/cu_negev_devtexture",
+  "weapon": "models/weapons/negev"
+ },
  "Nova | Antique": {
   "model": "models/nova.glb",
   "skin": "models/skins/cu_nova_antique",
