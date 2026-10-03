@@ -1,0 +1,39 @@
+{
+  "finish": "hye_car_wrap",
+  "material": "weapons/paints/timed_drops/hye_car_wrap.vcompmat",
+  "format": "template",
+  "textures": {
+    "normal": "normal.webp",
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp"
+  },
+  "shader": {
+    "paint_style": 1,
+    "pattern_scale": 4.0,
+    "pattern_rotation": 0.0,
+    "color_brightness": 1.0,
+    "paint_metalness": 0,
+    "colors": [
+      [
+        0.7333,
+        0.7333,
+        0.7333
+      ],
+      [
+        0.1922,
+        0.1922,
+        0.1922
+      ],
+      [
+        0.1922,
+        0.1922,
+        0.1922
+      ],
+      [
+        0.6078,
+        0.6078,
+        0.6078
+      ]
+    ]
+  }
+}
