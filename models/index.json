@@ -2009,6 +2009,11 @@
   "skin": "models/skins/gs_m249_warbird_veteran",
   "weapon": "models/weapons/m249"
  },
+ "M4A4 | Aeolian Dark": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/hye_abstract_knot_m4",
+  "weapon": "models/weapons/m4a1"
+ },
  "M4A4 | Asiimov": {
   "model": "models/m4a1.glb",
   "skin": "models/skins/cu_m4_asimov",
@@ -2149,6 +2154,11 @@
   "skin": "models/skins/hy_hunter_modern",
   "weapon": "models/weapons/m4a1"
  },
+ "M4A4 | Naval Shred Camo": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/hye_blue_m4a4",
+  "weapon": "models/weapons/m4a1"
+ },
  "M4A4 | Neo-Noir": {
   "model": "models/m4a1.glb",
   "skin": "models/skins/cu_m4a4_neo_noir",
@@ -2177,6 +2187,11 @@
  "M4A4 | Royal Paladin": {
   "model": "models/m4a1.glb",
   "skin": "models/skins/gs_m4a4_royal_squire",
+  "weapon": "models/weapons/m4a1"
+ },
+ "M4A4 | Sheet Lightning": {
+  "model": "models/m4a1.glb",
+  "skin": "models/skins/spe_lightning",
   "weapon": "models/weapons/m4a1"
  },
  "M4A4 | Spider Lily": {
