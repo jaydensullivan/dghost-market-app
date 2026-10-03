@@ -1,0 +1,12 @@
+{
+  "finish": "gsch_bright_camo_usp",
+  "material": "weapons/paints/set_realism_camo/gsch_bright_camo_usp.vcompmat",
+  "format": "vcompmat",
+  "textures": {
+    "pattern": "pattern.webp",
+    "normal": "normal.webp",
+    "material_mask": "material_mask.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp"
+  },
+  "shader": {}
+}
