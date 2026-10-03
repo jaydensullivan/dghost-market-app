@@ -1,0 +1,40 @@
+{
+  "finish": "aq_steel_inferno",
+  "shader": {
+    "paint_style": 7,
+    "pattern_scale": 4.0,
+    "pattern_rotation": -4.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 1.0,
+    "colors": [
+      [
+        0.8431,
+        0.5922,
+        0.4275
+      ],
+      [
+        1.0,
+        1.0,
+        1.0
+      ],
+      [
+        0.498,
+        0.3765,
+        0.2706
+      ],
+      [
+        0.9686,
+        0.6039,
+        0.2863
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "rough": "rough.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
