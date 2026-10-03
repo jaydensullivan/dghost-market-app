@@ -156,7 +156,8 @@ jobs:
         run: |
           cd "$GITHUB_WORKSPACE"
           shown=0
-          for f in $(ls -t "$WORK"/build-*.log 2>/dev/null); do
+          # Сначала модели (их мало, и без модели не будет всего ствола), потом раскраски.
+          for f in $(ls -t "$WORK"/build-*.log 2>/dev/null | grep -v '/build-skin-'; ls -t "$WORK"/build-skin-*.log 2>/dev/null); do
             name=$(basename "$f" .log); name=${name#build-}
             case "$name" in
               index|plan) continue ;;

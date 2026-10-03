@@ -95,7 +95,10 @@ if [ -s "$LISTING" ] && [ "${HAS_VMAT:-0}" -eq 0 ]; then
 
         echo
         echo "================ РЕЦЕПТ ================"
-        head -80 "$COMPFILE"
+        # Коротко: шаблон стиля, переменные и текстуры — чтобы по логу
+        # было видно, из чего собирается раскраска.
+        grep -E 'templates/|m_strName|m_cValueColor4|m_flValueFloatX|m_strTextureRuntimeResourcePath' "$COMPFILE" \
+            | sed 's/^[[:space:]]*//' | head -60
         echo "========================================"
 
         # Свои текстуры скина — по имени…
