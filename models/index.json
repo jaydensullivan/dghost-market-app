@@ -2609,6 +2609,206 @@
   "skin": "models/skins/cu_mp9_island_floral",
   "weapon": "models/weapons/mp9"
  },
+ "Nova | Antique": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/cu_nova_antique",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Army Sheen": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/am_army_shine",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Baroque Orange": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/am_veneto2",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Blaze Orange": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/hy_hunter_blaze_orange",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Bloomstick": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/cu_spring_nova",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Caged Steel": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/am_oval_hex",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Clear Polymer": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/cu_nova_polymer",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Dark Sigil": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/nova_drakkar",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Exo": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/aq_nova_sci_fi",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Forest Leaves": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/sp_leaves",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Ghost Camo": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/sp_camo_wood_blue",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Gila": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/am_nova_sand",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Graphite": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/am_crumple",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Hyper Beast": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/cu_nova_hyperbeast",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Interlock": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/hy_vertigoillusion_yellow",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Koi": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/cu_nova_koi",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Mandrel": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/hy_ducts_grey",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Modern Hunter": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/hy_hunter_modern",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Moon in Libra": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/hy_zodiac1",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Morning Sun": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/nova_morning_sun",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Ocular": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/nova_ocular",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Plume": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/cu_nova_featherswing",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Polar Mesh": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/sp_mesh_arctic_contrast",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Predator": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/sp_zebracam",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Quick Sand": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/hy_torn_camo_paints",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Ranger": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/cu_nova_ranger",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Red Quartz": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/am_crystallized",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Rising Skull": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/cu_skull_nova",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Rising Sun": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/nova_rising_sun",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Rust Coat": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/aq_steel",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Smart Gun": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/nova_smart",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Sobek's Bite": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/gs_nova_sobek",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Tempest": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/hy_seaside_bravo",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Toy Soldier": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/cu_nova_toy_soldier",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Walnut": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/cu_walnut_nova",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Wild Six": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/gs_nova_anchorite",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Windblown": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/sp_nova_wind_dispersal",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Wood Fired": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/gs_nova_hunter_brute",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Wurst Hölle": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/cu_overpass_wurst_nova",
+  "weapon": "models/weapons/nova"
+ },
+ "Nova | Yorkshire": {
+  "model": "models/nova.glb",
+  "skin": "models/skins/gs_ripple_nova",
+  "weapon": "models/weapons/nova"
+ },
  "P2000 | Acid Etched": {
   "model": "models/hkp2000.glb",
   "skin": "models/skins/aq_p2000_acid_clover",
