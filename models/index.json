@@ -4258,5 +4258,190 @@
   "model": "models/usp_silencer.glb",
   "skin": "models/skins/sp_labyrinth2",
   "weapon": null
+ },
+ "XM1014 | Ancient Lore": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/am_ancient_warm",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Banana Leaf": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/hy_leaf_green",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Black Site": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/xm1014_black_site",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Black Tie": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/cu_xm1014_spectrum",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Blaze Orange": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/hy_hunter_blaze_orange",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Blue Steel": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/aq_blued",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Blue Tire": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/sp_tire_tread_blue",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Bone Machine": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/am_nuclear_skulls1_xm1014",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | CaliCamo": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/hy_varicamo_desert",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Charter": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/am_authority_brown",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Elegant Vines": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/am_moro_textile_bright",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Entombed": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/cu_xm1014_amulet_blue",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Fallout Warning": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/sp_nukestripe_maroon",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Frost Borre": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/am_knots_silver",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Heaven Guard": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/cu_xm1014_heaven_guard",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Hieroglyph": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/cu_xm1014_pharaoh",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Incinegator": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/cu_xm1014_incinerator",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Irezumi": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/xm1014_irezumi",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Mockingbird": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/xm1014_mockingbird",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Monster Melt": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/cu_overpass_monsters_xm",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Oxide Blaze": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/cu_xm1014_oxide_blaze",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Quicksilver": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/aq_xm1014_sigla",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Red Leather": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/cu_leather_xm1014",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Red Python": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/hy_snakeskin_red",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Run Run Run": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/xm1014_freight",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Scumbria": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/aq_xm1014_scumbria",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Seasons": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/aq_xm_leaf_fade",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Slipstream": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/hy_xm1014_fractal_blue",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Solitude": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/soch_mountains_limited_time",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Teclu Burner": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/aq_xm1014_hot_rod",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Tranquility": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/cu_xm1014_caritas",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Urban Perforated": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/sp_tape_dots_urban",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | VariCamo Blue": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/hy_varicamo_blue",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Watchdog": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/gs_xm1014_watchdog",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | XOXO": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/aq_xm1014_punk",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Ziggy": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/aq_xm1014_ziggy_anarchy",
+  "weapon": "models/weapons/xm1014"
+ },
+ "XM1014 | Zombie Offensive": {
+  "model": "models/xm1014.glb",
+  "skin": "models/skins/am_xm_zombie_offensive",
+  "weapon": "models/weapons/xm1014"
  }
 }
