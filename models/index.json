@@ -1574,6 +1574,156 @@
   "skin": "models/skins/hy_forest_winter",
   "weapon": "models/weapons/galilar"
  },
+ "Knife | Aerial": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/cu_sg553_aerial",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Aloha": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/sp_sg533_aloha",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Army Sheen": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/am_army_shine",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Atlas": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/cu_sg553_atlas",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Barricade": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/sp_asgard_wall",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Berry Gel Coat": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/gs_happy_red_sg556",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Bleached": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/sp_desert_skulls",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Colony IV": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/cu_sg553_reactor",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Cyberforce": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/cu_sg553_cyberforce",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Cyrex": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/cu_sg553_cyrex",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Damascus Steel": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/aq_damascus_sg553",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Danger Close": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/gs_sg553_over_heated",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Darkwing": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/cu_sg553_darkwing",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Desert Blossom": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/aa_desert_bloom_bright",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Dragon Tech": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/cu_sg553_cyber_dragon",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Fallout Warning": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/sp_nukestripe_maroon_sg553",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Gator Mesh": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/sp_mesh_python",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Hazard Pay": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/cu_sg553_caution",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Heavy Metal": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/gs_sg553_deathmetal",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Hypnotic": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/aa_vertigo",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Integrale": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/cu_sg553_rally",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Lush Ruins": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/aa_ruins_green",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Ol' Rusty": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/gs_sg553_rusty",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Phantom": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/gs_sg553_phantom",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Pulse": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/cu_sg553_pulse",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Tiger Moth": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/gs_sg553_tiger_moth",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Traveler": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/cu_luggage_sg553",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Triarch": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/cu_sg556_triarch",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Wave Spray": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/sp_spray_waves_bravo",
+  "weapon": "models/weapons/sg556"
+ },
+ "Knife | Waves Perforated": {
+  "model": "models/sg556.glb",
+  "skin": "models/skins/sp_tape_dots_waves",
+  "weapon": "models/weapons/sg556"
+ },
  "M4A4 | Asiimov": {
   "model": "models/m4a1.glb",
   "skin": "models/skins/cu_m4_asimov",
