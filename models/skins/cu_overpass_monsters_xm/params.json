@@ -1,0 +1,12 @@
+{
+  "finish": "cu_overpass_monsters_xm",
+  "material": "weapons/paints/set_overpass_2024/cu_overpass_monsters_xm.vcompmat",
+  "format": "vcompmat",
+  "textures": {
+    "pattern": "pattern.webp",
+    "normal": "normal.webp",
+    "roughness": "roughness.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp"
+  },
+  "shader": {}
+}
