@@ -10,6 +10,7 @@
   "gs_train_car_famas": 1,
   "ht_blue_edges": 1,
   "ht_earth_fans": 1,
+  "ht_facet_p2000": 1,
   "ht_metal_edges": 1,
   "ht_poly_camo_ak47": 1,
   "ht_red_edges_fineline": 1,
@@ -87,6 +88,7 @@
   "spo_palm": 1
  },
  "weapons": {
+  "cz75a": 1,
   "glock": 1,
   "m4a1_silencer": 1,
   "usp_silencer": 1
