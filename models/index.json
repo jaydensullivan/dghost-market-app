@@ -484,6 +484,11 @@
   "skin": "models/skins/hy_nuclear_skulls_redblue",
   "weapon": "models/weapons/awp"
  },
+ "AWP | Arsenic Spill": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/hy_varicamo_simple_yellow",
+  "weapon": "models/weapons/awp"
+ },
  "AWP | Asiimov": {
   "model": "models/awp.glb",
   "skin": "models/skins/cu_awp_asimov",
@@ -574,6 +579,11 @@
   "skin": "models/skins/gs_awp_exoskeleton",
   "weapon": "models/weapons/awp"
  },
+ "AWP | Exothermic": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/hye_firework_patches",
+  "weapon": "models/weapons/awp"
+ },
  "AWP | Fade": {
   "model": "models/awp.glb",
   "skin": "models/skins/aa_awp_fade",
@@ -587,6 +597,11 @@
  "AWP | Graphite": {
   "model": "models/awp.glb",
   "skin": "models/skins/am_crumple_bravo",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | Green Energy": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/cue_jump_line",
   "weapon": "models/weapons/awp"
  },
  "AWP | Gungnir": {
@@ -607,6 +622,11 @@
  "AWP | Lightning Strike": {
   "model": "models/awp.glb",
   "skin": "models/skins/am_lightning_awp",
+  "weapon": "models/weapons/awp"
+ },
+ "AWP | LongDog": {
+  "model": "models/awp.glb",
+  "skin": "models/skins/awp_longdog",
   "weapon": "models/weapons/awp"
  },
  "AWP | Man-o'-war": {
