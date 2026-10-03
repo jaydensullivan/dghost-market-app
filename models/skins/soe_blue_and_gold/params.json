@@ -1,0 +1,38 @@
+{
+  "finish": "soe_blue_and_gold",
+  "material": "weapons/paints/timed_drops/soe_blue_and_gold.vcompmat",
+  "format": "template",
+  "textures": {
+    "normal": "normal.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp"
+  },
+  "shader": {
+    "paint_style": 0,
+    "pattern_scale": 1.0,
+    "pattern_rotation": 0.0,
+    "color_brightness": 1.0,
+    "paint_metalness": 0,
+    "colors": [
+      [
+        0.2078,
+        0.1961,
+        0.2235
+      ],
+      [
+        0.1059,
+        0.451,
+        0.7176
+      ],
+      [
+        0.9216,
+        0.8157,
+        0.6314
+      ],
+      [
+        0.5961,
+        0.6,
+        0.6824
+      ]
+    ]
+  }
+}
