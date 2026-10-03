@@ -44,6 +44,11 @@
   "skin": "models/skins/hy_ak47lam_blue",
   "weapon": "models/weapons/ak47"
  },
+ "AK-47 | Breakthrough": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/hye_zeds",
+  "weapon": "models/weapons/ak47"
+ },
  "AK-47 | Cartel": {
   "model": "models/ak47.glb",
   "skin": "models/skins/aq_ak47_cartel",
@@ -57,6 +62,11 @@
  "AK-47 | Consequence of the Jinn": {
   "model": "models/ak47.glb",
   "skin": "models/skins/ak47_jinn_consequence",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Crane Flight": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/ak47_crane_flight",
   "weapon": "models/weapons/ak47"
  },
  "AK-47 | Crossfade": {
@@ -149,6 +159,11 @@
   "skin": "models/skins/cu_ak47_anubis",
   "weapon": "models/weapons/ak47"
  },
+ "AK-47 | Midnight Laminate": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/soe_iridescent_purple",
+  "weapon": "models/weapons/ak47"
+ },
  "AK-47 | Neon Revolution": {
   "model": "models/ak47.glb",
   "skin": "models/skins/cu_ak47_anarchy",
@@ -162,6 +177,11 @@
  "AK-47 | Nightwish": {
   "model": "models/ak47.glb",
   "skin": "models/skins/cu_ak47_nightwish",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Olive Polycam": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/ht_poly_camo_ak47",
   "weapon": "models/weapons/ak47"
  },
  "AK-47 | Orbit Mk01": {
@@ -257,6 +277,11 @@
  "AK-47 | Wild Lotus": {
   "model": "models/ak47.glb",
   "skin": "models/skins/cu_ak_island_floral",
+  "weapon": "models/weapons/ak47"
+ },
+ "AK-47 | Wintergreen": {
+  "model": "models/ak47.glb",
+  "skin": "models/skins/soe_metallic_green_2",
   "weapon": "models/weapons/ak47"
  },
  "AK-47 | X-Ray": {
