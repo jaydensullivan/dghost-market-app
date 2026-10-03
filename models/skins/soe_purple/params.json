@@ -1,0 +1,38 @@
+{
+  "finish": "soe_purple",
+  "material": "weapons/paints/timed_drops/soe_purple.vcompmat",
+  "format": "template",
+  "textures": {
+    "normal": "normal.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp"
+  },
+  "shader": {
+    "paint_style": 0,
+    "pattern_scale": 4.0,
+    "pattern_rotation": 0.0,
+    "color_brightness": 1.0,
+    "paint_metalness": 0,
+    "colors": [
+      [
+        0.1922,
+        0.2196,
+        0.3961
+      ],
+      [
+        0.3961,
+        0.3255,
+        0.7647
+      ],
+      [
+        0.3451,
+        0.3216,
+        0.702
+      ],
+      [
+        0.2706,
+        0.6431,
+        0.7216
+      ]
+    ]
+  }
+}
