@@ -1,0 +1,38 @@
+{
+  "finish": "so_keycolors",
+  "shader": {
+    "paint_style": 0,
+    "pattern_scale": 1,
+    "pattern_rotation": 0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 1,
+    "colors": [
+      [
+        0.9216,
+        0.6039,
+        0.102
+      ],
+      [
+        0.2275,
+        0.2667,
+        0.302
+      ],
+      [
+        0.3725,
+        1.0,
+        0.0314
+      ],
+      [
+        0.302,
+        0.2784,
+        0.2706
+      ]
+    ]
+  },
+  "textures": {
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
