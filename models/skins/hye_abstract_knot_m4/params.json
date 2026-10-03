@@ -1,0 +1,39 @@
+{
+  "finish": "hye_abstract_knot_m4",
+  "material": "weapons/paints/timed_drops/hye_abstract_knot_m4.vcompmat",
+  "format": "template",
+  "textures": {
+    "normal": "normal.webp",
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp"
+  },
+  "shader": {
+    "paint_style": 1,
+    "pattern_scale": 1.0,
+    "pattern_rotation": -45.0,
+    "color_brightness": 1.0,
+    "paint_metalness": 0,
+    "colors": [
+      [
+        0.6706,
+        0.6706,
+        0.6706
+      ],
+      [
+        0.2196,
+        0.2196,
+        0.2196
+      ],
+      [
+        0.451,
+        0.451,
+        0.451
+      ],
+      [
+        0.2196,
+        0.2196,
+        0.2196
+      ]
+    ]
+  }
+}
