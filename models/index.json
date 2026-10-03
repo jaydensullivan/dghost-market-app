@@ -3989,6 +3989,171 @@
   "skin": "models/skins/gsch_zeno_ssg08",
   "weapon": "models/weapons/ssg08"
  },
+ "Sawed-Off | Amber Fade": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/aa_fade_metallic",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Analog Input": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/sawedoff_gamer",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Apocalypto": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/cu_sawedoff_apocalypto",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Bamboo Shadow": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/hy_bamboo_jungle_black",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Black Sand": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/cu_sawedoff_black_sand",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Brake Light": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/aa_vertigo_red",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Clay Ambush": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/hy_tigers_tan",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Copper": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/aq_copper",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Devourer": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/cu_sawedoff_devourer",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | First Class": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/cu_green_leather_sawedoff",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Forest DDPAT": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/hy_ddpat",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Fubar": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/gs_sawedoff_fubar",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Full Stop": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/hy_varicamo_red",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Fusion": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/sawedoff_fusion",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Highwayman": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/aq_sawedoff_blackgold",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Irradiated Alert": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/sp_nukestripe_brown",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Jungle Thicket": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/sp_palm_green",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Kiss♥Love": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/cu_sawedoff_kisslove",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Limelight": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/cu_sawed_off_lime",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Lunar Wyrm": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/sawedoff_lunar_wyrm",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Mosaico": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/hy_ali_tile_bravo",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Orange DDPAT": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/hy_ddpat_orange",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Origami": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/cu_sawedoff_origami",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Parched": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/hy_desert_bloom",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Rust Coat": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/aq_steel",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Sage Spray": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/sp_spray_desert_sage",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Serenity": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/cu_sawedoff_deva",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Snake Camo": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/sp_snake",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Spirit Board": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/cu_sawedoff_ouija",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | The Kraken": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/cu_sawedoff_octopump",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Wasteland Princess": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/cu_wp_sawedoff",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Yorick": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/gs_sawedoff_necromancer",
+  "weapon": "models/weapons/sawedoff"
+ },
+ "Sawed-Off | Zander": {
+  "model": "models/sawedoff.glb",
+  "skin": "models/skins/aq_sawedoff_zander2",
+  "weapon": "models/weapons/sawedoff"
+ },
  "Tec-9 | Army Mesh": {
   "model": "models/tec9.glb",
   "skin": "models/skins/sp_mesh_army",
