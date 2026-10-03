@@ -274,6 +274,11 @@
   "skin": "models/skins/aa_fade_metallic",
   "weapon": "models/weapons/aug"
  },
+ "AUG | Amber Slipstream": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/hy_aug_torn_orange",
+  "weapon": "models/weapons/aug"
+ },
  "AUG | Arctic Wolf": {
   "model": "models/aug.glb",
   "skin": "models/skins/cu_aug_whitefang",
@@ -284,6 +289,11 @@
   "skin": "models/skins/gs_aug_aristocrat",
   "weapon": "models/weapons/aug"
  },
+ "AUG | Bengal Tiger": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/hy_tiger",
+  "weapon": "models/weapons/aug"
+ },
  "AUG | Carved Jade": {
   "model": "models/aug.glb",
   "skin": "models/skins/am_jade",
@@ -292,6 +302,21 @@
  "AUG | Chameleon": {
   "model": "models/aug.glb",
   "skin": "models/skins/cu_aug_chameleonaire",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Condemned": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/sp_mesh_forest_fire",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Copperhead": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/hy_copperhead",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Daedalus": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/sp_labyrinth3",
   "weapon": "models/weapons/aug"
  },
  "AUG | Death by Puppy": {
@@ -334,9 +359,19 @@
   "skin": "models/skins/cu_aug_momentum",
   "weapon": "models/weapons/aug"
  },
+ "AUG | Navy Murano": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/hy_murano_blue",
+  "weapon": "models/weapons/aug"
+ },
  "AUG | Plague": {
   "model": "models/aug.glb",
   "skin": "models/skins/gs_aug_plague",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Radiation Hazard": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/sp_nukestripe_orange_aug",
   "weapon": "models/weapons/aug"
  },
  "AUG | Random Access": {
@@ -359,6 +394,16 @@
   "skin": "models/skins/aug_ghost_signal",
   "weapon": "models/weapons/aug"
  },
+ "AUG | Snake Pit": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/hy_dune_trap",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Spalted Wood": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/hy_dry_wood",
+  "weapon": "models/weapons/aug"
+ },
  "AUG | Steel Sentinel": {
   "model": "models/aug.glb",
   "skin": "models/skins/aug_cold_sentinel",
@@ -372,6 +417,11 @@
  "AUG | Surveillance": {
   "model": "models/aug.glb",
   "skin": "models/skins/am_intelligence_grey",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Sweeper": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/sp_mesh_safetyblack",
   "weapon": "models/weapons/aug"
  },
  "AUG | Syd Mead": {
@@ -397,6 +447,11 @@
  "AUG | Triqua": {
   "model": "models/aug.glb",
   "skin": "models/skins/cu_aug_orange_triangle",
+  "weapon": "models/weapons/aug"
+ },
+ "AUG | Wings": {
+  "model": "models/aug.glb",
+  "skin": "models/skins/hy_feathers_aug",
   "weapon": "models/weapons/aug"
  },
  "AWP | Acheron": {
