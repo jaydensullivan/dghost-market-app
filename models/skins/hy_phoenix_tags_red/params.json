@@ -1,0 +1,39 @@
+{
+  "finish": "hy_phoenix_tags_red",
+  "shader": {
+    "paint_style": 1,
+    "pattern_scale": 5.0,
+    "pattern_rotation": -50.0,
+    "wear_scale": 1,
+    "grunge_scale": 1,
+    "paint_metalness": 0,
+    "color_brightness": 1.0,
+    "colors": [
+      [
+        0.4784,
+        0.1569,
+        0.1569
+      ],
+      [
+        0.8118,
+        0.6706,
+        0.5176
+      ],
+      [
+        0.149,
+        0.1608,
+        0.2196
+      ],
+      [
+        0.2627,
+        0.251,
+        0.2392
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
