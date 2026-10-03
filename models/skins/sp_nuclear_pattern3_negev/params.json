@@ -1,0 +1,39 @@
+{
+  "finish": "sp_nuclear_pattern3_negev",
+  "shader": {
+    "paint_style": 2,
+    "pattern_scale": 2.2,
+    "pattern_rotation": 1.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 1.0,
+    "colors": [
+      [
+        0.2157,
+        0.1294,
+        0.0667
+      ],
+      [
+        0.1882,
+        0.1804,
+        0.1647
+      ],
+      [
+        0.1882,
+        0.1765,
+        0.1765
+      ],
+      [
+        0.9412,
+        0.6078,
+        0.0784
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
