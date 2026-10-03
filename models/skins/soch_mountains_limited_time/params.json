@@ -1,0 +1,11 @@
+{
+  "finish": "soch_mountains_limited_time",
+  "material": "weapons/paints/limited_time/soch_mountains_limited_time.vcompmat",
+  "format": "vcompmat",
+  "textures": {
+    "pattern": "pattern.webp",
+    "normal": "normal.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp"
+  },
+  "shader": {}
+}
