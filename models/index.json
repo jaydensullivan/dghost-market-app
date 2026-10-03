@@ -884,6 +884,11 @@
   "skin": "models/skins/am_seastorm",
   "weapon": "models/weapons/deagle"
  },
+ "Desert Eagle | Mint Fan": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/ht_earth_fans",
+  "weapon": "models/weapons/deagle"
+ },
  "Desert Eagle | Mudder": {
   "model": "models/deagle.glb",
   "skin": "models/skins/hy_mottled_sand",
@@ -919,6 +924,11 @@
   "skin": "models/skins/cu_deag_printstream",
   "weapon": "models/weapons/deagle"
  },
+ "Desert Eagle | Serpent Strike": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/deagle_snake_pattern",
+  "weapon": "models/weapons/deagle"
+ },
  "Desert Eagle | Sputnik": {
   "model": "models/deagle.glb",
   "skin": "models/skins/sp_spacerace_blue",
@@ -942,6 +952,11 @@
  "Desert Eagle | The Bronze": {
   "model": "models/deagle.glb",
   "skin": "models/skins/am_numbers_bronze",
+  "weapon": "models/weapons/deagle"
+ },
+ "Desert Eagle | The Daily Deagle": {
+  "model": "models/deagle.glb",
+  "skin": "models/skins/hye_car_wrap",
   "weapon": "models/weapons/deagle"
  },
  "Desert Eagle | Tilted": {
