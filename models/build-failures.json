@@ -2,6 +2,7 @@
  "skins": {
   "ak47_crane_flight": 1,
   "awp_longdog": 1,
+  "brutalist_architecture": 1,
   "cue_jump_line": 1,
   "deagle_snake_pattern": 1,
   "ht_earth_fans": 1,
@@ -23,6 +24,8 @@
   "spe_lightning": 1
  },
  "weapons": {
-  "m4a1_silencer": 1
+  "glock": 1,
+  "m4a1_silencer": 1,
+  "usp_silencer": 1
  }
 }
