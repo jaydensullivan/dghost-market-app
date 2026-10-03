@@ -1,0 +1,39 @@
+{
+  "finish": "hy_dry_wood",
+  "shader": {
+    "paint_style": 1,
+    "pattern_scale": 5.0,
+    "pattern_rotation": 45.0,
+    "wear_scale": 1,
+    "grunge_scale": 1,
+    "paint_metalness": 0,
+    "color_brightness": 1.0,
+    "colors": [
+      [
+        0.3333,
+        0.3137,
+        0.2902
+      ],
+      [
+        0.2118,
+        0.1529,
+        0.1765
+      ],
+      [
+        0.4588,
+        0.3451,
+        0.2314
+      ],
+      [
+        0.5255,
+        0.4902,
+        0.3882
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
