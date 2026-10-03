@@ -111,6 +111,84 @@ for layer, key, max_side, color in LAYERS:
     print(f'  {layer}: {w}x{h} → {img.size[0]}x{img.size[1]}, {os.path.getsize(out) / 1024:.0f} КБ')
     textures[layer] = layer + '.webp'
 
+# ------------------------------------------------------------
+# Шаблонные раскраски нового формата (so_/hy_/sp_/ht_/hye_… с 2025):
+# готового альбедо нет. Рецепт ссылается на шаблон стиля
+# (workshop/paintkits/templates/<стиль>_…template.vmat), задаёт цвета
+# g_vColor0..3 и поворот узора, а узор — это маска (R/G/B = какой цвет
+# где), как у старых гидрографий и спреев. Переводим в те же параметры,
+# что у старого формата, — просмотрщик уже умеет их показывать.
+# ------------------------------------------------------------
+template_style = None
+if 'pattern' not in textures:
+    m = re.search(r'templates/([a-z]+)_[a-z0-9_]*template\.vmat', recipe)
+    STYLE_BY_PREFIX = {'so': 0, 'hy': 1, 'sp': 2, 'an': 3, 'am': 4, 'aa': 5, 'cu': 6, 'aq': 7, 'gs': 8}
+    template_style = STYLE_BY_PREFIX.get(m.group(1)) if m else None
+
+loose = {}
+if template_style is not None:
+    for m in re.finditer(r'm_strName\s*=\s*"(\w+)"(.*?)(?=m_strName\s*=|\Z)', recipe, re.S):
+        name, body = m.group(1), m.group(2)
+        c = re.search(r'm_cValueColor4\s*=\s*\[([^\]]*)\]', body)
+        if c:
+            nums = [float(x) for x in re.findall(r'-?[\d.]+', c.group(1))][:3]
+            if len(nums) == 3:
+                loose[name] = [round(x / 255 if max(nums) > 1 else x, 4) for x in nums]
+            continue
+        f = re.search(r'm_flValueFloatX\s*=\s*(-?[\d.]+(?:[eE][-+]?\d+)?)', body)
+        if f:
+            loose[name] = float(f.group(1))
+
+if template_style is not None:
+    colors = [loose.get('g_vColor%d' % i) for i in range(4)]
+    needs_pattern = template_style not in (0, 3)
+    if needs_pattern:
+        # Узор — своя текстура набора из items/assets/paintkits, не карта
+        # рельефа/затенения, не маски зон ствола и не наклейка-оверлей.
+        def pattern_like(path):
+            base = os.path.basename(path).lower()
+            if re.search(r'normal|ambient_occlusion|_ao_|rough|masks|overlay|sfx|grunge|wear|default_', base):
+                return False
+            return 'paintkits' in path.replace('\\', '/')
+        cands = [p for _, p in pngs if pattern_like(p)]
+        cands.sort(key=lambda p: 0 if 'pattern' in os.path.basename(p).lower() else 1)
+        if cands:
+            img = Image.open(cands[0]).convert('RGB')
+            if max(img.size) > 2048:
+                k = 2048 / max(img.size)
+                img = img.resize((int(img.size[0] * k), int(img.size[1] * k)), Image.LANCZOS)
+            img.save(os.path.join(dest, 'pattern.webp'), 'WEBP', quality=88, method=6)
+            textures['pattern'] = 'pattern.webp'
+            print(f'  pattern (шаблон): {os.path.basename(cands[0])}')
+    if (needs_pattern and 'pattern' not in textures) or not any(colors):
+        print('❌ Шаблонная раскраска без узора или без цветов — пока не показываем.')
+        sys.exit(1)
+    # Маски зон из шаблона ствола просмотрщик не понимает — не путаем его.
+    textures.pop('material_mask', None)
+    textures.pop('sfx', None)
+    wear = sorted(glob.glob(os.path.join(shared, 'wear_*.webp')))
+    if wear:
+        textures['wear'] = 'models/shared/' + os.path.basename(wear[0])
+    shader = {
+        'paint_style': template_style,
+        'pattern_scale': next((v for k, v in loose.items() if 'PatternTexCoordScale' in k and isinstance(v, float)), 1.0) or 1.0,
+        'pattern_rotation': loose.get('g_flPatternTexCoordRotation', 0.0) if isinstance(loose.get('g_flPatternTexCoordRotation', 0.0), float) else 0.0,
+        'color_brightness': 1.0,
+        'paint_metalness': 0,
+        'colors': [c or [0, 0, 0] for c in colors],
+    }
+    meta = {
+        'finish': finish,
+        'material': 'weapons/paints/' + compfile.split('/weapons/paints/', 1)[-1],
+        'format': 'template',
+        'textures': textures,
+        'shader': shader,
+    }
+    with open(os.path.join(dest, 'params.json'), 'w', encoding='utf-8') as f:
+        json.dump(meta, f, ensure_ascii=False, indent=2)
+    print('  Параметры шаблона:', json.dumps(shader, ensure_ascii=False))
+    sys.exit(0)
+
 if 'pattern' not in textures:
     print('❌ Альбедо нет или оно пустое — такой скин просмотрщик пока не покажет.')
     print('   Пришли рецепт: sed -n "/РЕЦЕПТ/,/=====/p" /tmp/cs2-assets/build-skin-' + finish + '.log')

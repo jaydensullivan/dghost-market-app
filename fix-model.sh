@@ -61,8 +61,28 @@ extract_one() {
 echo "==> 1/3 Читаю индекс"
 "$TOOLS/Source2Viewer-CLI" -i "$VPK" --vpk_dir > "$WORK/vpk_dir.txt" 2>/dev/null || true
 
+# В файлах игры папки части стволов называются не так, как в
+# items_game: glock → glock18, m4a1_silencer → m4a1_s, usp_silencer →
+# pist_223 (старое имя USP-S), cz75a → cz_75, taser → eq_taser.
+weapon_aliases() {
+    case "$1" in
+        glock)         echo "glock glock18" ;;
+        m4a1_silencer) echo "m4a1_silencer m4a1_s" ;;
+        usp_silencer)  echo "usp_silencer pist_223 usp" ;;
+        cz75a)         echo "cz75a cz_75" ;;
+        taser)         echo "taser eq_taser" ;;
+        hkp2000)       echo "hkp2000 p2000" ;;
+        revolver)      echo "revolver" ;;
+        *)             echo "$1" ;;
+    esac
+}
+
 echo "==> 2/3 Ищу материалы $WEAPON"
-grep -iE "materials/.*weapons/.*${WEAPON}.*\.vmat_c" "$WORK/vpk_dir.txt" \
+# И старые пути (materials/models/weapons/v_models/…), и новые CS2
+# (weapons/models/<ствол>/materials/…, включая composite_inputs — там
+# маска зон покраски).
+ALIAS_RE=$(weapon_aliases "$WEAPON" | tr ' ' '|')
+grep -iE "(materials/.*weapons/.*|weapons/models/)(${ALIAS_RE})[^ ]*\.vmat_c" "$WORK/vpk_dir.txt" \
     | grep -iv 'paints/' | sed 's/ crc=.*//' | sort -u > "$WORK/mat-list.txt" || true
 
 if [ ! -s "$WORK/mat-list.txt" ]; then

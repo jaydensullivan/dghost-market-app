@@ -155,10 +155,31 @@ echo "Всего файлов со словом '$WEAPON': $ALL_HITS"
 # Строгий фильтр: только папка самого ствола. Иначе в выборку
 # лезут гильзы (shared/shells), модель из рук (v_models), магазин и
 # файлы кастомизации — из-за них кусков становится втрое больше.
-PATH_FILTER="${PATH_FILTER:-weapons/models/${WEAPON}/}"
+# В файлах игры папки части стволов называются не так, как в
+# items_game: glock → glock18, m4a1_silencer → m4a1_s, usp_silencer →
+# pist_223 (старое имя USP-S), cz75a → cz_75, taser → eq_taser.
+weapon_aliases() {
+    case "$1" in
+        glock)         echo "glock glock18" ;;
+        m4a1_silencer) echo "m4a1_silencer m4a1_s" ;;
+        usp_silencer)  echo "usp_silencer pist_223 usp" ;;
+        cz75a)         echo "cz75a cz_75" ;;
+        taser)         echo "taser eq_taser" ;;
+        hkp2000)       echo "hkp2000 p2000" ;;
+        revolver)      echo "revolver" ;;
+        *)             echo "$1" ;;
+    esac
+}
 
-grep -i "$PATH_FILTER" "$WORK/vpk_dir.txt" \
-    | grep -iv '/paints/' > "$WORK/hits.txt" || true
+: > "$WORK/hits.txt"
+for alias in ${PATH_FILTER:-$(weapon_aliases "$WEAPON")}; do
+    case "$alias" in */*) dir="$alias" ;; *) dir="weapons/models/${alias}/" ;; esac
+    grep -i "$dir" "$WORK/vpk_dir.txt" | grep -iv '/paints/' > "$WORK/hits.txt" || true
+    if [ -s "$WORK/hits.txt" ]; then
+        PATH_FILTER="$dir"
+        break
+    fi
+done
 
 # Если по строгому пути пусто (у другого оружия папка может
 # называться иначе) — откатываемся на широкий фильтр.
@@ -240,7 +261,9 @@ du -sh "$GAME"
 df -h /tmp | tail -1
 
 echo "==> 6/6 Экспортирую в glTF"
-MODEL_PATH=$(grep -io "[^ ]*${WEAPON}[^ ]*\.vmdl_c" "$WORK/hits.txt" | head -1 | tr -d '\r')
+# Основная модель — weapon_<…>.vmdl_c из папки ствола; без неё — любая.
+MODEL_PATH=$(grep -ioE "[^ ]*/weapon_[a-z0-9_]+\.vmdl_c" "$WORK/hits.txt" | grep -viE '_(mag|clip|scope|silencer_?off|stattrak|ag2)\.vmdl' | head -1 | tr -d '\r')
+[ -z "$MODEL_PATH" ] && MODEL_PATH=$(grep -io "[^ ]*${WEAPON}[^ ]*\.vmdl_c" "$WORK/hits.txt" | head -1 | tr -d '\r')
 
 if [ -z "$MODEL_PATH" ]; then
     echo "❌ Путь к модели не найден. Посмотри $WORK/vpk_dir.txt"
