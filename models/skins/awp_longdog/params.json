@@ -1,0 +1,39 @@
+{
+  "finish": "awp_longdog",
+  "material": "weapons/paints/set_train_2025/awp_longdog.vcompmat",
+  "format": "template",
+  "textures": {
+    "normal": "normal.webp",
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp"
+  },
+  "shader": {
+    "paint_style": 8,
+    "pattern_scale": 1.0,
+    "pattern_rotation": 0.0,
+    "color_brightness": 1.0,
+    "paint_metalness": 0,
+    "colors": [
+      [
+        1.0,
+        1.0,
+        1.0
+      ],
+      [
+        0.6157,
+        0.6157,
+        0.6157
+      ],
+      [
+        0.5529,
+        0.3137,
+        0.2549
+      ],
+      [
+        0.3373,
+        0.2824,
+        0.0667
+      ]
+    ]
+  }
+}
