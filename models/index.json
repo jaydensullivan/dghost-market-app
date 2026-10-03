@@ -5304,30 +5304,200 @@
   "skin": "models/skins/cu_ump_clutch_kick",
   "weapon": "models/weapons/ump45"
  },
+ "USP-S | 27": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/usp_field_snake",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Alpine Camo": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/gsch_bright_camo_usp",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Ancient Visions": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/sp_ancient_bright",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Black Lotus": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/cu_usp_black_lotus",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Bleeding Edge": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/ht_red_edges",
+  "weapon": "models/weapons/usp_silencer"
+ },
  "USP-S | Blood Tiger": {
   "model": "models/usp_silencer.glb",
   "skin": "models/skins/hy_redtiger",
-  "weapon": null
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Blueprint": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/cu_usps_blueprint",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Caiman": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/cu_kaiman",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Check Engine": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/sp_mesh_safetyred",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Cortex": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/cu_usp_cut",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Cyrex": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/cu_usp_cyrex",
+  "weapon": "models/weapons/usp_silencer"
  },
  "USP-S | Dark Water": {
   "model": "models/usp_silencer.glb",
   "skin": "models/skins/am_zebra_dark",
-  "weapon": null
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Desert Tactical": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/gs_usps_tactical_camo",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Flashback": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/cu_usp_flashback",
+  "weapon": "models/weapons/usp_silencer"
  },
  "USP-S | Forest Leaves": {
   "model": "models/usp_silencer.glb",
   "skin": "models/skins/sp_leaves",
-  "weapon": null
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Jawbreaker": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/usps_doggy",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Kill Confirmed": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/cu_usp_kill_confirmed",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Lead Conduit": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/gs_usp_voltage",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Monster Mashup": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/cu_usp_krokos",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Neo-Noir": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/cu_usps_noir",
+  "weapon": "models/weapons/usp_silencer"
  },
  "USP-S | Night Ops": {
   "model": "models/usp_silencer.glb",
   "skin": "models/skins/hy_varicamo_night",
-  "weapon": null
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Orange Anolis": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/am_lizard_red",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Orion": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/cu_usp_spitfire",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Overgrowth": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/hy_siege_bravo",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | PC-GRN": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/usps_bruteforce_green",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Para Green": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/so_khaki_green",
+  "weapon": "models/weapons/usp_silencer"
  },
  "USP-S | Pathfinder": {
   "model": "models/usp_silencer.glb",
   "skin": "models/skins/sp_labyrinth2",
-  "weapon": null
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Printstream": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/cu_usp_printstream",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Purple DDPAT": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/am_ddpat_purple",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Road Rash": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/cu_usp_sandpapered",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Royal Blue": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/hy_indigo_usp",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Serum": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/am_electric_red",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Silent Shot": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/usps_silent_boy",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Spiral Glitch": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/usps_spiral_glitch_iridescent",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Stainless": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/aq_usp_stainless",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Target Acquired": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/am_intelligence_magenta",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | The Traitor": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/gs_usps_hangedman",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Ticket to Hell": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/cu_usp_to_hell",
+  "weapon": "models/weapons/usp_silencer"
+ },
+ "USP-S | Torque": {
+  "model": "models/usp_silencer.glb",
+  "skin": "models/skins/cu_usp_progressiv",
+  "weapon": "models/weapons/usp_silencer"
  },
  "XM1014 | Ancient Lore": {
   "model": "models/xm1014.glb",
