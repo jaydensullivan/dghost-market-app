@@ -1,0 +1,13 @@
+{
+  "finish": "scar_arctic_camo_panels",
+  "material": "weapons/paints/set_spy_tech/scar_arctic_camo_panels.vcompmat",
+  "format": "vcompmat",
+  "textures": {
+    "pattern": "pattern.webp",
+    "normal": "normal.webp",
+    "ao": "ao.webp",
+    "roughness": "roughness.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp"
+  },
+  "shader": {}
+}
