@@ -1,0 +1,39 @@
+{
+  "finish": "hy_varicamo_night",
+  "shader": {
+    "paint_style": 1,
+    "pattern_scale": 2.5,
+    "pattern_rotation": -15.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 1.0,
+    "colors": [
+      [
+        0.4706,
+        0.4902,
+        0.451
+      ],
+      [
+        0.1882,
+        0.1882,
+        0.1882
+      ],
+      [
+        0.2157,
+        0.2588,
+        0.3294
+      ],
+      [
+        0.1412,
+        0.1412,
+        0.2039
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
