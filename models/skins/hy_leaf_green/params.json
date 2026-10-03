@@ -1,0 +1,39 @@
+{
+  "finish": "hy_leaf_green",
+  "shader": {
+    "paint_style": 1,
+    "pattern_scale": 2.5,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1,
+    "grunge_scale": 1,
+    "paint_metalness": 0,
+    "color_brightness": 1.0,
+    "colors": [
+      [
+        0.1922,
+        0.2275,
+        0.0667
+      ],
+      [
+        0.0,
+        0.1216,
+        0.1882
+      ],
+      [
+        0.1059,
+        0.1569,
+        0.1569
+      ],
+      [
+        0.3725,
+        0.3333,
+        0.0627
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
