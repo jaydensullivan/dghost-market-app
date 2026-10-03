@@ -1,0 +1,39 @@
+{
+  "finish": "gs_usp_voltage",
+  "shader": {
+    "paint_style": 8,
+    "pattern_scale": 1.0,
+    "pattern_rotation": 0.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 1.0,
+    "colors": [
+      [
+        0.8314,
+        0.8745,
+        0.898
+      ],
+      [
+        1.0,
+        1.0,
+        1.0
+      ],
+      [
+        0.851,
+        0.8902,
+        0.9137
+      ],
+      [
+        0.6,
+        0.6824,
+        0.6824
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
