@@ -2184,6 +2184,91 @@
   "skin": "models/skins/gs_mac10_fish_bait",
   "weapon": "models/weapons/mac10"
  },
+ "MP5-SD | Acid Wash": {
+  "model": "models/mp5sd.glb",
+  "skin": "models/skins/gs_mp5_etch",
+  "weapon": "models/weapons/mp5sd"
+ },
+ "MP5-SD | Agent": {
+  "model": "models/mp5sd.glb",
+  "skin": "models/skins/gs_mp5_fbi",
+  "weapon": "models/weapons/mp5sd"
+ },
+ "MP5-SD | Autumn Twilly": {
+  "model": "models/mp5sd.glb",
+  "skin": "models/skins/hy_trainarchitect",
+  "weapon": "models/weapons/mp5sd"
+ },
+ "MP5-SD | Bamboo Garden": {
+  "model": "models/mp5sd.glb",
+  "skin": "models/skins/hy_bamboo_stmarc",
+  "weapon": "models/weapons/mp5sd"
+ },
+ "MP5-SD | Co-Processor": {
+  "model": "models/mp5sd.glb",
+  "skin": "models/skins/am_circuitboard_aqua",
+  "weapon": "models/weapons/mp5sd"
+ },
+ "MP5-SD | Condition Zero": {
+  "model": "models/mp5sd.glb",
+  "skin": "models/skins/gs_mp5_conditionzero",
+  "weapon": "models/weapons/mp5sd"
+ },
+ "MP5-SD | Desert Strike": {
+  "model": "models/mp5sd.glb",
+  "skin": "models/skins/cu_mp5_desert_strike",
+  "weapon": "models/weapons/mp5sd"
+ },
+ "MP5-SD | Dirt Drop": {
+  "model": "models/mp5sd.glb",
+  "skin": "models/skins/sp_tape_short_rally",
+  "weapon": "models/weapons/mp5sd"
+ },
+ "MP5-SD | Focus": {
+  "model": "models/mp5sd.glb",
+  "skin": "models/skins/mp5sd_chrome",
+  "weapon": "models/weapons/mp5sd"
+ },
+ "MP5-SD | Gauss": {
+  "model": "models/mp5sd.glb",
+  "skin": "models/skins/gs_mp5sd_astromatic",
+  "weapon": "models/weapons/mp5sd"
+ },
+ "MP5-SD | Kitbash": {
+  "model": "models/mp5sd.glb",
+  "skin": "models/skins/gs_mp5sd_wasteland_legacy",
+  "weapon": "models/weapons/mp5sd"
+ },
+ "MP5-SD | Lab Rats": {
+  "model": "models/mp5sd.glb",
+  "skin": "models/skins/hy_labrat_mp5",
+  "weapon": "models/weapons/mp5sd"
+ },
+ "MP5-SD | Liquidation": {
+  "model": "models/mp5sd.glb",
+  "skin": "models/skins/cu_mp5sd_quick_liquidation",
+  "weapon": "models/weapons/mp5sd"
+ },
+ "MP5-SD | Necro Jr.": {
+  "model": "models/mp5sd.glb",
+  "skin": "models/skins/gs_mp5_kid_necronomicon",
+  "weapon": "models/weapons/mp5sd"
+ },
+ "MP5-SD | Oxide Oasis": {
+  "model": "models/mp5sd.glb",
+  "skin": "models/skins/gs_mp5_neon_flektarn",
+  "weapon": "models/weapons/mp5sd"
+ },
+ "MP5-SD | Phosphor": {
+  "model": "models/mp5sd.glb",
+  "skin": "models/skins/gs_mp5_festival_drip",
+  "weapon": "models/weapons/mp5sd"
+ },
+ "MP5-SD | Statics": {
+  "model": "models/mp5sd.glb",
+  "skin": "models/skins/mp5_statics_blue",
+  "weapon": "models/weapons/mp5sd"
+ },
  "MP7 | Abyssal Apparition": {
   "model": "models/mp7.glb",
   "skin": "models/skins/cu_mp7_fear",
