@@ -1,4 +1,10 @@
 {
   "weapon": "m4a1_silencer",
-  "textures": {}
+  "textures": {
+    "masks": "masks.webp",
+    "color": "color.webp",
+    "rough": "rough.webp",
+    "ao": "ao.webp",
+    "surface": "surface.webp"
+  }
 }
