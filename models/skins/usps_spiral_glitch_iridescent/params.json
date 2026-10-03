@@ -1,0 +1,14 @@
+{
+  "finish": "usps_spiral_glitch_iridescent",
+  "material": "weapons/paints/set_spy_tech/usps_spiral_glitch_iridescent.vcompmat",
+  "format": "vcompmat",
+  "textures": {
+    "pattern": "pattern.webp",
+    "normal": "normal.webp",
+    "ao": "ao.webp",
+    "roughness": "roughness.webp",
+    "sfx": "sfx.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp"
+  },
+  "shader": {}
+}
