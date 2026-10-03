@@ -1,0 +1,39 @@
+{
+  "finish": "sp_moro_carving_lightblue",
+  "shader": {
+    "paint_style": 2,
+    "pattern_scale": 1.8,
+    "pattern_rotation": 315.0,
+    "wear_scale": 1.0,
+    "grunge_scale": 1.0,
+    "paint_metalness": 0,
+    "color_brightness": 1.0,
+    "colors": [
+      [
+        0.1882,
+        0.1686,
+        0.1294
+      ],
+      [
+        0.5216,
+        0.6275,
+        0.5137
+      ],
+      [
+        0.8471,
+        0.7176,
+        0.5294
+      ],
+      [
+        0.4627,
+        0.3137,
+        0.3137
+      ]
+    ]
+  },
+  "textures": {
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp",
+    "grunge": "models/shared/grunge_23af0472d6.webp"
+  }
+}
