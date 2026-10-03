@@ -1769,6 +1769,121 @@
   "skin": "models/skins/hy_forest_winter",
   "weapon": "models/weapons/galilar"
  },
+ "Glock-18 | Brass": {
+  "model": "models/glock.glb",
+  "skin": "models/skins/aq_brass",
+  "weapon": "models/weapons/glock"
+ },
+ "Glock-18 | Bullet Queen": {
+  "model": "models/glock.glb",
+  "skin": "models/skins/cu_glock18_warmaiden",
+  "weapon": "models/weapons/glock"
+ },
+ "Glock-18 | Bunsen Burner": {
+  "model": "models/glock.glb",
+  "skin": "models/skins/aq_glock18_flames_blue",
+  "weapon": "models/weapons/glock"
+ },
+ "Glock-18 | Catacombs": {
+  "model": "models/glock.glb",
+  "skin": "models/skins/cu_glock_deathtoll",
+  "weapon": "models/weapons/glock"
+ },
+ "Glock-18 | Death Rattle": {
+  "model": "models/glock.glb",
+  "skin": "models/skins/hy_nerodia",
+  "weapon": "models/weapons/glock"
+ },
+ "Glock-18 | Dragon Tattoo": {
+  "model": "models/glock.glb",
+  "skin": "models/skins/am_dragon_glock",
+  "weapon": "models/weapons/glock"
+ },
+ "Glock-18 | Fade": {
+  "model": "models/glock.glb",
+  "skin": "models/skins/aa_fade",
+  "weapon": "models/weapons/glock"
+ },
+ "Glock-18 | Gamma Doppler": {
+  "model": "models/glock.glb",
+  "skin": "models/skins/am_gamma_doppler_phase4_glock",
+  "weapon": "models/weapons/glock"
+ },
+ "Glock-18 | Grinder": {
+  "model": "models/glock.glb",
+  "skin": "models/skins/aq_glock_coiled",
+  "weapon": "models/weapons/glock"
+ },
+ "Glock-18 | High Beam": {
+  "model": "models/glock.glb",
+  "skin": "models/skins/aa_vertigo_blue",
+  "weapon": "models/weapons/glock"
+ },
+ "Glock-18 | Moonrise": {
+  "model": "models/glock.glb",
+  "skin": "models/skins/aa_glock_18_urban_moon_fever",
+  "weapon": "models/weapons/glock"
+ },
+ "Glock-18 | Neo-Noir": {
+  "model": "models/glock.glb",
+  "skin": "models/skins/cu_glock_noir",
+  "weapon": "models/weapons/glock"
+ },
+ "Glock-18 | Nuclear Garden": {
+  "model": "models/glock.glb",
+  "skin": "models/skins/am_nuclear_skulls_green",
+  "weapon": "models/weapons/glock"
+ },
+ "Glock-18 | Off World": {
+  "model": "models/glock.glb",
+  "skin": "models/skins/cu_glock_indigo",
+  "weapon": "models/weapons/glock"
+ },
+ "Glock-18 | Oxide Blaze": {
+  "model": "models/glock.glb",
+  "skin": "models/skins/cu_glock18_corroden",
+  "weapon": "models/weapons/glock"
+ },
+ "Glock-18 | Pink DDPAT": {
+  "model": "models/glock.glb",
+  "skin": "models/skins/hy_ddpat_pink",
+  "weapon": "models/weapons/glock"
+ },
+ "Glock-18 | Reactor": {
+  "model": "models/glock.glb",
+  "skin": "models/skins/am_nuclear_pattern1_glock",
+  "weapon": "models/weapons/glock"
+ },
+ "Glock-18 | Sacrifice": {
+  "model": "models/glock.glb",
+  "skin": "models/skins/cu_glock_hero",
+  "weapon": "models/weapons/glock"
+ },
+ "Glock-18 | Steel Disruption": {
+  "model": "models/glock.glb",
+  "skin": "models/skins/am_ddpatdense_silver",
+  "weapon": "models/weapons/glock"
+ },
+ "Glock-18 | Twilight Galaxy": {
+  "model": "models/glock.glb",
+  "skin": "models/skins/am_aqua_flecks",
+  "weapon": "models/weapons/glock"
+ },
+ "Glock-18 | Umbral Rabbit": {
+  "model": "models/glock.glb",
+  "skin": "models/skins/cu_glock_moon_rabbit",
+  "weapon": "models/weapons/glock"
+ },
+ "Glock-18 | Vogue": {
+  "model": "models/glock.glb",
+  "skin": "models/skins/cu_glock_eyecontact",
+  "weapon": "models/weapons/glock"
+ },
+ "Glock-18 | Weasel": {
+  "model": "models/glock.glb",
+  "skin": "models/skins/cu_glock18_weasel",
+  "weapon": "models/weapons/glock"
+ },
  "Knife | Aerial": {
   "model": "models/sg556.glb",
   "skin": "models/skins/cu_sg553_aerial",
