@@ -1,0 +1,39 @@
+{
+  "finish": "hye_zeds",
+  "material": "weapons/paints/timed_drops/hye_zeds.vcompmat",
+  "format": "template",
+  "textures": {
+    "normal": "normal.webp",
+    "pattern": "pattern.webp",
+    "wear": "models/shared/wear_32f653a6a3.webp"
+  },
+  "shader": {
+    "paint_style": 1,
+    "pattern_scale": 3.0,
+    "pattern_rotation": 7.499969,
+    "color_brightness": 1.0,
+    "paint_metalness": 0,
+    "colors": [
+      [
+        0.3373,
+        0.3373,
+        0.3373
+      ],
+      [
+        0.7922,
+        0.7843,
+        0.7843
+      ],
+      [
+        0.2118,
+        0.2118,
+        0.2118
+      ],
+      [
+        0.8549,
+        0.8549,
+        0.8235
+      ]
+    ]
+  }
+}
