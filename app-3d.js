@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 28;
+const APP3D_VERSION = 29;
 
 let threeLoading = null;
 
@@ -508,6 +508,17 @@ out.push(new THREE.Vector3(color.r, color.g, color.b));
 return out;
 }
 
+// Анодирование (стили 3, 4, 5: Fade, Doppler, Slaughter, Moonrise) в
+// игре — это окрашенный металл, а не краска поверх. Матовой краской
+// они выходили пастельными, чистым металлом — почти чёрными в нашем
+// освещении; 0.65 ближе всего к виду в игре.
+const ANODIZED_METALNESS = 0.65;
+function paintMetalness(params){
+const own = Number(params.paint_metalness) || 0;
+if (own > 0) return own;
+return [3, 4, 5].indexOf(params.paint_style) !== -1 ? ANODIZED_METALNESS : 0;
+}
+
 // ---------- pattern seed ----------
 // Генератор случайных чисел Valve (CUniformRandomStream из Source SDK).
 // Игра сеет его paint seed предмета и по очереди берёт сдвиг узора по
@@ -661,7 +672,7 @@ uPatternRotation: { value: placement.rotation * Math.PI / 180 },
 uPatternOffset: { value: new THREE.Vector2(placement.offset[0], placement.offset[1]) },
 uWearScale: { value: skin.params.wear_scale || 1 },
 uGrungeScale: { value: skin.params.grunge_scale || 1 },
-uPaintMetalness: { value: Number(skin.params.paint_metalness) || 0 },
+uPaintMetalness: { value: paintMetalness(skin.params) },
 uUseColors: { value: skin.solid || skinUsesColorMask(skin.params) ? 1 : 0 },
 uColors: { value: skinColors(THREE, skin.params) },
 // Узор грузится как sRGB, а маске нужны исходные значения каналов.

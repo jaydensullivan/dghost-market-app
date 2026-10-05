@@ -282,6 +282,9 @@ fi
 # узора в игре нет вовсе — им хватает params.json с цветами.
 skin_ready() {
     local dir="$REPO/models/skins/$1"
+    # Без params.json просмотрщик скин не покажет (сборку прервали на
+    # середине) — такую папку собираем заново.
+    [ -f "$dir/params.json" ] || return 1
     [ -f "$dir/pattern.webp" ] && return 0
     [ -f "$dir/params.json" ] && grep -q '"colors"' "$dir/params.json" \
         && ! grep -q '"pattern"' "$dir/params.json"
