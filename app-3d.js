@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 23;
+const APP3D_VERSION = 24;
 
 let threeLoading = null;
 
@@ -1070,7 +1070,7 @@ let modelIndexLoading = null;
 // 3D-файлы раздаются с Cloudflare Pages (ветка 3d-assets, workflow
 // deploy-3d.yml): там нет лимита GitHub Pages в 1 ГБ. Пока адрес
 // пустой или Cloudflare не ответил — берём файлы с этого же сайта.
-const MODELS_CDN = '';
+const MODELS_CDN = 'https://dghost-3d.pages.dev/';
 let modelsBase = '';
 
 // «models/…» → полный адрес на выбранном хранилище; остальное как есть.
