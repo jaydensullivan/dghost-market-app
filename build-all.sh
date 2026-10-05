@@ -397,29 +397,48 @@ build_skin() {
     skin_ready "$kit"
 }
 
-# Раскраски нового формата, собранные до prep_version 2: WebP терял
-# цвет там, где у альбедо нулевая альфа (AWP Printstream вышел
-# полосатым), а у закалки (gsch_…) не было палитры. Пересобираем только
-# те, у кого альфа в узоре есть, остальным просто ставим версию.
+# Раскраски нового формата, собранные до prep_version 3, пересобираем
+# только когда новая версия что-то меняет:
+#  2 — WebP терял цвет под нулевой альфой (AWP Printstream полосатый),
+#      у закалки (gsch_…) не было палитры;
+#  3 — зоны покраски (paint by number: MP7 Amberline выходил белым) и
+#      металличность краски (SSG 08 Zeno — металлик, а не белая матовая).
+# Что нужно, смотрим по рецепту из recipes/. Остальным просто ставим версию.
 if [ "$MODE" != "status" ] && [ -d "$REPO/models/skins" ]; then
-python3 - "$REPO/models/skins" <<'PY'
-import json, os, sys
+python3 - "$REPO/models/skins" "$REPO/recipes" <<'PY'
+import json, os, re, sys
 from PIL import Image
-root = sys.argv[1]
+root, recipes = sys.argv[1], sys.argv[2]
+
+def uses(recipe, flag, texture):
+    """Рецепт включает флаг и ссылается на свою (не стандартную) текстуру."""
+    on = re.search(r'"%s"(?:(?!m_strName).)*?m_bValueBoolean\s*=\s*true' % flag, recipe, re.S)
+    tex = re.search(r'"%s"(?:(?!m_strName).)*?m_strTextureContentAssetPath\s*=\s*"([^"]+)"' % texture, recipe, re.S)
+    return bool(on and tex and 'materials/default/' not in tex.group(1))
+
 redo = stamped = 0
 for finish in sorted(os.listdir(root)):
     pfile = os.path.join(root, finish, 'params.json')
-    pattern = os.path.join(root, finish, 'pattern.webp')
-    if not os.path.isfile(pfile) or not os.path.isfile(pattern):
+    if not os.path.isfile(pfile):
         continue
     meta = json.load(open(pfile, encoding='utf-8'))
-    if meta.get('format') != 'vcompmat' or meta.get('prep_version', 1) >= 2:
+    if meta.get('format') not in ('vcompmat', 'template') or meta.get('prep_version', 1) >= 3:
         continue
-    if 'A' in Image.open(pattern).getbands():
-        os.remove(pattern)
+    pattern = os.path.join(root, finish, 'pattern.webp')
+    rpath = os.path.join(recipes, meta.get('material', ''))
+    recipe = open(rpath, encoding='utf-8', errors='ignore').read() if os.path.isfile(rpath) else ''
+    need = (
+        (meta.get('prep_version', 1) < 2 and meta.get('format') == 'vcompmat'
+         and os.path.isfile(pattern) and 'A' in Image.open(pattern).getbands())
+        or uses(recipe, 'g_bUsePaintByNumberMasks', 'g_tPaintByNumberMasks') and meta.get('format') == 'template'
+        or uses(recipe, 'g_bUseMetalness', 'g_tPaintMetalness')
+    )
+    if need:
+        # Без params.json скин не считается готовым (skin_ready) и соберётся заново.
+        os.remove(pfile)
         redo += 1
     else:
-        meta['prep_version'] = 2
+        meta['prep_version'] = 3
         with open(pfile, 'w', encoding='utf-8') as f:
             json.dump(meta, f, ensure_ascii=False, indent=2)
         stamped += 1
