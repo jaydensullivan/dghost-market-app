@@ -143,10 +143,19 @@ jobs:
         run: |
           printf 'regex:^game/csgo/pak01_.*\\.vpk$\n' > "$WORK/filelist-dir.txt"
           cd "$WORK/tools"
-          if ! dotnet DepotDownloader.dll -app 730 -username "$STEAM_USERNAME" -password "$STEAM_PASSWORD" \
-               -remember-password -filelist "$WORK/filelist-dir.txt" -dir "$WORK/game" < /dev/null 2>&1 | tee "$WORK/login.log"; then
-            :
-          fi
+          # Steam иногда рвёт соединение посреди скачивания («Lost
+          # connection to Steam», «not completely downloaded») — повторяем;
+          # уже скачанное DepotDownloader не качает заново.
+          for attempt in 1 2 3; do
+            dotnet DepotDownloader.dll -app 730 -username "$STEAM_USERNAME" -password "$STEAM_PASSWORD" \
+                 -remember-password -filelist "$WORK/filelist-dir.txt" -dir "$WORK/game" < /dev/null 2>&1 | tee "$WORK/login.log" || true
+            grep -qiE "STEAM GUARD|InvalidPassword|Failed to authenticate" "$WORK/login.log" && break
+            if [ -f "$WORK/game/game/csgo/pak01_dir.vpk" ] && ! grep -q "not completely downloaded" "$WORK/login.log"; then
+              break
+            fi
+            echo "::warning::Скачивание архива прервалось (попытка $attempt) — повторяю через 60 с."
+            sleep 60
+          done
           if grep -q "STEAM GUARD" "$WORK/login.log"; then
             echo "::error::На аккаунте включён Steam Guard (код на почту или в приложении) — сервер не может его ввести. Отключите Steam Guard на этом отдельном аккаунте: Steam → Настройки → Безопасность → Управление Steam Guard → «Отключить Steam Guard»."
             exit 1
@@ -198,6 +207,9 @@ jobs:
           REPO: ${{ github.workspace }}/assets
         run: |
           cd "$REPO"
+          # Сборка не дошла до копирования скриптов (например, Steam не
+          # отдал архив) — считать нечего.
+          [ -f build-seed.sh ] || { echo "Скриптов нет — шаг пропущен."; exit 0; }
           bash build-seed.sh
           if [ -n "$(git status --porcelain models)" ]; then
             git add models
