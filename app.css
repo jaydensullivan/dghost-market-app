@@ -4155,3 +4155,15 @@ object-fit:cover;
 .report-period{ margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.06); }
 .report-period input[type="date"]{ color-scheme:dark; min-height:42px; }
 .report-presets{ display:flex; gap:6px; flex-wrap:wrap; margin:2px 0 10px; }
+
+/* Подсказка про Steam Trade Protection в инвентаре. */
+.inv-protect-hint{
+margin:0 0 10px;
+padding:10px 12px;
+border:1px solid var(--border, rgba(255,255,255,.08));
+border-radius:12px;
+background:rgba(255,255,255,.03);
+}
+.inv-protect-hint summary{ cursor:pointer; font-size:13px; color:var(--silver); }
+.inv-protect-hint summary::before{ content:"ℹ️ "; }
+.inv-protect-hint p{ margin:8px 0 0; font-size:12px; line-height:1.5; color:var(--muted); }
