@@ -1638,10 +1638,12 @@ const shareOverlay = document.getElementById('shareOverlay');
 const shareStatus = document.getElementById('shareStatus');
 let shareSkin = null;
 let shareBusy = false;
+// Готовое сообщение для окна выбора чата: { preparedId, name }.
+let shareReady = null;
 
 function setShareBusy(busy){
 shareBusy = busy;
-['shareLinkBtn', 'sharePhotoBtn', 'shareGifBtn'].forEach(id => {
+['shareLinkBtn', 'sharePhotoBtn', 'shareGifBtn', 'shareSendBtn'].forEach(id => {
 document.getElementById(id).disabled = busy;
 });
 }
@@ -1656,6 +1658,8 @@ const has3d = typeof canShare3DLot === 'function' && canShare3DLot(shareSkin);
 document.getElementById('sharePhotoBtn').style.display = has3d ? '' : 'none';
 document.getElementById('shareGifBtn').style.display = has3d ? '' : 'none';
 shareStatus.textContent = '';
+shareReady = null;
+document.getElementById('shareSendBtn').style.display = 'none';
 setShareBusy(false);
 shareOverlay.classList.add('show');
 });
@@ -1669,18 +1673,65 @@ shareOverlay.addEventListener('click', (e) => {
 if (e.target === shareOverlay) closeShareSheet();
 });
 
+function shareErrorText(err){
+const dict = I18N[currentLang] || I18N.ru;
+console.warn('Поделиться:', err);
+return String(err && err.message || '') === 'too_often' ? dict.share_too_often : dict.share_failed;
+}
+
+// Окно выбора чата не открылось — шлём в личку, оттуда перешлют.
+function shareViaDm(){
+const dict = I18N[currentLang] || I18N.ru;
+if (!shareReady) return;
+setShareBusy(true);
+sendShareToDm(shareSkin, shareReady.name)
+.then(() => { shareStatus.textContent = dict.share_sent_dm; })
+.catch(err => { shareStatus.textContent = shareErrorText(err); })
+.finally(() => setShareBusy(false));
+}
+
+if (tg && typeof tg.onEvent === 'function'){
+tg.onEvent('shareMessageFailed', () => {
+if (shareOverlay.classList.contains('show')) shareViaDm();
+});
+}
+
+// Рисуем картинку/GIF и готовим сообщение. Окно выбора чата
+// открываем отдельным нажатием: после долгого рендера телефон может
+// не считать вызов действием пользователя и молча его проигнорировать.
 function shareMedia(kind){
 if (!shareSkin || shareBusy) return;
 const dict = I18N[currentLang] || I18N.ru;
+const sendBtn = document.getElementById('shareSendBtn');
+sendBtn.style.display = 'none';
+shareReady = null;
 setShareBusy(true);
-share3DLot(shareSkin, text => { shareStatus.textContent = text; }, kind)
-.catch(err => {
-console.warn('Поделиться:', err);
-const code = String(err && err.message || '');
-shareStatus.textContent = code === 'too_often' ? dict.share_too_often : dict.share_failed;
+prepareShare3DLot(shareSkin, text => { shareStatus.textContent = text; }, kind)
+.then(ready => {
+shareReady = ready;
+if (ready.preparedId && canShareMessage()){
+shareStatus.textContent = dict.share_ready;
+sendBtn.style.display = '';
+return null;
+}
+return sendShareToDm(shareSkin, ready.name)
+.then(() => { shareStatus.textContent = dict.share_sent_dm; });
 })
+.catch(err => { shareStatus.textContent = shareErrorText(err); })
 .finally(() => setShareBusy(false));
 }
+
+document.getElementById('shareSendBtn').addEventListener('click', () => {
+if (!shareReady || !shareReady.preparedId || shareBusy) return;
+const dict = I18N[currentLang] || I18N.ru;
+try {
+tg.shareMessage(shareReady.preparedId, (sent) => {
+if (sent) shareStatus.textContent = dict.share_gif_sent;
+});
+} catch (err) {
+shareViaDm();
+}
+});
 document.getElementById('sharePhotoBtn').addEventListener('click', () => shareMedia('photo'));
 document.getElementById('shareGifBtn').addEventListener('click', () => shareMedia('gif'));
 

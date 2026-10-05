@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 33;
+const APP3D_VERSION = 34;
 
 let threeLoading = null;
 
@@ -1494,11 +1494,11 @@ function canShare3DLot(skin){
 return !!(skin && buy3dSkin === skin && buy3dEntry && tg && tg.initData);
 }
 
-// kind: 'photo' — картинка, 'gif' — анимация. Рисуем лот, загружаем
-// боту, и бот присылает его в личку с кнопкой «Открыть лот» — оттуда
-// пересылают друзьям. Окно shareMessage на телефонах молча не
-// открывалось, а пересылка из лички работает везде.
-async function share3DLot(skin, onStatus, kind){
+// kind: 'photo' — картинка, 'gif' — анимация. Рисуем лот и загружаем
+// боту; бот кладёт файл в Telegram и готовит сообщение для окна выбора
+// чата. Возвращает { preparedId, name }: preparedId — для
+// tg.shareMessage (может не быть), name — для отправки в личку.
+async function prepareShare3DLot(skin, onStatus, kind){
 if (!canShare3DLot(skin)) throw new Error('no_3d');
 const still = kind === 'photo';
 const dict = I18N[currentLang] || I18N.ru;
@@ -1519,15 +1519,23 @@ body: JSON.stringify(payload),
 });
 const data = await response.json().catch(() => ({}));
 if (!response.ok || !data.gif_url) throw new Error(data.error || ('HTTP ' + response.status));
+return { preparedId: data.prepared_id || null, name: String(data.gif_url).split('/').pop() };
+}
 
-const name = String(data.gif_url).split('/').pop();
+// Окно Telegram «выбрать, кому отправить» (Bot API 8.0+).
+function canShareMessage(){
+return !!(tg && typeof tg.shareMessage === 'function'
+&& (typeof tg.isVersionAtLeast !== 'function' || tg.isVersionAtLeast('8.0')));
+}
+
+// Запасной путь: бот присылает картинку/GIF в личку, оттуда пересылают.
+async function sendShareToDm(skin, name){
 const sent = await fetch(API_BASE + '/api/share/send', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({ init_data: tg.initData, skin_id: skin.id, name }),
 });
-const sentData = await sent.json().catch(() => ({}));
-if (!sent.ok) throw new Error(sentData.error || ('HTTP ' + sent.status));
-say(dict.share_sent_dm);
+const data = await sent.json().catch(() => ({}));
+if (!sent.ok) throw new Error(data.error || ('HTTP ' + sent.status));
 return true;
 }
