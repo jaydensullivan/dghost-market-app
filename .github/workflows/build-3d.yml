@@ -217,6 +217,23 @@ jobs:
             git push -q || { git pull -q --rebase && git push -q; }
           fi
 
+      # Те же рецепты — текстом в ветку 3d-assets (папка recipes/, в
+      # Cloudflare не выкладывается): артефакты GitHub лежат на хосте,
+      # закрытом для облачного окружения, где их разбирают.
+      - name: Рецепты раскрасок (в ветку)
+        if: always()
+        run: |
+          [ -d "$WORK/export-recipes" ] || { echo "Рецептов нет — шаг пропущен."; exit 0; }
+          cd "$GITHUB_WORKSPACE/assets"
+          mkdir -p recipes
+          cp -r "$WORK/export-recipes/." recipes/
+          if [ -n "$(git status --porcelain recipes)" ]; then
+            git add recipes
+            git commit -q -m "3D: рецепты раскрасок (текст)"
+            git push -q || { git pull -q --rebase && git push -q; }
+          fi
+          du -sh recipes
+
       # Все рецепты раскрасок (vcompmat в текстовом виде) и шаблоны
       # стилей — архивом к запуску: по ним разбираем, как игра собирает
       # раскраски нового формата (Printstream и др.), не гадая по логу.
