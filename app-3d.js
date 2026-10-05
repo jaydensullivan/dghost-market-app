@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 34;
+const APP3D_VERSION = 35;
 
 let threeLoading = null;
 
@@ -700,7 +700,10 @@ const hardening = skin.ramp ? (skin.params.case_hardening || {}) : null;
 const uniforms = {
 uPattern: { value: pattern },
 uRamp: { value: skin.ramp || pattern },
-uHasRamp: { value: hardening ? 1 : 0 },
+// Палитру закалки пока не применяем: у Zeno она (красный→синий)
+// красила весь ствол в красный — как именно игра её смешивает,
+// надо сверить с картинкой Steam.
+uHasRamp: { value: 0 },
 uRampInfluence: { value: hardening ? Number(hardening.pattern_influence ?? 1) : 1 },
 uRampOffset: { value: hardening ? Number(hardening.ramp_offset) || 0 : 0 },
 // 1 — несколько цветов по зонам ствола, 2 — один цвет (анодирование:
@@ -892,7 +895,10 @@ vec3 pattern = patternTex.rgb;
 // Закалка: альфа узора выбирает цвет палитры, альбедо его оттеняет.
 if (uHasRamp == 1){
 float rampU = fract(patternTex.a * uRampInfluence + uRampOffset);
-pattern *= texture2D(uRamp, vec2(clamp(rampU, 0.002, 0.998), 0.5)).rgb;
+// По диагонали: палитра бывает и горизонтальной, и вертикальной
+// (у Zeno — квадрат 256×256 с градиентом сверху вниз).
+float rampT = clamp(rampU, 0.002, 0.998);
+pattern *= texture2D(uRamp, vec2(rampT, rampT)).rgb;
 }
 if (uUseColors == 1){
 // Первый цвет — основа, остальные ложатся по каналам маски.
