@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 27;
+const APP3D_VERSION = 28;
 
 let threeLoading = null;
 
@@ -629,9 +629,15 @@ pattern.needsUpdate = true;
 }
 
 const placement = seedPlacement(skin.params, seed);
+// Закалка (gsch_…): палитра цветов, место в ней выбирает альфа узора.
+const hardening = skin.ramp ? (skin.params.case_hardening || {}) : null;
 
 const uniforms = {
 uPattern: { value: pattern },
+uRamp: { value: skin.ramp || pattern },
+uHasRamp: { value: hardening ? 1 : 0 },
+uRampInfluence: { value: hardening ? Number(hardening.pattern_influence ?? 1) : 1 },
+uRampOffset: { value: hardening ? Number(hardening.ramp_offset) || 0 : 0 },
 // 1 — несколько цветов по зонам ствола, 2 — один цвет (анодирование:
 // остальные цвета в материале нулевые) только на окрашиваемых деталях.
 uSolid: { value: !skin.solid ? 0 : (skinIsSingleColor(skin.params) ? 2 : 1) },
@@ -748,6 +754,10 @@ vProjUv = vec2(dot(rootPos, uProjU), dot(rootPos, uProjV)) / uProjLen;`);
 shader.fragmentShader = shader.fragmentShader
 .replace('#include <common>', `#include <common>
 uniform sampler2D uPattern;
+uniform sampler2D uRamp;
+uniform int uHasRamp;
+uniform float uRampInfluence;
+uniform float uRampOffset;
 uniform sampler2D uWearMask;
 uniform sampler2D uGrunge;
 uniform sampler2D uSkinMask;
@@ -799,7 +809,13 @@ diffuseColor.rgb = masks.rgb;
 float rc = cos(uPatternRotation), rs = sin(uPatternRotation);
 vec2 puv = (uProjected == 1 ? vProjUv : vSkinUv) - 0.5;
 puv = vec2(rc * puv.x - rs * puv.y, rs * puv.x + rc * puv.y) + 0.5;
-vec3 pattern = texture2D(uPattern, puv * uPatternScale + uPatternOffset).rgb;
+vec4 patternTex = texture2D(uPattern, puv * uPatternScale + uPatternOffset);
+vec3 pattern = patternTex.rgb;
+// Закалка: альфа узора выбирает цвет палитры, альбедо его оттеняет.
+if (uHasRamp == 1){
+float rampU = fract(patternTex.a * uRampInfluence + uRampOffset);
+pattern *= texture2D(uRamp, vec2(clamp(rampU, 0.002, 0.998), 0.5)).rgb;
+}
 if (uUseColors == 1){
 // Первый цвет — основа, остальные ложатся по каналам маски.
 // У однотонных раскрасок маской служат зоны покраски самого ствола.
@@ -929,6 +945,7 @@ rough: pickLayer(textures, SKIN_LAYER_ALIASES.rough),
 mask: pickLayer(textures, SKIN_LAYER_ALIASES.mask),
 normal: pickLayer(textures, SKIN_LAYER_ALIASES.normal),
 ao: pickLayer(textures, SKIN_LAYER_ALIASES.ao),
+ramp: textures.ramp || null,
 };
 
 const names = Object.keys(wanted);
@@ -936,7 +953,7 @@ const names = Object.keys(wanted);
 return Promise.all(names.map(name => {
 const file = wanted[name];
 if (!file) return Promise.resolve(null);
-const isColor = SKIN_COLOR_LAYERS.indexOf(name) !== -1;
+const isColor = SKIN_COLOR_LAYERS.indexOf(name) !== -1 || name === 'ramp';
 return loadSkinTexture(THREE, resolveSkinPath(base, file), isColor);
 })).then(loaded => {
 const pack = { params: meta.shader || {}, format: meta.format || null };

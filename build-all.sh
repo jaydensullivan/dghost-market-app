@@ -394,6 +394,36 @@ build_skin() {
     skin_ready "$kit"
 }
 
+# Раскраски нового формата, собранные до prep_version 2: WebP терял
+# цвет там, где у альбедо нулевая альфа (AWP Printstream вышел
+# полосатым), а у закалки (gsch_…) не было палитры. Пересобираем только
+# те, у кого альфа в узоре есть, остальным просто ставим версию.
+if [ "$MODE" != "status" ] && [ -d "$REPO/models/skins" ]; then
+python3 - "$REPO/models/skins" <<'PY'
+import json, os, sys
+from PIL import Image
+root = sys.argv[1]
+redo = stamped = 0
+for finish in sorted(os.listdir(root)):
+    pfile = os.path.join(root, finish, 'params.json')
+    pattern = os.path.join(root, finish, 'pattern.webp')
+    if not os.path.isfile(pfile) or not os.path.isfile(pattern):
+        continue
+    meta = json.load(open(pfile, encoding='utf-8'))
+    if meta.get('format') != 'vcompmat' or meta.get('prep_version', 1) >= 2:
+        continue
+    if 'A' in Image.open(pattern).getbands():
+        os.remove(pattern)
+        redo += 1
+    else:
+        meta['prep_version'] = 2
+        with open(pfile, 'w', encoding='utf-8') as f:
+            json.dump(meta, f, ensure_ascii=False, indent=2)
+        stamped += 1
+print(f'Раскраски нового формата: пересоберу {redo}, без изменений {stamped}')
+PY
+fi
+
 START=$(date +%s)
 NEW_SKINS=0; NEW_MODELS=0; FAILED_NOW=0; SKIPPED_WEAPONS=0
 STOPPED_FOR_SIZE=0
