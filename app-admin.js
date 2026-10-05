@@ -93,7 +93,7 @@ picker.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[c
 return;
 }
 picker.innerHTML = adminSetSkinsPool.map(s => {
-const photo = s.photo_url ? `<img src="${s.photo_url}" alt="" onerror="this.style.display='none'">` : '';
+const photo = s.photo_url ? `<img src="${escapeHtml(s.photo_url)}" alt="" onerror="this.style.display='none'">` : '';
 const title = (s.stattrak ? 'StatTrak™ ' : '') + escapeHtml(s.title);
 return `<div class="admin-skin-picker-item" data-skin-id="${s.id}">
 ${photo}
@@ -303,7 +303,7 @@ return;
 }
 picker.innerHTML = adminAuctionSkins.map(s => {
 const photo = s.photo_url
-? `<img src="${s.photo_url}" alt="" onerror="this.style.display='none'">`
+? `<img src="${escapeHtml(s.photo_url)}" alt="" onerror="this.style.display='none'">`
 : '';
 const title = (s.stattrak ? 'StatTrak™ ' : '') + escapeHtml(s.title);
 return `<div class="admin-skin-picker-item" data-skin-id="${s.id}">
@@ -332,7 +332,7 @@ const skin = adminAuctionSkins.find(s => s.id === adminSelectedSkinId);
 const box = document.getElementById('adminSelectedSkin');
 if (skin){
 const photo = skin.photo_url
-? `<img src="${skin.photo_url}" alt="" onerror="this.style.display='none'">`
+? `<img src="${escapeHtml(skin.photo_url)}" alt="" onerror="this.style.display='none'">`
 : '';
 const title = (skin.stattrak ? 'StatTrak™ ' : '') + escapeHtml(skin.title);
 box.innerHTML = `${photo}<div><div class="admin-skin-picker-name">${title}</div><div class="admin-skin-picker-price">${formatCoins(skin.price)}</div></div>`;
@@ -1533,8 +1533,8 @@ list.innerHTML = pending.length ? pending.map(k => `
 </dl>
 ${k.checks ? `<div class="kyc-checks">${escapeHtml(k.checks)}</div>` : ''}
 ${k.has_photos ? `<div class="kyc-shots">
-<figure><img src="${kycPhotoUrl(k.id, 'doc')}" data-kyc-zoom alt=""><figcaption>${dict.kyc_photo_doc}</figcaption></figure>
-<figure><img src="${kycPhotoUrl(k.id, 'selfie')}" data-kyc-zoom alt=""><figcaption>${dict.kyc_photo_selfie}</figcaption></figure>
+<figure><img src="${escapeHtml(kycPhotoUrl(k.id, 'doc'))}" data-kyc-zoom alt=""><figcaption>${dict.kyc_photo_doc}</figcaption></figure>
+<figure><img src="${escapeHtml(kycPhotoUrl(k.id, 'selfie'))}" data-kyc-zoom alt=""><figcaption>${dict.kyc_photo_selfie}</figcaption></figure>
 </div>` : `<div class="deal-hint">${dict.admin_kyc_no_photos}</div>`}
 <div class="deal-actions">
 <button class="deal-action" data-kyc-decide="approve" data-kyc-id="${k.id}" type="button">${dict.admin_btn_approve}</button>

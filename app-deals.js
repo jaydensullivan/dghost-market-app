@@ -139,7 +139,7 @@ function dealCardHtml(deal){
 const dict = I18N[currentLang] || I18N.ru;
 
 const photo = deal.photo_url
-? `<img class="deal-photo" src="${deal.photo_url}" alt="">`
+? `<img class="deal-photo" src="${escapeHtml(deal.photo_url)}" alt="">`
 : `<div class="deal-photo" style="display:flex;align-items:center;justify-content:center;">${TARGET_ICON}</div>`;
 
 let statusHtml = '';

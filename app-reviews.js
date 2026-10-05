@@ -32,7 +32,7 @@ const lots = lastSkins.filter(s => s.seller_id === p.seller_id).slice(0, 10);
 const lotsHtml = lots.length ? `<div class="similar-title" style="margin-top:16px;">${dict.sp_lots}</div>
 <div class="similar-row">${lots.map(s => `
 <button type="button" class="similar-card" data-similar-id="${s.id}">
-<div class="similar-photo">${s.photo_url ? `<img src="${s.photo_url}" alt="" loading="lazy">` : ''}</div>
+<div class="similar-photo">${s.photo_url ? `<img src="${escapeHtml(s.photo_url)}" alt="" loading="lazy">` : ''}</div>
 <div class="similar-name">${escapeHtml(s.title || '')}</div>
 <div class="similar-price">${formatCoins(s.price)}</div>
 </button>`).join('')}</div>` : '';

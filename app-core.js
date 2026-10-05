@@ -136,3 +136,9 @@ body: JSON.stringify(Object.assign({ init_data: tg.initData }, dev)),
 }).catch(() => {});
 });
 
+// Общая для всех файлов (app-core грузится первым). Экранирует и для текста, и для атрибутов: кавычки тоже — иначе
+// значение в src="…"/title="…" могло выйти из атрибута (XSS).
+const HTML_ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+function escapeHtml(str){
+return (str == null ? '' : String(str)).replace(/[&<>"']/g, ch => HTML_ESCAPES[ch]);
+}

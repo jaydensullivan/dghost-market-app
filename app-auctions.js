@@ -25,7 +25,7 @@ const dict = I18N[currentLang] || I18N.ru;
 const wearMap = currentLang === 'uz' ? WEAR_LABEL_FULL_UZ : (currentLang === 'en' ? WEAR_LABEL_FULL_EN : WEAR_LABEL_FULL);
 const wearLabel = a.wear ? (wearMap[a.wear] || a.wear) : null;
 const floatStr = (a.float_value !== null && a.float_value !== undefined) ? formatFloat(a.float_value) : null;
-const photo = a.photo_url ? `<img src="${a.photo_url}" class="auction-card-photo" alt="" onerror="this.style.display='none'">` : '';
+const photo = a.photo_url ? `<img src="${escapeHtml(a.photo_url)}" class="auction-card-photo" alt="" onerror="this.style.display='none'">` : '';
 const chips = [
 wearLabel ? `<span>${escapeHtml(wearLabel)}</span>` : '',
 floatStr ? `<span>Float ${floatStr}</span>` : '',
