@@ -190,14 +190,24 @@ if [ "$MODE" != "status" ]; then
     fi
 fi
 
+# В items_game.txt CS2 нет списка «нож — его раскраски» (раньше их
+# находили по иконкам econ/default_generated, теперь иконок там нет).
+# Берём его из открытой базы скинов (ByMykel/CSGO-API): weapon.id и
+# pattern.id — те же внутренние имена, что в игре.
+SKINS_API_URL="${SKINS_API_URL:-https://raw.githubusercontent.com/ByMykel/CSGO-API/main/public/api/en/skins.json}"
+if [ "$INCLUDE_KNIVES" = "1" ] && [ ! -s "$WORK/skins-api.json" ]; then
+    curl -fsSL --max-time 120 "$SKINS_API_URL" -o "$WORK/skins-api.json" 2>/dev/null \
+        || echo "   ⚠️ база скинов не скачалась — ножей в плане не будет"
+fi
+
 # ============================================================
 # 1. ПЛАН: КАКИЕ РАСКРАСКИ БЫВАЮТ У КАЖДОГО СТВОЛА
 # ============================================================
 
-python3 - "$WORK/items_game.txt" "$PLAN" "$INCLUDE_KNIVES" "$PRIORITY" "$ONLY" <<'PY'
-import re, sys
+python3 - "$WORK/items_game.txt" "$PLAN" "$INCLUDE_KNIVES" "$PRIORITY" "$ONLY" "$WORK/skins-api.json" <<'PY'
+import json, os, re, sys
 
-items_path, plan_path, include_knives, priority, only = sys.argv[1:6]
+items_path, plan_path, include_knives, priority, only, api_path = sys.argv[1:7]
 text = open(items_path, encoding="utf-8", errors="ignore").read()
 
 # Связки «раскраска — ствол» из списков выпадения: "[cu_ak47_cobra]weapon_ak47".
@@ -218,6 +228,17 @@ for rest in re.findall(r'default_generated/weapon_([a-z0-9_]+?)_(?:light|medium|
         if rest.startswith(w + "_") and rest[len(w) + 1:] in known_kits:
             pairs.add((rest[len(w) + 1:], w))
             break
+
+# Ножи — из базы скинов (см. выше).
+if include_knives == "1" and os.path.isfile(api_path):
+    try:
+        for skin in json.load(open(api_path, encoding="utf-8")):
+            wid = ((skin.get("weapon") or {}).get("id") or "").lower()
+            kit = ((skin.get("pattern") or {}).get("id") or "").lower()
+            if kit and (wid.startswith("weapon_knife") or wid == "weapon_bayonet"):
+                pairs.add((kit, wid[len("weapon_"):]))
+    except Exception as e:
+        print("⚠️ база скинов не прочиталась:", e)
 
 by_weapon = {}
 for kit, weapon in pairs:

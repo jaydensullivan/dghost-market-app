@@ -99,16 +99,37 @@ jobs:
           key: steam-login-${{ github.run_id }}
           restore-keys: steam-login-
 
+      # Инструменты качаются с GitHub. Чтобы подменённый релиз не попал
+      # в сборку, их можно закрепить: вписать в env ниже ссылку и
+      # sha256 — тогда архив сверяется с хешем. Пока поля пустые, берётся
+      # последний релиз, а его ссылка и sha256 печатаются в журнал (их и
+      # переносить сюда).
       - name: Инструменты (DepotDownloader, Source2Viewer)
+        env:
+          DD_URL: ""
+          DD_SHA256: ""
+          S2V_URL: ""
+          S2V_SHA256: ""
         run: |
           mkdir -p "$WORK/tools" "$WORK/game"
           cd "$WORK/tools"
-          dd=$(curl -s https://api.github.com/repos/SteamRE/DepotDownloader/releases/latest \
+          fetch() {  # имя, ссылка, sha256 (может быть пустым)
+            curl -fsSL "$2" -o "$1"
+            sum=$(sha256sum "$1" | cut -d' ' -f1)
+            if [ -n "$3" ]; then
+              [ "$sum" = "$3" ] || { echo "::error::$1: sha256 не совпал ($sum), ожидался $3 — архив подменён или обновлён"; exit 1; }
+            else
+              echo "::notice::$1 не закреплён: $2 sha256=$sum"
+            fi
+          }
+          dd="$DD_URL"
+          [ -z "$dd" ] && dd=$(curl -s https://api.github.com/repos/SteamRE/DepotDownloader/releases/latest \
                | grep -o 'https://[^"]*DepotDownloader-framework.zip' | head -1)
-          curl -fsSL "${dd:-https://github.com/SteamRE/DepotDownloader/releases/download/DepotDownloader_3.4.0/DepotDownloader-framework.zip}" -o dd.zip
-          s2v=$(curl -s https://api.github.com/repos/ValveResourceFormat/ValveResourceFormat/releases/latest \
+          fetch dd.zip "${dd:-https://github.com/SteamRE/DepotDownloader/releases/download/DepotDownloader_3.4.0/DepotDownloader-framework.zip}" "$DD_SHA256"
+          s2v="$S2V_URL"
+          [ -z "$s2v" ] && s2v=$(curl -s https://api.github.com/repos/ValveResourceFormat/ValveResourceFormat/releases/latest \
                | grep -o 'https://[^"]*cli-linux-x64.zip' | head -1)
-          curl -fsSL "${s2v:-https://github.com/ValveResourceFormat/ValveResourceFormat/releases/download/20.0/cli-linux-x64.zip}" -o s2v.zip
+          fetch s2v.zip "${s2v:-https://github.com/ValveResourceFormat/ValveResourceFormat/releases/download/20.0/cli-linux-x64.zip}" "$S2V_SHA256"
           unzip -oq dd.zip && unzip -oq s2v.zip && rm dd.zip s2v.zip
           chmod +x Source2Viewer-CLI
           ls -la
@@ -155,6 +176,8 @@ jobs:
           REPO: ${{ github.workspace }}/assets
           ONLY: ${{ inputs.only }}
           KEEP_CHUNKS: "1"
+          # Ножи — после всех стволов (build-all.sh ставит их в конец).
+          INCLUDE_KNIVES: "1"
           # У Cloudflare Pages нет лимита по объёму (есть 20 000 файлов
           # и 25 МБ на файл) — потолок только чтобы ветка не раздувалась.
           MAX_MODELS_MB: "6000"
