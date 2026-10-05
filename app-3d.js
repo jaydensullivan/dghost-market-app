@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 22;
+const APP3D_VERSION = 23;
 
 let threeLoading = null;
 
@@ -456,7 +456,7 @@ undefined,
 // Имена файлов, как и у скинов, берутся из params.json ствола;
 // без него — прежние color/masks/rough/ao.webp.
 function loadWeaponPack(THREE, dir){
-const base = dir.replace(/\/+$/, '') + '/';
+const base = modelsUrl(dir).replace(/\/+$/, '') + '/';
 return fetch(base + 'params.json')
 .then(r => r.ok ? r.json() : {})
 .catch(() => ({}))
@@ -783,12 +783,13 @@ return null;
 // "models/...", "/..." или http(s) — берём как есть (так указываются
 // общие ресурсы из models/shared/); "../" работает относительно скина.
 function resolveSkinPath(base, file){
-if (/^(https?:)?\/\//.test(file) || file.charAt(0) === '/' || file.indexOf('models/') === 0) return file;
+if (file.indexOf('models/') === 0) return modelsUrl(file);
+if (/^(https?:)?\/\//.test(file) || file.charAt(0) === '/') return file;
 return base + file;
 }
 
 function loadSkinPack(THREE, dir){
-const base = dir.replace(/\/+$/, '') + '/';
+const base = modelsUrl(dir).replace(/\/+$/, '') + '/';
 
 return fetch(base + 'params.json')
 .then(r => {
@@ -901,7 +902,9 @@ viewer3dOverlay.classList.add('show');
 // файл битый. GLTFLoader на все эти случаи даёт одну ошибку.
 loadGltfLoader()
 .catch(() => { throw new Error(dict.v3_err_lib); })
-.then(() => fetch(modelUrl, { cache: 'no-store' }).catch(() => { throw new Error(dict.v3_err_net); }))
+// Индекс заодно выбирает, откуда брать файлы (Cloudflare или сайт).
+.then(() => loadModelIndex())
+.then(() => fetch(modelsUrl(modelUrl), { cache: 'no-store' }).catch(() => { throw new Error(dict.v3_err_net); }))
 .then(async response => {
 if (response.status === 404) throw new Error(dict.v3_err_404);
 if (!response.ok) throw new Error(dict.v3_err_net + ' (HTTP ' + response.status + ')');
@@ -1064,10 +1067,30 @@ open3DViewer(url, null, skinDir || null, wear, weaponDir || null, maskChannel);
 // только у тех лотов, для которых всё это лежит в репозитории.
 let modelIndexLoading = null;
 
+// 3D-файлы раздаются с Cloudflare Pages (ветка 3d-assets, workflow
+// deploy-3d.yml): там нет лимита GitHub Pages в 1 ГБ. Пока адрес
+// пустой или Cloudflare не ответил — берём файлы с этого же сайта.
+const MODELS_CDN = '';
+let modelsBase = '';
+
+// «models/…» → полный адрес на выбранном хранилище; остальное как есть.
+function modelsUrl(path){
+path = String(path || '');
+return path.indexOf('models/') === 0 ? modelsBase + path : path;
+}
+
+function fetchModelIndex(base){
+return fetch(base + 'models/index.json', { cache: 'no-cache' })
+.then(r => {
+if (!r.ok) throw new Error('index ' + r.status);
+return r.json();
+})
+.then(index => { modelsBase = base; return index; });
+}
+
 function loadModelIndex(){
 if (!modelIndexLoading){
-modelIndexLoading = fetch('models/index.json', { cache: 'no-cache' })
-.then(r => r.ok ? r.json() : {})
+modelIndexLoading = (MODELS_CDN ? fetchModelIndex(MODELS_CDN).catch(() => fetchModelIndex('')) : fetchModelIndex(''))
 .catch(() => ({}))
 .then(index => {
 // Ключи без учёта регистра — названия в базе и в игре иногда
@@ -1157,7 +1180,8 @@ async function render3DGif(entry, wear, title, onProgress){
 const { width: W, height: H, frames, delay, colors } = SHARE_GIF;
 const [, gifenc] = await Promise.all([loadGltfLoader(), loadGifEncoder()]);
 
-const response = await fetch(entry.model);
+await loadModelIndex();
+const response = await fetch(modelsUrl(entry.model));
 if (!response.ok) throw new Error('model ' + response.status);
 const buffer = await response.arrayBuffer();
 const gltf = await parseGlb(buffer).catch(() => parseGlb(stripTexturesFromGlb(buffer)));

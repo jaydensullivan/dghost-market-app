@@ -5,6 +5,11 @@
 # остановился прошлый: build-all.sh пропускает готовое и коммитит
 # после каждой раскраски.
 #
+# Готовые файлы живут не в main, а в отдельной ветке 3d-assets: оттуда
+# их выкладывает в Cloudflare Pages workflow deploy-3d.yml (он
+# запускается сам после каждой сборки). Так сайт на GitHub Pages не
+# упирается в лимит 1 ГБ.
+#
 # Нужны секреты репозитория (Settings → Secrets and variables →
 # Actions): STEAM_USERNAME и STEAM_PASSWORD — ОТДЕЛЬНЫЙ аккаунт Steam
 # без мобильного Steam Guard, с бесплатной CS2 в библиотеке. Сервер
@@ -28,7 +33,6 @@ concurrency:
 
 permissions:
   contents: write
-  pages: write
 
 env:
   WORK: /tmp/cs2-assets
@@ -64,6 +68,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          fetch-depth: 1
+
+      # Ветка с готовыми моделями и раскрасками — сюда пишет сборка.
+      - uses: actions/checkout@v4
+        with:
+          ref: 3d-assets
+          path: assets
           fetch-depth: 1
 
       - uses: actions/setup-dotnet@v4
@@ -128,8 +139,12 @@ jobs:
           echo "Кусков архива: $(ls "$WORK"/game/game/csgo/pak01_*.vpk | wc -l), размер: $(du -sh "$WORK/game" | cut -f1)"
           df -h /tmp
 
+      # Скрипты берём из main, а работаем в папке ветки 3d-assets:
+      # build-all.sh коммитит только models/, скрипты в ветку не попадут.
       - name: Git
         run: |
+          cp "$GITHUB_WORKSPACE"/*.sh "$GITHUB_WORKSPACE/assets/"
+          cd "$GITHUB_WORKSPACE/assets"
           git config user.name "DGhost 3D bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
@@ -137,10 +152,14 @@ jobs:
       # закоммичено, следующий запуск продолжит.
       - name: Сборка
         env:
-          REPO: ${{ github.workspace }}
+          REPO: ${{ github.workspace }}/assets
           ONLY: ${{ inputs.only }}
           KEEP_CHUNKS: "1"
+          # У Cloudflare Pages нет лимита по объёму (есть 20 000 файлов
+          # и 25 МБ на файл) — потолок только чтобы ветка не раздувалась.
+          MAX_MODELS_MB: "6000"
         run: |
+          cd "$REPO"
           code=0
           timeout --signal=INT 320m bash build-all.sh || code=$?
           if [ "$code" = "124" ]; then
@@ -154,7 +173,7 @@ jobs:
       - name: Логи неудач
         if: always()
         run: |
-          cd "$GITHUB_WORKSPACE"
+          cd "$GITHUB_WORKSPACE/assets"
           shown=0
           # Сначала модели (их мало, и без модели не будет всего ствола), потом раскраски.
           for f in $(ls -t "$WORK"/build-*.log 2>/dev/null | grep -v '/build-skin-'; ls -t "$WORK"/build-skin-*.log 2>/dev/null); do
@@ -172,14 +191,3 @@ jobs:
             [ "$shown" -ge 25 ] && break
           done
           echo "Показано логов неудач: $shown"
-
-      # Пуши от GITHUB_TOKEN не запускают публикацию GitHub Pages сами —
-      # просим пересобрать сайт, чтобы новые модели стали видны в мини-аппе.
-      - name: Обновить GitHub Pages
-        if: always()
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          curl -s -o /dev/null -w "Pages build: %{http_code}\n" -X POST \
-            -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/${{ github.repository }}/pages/builds" || true
