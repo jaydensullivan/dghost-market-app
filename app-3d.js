@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 29;
+const APP3D_VERSION = 30;
 
 let threeLoading = null;
 
@@ -471,11 +471,50 @@ const names = ['color', 'masks', 'rough', 'ao'];
 return Promise.all(names.map(name =>
 loadSkinTexture(THREE, resolveSkinPath(base, textures[name]), name === 'color')
 )).then(loaded => {
-const pack = {};
+const pack = { name: weaponNameFromDir(dir) };
 names.forEach((name, i) => { pack[name] = loaded[i]; });
 return pack;
 });
 });
+}
+
+// Имя ствола из пути вида models/weapons/knife_butterfly.
+function weaponNameFromDir(dir){
+const parts = String(dir || '').replace(/\/+$/, '').split('/');
+return parts[parts.length - 1] || '';
+}
+
+// Масштаб узора у каждого ствола (items_game.txt → paint_data →
+// UVScale). Развёртка маленького Deagle и длинного AWP занимает одну и
+// ту же текстуру, и игра умножает pattern_scale на UVScale, чтобы узор
+// был одного размера на любом стволе. Без этого на пистолетах узор
+// выходил в 2–3 раза мельче (Meteorite превращался в светлую сетку).
+const WEAPON_UV_SCALE = {
+deagle: 0.3, elite: 0.282, fiveseven: 0.264, glock: 0.446, hkp2000: 0.288,
+p250: 0.371, cz75a: 0.4, tec9: 0.427, bizon: 0.596, mac10: 0.495,
+mp7: 0.446, mp5sd: 0.446, mp9: 0.485, p90: 0.537, ump45: 0.882,
+ak47: 0.549, aug: 0.763, famas: 0.66, galilar: 0.75, m4a1: 0.425,
+sg556: 0.809, awp: 1.029, g3sg1: 0.703, scar20: 0.84, ssg08: 1.084,
+mag7: 0.612, nova: 0.744, sawedoff: 0.445, xm1014: 0.54, m249: 1.151,
+negev: 0.74, m4a1_silencer: 0.9167, usp_silencer: 0.516, revolver: 0.5,
+bayonet: 0.505, knife_css: 0.36, knife_flip: 0.411, knife_gut: 0.733,
+knife_karambit: 0.438, knife_m9_bayonet: 0.506, knife_tactical: 0.506,
+knife_falchion: 0.36, knife_survival_bowie: 0.4617, knife_butterfly: 0.506,
+knife_push: 0.5836, knife_cord: 0.36, knife_canis: 0.36, knife_ursus: 0.36,
+knife_gypsy_jackknife: 0.36, knife_outdoor: 0.36, knife_stiletto: 0.36,
+knife_widowmaker: 0.36, knife_skeleton: 0.36, knife_kukri: 0.36,
+};
+
+// Узор-маска в развёртке (гидрография, анодирование мультицвет,
+// патина) масштабируется по стволу; кастомная раскраска нарисована
+// прямо по развёртке, спрей и Fade проецируются — им масштаб не нужен.
+function weaponPatternScale(params, weaponName){
+if ([1, 4, 7].indexOf(params.paint_style) === -1) return 1;
+return WEAPON_UV_SCALE[weaponName] || 1;
+}
+
+function isKnifeName(name){
+return name === 'bayonet' || name.indexOf('knife') === 0;
 }
 
 // Стили CS2 (F_PAINT_STYLE): 0 однотонный, 1 гидрография, 2 спрей,
@@ -629,7 +668,13 @@ const CHANNELS = { r: 0, g: 1, b: 2, none: 3, debug: 4 };
 // По умолчанию — без маски: у стилей вроде custom paint (Redline)
 // краска покрывает ствол целиком, а текстура masks в CS2 хранит не
 // зоны покраски, а свойства поверхности.
-const channel = CHANNELS[String(maskChannel || 'none').toLowerCase()] ?? 3;
+// У ножей R в маске ствола — клинок и прочие окрашиваемые детали,
+// рукоять (B/G) остаётся родной: у Butterfly — чёрная с красной
+// вставкой, как в игре, а не залитая узором целиком.
+const weaponName = weapon ? weapon.name || '' : '';
+let maskName = String(maskChannel || 'none').toLowerCase();
+if (maskName === 'none' && isKnifeName(weaponName) && weapon.masks) maskName = 'r';
+const channel = CHANNELS[maskName] ?? 3;
 
 // Однотонной раскраске узор не нужен, но сэмплер в шейдере должен
 // на что-то указывать — подставляем чёрный пиксель.
@@ -665,7 +710,7 @@ uBaseColor: { value: weapon ? weapon.color : null },
 uPaintMask: { value: weapon ? weapon.masks : null },
 uAo: { value: weapon ? weapon.ao : null },
 uWearAmount: { value: Math.max(0, Math.min(1, wear || 0)) },
-uPatternScale: { value: skin.params.pattern_scale || 1 },
+uPatternScale: { value: (skin.params.pattern_scale || 1) * weaponPatternScale(skin.params, weaponName) },
 // Поворот узора в params.json — в градусах.
 uPatternRotation: { value: placement.rotation * Math.PI / 180 },
 // Сдвиг узора по seed (в долях текстуры).
