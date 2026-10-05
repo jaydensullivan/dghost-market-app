@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 36;
+const APP3D_VERSION = 37;
 
 let threeLoading = null;
 
@@ -737,6 +737,11 @@ uGrungeScale: { value: skin.params.grunge_scale || 1 },
 uPaintMetalness: { value: paintMetalness(skin.params) },
 // Своя карта металличности краски (Zeno — серый металлик).
 uSkinMetal: { value: skin.metalness || pattern },
+// Зоны покраски раскраски (paint by number): R/G/B — где лежат цвета
+// 1–3 поверх узора. У MP7 Amberline так закрашены тёмным рукоять,
+// магазин и мелкие детали.
+uPbn: { value: skin.pbn || pattern },
+uHasPbn: { value: skin.pbn ? 1 : 0 },
 uHasSkinMetal: { value: skin.metalness ? 1 : 0 },
 uPaintRoughness: { value: ANODIZED.roughness },
 uHasPaintRoughness: { value: isAnodized(skin.params) ? 1 : 0 },
@@ -860,6 +865,8 @@ uniform float uGrungeScale;
 uniform float uPaintMetalness;
 uniform float uPaintRoughness;
 uniform sampler2D uSkinMetal;
+uniform sampler2D uPbn;
+uniform int uHasPbn;
 uniform int uHasSkinMetal;
 uniform int uHasPaintRoughness;
 uniform int uUseColors;
@@ -920,6 +927,12 @@ pattern = uColors[0];
 pattern = mix(pattern, uColors[1], m.r);
 pattern = mix(pattern, uColors[2], m.g);
 pattern = mix(pattern, uColors[3], m.b);
+if (uHasPbn == 1){
+vec3 zone = texture2D(uPbn, vSkinUv).rgb;
+pattern = mix(pattern, uColors[1], zone.r);
+pattern = mix(pattern, uColors[2], zone.g);
+pattern = mix(pattern, uColors[3], zone.b);
+}
 }
 pattern *= uColorBrightness;
 
@@ -1045,6 +1058,7 @@ normal: pickLayer(textures, SKIN_LAYER_ALIASES.normal),
 ao: pickLayer(textures, SKIN_LAYER_ALIASES.ao),
 ramp: textures.ramp || null,
 metalness: textures.metalness || null,
+pbn: textures.pbn || null,
 };
 
 const names = Object.keys(wanted);
@@ -1080,8 +1094,10 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.1;
 
 // Нейтральный белый свет — чтобы металл читался как металл, а не
-// как розовая пластмасса. Неон по брендбуку — лишь лёгкий оттенок:
-// ярче он красил белые скины (Printstream, Amberline) в розовый.
+// как розовая пластмасса. Боковые подсветки тоже нейтральные: даже
+// слабый фиолетовый и розовый «неон» на металлической краске (SSG 08
+// Zeno) давал яркие розовые блики, а на белых скинах — розовый оттенок.
+// Фирменный фиолетовый остаётся в фоне просмотрщика.
 scene.add(new THREE.AmbientLight(0xffffff, 0.55));
 
 const key = new THREE.DirectionalLight(0xffffff, 2.4);
@@ -1092,11 +1108,11 @@ const front = new THREE.DirectionalLight(0xffffff, 1.2);
 front.position.set(0, 1, 6);
 scene.add(front);
 
-const neonKey = new THREE.DirectionalLight(0xA855F7, 0.25);
+const neonKey = new THREE.DirectionalLight(0xCCD5FF, 0.25);
 neonKey.position.set(-3, 3, 2);
 scene.add(neonKey);
 
-const neonRim = new THREE.DirectionalLight(0xFF2BD6, 0.2);
+const neonRim = new THREE.DirectionalLight(0xCCD5FF, 0.2);
 neonRim.position.set(-4, -1, -3);
 scene.add(neonRim);
 
