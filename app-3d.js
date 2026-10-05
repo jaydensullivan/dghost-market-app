@@ -1068,8 +1068,9 @@ open3DViewer(url, null, skinDir || null, wear, weaponDir || null, maskChannel);
 let modelIndexLoading = null;
 
 // 3D-файлы раздаются с Cloudflare Pages (ветка 3d-assets, workflow
-// deploy-3d.yml): там нет лимита GitHub Pages в 1 ГБ. Пока адрес
-// пустой или Cloudflare не ответил — берём файлы с этого же сайта.
+// deploy-3d.yml): там нет лимита GitHub Pages в 1 ГБ. В main папки
+// models/ больше нет; запасной путь «с этого же сайта» оставлен для
+// локальной проверки (положить models/ рядом с index.html).
 const MODELS_CDN = 'https://dghost-3d.pages.dev/';
 let modelsBase = '';
 
