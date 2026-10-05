@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 32;
+const APP3D_VERSION = 33;
 
 let threeLoading = null;
 
@@ -505,11 +505,11 @@ knife_gypsy_jackknife: 0.36, knife_outdoor: 0.36, knife_stiletto: 0.36,
 knife_widowmaker: 0.36, knife_skeleton: 0.36, knife_kukri: 0.36,
 };
 
-// Узор-маска в развёртке (гидрография, анодирование мультицвет,
-// патина) масштабируется по стволу; кастомная раскраска нарисована
-// прямо по развёртке, спрей и Fade проецируются — им масштаб не нужен.
+// Узор-маска (гидрография, спрей, анодирование мультицвет и
+// аэрография, патина) масштабируется по стволу — и в развёртке, и в
+// проекции сбоку. Кастомная раскраска нарисована прямо по развёртке.
 function weaponPatternScale(params, weaponName){
-if ([1, 4, 7].indexOf(params.paint_style) === -1) return 1;
+if ([1, 2, 4, 5, 7].indexOf(params.paint_style) === -1) return 1;
 return WEAPON_UV_SCALE[weaponName] || 1;
 }
 
@@ -675,12 +675,14 @@ const CHANNELS = { r: 0, g: 1, b: 2, none: 3, debug: 4 };
 // По умолчанию — без маски: у стилей вроде custom paint (Redline)
 // краска покрывает ствол целиком, а текстура masks в CS2 хранит не
 // зоны покраски, а свойства поверхности.
-// У ножей R в маске ствола — клинок и прочие окрашиваемые детали,
-// рукоять (B/G) остаётся родной: у Butterfly — чёрная с красной
-// вставкой, как в игре, а не залитая узором целиком.
+// R в маске ствола — металлические детали. У ножей это клинок
+// (рукоять остаётся родной: Butterfly — чёрная с красной вставкой),
+// а анодирование (Fade, Doppler, Moonrise) в игре ложится только на
+// металл: у Glock Moonrise окрашен затвор, рамка остаётся серой.
 const weaponName = weapon ? weapon.name || '' : '';
 let maskName = String(maskChannel || 'none').toLowerCase();
-if (maskName === 'none' && isKnifeName(weaponName) && weapon.masks) maskName = 'r';
+if (maskName === 'none' && weapon && weapon.masks
+&& (isKnifeName(weaponName) || isAnodized(skin.params))) maskName = 'r';
 const channel = CHANNELS[maskName] ?? 3;
 
 // Однотонной раскраске узор не нужен, но сэмплер в шейдере должен
@@ -757,6 +759,11 @@ const axes = [0, 1, 2].sort((a, b) => boxSize.getComponent(b) - boxSize.getCompo
 const projU = new THREE.Vector3(); projU.setComponent(axes[0], 1);
 const projV = new THREE.Vector3(); projV.setComponent(axes[1], 1);
 const projLen = Math.max(boxSize.getComponent(axes[0]), 1e-6);
+// Проекция — от центра модели: середина текстуры приходится на
+// середину ствола, а масштаб узора (с UVScale ствола) растягивает её
+// вокруг этой точки. От угла габаритов узор съезжал: у Glock Moonrise
+// город оказывался на рамке, а не по нижнему краю затвора.
+const projCenter = box.getCenter(new THREE.Vector3());
 
 object.traverse(node => {
 if (!node.isMesh) return;
@@ -791,7 +798,7 @@ uProjected: { value: projected ? 1 : 0 },
 uToRoot: { value: toRoot },
 uProjU: { value: projU },
 uProjV: { value: projV },
-uProjMin: { value: box.min.clone() },
+uProjMin: { value: projCenter.clone() },
 uProjLen: { value: projLen },
 };
 
@@ -875,9 +882,12 @@ diffuseColor.rgb = masks.rgb;
 
 // Поворот узора — вокруг центра развёртки, как в игре.
 float rc = cos(uPatternRotation), rs = sin(uPatternRotation);
-vec2 puv = (uProjected == 1 ? vProjUv : vSkinUv) - 0.5;
-puv = vec2(rc * puv.x - rs * puv.y, rs * puv.x + rc * puv.y) + 0.5;
-vec4 patternTex = texture2D(uPattern, puv * uPatternScale + uPatternOffset);
+// Проекция (vProjUv) уже отсчитана от центра модели и масштабируется
+// вокруг него; развёртка — от угла, как раньше.
+vec2 puv = uProjected == 1 ? vProjUv : vSkinUv - 0.5;
+puv = vec2(rc * puv.x - rs * puv.y, rs * puv.x + rc * puv.y);
+vec2 patternUv = uProjected == 1 ? puv * uPatternScale + 0.5 : (puv + 0.5) * uPatternScale;
+vec4 patternTex = texture2D(uPattern, patternUv + uPatternOffset);
 vec3 pattern = patternTex.rgb;
 // Закалка: альфа узора выбирает цвет палитры, альбедо его оттеняет.
 if (uHasRamp == 1){
