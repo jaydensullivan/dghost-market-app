@@ -79,7 +79,7 @@ const sign = isPositive ? '+' : '';
 // День показан заголовком группы — в строке только время.
 const date = item.created_at ? new Date(item.created_at).toLocaleTimeString(currentLang === 'uz' ? 'uz-UZ' : (currentLang === 'en' ? 'en-US' : 'ru-RU'), { hour: '2-digit', minute: '2-digit' }) : '';
 const photo = item.photo_url
-? `<img class="history-row-photo" src="${item.photo_url}" alt="" onerror="this.style.display='none'">`
+? `<img class="history-row-photo" src="${escapeHtml(item.photo_url)}" alt="" onerror="this.style.display='none'">`
 : '';
 return `<div class="history-row">
 ${photo}

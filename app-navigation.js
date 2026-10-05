@@ -267,7 +267,7 @@ const headerAvatarBtn = document.getElementById('headerAvatarBtn');
 const headerMenu = document.getElementById('headerMenu');
 
 if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.photo_url){
-headerAvatarBtn.innerHTML = `<img src="${tg.initDataUnsafe.user.photo_url}" alt="" style="width:100%; height:100%; object-fit:cover;">`;
+headerAvatarBtn.innerHTML = `<img src="${escapeHtml(tg.initDataUnsafe.user.photo_url)}" alt="" style="width:100%; height:100%; object-fit:cover;">`;
 }
 
 headerAvatarBtn.addEventListener('click', (e) => {
@@ -348,6 +348,6 @@ document.getElementById('tabAuctionsBtn').addEventListener('click', () => goToSc
 // Аватар Telegram-пользователя в нижней навигации, если доступен
 if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.photo_url){
 document.getElementById('navAvatarIcon').innerHTML =
-`<img src="${tg.initDataUnsafe.user.photo_url}" alt="">`;
+`<img src="${escapeHtml(tg.initDataUnsafe.user.photo_url)}" alt="">`;
 }
 

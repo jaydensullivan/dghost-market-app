@@ -311,7 +311,7 @@ const profileHeld = document.getElementById('profileHeld');
 loadWishlist();
 
 if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.photo_url){
-profileAvatar.innerHTML = `<img src="${tg.initDataUnsafe.user.photo_url}" alt="">`;
+profileAvatar.innerHTML = `<img src="${escapeHtml(tg.initDataUnsafe.user.photo_url)}" alt="">`;
 }
 
 if (!tg || !tg.initData){

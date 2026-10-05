@@ -63,7 +63,7 @@ if (!deal || !tg || !tg.initData) return;
 const overlay = document.getElementById('tradeDetailsOverlay');
 document.getElementById('tradeDetailsCode').textContent = '…';
 document.getElementById('tradeDetailsItem').innerHTML = `
-${deal.photo_url ? `<img src="${deal.photo_url}" style="width:48px;height:48px;object-fit:contain;">` : ''}
+${deal.photo_url ? `<img src="${escapeHtml(deal.photo_url)}" style="width:48px;height:48px;object-fit:contain;">` : ''}
 <div>
 <div style="font-size:13px; color:var(--silver);">${escapeHtml(deal.title)}</div>
 <div style="font-size:12px; color:var(--muted);">${formatCoins(deal.price)}</div>
@@ -413,7 +413,7 @@ grid.innerHTML = `<div class="shop-hint">${dict.br_no_own_skins}</div>`;
 } else {
 grid.innerHTML = mySkins.map((s, i) => `
 <div class="inv-item" data-idx="${i}" style="display:inline-block; width:31%; margin:1%; vertical-align:top;">
-${s.photo_url ? `<img src="${s.photo_url}" alt="">` : ''}
+${s.photo_url ? `<img src="${escapeHtml(s.photo_url)}" alt="">` : ''}
 <div class="inv-item-name">${escapeHtml(s.title)}</div>
 <div style="font-size:11px; color:var(--red-glow);">${formatCoins(s.price)}</div>
 </div>
@@ -917,7 +917,7 @@ return `<div class="bld-item${slot === builderAltSlot ? ' active' : ''} ${RARITY
 <div class="bld-item-photo">
 <div class="inv-badges"><span class="inv-badge">${categoryIconSvg(BUILDER_SLOT_ICON[slot])}</span>${wear}</div>
 <button type="button" class="skin-fav${isFavSkin(item) ? ' on' : ''}" data-bld-fav="${slot}" aria-label="Следить">${HEART_SVG}</button>
-${item.photo_url ? `<img src="${item.photo_url}" alt="">` : ''}
+${item.photo_url ? `<img src="${escapeHtml(item.photo_url)}" alt="">` : ''}
 </div>
 <div class="bld-item-title">${escapeHtml((item.stattrak ? 'StatTrak™ ' : '') + String(item.title || '').replace(/^★\s*/, ''))}</div>
 ${hasFloat ? `<div class="bld-item-float">Float: ${formatFloat(item.float_value)}${item.pattern ? ` · #${escapeHtml(String(item.pattern))}` : ''}</div>` : ''}
@@ -940,7 +940,7 @@ document.getElementById('bldAlts').innerHTML = alts.slice(0, 4).map(a => {
 const diff = a.price - current.price;
 const name = String(a.title || '').split('|').slice(-1)[0].trim();
 return `<button type="button" class="bld-alt" data-bld-alt="${a.id}">
-${a.photo_url ? `<img src="${a.photo_url}" alt="">` : ''}
+${a.photo_url ? `<img src="${escapeHtml(a.photo_url)}" alt="">` : ''}
 <span class="bld-alt-name">${escapeHtml(name)}</span>
 <span class="bld-alt-diff ${diff > 0 ? 'up' : 'down'}">${diff > 0 ? '+' : '−'}${formatCoins(Math.abs(diff))}</span>
 </button>`;
@@ -1548,7 +1548,7 @@ const dict = I18N[currentLang] || I18N.ru;
 box.innerHTML = `<div class="similar-title">${dict.similar_title}</div>
 <div class="similar-row">${similar.map(s => `
 <button type="button" class="similar-card" data-similar-id="${s.id}">
-<div class="similar-photo">${s.photo_url ? `<img src="${s.photo_url}" alt="" loading="lazy">` : ''}</div>
+<div class="similar-photo">${s.photo_url ? `<img src="${escapeHtml(s.photo_url)}" alt="" loading="lazy">` : ''}</div>
 <div class="similar-name">${escapeHtml(s.title || '')}</div>
 <div class="similar-price">${formatCoins(s.price)}</div>
 </button>`).join('')}</div>`;
@@ -1922,7 +1922,7 @@ grid.innerHTML = `<div class="shop-hint">${dict.trade_make_no_skins}</div>`;
 } else {
 grid.innerHTML = mySkins.map((s, i) => `
 <div class="inv-item" data-idx="${i}" style="display:inline-block; width:31%; margin:1%; vertical-align:top;">
-${s.photo_url ? `<img src="${s.photo_url}" alt="">` : ''}
+${s.photo_url ? `<img src="${escapeHtml(s.photo_url)}" alt="">` : ''}
 <div class="inv-item-name">${escapeHtml(s.title)}</div>
 <div style="font-size:11px; color:var(--red-glow);">${formatCoins(s.price)}</div>
 </div>

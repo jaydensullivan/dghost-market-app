@@ -221,7 +221,7 @@ const list = invFilteredItems();
 inventoryStatus.textContent = list.length ? '' : dict.inv_nothing_found;
 const pickMode = !!inventoryPickHandler;
 inventoryGrid.innerHTML = list.map(({ item, i }) => {
-const photo = item.photo_url ? `<img src="${item.photo_url}" alt="" loading="lazy">` : '';
+const photo = item.photo_url ? `<img src="${escapeHtml(item.photo_url)}" alt="" loading="lazy">` : '';
 const wearText = item.wear ? WEAR_LABELS[item.wear] || '' : '';
 const isTradable = item.tradable !== false;
 const rarityClass = RARITY_CLASS[item.rarity] || 'rarity-consumer';
@@ -270,7 +270,7 @@ const box = document.getElementById('invPicked');
 box.style.display = invPicked.length && !inventoryPickHandler ? '' : 'none';
 document.getElementById('invPickedCount').textContent = dict.inv_of.replace('{n}', invPicked.length).replace('{max}', INV_PICK_MAX);
 document.getElementById('invPickedThumbs').innerHTML = invPicked.map(item => `
-<div class="inv-thumb">${item.photo_url ? `<img src="${item.photo_url}" alt="">` : ''}<button type="button" data-inv-unpick="${escapeHtml(invKey(item))}">✕</button></div>`).join('')
+<div class="inv-thumb">${item.photo_url ? `<img src="${escapeHtml(item.photo_url)}" alt="">` : ''}<button type="button" data-inv-unpick="${escapeHtml(invKey(item))}">✕</button></div>`).join('')
 + '<button type="button" class="inv-thumb add" id="invPickMore">+</button>';
 }
 
@@ -456,7 +456,7 @@ const rows = [
 ];
 const rarityClass = RARITY_CLASS[item.rarity] || 'rarity-consumer';
 document.getElementById('invDetailBody').innerHTML = `
-<div class="inv-item ${rarityClass} inv-detail-photo"><div class="inv-item-photo">${item.photo_url ? `<img src="${item.photo_url}" alt="">` : ''}</div></div>
+<div class="inv-item ${rarityClass} inv-detail-photo"><div class="inv-item-photo">${item.photo_url ? `<img src="${escapeHtml(item.photo_url)}" alt="">` : ''}</div></div>
 ${hasFloat ? `<div class="inv-item-wearbar" style="margin-top:10px;"><div class="inv-item-wearbar-mark" style="left:${(Math.min(1, Math.max(0, item.float_value)) * 100).toFixed(2)}%"></div></div>` : ''}
 ${rows.map(([k, v]) => `<div class="raffle-proof-row"><span>${k}</span><b>${escapeHtml(String(v))}</b></div>`).join('')}
 ${stickersHtml(item.stickers, 'full')}`;
@@ -620,7 +620,7 @@ const rarityBg = RARITY_BG[item.rarity]
 ? `url('${RARITY_BG[item.rarity]}')`
 : 'none';
 qsPhoto.style.backgroundImage = rarityBg;
-qsPhoto.innerHTML = item.photo_url ? `<img src="${item.photo_url}" alt="">` : '';
+qsPhoto.innerHTML = item.photo_url ? `<img src="${escapeHtml(item.photo_url)}" alt="">` : '';
 
 qsName.textContent = (item.stattrak ? 'ST™ ' : '') + (item.title || '');
 qsName.className = 'qs-name' + (item.stattrak ? ' stattrak' : '');

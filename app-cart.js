@@ -22,7 +22,7 @@ badge.style.display = cart.length ? '' : 'none';
 
 function cartItemRowHtml(skin){
 const photo = skin.photo_url
-? `<img class="cart-item-photo" src="${skin.photo_url}" alt="" onerror="this.style.display='none'">`
+? `<img class="cart-item-photo" src="${escapeHtml(skin.photo_url)}" alt="" onerror="this.style.display='none'">`
 : `<div class="cart-item-photo"></div>`;
 return `<div class="cart-item">
 ${photo}

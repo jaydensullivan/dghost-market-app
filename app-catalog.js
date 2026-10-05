@@ -211,7 +211,7 @@ const RARITY_BG = {
 
 function skinCardHtml(skin){
 const photo = skin.photo_url
-? `<img class="skin-photo" src="${skin.photo_url}" alt="" onerror="showPlaceholderIcon(this)">`
+? `<img class="skin-photo" src="${escapeHtml(skin.photo_url)}" alt="" onerror="showPlaceholderIcon(this)">`
 : `<div class="skin-photo placeholder">${TARGET_ICON}</div>`;
 
 const wearBadge = skin.wear && WEAR_LABELS[skin.wear]
@@ -293,24 +293,19 @@ const dict = I18N[currentLang] || I18N.ru;
 
 if (size === 'mini'){
 return `<div class="st-strip">${list.map(st => `
-<img class="st-mini" src="${st.image}" alt="" loading="lazy" title="${escapeHtml(st.name || '')}">`).join('')}</div>`;
+<img class="st-mini" src="${escapeHtml(st.image)}" alt="" loading="lazy" title="${escapeHtml(st.name || '')}">`).join('')}</div>`;
 }
 
 return `<div class="st-row">${list.map(st => {
 const wear = st.wear ? dict.st_wear.replace('{p}', Math.round(st.wear * 100)) : dict.st_fresh;
 return `<div class="st-item">
-<div class="st-img"><img src="${st.image}" alt="" loading="lazy"></div>
+<div class="st-img"><img src="${escapeHtml(st.image)}" alt="" loading="lazy"></div>
 <div class="st-name">${escapeHtml(st.name || '')}</div>
 <div class="st-wear">${wear}</div>
 </div>`;
 }).join('')}</div>`;
 }
 
-function escapeHtml(str){
-const div = document.createElement('div');
-div.textContent = str == null ? '' : String(str);
-return div.innerHTML;
-}
 
 let lastSkins = [];
 
