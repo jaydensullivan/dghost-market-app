@@ -37,11 +37,21 @@ if [ ! -d "$OUT/weapons/paints" ]; then
     tail -3 "$WORK/build-seed-extract.log"
 fi
 
-python3 - "$OUT" "$REPO/models/skins" "${FORCE:-0}" <<'PY'
+python3 - "$OUT" "$REPO/models/skins" "${FORCE:-0}" "$WORK/items_game.txt" <<'PY'
 import json, os, re, sys
 
-out, skins_dir, force = sys.argv[1], sys.argv[2], sys.argv[3] == '1'
-VERSION = 1
+out, skins_dir, force, items_path = sys.argv[1], sys.argv[2], sys.argv[3] == '1', sys.argv[4]
+VERSION = 2
+
+# use_legacy_model: раскраска нарисована под старый корпус модели
+# (body_legacy), остальные — под новую HD-модель CS2 (body_hd).
+legacy_kits = set()
+if os.path.isfile(items_path):
+    items = open(items_path, encoding='utf-8', errors='ignore').read()
+    for m in re.finditer(r'"name"\s+"([A-Za-z0-9_]+)"([^{}]*?)\n\t\t\}', items):
+        if re.search(r'"use_legacy_model"\s+"1"', m.group(2)):
+            legacy_kits.add(m.group(1).lower())
+print('Раскрасок под старый корпус:', len(legacy_kits))
 
 recipes = {}
 templates = []
@@ -138,6 +148,8 @@ for finish in sorted(os.listdir(skins_dir)):
     if own_rolls:
         roll['rolls'] = own_rolls
     shader['seed_version'] = VERSION
+    if legacy_kits:
+        shader['legacy_model'] = finish.lower() in legacy_kits
     # Узор, который не сдвигается и не поворачивается, — блок не нужен.
     ranges = [r for r in (roll['offset_x'], roll['offset_y'], roll['rotation']) if r]
     if ranges and any(r[0] != r[1] for r in ranges):

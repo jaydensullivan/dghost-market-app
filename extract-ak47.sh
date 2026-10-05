@@ -369,7 +369,10 @@ for attempt in 1 2 3 4 5 6 7 8; do
     GOT_CHUNKS="$GOT_CHUNKS$NEW "
 done
 
-GLB=$(find "$OUT" -name '*.glb' 2>/dev/null | head -1)
+# Рядом с моделью экспортёр кладёт физический корпус (*physics*.glb,
+# маленький) — берём самую большую не-физику, а не «первый файл»:
+# у части ножей первым оказывался физический корпус.
+GLB=$(find "$OUT" -name '*.glb' ! -iname '*phys*' -printf '%s %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
 
 if [ -z "$GLB" ]; then
     echo "❌ .glb так и не появился. Полный лог: $WORK/export.log"
