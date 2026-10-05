@@ -817,7 +817,7 @@ return adminGwPrizeEntry().then(entry => {
 if (!entry) return null;
 if (adminGwGif && adminGwGif.key === key) return adminGwGif.bytes;
 return render3DGif(entry, Number(adminGwPrizeSkin.float_value) || 0, adminGwPrizeSkin.title,
-p => { status.textContent = dict.share_gif_preparing.replace('{p}', Math.round(p * 100)); })
+p => { status.textContent = dict.share_gif_preparing.replace('{p}', Math.round(p * 100)); }, adminGwPrizeSkin.pattern)
 .then(bytes => { adminGwGif = { key, bytes }; return bytes; });
 })
 .then(bytes => {
