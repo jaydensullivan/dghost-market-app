@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 24;
+const APP3D_VERSION = 25;
 
 let threeLoading = null;
 
@@ -508,8 +508,75 @@ out.push(new THREE.Vector3(color.r, color.g, color.b));
 return out;
 }
 
+// ---------- pattern seed ----------
+// Генератор случайных чисел Valve (CUniformRandomStream из Source SDK).
+// Игра сеет его paint seed предмета и по очереди берёт сдвиг узора по
+// X, по Y и поворот — отсюда «blue gem», процент Fade и т.п. Тот же
+// алгоритм используют CSFloat, Skinport и калькуляторы Fade.
+function ValveRandom(seed){
+this.idum = seed >= 0 ? -seed : seed;
+this.iy = 0;
+this.iv = [];
+}
+ValveRandom.prototype.next = function(){
+const NTAB = 32, IA = 16807, IM = 2147483647, IQ = 127773, IR = 2836;
+const NDIV = 1 + Math.floor((IM - 1) / NTAB);
+let j, k;
+if (this.idum <= 0 || !this.iy){
+this.idum = -this.idum < 1 ? 1 : -this.idum;
+for (j = NTAB + 7; j >= 0; j--){
+k = Math.floor(this.idum / IQ);
+this.idum = IA * (this.idum - k * IQ) - IR * k;
+if (this.idum < 0) this.idum += IM;
+if (j < NTAB) this.iv[j] = this.idum;
+}
+this.iy = this.iv[0];
+}
+k = Math.floor(this.idum / IQ);
+this.idum = IA * (this.idum - k * IQ) - IR * k;
+if (this.idum < 0) this.idum += IM;
+j = Math.floor(this.iy / NDIV);
+this.iy = this.iv[j];
+this.iv[j] = this.idum;
+return this.iy;
+};
+// Как RandomFloat в игре: вычисления во float32.
+ValveRandom.prototype.float = function(low, high){
+let f = Math.fround(this.next() / 2147483647);
+if (f > 1 - 1.2e-7) f = Math.fround(1 - 1.2e-7);
+return Math.fround(Math.fround(f * Math.fround(high - low)) + low);
+};
+
+// Pattern в лоте — строка (её можно было ввести руками); берём только
+// настоящий seed 0…1000.
+function parsePaintSeed(value){
+const text = String(value === null || value === undefined ? '' : value).trim().replace(/^#/, '');
+if (!/^\d{1,4}$/.test(text)) return null;
+const seed = Number(text);
+return seed <= 1000 ? seed : null;
+}
+
+// Сдвиг и поворот узора для конкретного предмета. Диапазоны берёт
+// сборка из рецепта раскраски (params.json → shader.seed_roll); без
+// них или без seed узор лежит как раньше.
+function seedPlacement(params, seed){
+const placement = { offset: [0, 0], rotation: Number(params.pattern_rotation) || 0, rolled: false };
+const roll = params.seed_roll;
+seed = parsePaintSeed(seed);
+if (!roll || seed === null) return placement;
+const range = r => Array.isArray(r) && r.length === 2 ? r.map(Number) : null;
+const ox = range(roll.offset_x) || [0, 0];
+const oy = range(roll.offset_y) || [0, 0];
+const rot = range(roll.rotation) || [placement.rotation, placement.rotation];
+const rng = new ValveRandom(seed);
+placement.offset = [rng.float(ox[0], ox[1]), rng.float(oy[0], oy[1])];
+placement.rotation = rng.float(rot[0], rot[1]);
+placement.rolled = true;
+return placement;
+}
+
 // wear — float предмета (0 = новый, 1 = полностью убитый).
-function applySkinToModel(THREE, object, skin, wear, weapon, maskChannel){
+function applySkinToModel(THREE, object, skin, wear, weapon, maskChannel, seed){
 // 0,1,2 — каналы маски; 3 — красить всё без маски; 4 — показать
 // саму маску цветом (отладка: видно, какой канал за что отвечает).
 const CHANNELS = { r: 0, g: 1, b: 2, none: 3, debug: 4 };
@@ -525,6 +592,8 @@ if (!pattern){
 pattern = new THREE.DataTexture(new Uint8Array([0, 0, 0, 255]), 1, 1);
 pattern.needsUpdate = true;
 }
+
+const placement = seedPlacement(skin.params, seed);
 
 const uniforms = {
 uPattern: { value: pattern },
@@ -546,7 +615,9 @@ uAo: { value: weapon ? weapon.ao : null },
 uWearAmount: { value: Math.max(0, Math.min(1, wear || 0)) },
 uPatternScale: { value: skin.params.pattern_scale || 1 },
 // Поворот узора в params.json — в градусах.
-uPatternRotation: { value: (skin.params.pattern_rotation || 0) * Math.PI / 180 },
+uPatternRotation: { value: placement.rotation * Math.PI / 180 },
+// Сдвиг узора по seed (в долях текстуры).
+uPatternOffset: { value: new THREE.Vector2(placement.offset[0], placement.offset[1]) },
 uWearScale: { value: skin.params.wear_scale || 1 },
 uGrungeScale: { value: skin.params.grunge_scale || 1 },
 uPaintMetalness: { value: Number(skin.params.paint_metalness) || 0 },
@@ -650,6 +721,7 @@ uniform sampler2D uAo;
 uniform float uWearAmount;
 uniform float uPatternScale;
 uniform float uPatternRotation;
+uniform vec2 uPatternOffset;
 uniform float uWearScale;
 uniform float uGrungeScale;
 uniform float uPaintMetalness;
@@ -688,7 +760,7 @@ diffuseColor.rgb = masks.rgb;
 float rc = cos(uPatternRotation), rs = sin(uPatternRotation);
 vec2 puv = (uProjected == 1 ? vProjUv : vSkinUv) - 0.5;
 puv = vec2(rc * puv.x - rs * puv.y, rs * puv.x + rc * puv.y) + 0.5;
-vec3 pattern = texture2D(uPattern, puv * uPatternScale).rgb;
+vec3 pattern = texture2D(uPattern, puv * uPatternScale + uPatternOffset).rgb;
 if (uUseColors == 1){
 // Первый цвет — основа, остальные ложатся по каналам маски.
 // У однотонных раскрасок маской служат зоны покраски самого ствола.
@@ -885,7 +957,7 @@ scene.environment = pmrem.fromScene(new mod.RoomEnvironment(), 0.04).texture;
 .catch(() => {});
 }
 
-function open3DViewer(modelUrl, title, skinDir, wearValue, weaponDir, maskChannel){
+function open3DViewer(modelUrl, title, skinDir, wearValue, weaponDir, maskChannel, seed){
 const dict = I18N[currentLang] || I18N.ru;
 const mode = get3DMode() || 'full';
 const status = document.getElementById('viewer3dStatus');
@@ -966,7 +1038,7 @@ weaponDir ? loadWeaponPack(THREE, weaponDir).catch(() => null) : Promise.resolve
 ])
 .then(([skin, weapon]) => {
 if (!skin.pattern && !skin.solid) throw new Error('не загрузился узор');
-applySkinToModel(THREE, object, skin, wearValue, weapon, maskChannel);
+applySkinToModel(THREE, object, skin, wearValue, weapon, maskChannel, seed);
 status.textContent = `${dict.v3_skin_on} · float ${formatFloat(wearValue || 0)}`;
 setTimeout(() => { status.textContent = ''; }, 3000);
 })
@@ -1137,7 +1209,7 @@ buy3dBtn.addEventListener('click', () => {
 if (!buy3dEntry || !buy3dSkin) return;
 const skin = buy3dSkin;
 const title = skin.stattrak ? 'StatTrak™ ' + skin.title : skin.title;
-open3DViewer(buy3dEntry.model, title, buy3dEntry.skin, Number(skin.float_value) || 0, buy3dEntry.weapon || null, 'none');
+open3DViewer(buy3dEntry.model, title, buy3dEntry.skin, Number(skin.float_value) || 0, buy3dEntry.weapon || null, 'none', skin.pattern);
 });
 }
 
@@ -1177,7 +1249,7 @@ ctx.fillStyle = '#A855F7';
 ctx.fillText('DGHOSTMARKET', 12, 18);
 }
 
-async function render3DGif(entry, wear, title, onProgress){
+async function render3DGif(entry, wear, title, onProgress, seed){
 const { width: W, height: H, frames, delay, colors } = SHARE_GIF;
 const [, gifenc] = await Promise.all([loadGltfLoader(), loadGifEncoder()]);
 
@@ -1209,7 +1281,7 @@ scene.add(object);
 fitObjectToView(THREE, gltf.scene, camera);
 // Ствол только покачивается, запас под полный оборот не нужен.
 camera.position.multiplyScalar(0.78);
-applySkinToModel(THREE, object, skin, wear, weapon, 'none');
+applySkinToModel(THREE, object, skin, wear, weapon, 'none', seed);
 await setupViewerScene(THREE, renderer, scene);
 
 const out = document.createElement('canvas');
@@ -1267,7 +1339,7 @@ const say = (text) => { if (onStatus) onStatus(text); };
 
 say(dict.share_gif_preparing.replace('{p}', '0'));
 const bytes = await render3DGif(buy3dEntry, Number(skin.float_value) || 0, title,
-p => say(dict.share_gif_preparing.replace('{p}', Math.round(p * 100))));
+p => say(dict.share_gif_preparing.replace('{p}', Math.round(p * 100))), skin.pattern);
 
 const response = await fetch(API_BASE + '/api/share/prepare', {
 method: 'POST',

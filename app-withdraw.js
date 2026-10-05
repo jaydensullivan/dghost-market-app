@@ -470,7 +470,7 @@ loadModelIndex().then(map => {
 const entry = map[modelIndexKey((item.stattrak ? 'StatTrak™ ' : '') + item.title)] || map[modelIndexKey(item.title)];
 if (!entry || invDetailItem !== item) return;
 btn3d.style.display = '';
-btn3d.onclick = () => open3DViewer(entry.model, item.title, entry.skin, Number(item.float_value) || 0, entry.weapon || null, 'none');
+btn3d.onclick = () => open3DViewer(entry.model, item.title, entry.skin, Number(item.float_value) || 0, entry.weapon || null, 'none', item.pattern);
 }).catch(() => {});
 }
 document.getElementById('invDetailOverlay').classList.add('show');

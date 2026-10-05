@@ -168,6 +168,21 @@ jobs:
           fi
           exit $code
 
+      # Диапазоны pattern seed (сдвиг и поворот узора) для всех готовых
+      # раскрасок — из рецептов игры; считается только для новых.
+      - name: Pattern seed
+        if: always()
+        env:
+          REPO: ${{ github.workspace }}/assets
+        run: |
+          cd "$REPO"
+          bash build-seed.sh
+          if [ -n "$(git status --porcelain models)" ]; then
+            git add models
+            git commit -q -m "3D: диапазоны pattern seed"
+            git push -q || { git pull -q --rebase && git push -q; }
+          fi
+
       # Логи того, что не собралось в этом запуске, — прямо в журнал
       # задачи, чтобы разбирать ошибки без доступа к серверу.
       - name: Логи неудач
