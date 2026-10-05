@@ -75,6 +75,9 @@ LAYERS = [
     ('material_mask', 'material_mask',     1024, False),
     ('roughness',     'roughness',         1024, False),
     ('sfx',           'sfx',               1024, False),
+    # Палитра закалки (case hardening): узор в альфе альбедо выбирает
+    # в ней цвет. Без неё Zeno и прочие gsch_ выходили белёсыми.
+    ('ramp',          'color_ramp',        1024, True),
 ]
 
 os.makedirs(dest, exist_ok=True)
@@ -90,6 +93,9 @@ for layer, key, max_side, color in LAYERS:
     if max(w, h) > max_side:
         k = max_side / max(w, h)
         img = resize_bands(img, (int(w * k), int(h * k)))
+    # Палитру читаем слева направо — вертикальную разворачиваем.
+    if layer == 'ramp' and img.size[1] > img.size[0]:
+        img = img.transpose(Image.Transpose.TRANSPOSE)
     if color is None:
         img = img.convert('RGB')
     elif color:
@@ -107,7 +113,7 @@ for layer, key, max_side, color in LAYERS:
         continue
 
     out = os.path.join(dest, layer + '.webp')
-    img.save(out, 'WEBP', quality=88, method=6)
+    img.save(out, 'WEBP', quality=88, method=6, exact=True)
     print(f'  {layer}: {w}x{h} → {img.size[0]}x{img.size[1]}, {os.path.getsize(out) / 1024:.0f} КБ')
     textures[layer] = layer + '.webp'
 
@@ -157,7 +163,7 @@ if template_style is not None:
             if max(img.size) > 2048:
                 k = 2048 / max(img.size)
                 img = img.resize((int(img.size[0] * k), int(img.size[1] * k)), Image.LANCZOS)
-            img.save(os.path.join(dest, 'pattern.webp'), 'WEBP', quality=88, method=6)
+            img.save(os.path.join(dest, 'pattern.webp'), 'WEBP', quality=88, method=6, exact=True)
             textures['pattern'] = 'pattern.webp'
             print(f'  pattern (шаблон): {os.path.basename(cands[0])}')
     if (needs_pattern and 'pattern' not in textures) or not any(colors):
@@ -200,13 +206,28 @@ if wear:
     textures['wear'] = 'models/shared/' + os.path.basename(wear[0])
     print(f'  wear: общий {textures["wear"]}')
 
+# Закалка: насколько узор (альфа альбедо) сдвигает цвет по палитре
+# и с какого места палитры начинать.
+shader = {}
+if 'ramp' in textures:
+    def recipe_float(name, default):
+        m = re.search(r'm_strName\s*=\s*"%s"(.*?)(?=m_strName\s*=|\Z)' % name, recipe, re.S)
+        v = m and re.search(r'm_flValueFloatX\s*=\s*(-?[\d.]+(?:[eE][-+]?\d+)?)', m.group(1))
+        return float(v.group(1)) if v else default
+    shader['case_hardening'] = {
+        'pattern_influence': recipe_float('g_flCaseHardeningPatternInfluence', 1.0),
+        'ramp_offset': recipe_float('g_flCaseHardeningRampOffset', 0.0),
+    }
+
 rel = compfile.split('/weapons/paints/', 1)[-1]
 meta = {
     'finish': finish,
     'material': 'weapons/paints/' + rel,
     'format': 'vcompmat',
+    # 2 — альбедо с exact=True (цвет под нулевой альфой цел) и палитра закалки.
+    'prep_version': 2,
     'textures': textures,
-    'shader': {},
+    'shader': shader,
 }
 with open(os.path.join(dest, 'params.json'), 'w', encoding='utf-8') as f:
     json.dump(meta, f, ensure_ascii=False, indent=2)
@@ -339,7 +360,7 @@ for layer, (key, max_side) in LAYERS.items():
         img = img.convert('RGBA' if 'A' in img.getbands() else 'RGB')
 
     buf = io.BytesIO()
-    img.save(buf, 'WEBP', quality=88, method=6)
+    img.save(buf, 'WEBP', quality=88, method=6, exact=True)
     data = buf.getvalue()
 
     if layer in SHARED_LAYERS:
