@@ -132,6 +132,20 @@ for block in re.finditer(r'"name"\s+"([a-zA-Z0-9_]+)"\s*([^{}]{0,400}?)"descript
 # 3. Раскраска <-> оружие: записи вида "[cu_ak47_cobra]weapon_ak47".
 pairs = re.findall(r'\[([a-zA-Z0-9_]+)\]weapon_([a-z0-9_]+)', items)
 
+# Ножей в items_game CS2 нет — пары для них из открытой базы скинов,
+# которую скачивает build-all.sh. Фазы Doppler называются одинаково
+# («Karambit | Doppler»), в таблицу попадает первая по имени.
+api_path = os.path.join(os.path.dirname(items_path), "skins-api.json")
+if os.path.isfile(api_path):
+    try:
+        for skin in json.load(open(api_path, encoding="utf-8")):
+            wid = ((skin.get("weapon") or {}).get("id") or "").lower()
+            kit = ((skin.get("pattern") or {}).get("id") or "").lower()
+            if kit and (wid.startswith("weapon_knife") or wid == "weapon_bayonet"):
+                pairs.append((kit, wid[len("weapon_"):]))
+    except Exception as e:
+        print("⚠️ база скинов не прочиталась:", e)
+
 # 4. Человеческие названия оружия: weapon_ak47 -> "AK-47".
 weapon_names = {}
 for m in re.finditer(r'"name"\s+"(weapon_[a-z0-9_]+)"(.{0,600}?)"item_name"\s+"([^"]+)"', items, re.S):
@@ -178,7 +192,9 @@ FOLDER = {
 index = {}
 skipped = 0
 
-for kit, weapon in set(pairs):
+# Обычные фазы Doppler — раньше Ruby/Sapphire/Black Pearl (у всех
+# одно название в Steam).
+for kit, weapon in sorted(set(pairs), key=lambda p: ("phase" not in p[0], p)):
 
     if kit not in have_skins:
         continue
@@ -197,7 +213,12 @@ for kit, weapon in set(pairs):
         continue
 
     # Ключ — ровно то, как лот называется в Steam и у нас в базе.
-    index[f"{weapon_name} | {skin_name}"] = {
+    key = f"{weapon_name} | {skin_name}"
+
+    if key in index:
+        continue
+
+    index[key] = {
         "model": f"models/{folder}.glb",
         "skin": f"models/skins/{kit}",
         "weapon": f"models/weapons/{folder}" if folder in have_weapon_tex else None,

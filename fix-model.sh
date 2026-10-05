@@ -73,6 +73,14 @@ weapon_aliases() {
         taser)         echo "taser eq_taser" ;;
         hkp2000)       echo "hkp2000 p2000" ;;
         revolver)      echo "revolver" ;;
+        # Ножи лежат в weapons/models/knife/<папка>/, и у части папка
+        # называется иначе, чем нож в items_game.
+        bayonet)               echo "knife/knife_bayonet" ;;
+        knife_m9_bayonet)      echo "knife/knife_m9" ;;
+        knife_survival_bowie)  echo "knife/knife_bowie" ;;
+        knife_gypsy_jackknife) echo "knife/knife_navaja" ;;
+        knife_widowmaker)      echo "knife/knife_talon" ;;
+        knife_*)               echo "knife/$1" ;;
         *)             echo "$1" ;;
     esac
 }

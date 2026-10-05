@@ -176,6 +176,8 @@ jobs:
           REPO: ${{ github.workspace }}/assets
           ONLY: ${{ inputs.only }}
           KEEP_CHUNKS: "1"
+          # Ножи — после всех стволов (build-all.sh ставит их в конец).
+          INCLUDE_KNIVES: "1"
           # У Cloudflare Pages нет лимита по объёму (есть 20 000 файлов
           # и 25 МБ на файл) — потолок только чтобы ветка не раздувалась.
           MAX_MODELS_MB: "6000"
