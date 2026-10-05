@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 35;
+const APP3D_VERSION = 36;
 
 let threeLoading = null;
 
@@ -508,7 +508,12 @@ knife_widowmaker: 0.36, knife_skeleton: 0.36, knife_kukri: 0.36,
 // Узор-маска (гидрография, спрей, анодирование мультицвет и
 // аэрография, патина) масштабируется по стволу — и в развёртке, и в
 // проекции сбоку. Кастомная раскраска нарисована прямо по развёртке.
-function weaponPatternScale(params, weaponName){
+// У нового формата (шаблоны и vcompmat) в рецепте почти всегда
+// g_bIgnoreWeaponSizeScale = true — масштаб ствола к ним не применяем
+// (иначе полосы MP7 Amberline растягивались на весь ствол).
+function weaponPatternScale(skin, weaponName){
+const params = skin.params;
+if (skin.format === 'template' || skin.format === 'vcompmat') return 1;
 if ([1, 2, 4, 5, 7].indexOf(params.paint_style) === -1) return 1;
 return WEAPON_UV_SCALE[weaponName] || 1;
 }
@@ -722,7 +727,7 @@ uBaseColor: { value: weapon ? weapon.color : null },
 uPaintMask: { value: weapon ? weapon.masks : null },
 uAo: { value: weapon ? weapon.ao : null },
 uWearAmount: { value: Math.max(0, Math.min(1, wear || 0)) },
-uPatternScale: { value: (skin.params.pattern_scale || 1) * weaponPatternScale(skin.params, weaponName) },
+uPatternScale: { value: (skin.params.pattern_scale || 1) * weaponPatternScale(skin, weaponName) },
 // Поворот узора в params.json — в градусах.
 uPatternRotation: { value: placement.rotation * Math.PI / 180 },
 // Сдвиг узора по seed (в долях текстуры).
@@ -730,6 +735,9 @@ uPatternOffset: { value: new THREE.Vector2(placement.offset[0], placement.offset
 uWearScale: { value: skin.params.wear_scale || 1 },
 uGrungeScale: { value: skin.params.grunge_scale || 1 },
 uPaintMetalness: { value: paintMetalness(skin.params) },
+// Своя карта металличности краски (Zeno — серый металлик).
+uSkinMetal: { value: skin.metalness || pattern },
+uHasSkinMetal: { value: skin.metalness ? 1 : 0 },
 uPaintRoughness: { value: ANODIZED.roughness },
 uHasPaintRoughness: { value: isAnodized(skin.params) ? 1 : 0 },
 uUseColors: { value: skin.solid || skinUsesColorMask(skin.params) ? 1 : 0 },
@@ -851,6 +859,8 @@ uniform float uWearScale;
 uniform float uGrungeScale;
 uniform float uPaintMetalness;
 uniform float uPaintRoughness;
+uniform sampler2D uSkinMetal;
+uniform int uHasSkinMetal;
 uniform int uHasPaintRoughness;
 uniform int uUseColors;
 uniform int uSolid;
@@ -949,7 +959,8 @@ if (uMaskChannel != 4) diffuseColor.rgb = result;
 // металлической (paint_metalness = 1): там, где она лежит, берём
 // металличность из params.json, на голом металле — как было.
 .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>
-metalnessFactor = mix(metalnessFactor, uPaintMetalness, skinCover);`)
+metalnessFactor = mix(metalnessFactor,
+uHasSkinMetal == 1 ? texture2D(uSkinMetal, vSkinUv).r : uPaintMetalness, skinCover);`)
 // Анодированная краска — полированная, где бы она ни лежала.
 .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
 if (uHasPaintRoughness == 1) roughnessFactor = mix(roughnessFactor, uPaintRoughness, skinCover);`);
@@ -1033,6 +1044,7 @@ mask: pickLayer(textures, SKIN_LAYER_ALIASES.mask),
 normal: pickLayer(textures, SKIN_LAYER_ALIASES.normal),
 ao: pickLayer(textures, SKIN_LAYER_ALIASES.ao),
 ramp: textures.ramp || null,
+metalness: textures.metalness || null,
 };
 
 const names = Object.keys(wanted);

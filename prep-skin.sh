@@ -78,6 +78,11 @@ LAYERS = [
     # Палитра закалки (case hardening): узор в альфе альбедо выбирает
     # в ней цвет. Без неё Zeno и прочие gsch_ выходили белёсыми.
     ('ramp',          'color_ramp',        1024, True),
+    # Зоны покраски раскраски (R/G/B → цвета 1–3): у шаблонных
+    # (sp_, hy_…) без них весь ствол выходил «Base Coat» — Amberline белым.
+    ('pbn',           'paint_by_number',   1024, None),
+    # Металличность краски: Zeno — серый металлик, а не белая матовая.
+    ('metalness',     'metalness',         1024, False),
 ]
 
 os.makedirs(dest, exist_ok=True)
@@ -172,6 +177,10 @@ if template_style is not None:
     # Маски зон из шаблона ствола просмотрщик не понимает — не путаем его.
     textures.pop('material_mask', None)
     textures.pop('sfx', None)
+    # Свои зоны покраски (paint by number) — только если рецепт их включает.
+    if 'pbn' in textures and not re.search(
+            r'g_bUsePaintByNumberMasks"(?:(?!m_strName).)*?m_bValueBoolean\s*=\s*true', recipe, re.S):
+        textures.pop('pbn', None)
     wear = sorted(glob.glob(os.path.join(shared, 'wear_*.webp')))
     if wear:
         textures['wear'] = 'models/shared/' + os.path.basename(wear[0])
@@ -187,6 +196,7 @@ if template_style is not None:
         'finish': finish,
         'material': 'weapons/paints/' + compfile.split('/weapons/paints/', 1)[-1],
         'format': 'template',
+        'prep_version': 3,
         'textures': textures,
         'shader': shader,
     }
@@ -224,8 +234,9 @@ meta = {
     'finish': finish,
     'material': 'weapons/paints/' + rel,
     'format': 'vcompmat',
-    # 2 — альбедо с exact=True (цвет под нулевой альфой цел) и палитра закалки.
-    'prep_version': 2,
+    # 2 — альбедо с exact=True (цвет под нулевой альфой цел) и палитра закалки;
+    # 3 — зоны покраски (pbn) и металличность краски.
+    'prep_version': 3,
     'textures': textures,
     'shader': shader,
 }
