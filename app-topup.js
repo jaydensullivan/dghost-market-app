@@ -18,7 +18,7 @@ feature_disabled: 'Пополнение сейчас временно недос
 };
 
 function loadTopupInfo(){
-fetch(API_BASE + '/api/topup_info')
+fetch(API_BASE + '/api/topup_info' + (tg && tg.initData ? '?init_data=' + encodeURIComponent(tg.initData) : ''))
 .then(r => r.json())
 .then(data => {
 topupDetailsRaw = data.details || '';
