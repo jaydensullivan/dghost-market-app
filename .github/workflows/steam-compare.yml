@@ -1,0 +1,112 @@
+# «Сверщик 3D»: рендерит скины так же, как мини-апп, и сравнивает их с
+# картинками из Steam (яркость, насыщенность, основной цвет). Отчёт —
+# в ветку 3d-assets, папка reports/steam-compare/: report.json (все
+# скины от худшего к лучшему), worst.jpg (20 худших пар) и pairs/.
+#
+# Раз в неделю сам (250 скинов, по кругу), или вручную: Actions →
+# «3D: сверка со Steam» → Run workflow; можно задать число скинов (0 —
+# все) или точные названия через «;».
+name: "3D: сверка со Steam"
+
+on:
+  schedule:
+    - cron: "41 20 * * 6"
+  workflow_dispatch:
+    inputs:
+      max_skins:
+        description: "Сколько скинов сверить (0 — все)"
+        default: "250"
+      only_names:
+        description: "Только эти скины, через «;» (например: Glock-18 | Moonrise; MP7 | Amberline)"
+        default: ""
+
+concurrency:
+  group: steam-compare
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    env:
+      MAX_SKINS: ${{ github.event.inputs.max_skins || '250' }}
+      ONLY_NAMES: ${{ github.event.inputs.only_names || '' }}
+      OUT: ${{ github.workspace }}/out
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: app
+
+      - uses: actions/checkout@v4
+        with:
+          ref: 3d-assets
+          path: assets
+          fetch-depth: 1
+          sparse-checkout: reports
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Инструменты
+        run: |
+          pip install --quiet pillow numpy
+          cd app/tools/steam-compare
+          npm init -y > /dev/null
+          npm install --no-audit --no-fund playwright@1.56.1
+          npx playwright install --with-deps chromium
+
+      - name: Список скинов и картинки Steam
+        run: python app/tools/steam-compare/compare.py prepare "$OUT"
+
+      - name: Рендер нашего 3D
+        run: |
+          cd app
+          python3 -m http.server 8765 > /dev/null 2>&1 &
+          sleep 2
+          cd tools/steam-compare
+          node render.cjs http://localhost:8765/index.html "$OUT/jobs.json" "$OUT"
+
+      - name: Сравнение
+        run: python app/tools/steam-compare/compare.py analyze "$OUT"
+
+      - name: Отчёт в ветку 3d-assets
+        run: |
+          cd assets
+          rm -rf reports/steam-compare
+          mkdir -p reports/steam-compare
+          cp "$OUT/report.json" reports/steam-compare/
+          [ -f "$OUT/worst.jpg" ] && cp "$OUT/worst.jpg" reports/steam-compare/
+          [ -d "$OUT/pairs" ] && cp -r "$OUT/pairs" reports/steam-compare/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A reports
+          git commit -q -m "3D: сверка со Steam $(date -u +%F)" || { echo "Отчёт не изменился"; exit 0; }
+          # Сборка 3D тоже пушит в эту ветку — при гонке подтягиваем и повторяем.
+          for i in 1 2 3 4 5; do
+            git push origin HEAD:3d-assets && exit 0
+            sleep $((i * 5))
+            git pull -q --rebase origin 3d-assets
+          done
+          exit 1
+
+      - name: Итог
+        if: always()
+        run: |
+          if [ -f "$OUT/report.json" ]; then
+            python3 - "$OUT/report.json" <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json, sys
+          r = json.load(open(sys.argv[1], encoding='utf-8'))
+          print(f"### Сверка со Steam: {r['checked']} скинов, среднее сходство {r['average_score']}")
+          print("| сходство | скин | что не так |\n|---|---|---|")
+          for s in r['skins'][:20]:
+              print(f"| {s['score']} | {s['name']} | {'; '.join(s['notes']) or '—'} |")
+          PY
+          fi

@@ -1411,7 +1411,8 @@ ctx.fillStyle = '#A855F7';
 ctx.fillText('DGHOSTMARKET', 12 * k, 18 * k);
 }
 
-// still: true — вместо GIF один кадр JPEG (SHARE_PHOTO).
+// still: true — вместо GIF один кадр JPEG (SHARE_PHOTO);
+// 'transparent' — один кадр PNG без фона и подписи (сверка со Steam).
 async function render3DGif(entry, wear, title, onProgress, seed, still){
 const size = still ? SHARE_PHOTO : SHARE_GIF;
 const { width: W, height: H } = size;
@@ -1463,6 +1464,11 @@ if (still){
 // Тот же ракурс, что в середине покачивания GIF, чуть повёрнутый к камере.
 object.rotation.y = Math.PI / 2 + 0.3;
 renderer.render(scene, camera);
+if (still === 'transparent'){
+const png = await new Promise(resolve => glCanvas.toBlob(resolve, 'image/png'));
+if (!png) throw new Error('не получилось сохранить картинку');
+return new Uint8Array(await png.arrayBuffer());
+}
 drawShareFrame(ctx, glCanvas, title, size);
 if (onProgress) onProgress(1);
 const blob = await new Promise(resolve => out.toBlob(resolve, 'image/jpeg', SHARE_PHOTO.quality));

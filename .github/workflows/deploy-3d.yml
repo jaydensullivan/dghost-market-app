@@ -17,6 +17,8 @@ on:
     types: [completed]
   push:
     branches: [3d-assets]
+    # Отчёты сверки и рецепты на сайт не идут — выкладываем только модели.
+    paths: ["models/**"]
   workflow_dispatch:
 
 concurrency:
