@@ -200,6 +200,17 @@ if [ ! -s "$WORK/skins-api.json" ]; then
         || echo "   ⚠️ база скинов не скачалась — ножей в плане не будет, названия стволов — из items_game"
 fi
 
+# Модель меньше 30 КБ — это физический корпус, а не сама модель
+# (раньше экспорт иногда брал не тот .glb): удаляем, чтобы ствол
+# пересобрался.
+for f in "$REPO"/models/*.glb; do
+    [ -f "$f" ] || continue
+    if [ "$(stat -c %s "$f")" -lt 30000 ]; then
+        echo "   🗑 $(basename "$f") — только физический корпус, пересоберу"
+        rm -f "$f"
+    fi
+done
+
 # ============================================================
 # 1. ПЛАН: КАКИЕ РАСКРАСКИ БЫВАЮТ У КАЖДОГО СТВОЛА
 # ============================================================
@@ -345,7 +356,7 @@ build_model() {
         rm -rf "$WORK/export"
         WEAPON="$weapon" bash extract-ak47.sh > "$WORK/build-$weapon.log" 2>&1
         local glb
-        glb=$(find "$WORK/export" -name '*.glb' 2>/dev/null | head -1)
+        glb=$(find "$WORK/export" -name '*.glb' ! -iname '*phys*' -printf '%s %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
         if [ -z "$glb" ]; then
             echo "   ❌ модель не собралась, лог: $WORK/build-$weapon.log"
             return 1

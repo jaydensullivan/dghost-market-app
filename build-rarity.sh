@@ -88,7 +88,7 @@ if [ ! -x "$TOOLS/Source2Viewer-CLI" ] || [ ! -f "$GAME/pak01_dir.vpk" ]; then
     fi
 
     # Модель сразу кладём в репозиторий, раз уж она собралась.
-    GLB=$(find "$WORK/export" -name '*.glb' 2>/dev/null | head -1)
+    GLB=$(find "$WORK/export" -name '*.glb' ! -iname '*phys*' -printf '%s %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
 
     if [ -n "$GLB" ] && [ ! -f "$REPO/models/$WEAPON.glb" ]; then
         mkdir -p "$REPO/models"
@@ -308,7 +308,7 @@ if [ ! -f "$REPO/models/$WEAPON.glb" ] || [ ! -f "$REPO/models/weapons/$WEAPON/m
     if [ ! -f "$REPO/models/$WEAPON.glb" ]; then
         rm -rf "$WORK/export"
         WEAPON="$WEAPON" bash extract-ak47.sh > "$WORK/build-$WEAPON.log" 2>&1
-        GLB=$(find "$WORK/export" -name '*.glb' 2>/dev/null | head -1)
+        GLB=$(find "$WORK/export" -name '*.glb' ! -iname '*phys*' -printf '%s %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
         if [ -z "$GLB" ]; then
             echo "❌ модель не собралась, смотри $WORK/build-$WEAPON.log"
             exit 1
