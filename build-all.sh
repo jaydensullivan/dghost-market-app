@@ -195,9 +195,9 @@ fi
 # Берём его из открытой базы скинов (ByMykel/CSGO-API): weapon.id и
 # pattern.id — те же внутренние имена, что в игре.
 SKINS_API_URL="${SKINS_API_URL:-https://raw.githubusercontent.com/ByMykel/CSGO-API/main/public/api/en/skins.json}"
-if [ "$INCLUDE_KNIVES" = "1" ] && [ ! -s "$WORK/skins-api.json" ]; then
+if [ ! -s "$WORK/skins-api.json" ]; then
     curl -fsSL --max-time 120 "$SKINS_API_URL" -o "$WORK/skins-api.json" 2>/dev/null \
-        || echo "   ⚠️ база скинов не скачалась — ножей в плане не будет"
+        || echo "   ⚠️ база скинов не скачалась — ножей в плане не будет, названия стволов — из items_game"
 fi
 
 # ============================================================

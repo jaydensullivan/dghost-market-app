@@ -136,11 +136,15 @@ pairs = re.findall(r'\[([a-zA-Z0-9_]+)\]weapon_([a-z0-9_]+)', items)
 # которую скачивает build-all.sh. Фазы Doppler называются одинаково
 # («Karambit | Doppler»), в таблицу попадает первая по имени.
 api_path = os.path.join(os.path.dirname(items_path), "skins-api.json")
+api_weapon_names = {}
 if os.path.isfile(api_path):
     try:
         for skin in json.load(open(api_path, encoding="utf-8")):
-            wid = ((skin.get("weapon") or {}).get("id") or "").lower()
+            weapon = skin.get("weapon") or {}
+            wid = (weapon.get("id") or "").lower()
             kit = ((skin.get("pattern") or {}).get("id") or "").lower()
+            if wid and weapon.get("name"):
+                api_weapon_names[wid] = weapon["name"]
             if kit and (wid.startswith("weapon_knife") or wid == "weapon_bayonet"):
                 pairs.append((kit, wid[len("weapon_"):]))
     except Exception as e:
@@ -161,6 +165,10 @@ for m in re.finditer(r'"(weapon_[a-z0-9_]+)_prefab"\s*\{(.{0,3000}?)"item_name"\
     if name and m.group(1) not in weapon_names:
         weapon_names[m.group(1)] = name
 
+# Названия из базы скинов — главнее: разбор items_game для части
+# стволов цеплял чужой item_name (у M4A1-S выходило «Trade Up Contract»).
+weapon_names.update(api_weapon_names)
+
 # 5. Что реально есть в репозитории.
 models_dir = os.path.join(repo, "models")
 have_models = {
@@ -169,9 +177,11 @@ have_models = {
 } if os.path.isdir(models_dir) else set()
 
 skins_dir = os.path.join(models_dir, "skins")
+# Однотонные раскраски — без pattern.webp, только params.json с цветами.
 have_skins = {
     d for d in os.listdir(skins_dir)
     if os.path.isfile(os.path.join(skins_dir, d, "pattern.webp"))
+    or os.path.isfile(os.path.join(skins_dir, d, "params.json"))
 } if os.path.isdir(skins_dir) else set()
 
 weapons_dir = os.path.join(models_dir, "weapons")
