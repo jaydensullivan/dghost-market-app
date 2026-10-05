@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 26;
+const APP3D_VERSION = 27;
 
 let threeLoading = null;
 
@@ -575,8 +575,43 @@ placement.rolled = true;
 return placement;
 }
 
+// В моделях CS2 два корпуса: body_legacy — под старые раскраски,
+// body_hd — новая HD-модель, под которую нарисованы раскраски нового
+// формата (Zeno, AWP Printstream, Amberline…). Показывать оба сразу
+// нельзя: новая раскраска ложилась на старый корпус с чужой развёрткой
+// и выходила почти белой. Если в модели один корпус — не трогаем.
+function selectModelBody(object, useHd){
+let hasHd = false, hasLegacy = false;
+object.traverse(node => {
+const name = String(node.name || '').toLowerCase();
+if (name.indexOf('body_hd') !== -1) hasHd = true;
+if (name.indexOf('body_legacy') !== -1) hasLegacy = true;
+});
+if (!hasHd || !hasLegacy) return;
+object.traverse(node => {
+const name = String(node.name || '').toLowerCase();
+if (name.indexOf('body_hd') !== -1) node.visible = useHd;
+else if (name.indexOf('body_legacy') !== -1) node.visible = !useHd;
+});
+}
+
+// Под какой корпус раскраска: флаг use_legacy_model из items_game
+// (сборка пишет его в params.json), а без него — по формату: новый
+// (vcompmat, шаблоны) рисуется под HD-модель.
+function skinUsesHdBody(skin){
+if (!skin) return false;
+if (typeof skin.params.legacy_model === 'boolean') return !skin.params.legacy_model;
+return skin.format === 'vcompmat' || skin.format === 'template';
+}
+
 // wear — float предмета (0 = новый, 1 = полностью убитый).
 function applySkinToModel(THREE, object, skin, wear, weapon, maskChannel, seed){
+const useHd = skinUsesHdBody(skin);
+selectModelBody(object, useHd);
+// Текстуры ствола (маски зон, цвет, AO) сняты со старого корпуса — на
+// HD-корпусе развёртка другая, и они дают розовые края и пятна.
+// Раскраска нового формата и так покрывает ствол целиком.
+if (useHd) weapon = null;
 // 0,1,2 — каналы маски; 3 — красить всё без маски; 4 — показать
 // саму маску цветом (отладка: видно, какой канал за что отвечает).
 const CHANNELS = { r: 0, g: 1, b: 2, none: 3, debug: 4 };
@@ -660,9 +695,13 @@ color: 0xffffff,
 metalness: 0.7,
 roughness: 0.5,
 });
-// Шероховатость: своя у скина точнее, чем общая у ствола.
-if (skin.rough) material.roughnessMap = skin.rough;
-else if (weapon && weapon.rough) material.roughnessMap = weapon.rough;
+// Шероховатость: своя у скина точнее, чем общая у ствола. В карте
+// уже абсолютные значения — множитель 1, иначе краска выходила
+// вдвое глянцевее и отражала окружение как хром (Zeno, Printstream).
+if (skin.rough){
+material.roughnessMap = skin.rough;
+material.roughness = 1.0;
+} else if (weapon && weapon.rough) material.roughnessMap = weapon.rough;
 
 // Рельеф и затенение из комплекта скина — новый формат отдаёт их
 // отдельными слоями, и с ними металл перестаёт быть плоским.
@@ -1025,6 +1064,9 @@ const camera = new THREE.PerspectiveCamera(40, canvas.clientWidth / canvas.clien
 // вращался вокруг начала координат файла и уезжал из кадра.
 const object = new THREE.Group();
 object.add(gltf.scene);
+// Без раскраски (или пока она грузится) — старый корпус, как в игре
+// у стандартного оружия.
+selectModelBody(object, false);
 scene.add(object);
 const baseDistance = fitObjectToView(THREE, gltf.scene, camera);
 
@@ -1277,6 +1319,9 @@ renderer.setClearColor(0x000000, 0);
 const camera = new THREE.PerspectiveCamera(40, W / H, 0.05, 100);
 const object = new THREE.Group();
 object.add(gltf.scene);
+// Без раскраски (или пока она грузится) — старый корпус, как в игре
+// у стандартного оружия.
+selectModelBody(object, false);
 scene.add(object);
 fitObjectToView(THREE, gltf.scene, camera);
 // Ствол только покачивается, запас под полный оборот не нужен.
