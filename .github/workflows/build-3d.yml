@@ -99,17 +99,16 @@ jobs:
           key: steam-login-${{ github.run_id }}
           restore-keys: steam-login-
 
-      # Инструменты качаются с GitHub. Чтобы подменённый релиз не попал
-      # в сборку, их можно закрепить: вписать в env ниже ссылку и
-      # sha256 — тогда архив сверяется с хешем. Пока поля пустые, берётся
-      # последний релиз, а его ссылка и sha256 печатаются в журнал (их и
-      # переносить сюда).
+      # Инструменты качаются с GitHub и закреплены ссылкой и sha256 —
+      # подменённый релиз не попадёт в сборку. Обновить: очистить поля
+      # env ниже, запустить сборку — она возьмёт последний релиз и
+      # напечатает его ссылку и sha256, их и перенести сюда.
       - name: Инструменты (DepotDownloader, Source2Viewer)
         env:
-          DD_URL: ""
-          DD_SHA256: ""
-          S2V_URL: ""
-          S2V_SHA256: ""
+          DD_URL: "https://github.com/SteamRE/DepotDownloader/releases/download/DepotDownloader_3.4.0/DepotDownloader-framework.zip"
+          DD_SHA256: "7419f65efb7eb16b6e56987ed1b76475f29c02475c0016166c84798388e796bc"
+          S2V_URL: "https://github.com/ValveResourceFormat/ValveResourceFormat/releases/download/20.0/cli-linux-x64.zip"
+          S2V_SHA256: "3e8af47cd6ce52e8068904f2aa1dda23c56a6b96a8310b25090f0711cda76a8a"
         run: |
           mkdir -p "$WORK/tools" "$WORK/game"
           cd "$WORK/tools"
