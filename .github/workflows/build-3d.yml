@@ -206,6 +206,18 @@ jobs:
             git push -q || { git pull -q --rebase && git push -q; }
           fi
 
+      # Все рецепты раскрасок (vcompmat в текстовом виде) и шаблоны
+      # стилей — архивом к запуску: по ним разбираем, как игра собирает
+      # раскраски нового формата (Printstream и др.), не гадая по логу.
+      - name: Рецепты раскрасок (архив)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: recipes
+          path: /tmp/cs2-assets/export-recipes
+          retention-days: 14
+          if-no-files-found: ignore
+
       # Логи того, что не собралось в этом запуске, — прямо в журнал
       # задачи, чтобы разбирать ошибки без доступа к серверу.
       - name: Логи неудач
