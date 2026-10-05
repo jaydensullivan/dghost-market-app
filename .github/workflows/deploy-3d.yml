@@ -92,3 +92,16 @@ jobs:
           npx --yes wrangler@4 pages deploy cf --project-name "$PROJECT" --branch main --commit-dirty=true
           echo "Адрес проекта:"
           npx --yes wrangler@4 pages project list | grep -w "$PROJECT" || true
+
+      # Мини-апп живёт на другом домене: без заголовка CORS браузер не
+      # отдаст ему файлы, и 3D молча возьмётся со старого места.
+      - name: Проверка адреса
+        if: steps.secrets.outputs.ready == '1'
+        run: |
+          base="https://$PROJECT.pages.dev"
+          for p in models/index.json models/ak47.glb; do
+            headers=$(curl -sS -m 30 -o /dev/null -D - -H "Origin: https://app.dghostmarket.com" "$base/$p")
+            echo "$p: $(echo "$headers" | head -1)"
+            echo "$headers" | grep -qi '^access-control-allow-origin: \*' || { echo "::error::$base/$p отдаётся без CORS"; exit 1; }
+          done
+          echo "✅ $base отдаёт файлы мини-аппу"
