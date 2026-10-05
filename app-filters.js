@@ -1633,21 +1633,73 @@ el.addEventListener('input', scheduleSellMarketPreview);
 el.addEventListener('change', scheduleSellMarketPreview);
 });
 
+// ---------- «Поделиться»: ссылка, картинка или GIF ----------
+const shareOverlay = document.getElementById('shareOverlay');
+const shareStatus = document.getElementById('shareStatus');
+let shareSkin = null;
+let shareBusy = false;
+
+function setShareBusy(busy){
+shareBusy = busy;
+['shareLinkBtn', 'sharePhotoBtn', 'shareGifBtn'].forEach(id => {
+document.getElementById(id).disabled = busy;
+});
+}
+
 buyShareBtn.addEventListener('click', () => {
 if (!pendingBuySkin) return;
+shareSkin = pendingBuySkin;
+document.getElementById('shareItemTitle').textContent =
+(shareSkin.stattrak ? 'StatTrak™ ' : '') + shareSkin.title;
+// Картинку и GIF рисуем из 3D — у лота без 3D остаётся только ссылка.
+const has3d = typeof canShare3DLot === 'function' && canShare3DLot(shareSkin);
+document.getElementById('sharePhotoBtn').style.display = has3d ? '' : 'none';
+document.getElementById('shareGifBtn').style.display = has3d ? '' : 'none';
+shareStatus.textContent = '';
+setShareBusy(false);
+shareOverlay.classList.add('show');
+});
+
+function closeShareSheet(){
+if (shareBusy) return;
+shareOverlay.classList.remove('show');
+}
+document.getElementById('shareClose').addEventListener('click', closeShareSheet);
+shareOverlay.addEventListener('click', (e) => {
+if (e.target === shareOverlay) closeShareSheet();
+});
+
+function shareMedia(kind){
+if (!shareSkin || shareBusy) return;
+const dict = I18N[currentLang] || I18N.ru;
+setShareBusy(true);
+share3DLot(shareSkin, text => { shareStatus.textContent = text; }, kind)
+.catch(err => {
+console.warn('Поделиться:', err);
+const code = String(err && err.message || '');
+shareStatus.textContent = code === 'too_often' ? dict.share_too_often : dict.share_failed;
+})
+.finally(() => setShareBusy(false));
+}
+document.getElementById('sharePhotoBtn').addEventListener('click', () => shareMedia('photo'));
+document.getElementById('shareGifBtn').addEventListener('click', () => shareMedia('gif'));
+
+document.getElementById('shareLinkBtn').addEventListener('click', () => {
+if (!shareSkin) return;
+const skin = shareSkin;
+shareOverlay.classList.remove('show');
 
 // Обычное окно Telegram «Поделиться ссылкой», открытое прямо в
 // касании. Ссылка ведёт на страницу превью лота (фото, цена), а ?r=
 // засчитывает того, кто поделился, как пригласившего.
-// GIF через shareMessage на телефонах молча не открывался.
 const me = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
-const shareText = `${pendingBuySkin.stattrak ? 'StatTrak™ ' : ''}${pendingBuySkin.title} — ${formatCoins(pendingBuySkin.price)} в DGhost`;
-const shareUrl = `${API_BASE}/s/${pendingBuySkin.id}` + (me ? `?r=${me}` : '');
+const shareText = `${skin.stattrak ? 'StatTrak™ ' : ''}${skin.title} — ${formatCoins(skin.price)} в DGhost`;
+const shareUrl = `${API_BASE}/s/${skin.id}` + (me ? `?r=${me}` : '');
 const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
 if (tg && tg.openTelegramLink) {
 tg.openTelegramLink(telegramShareUrl);
 } else if (navigator.share) {
-navigator.share({ title: pendingBuySkin.title, text: shareText, url: shareUrl }).catch(() => {});
+navigator.share({ title: skin.title, text: shareText, url: shareUrl }).catch(() => {});
 } else {
 window.open(telegramShareUrl, '_blank');
 }

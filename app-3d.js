@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 30;
+const APP3D_VERSION = 32;
 
 let threeLoading = null;
 
@@ -548,14 +548,18 @@ return out;
 }
 
 // Анодирование (стили 3, 4, 5: Fade, Doppler, Slaughter, Moonrise) в
-// игре — это окрашенный металл, а не краска поверх. Матовой краской
-// они выходили пастельными, чистым металлом — почти чёрными в нашем
-// освещении; 0.65 ближе всего к виду в игре.
-const ANODIZED_METALNESS = 0.65;
+// игре — это окрашенный полированный металл, а не краска поверх.
+// Матовой краской они выходили пастельными; металлом с шероховатостью
+// ствола — тёмными. Полированный металл и более яркие отражения дают
+// насыщенный цвет, как на картинках Steam.
+const ANODIZED = { metalness: 1, roughness: 0.3, envIntensity: 5 };
+function isAnodized(params){
+return [3, 4, 5].indexOf(params.paint_style) !== -1;
+}
 function paintMetalness(params){
 const own = Number(params.paint_metalness) || 0;
 if (own > 0) return own;
-return [3, 4, 5].indexOf(params.paint_style) !== -1 ? ANODIZED_METALNESS : 0;
+return isAnodized(params) ? ANODIZED.metalness : 0;
 }
 
 // ---------- pattern seed ----------
@@ -637,12 +641,13 @@ const name = String(node.name || '').toLowerCase();
 if (name.indexOf('body_hd') !== -1) hasHd = true;
 if (name.indexOf('body_legacy') !== -1) hasLegacy = true;
 });
-if (!hasHd || !hasLegacy) return;
+if (!hasHd || !hasLegacy) return false;
 object.traverse(node => {
 const name = String(node.name || '').toLowerCase();
 if (name.indexOf('body_hd') !== -1) node.visible = useHd;
 else if (name.indexOf('body_legacy') !== -1) node.visible = !useHd;
 });
+return useHd;
 }
 
 // Под какой корпус раскраска: флаг use_legacy_model из items_game
@@ -656,8 +661,10 @@ return skin.format === 'vcompmat' || skin.format === 'template';
 
 // wear — float предмета (0 = новый, 1 = полностью убитый).
 function applySkinToModel(THREE, object, skin, wear, weapon, maskChannel, seed){
-const useHd = skinUsesHdBody(skin);
-selectModelBody(object, useHd);
+// true — только если у модели правда есть HD-корпус и он включён.
+// У ножей корпус один, и маска ствола им нужна всегда (иначе краска
+// ложилась и на рукоять — Falchion Gamma Doppler).
+const useHd = selectModelBody(object, skinUsesHdBody(skin));
 // Текстуры ствола (маски зон, цвет, AO) сняты со старого корпуса — на
 // HD-корпусе развёртка другая, и они дают розовые края и пятна.
 // Раскраска нового формата и так покрывает ствол целиком.
@@ -718,6 +725,8 @@ uPatternOffset: { value: new THREE.Vector2(placement.offset[0], placement.offset
 uWearScale: { value: skin.params.wear_scale || 1 },
 uGrungeScale: { value: skin.params.grunge_scale || 1 },
 uPaintMetalness: { value: paintMetalness(skin.params) },
+uPaintRoughness: { value: ANODIZED.roughness },
+uHasPaintRoughness: { value: isAnodized(skin.params) ? 1 : 0 },
 uUseColors: { value: skin.solid || skinUsesColorMask(skin.params) ? 1 : 0 },
 uColors: { value: skinColors(THREE, skin.params) },
 // Узор грузится как sRGB, а маске нужны исходные значения каналов.
@@ -764,6 +773,7 @@ if (skin.rough){
 material.roughnessMap = skin.rough;
 material.roughness = 1.0;
 } else if (weapon && weapon.rough) material.roughnessMap = weapon.rough;
+if (isAnodized(skin.params)) material.envMapIntensity = ANODIZED.envIntensity;
 
 // Рельеф и затенение из комплекта скина — новый формат отдаёт их
 // отдельными слоями, и с ними металл перестаёт быть плоским.
@@ -830,6 +840,8 @@ uniform vec2 uPatternOffset;
 uniform float uWearScale;
 uniform float uGrungeScale;
 uniform float uPaintMetalness;
+uniform float uPaintRoughness;
+uniform int uHasPaintRoughness;
 uniform int uUseColors;
 uniform int uSolid;
 uniform vec3 uColors[4];
@@ -921,7 +933,10 @@ if (uMaskChannel != 4) diffuseColor.rgb = result;
 // металлической (paint_metalness = 1): там, где она лежит, берём
 // металличность из params.json, на голом металле — как было.
 .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>
-metalnessFactor = mix(metalnessFactor, uPaintMetalness, skinCover);`);
+metalnessFactor = mix(metalnessFactor, uPaintMetalness, skinCover);`)
+// Анодированная краска — полированная, где бы она ни лежала.
+.replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
+if (uHasPaintRoughness == 1) roughnessFactor = mix(roughnessFactor, uPaintRoughness, skinCover);`);
 };
 
 node.material = material;
@@ -1336,6 +1351,8 @@ open3DViewer(buy3dEntry.model, title, buy3dEntry.skin, Number(skin.float_value) 
 // ссылкой.
 const GIFENC_URL = 'https://cdn.jsdelivr.net/npm/gifenc@1.0.3/dist/gifenc.esm.js';
 const SHARE_GIF = { width: 360, height: 240, frames: 36, delay: 70, colors: 128 };
+// Картинка для «Поделиться» — один кадр крупнее, чем у GIF.
+const SHARE_PHOTO = { width: 1080, height: 720, quality: 0.9 };
 let gifencLoading = null;
 
 function loadGifEncoder(){
@@ -1348,25 +1365,30 @@ throw err;
 return gifencLoading;
 }
 
-function drawShareFrame(ctx, glCanvas, title){
-const { width: W, height: H } = SHARE_GIF;
-const bg = ctx.createRadialGradient(W / 2, H / 2, 10, W / 2, H / 2, W * 0.7);
+function drawShareFrame(ctx, glCanvas, title, size){
+const { width: W, height: H } = size || SHARE_GIF;
+// Шрифты и отступы — от ширины GIF (360), чтобы картинка выглядела так же.
+const k = W / SHARE_GIF.width;
+const bg = ctx.createRadialGradient(W / 2, H / 2, 10 * k, W / 2, H / 2, W * 0.7);
 bg.addColorStop(0, '#2a1650');
 bg.addColorStop(1, '#0c0816');
 ctx.fillStyle = bg;
 ctx.fillRect(0, 0, W, H);
 ctx.drawImage(glCanvas, 0, 0, W, H);
-ctx.font = 'bold 13px sans-serif';
+ctx.font = `bold ${Math.round(13 * k)}px sans-serif`;
 ctx.fillStyle = '#ffffff';
-ctx.fillText(title, 12, H - 14, W - 24);
-ctx.font = 'bold 10px monospace';
+ctx.fillText(title, 12 * k, H - 14 * k, W - 24 * k);
+ctx.font = `bold ${Math.round(10 * k)}px monospace`;
 ctx.fillStyle = '#A855F7';
-ctx.fillText('DGHOSTMARKET', 12, 18);
+ctx.fillText('DGHOSTMARKET', 12 * k, 18 * k);
 }
 
-async function render3DGif(entry, wear, title, onProgress, seed){
-const { width: W, height: H, frames, delay, colors } = SHARE_GIF;
-const [, gifenc] = await Promise.all([loadGltfLoader(), loadGifEncoder()]);
+// still: true — вместо GIF один кадр JPEG (SHARE_PHOTO).
+async function render3DGif(entry, wear, title, onProgress, seed, still){
+const size = still ? SHARE_PHOTO : SHARE_GIF;
+const { width: W, height: H } = size;
+const { frames, delay, colors } = SHARE_GIF;
+const [, gifenc] = await Promise.all([loadGltfLoader(), still ? null : loadGifEncoder()]);
 
 await loadModelIndex();
 const response = await fetch(modelsUrl(entry.model));
@@ -1398,7 +1420,9 @@ selectModelBody(object, false);
 scene.add(object);
 fitObjectToView(THREE, gltf.scene, camera);
 // Ствол только покачивается, запас под полный оборот не нужен.
-camera.position.multiplyScalar(0.78);
+// На картинке кадр один — оставляем запас, чтобы ножи (они стоят
+// вертикально) не обрезались сверху и снизу.
+if (!still) camera.position.multiplyScalar(0.78);
 applySkinToModel(THREE, object, skin, wear, weapon, 'none', seed);
 await setupViewerScene(THREE, renderer, scene);
 
@@ -1406,6 +1430,18 @@ const out = document.createElement('canvas');
 out.width = W;
 out.height = H;
 const ctx = out.getContext('2d', { willReadFrequently: true });
+
+if (still){
+// Тот же ракурс, что в середине покачивания GIF, чуть повёрнутый к камере.
+object.rotation.y = Math.PI / 2 + 0.3;
+renderer.render(scene, camera);
+drawShareFrame(ctx, glCanvas, title, size);
+if (onProgress) onProgress(1);
+const blob = await new Promise(resolve => out.toBlob(resolve, 'image/jpeg', SHARE_PHOTO.quality));
+if (!blob) throw new Error('не получилось сохранить картинку');
+return new Uint8Array(await blob.arrayBuffer());
+}
+
 const encoder = gifenc.GIFEncoder();
 
 for (let i = 0; i < frames; i++){
@@ -1443,33 +1479,45 @@ binary += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
 return btoa(binary);
 }
 
-// true — сообщение с GIF отправлено в окно выбора чата; false —
-// GIF здесь невозможен (нет 3D у лота или старый Telegram), и
-// вызывающий код делится ссылкой по-старому.
-async function share3DLot(skin, onStatus){
-if (!skin || buy3dSkin !== skin || !buy3dEntry) return false;
-if (!tg || !tg.initData || typeof tg.shareMessage !== 'function') return false;
-if (typeof tg.isVersionAtLeast === 'function' && !tg.isVersionAtLeast('8.0')) return false;
+// Есть ли у открытого лота 3D — без него картинку и GIF не сделать.
+function canShare3DLot(skin){
+return !!(skin && buy3dSkin === skin && buy3dEntry && tg && tg.initData);
+}
 
+// kind: 'photo' — картинка, 'gif' — анимация. Рисуем лот, загружаем
+// боту, и бот присылает его в личку с кнопкой «Открыть лот» — оттуда
+// пересылают друзьям. Окно shareMessage на телефонах молча не
+// открывалось, а пересылка из лички работает везде.
+async function share3DLot(skin, onStatus, kind){
+if (!canShare3DLot(skin)) throw new Error('no_3d');
+const still = kind === 'photo';
 const dict = I18N[currentLang] || I18N.ru;
 const title = (skin.stattrak ? 'StatTrak™ ' : '') + skin.title;
 const say = (text) => { if (onStatus) onStatus(text); };
+const preparing = still ? dict.share_photo_preparing : dict.share_gif_preparing;
 
-say(dict.share_gif_preparing.replace('{p}', '0'));
+say(preparing.replace('{p}', '0'));
 const bytes = await render3DGif(buy3dEntry, Number(skin.float_value) || 0, title,
-p => say(dict.share_gif_preparing.replace('{p}', Math.round(p * 100))), skin.pattern);
+p => say(preparing.replace('{p}', Math.round(p * 100))), skin.pattern, still);
 
+const payload = { init_data: tg.initData, skin_id: skin.id, kind: still ? 'photo' : 'gif' };
+payload[still ? 'image_base64' : 'gif_base64'] = bytesToBase64(bytes);
 const response = await fetch(API_BASE + '/api/share/prepare', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ init_data: tg.initData, skin_id: skin.id, gif_base64: bytesToBase64(bytes) }),
+body: JSON.stringify(payload),
 });
 const data = await response.json().catch(() => ({}));
-if (!response.ok || !data.prepared_id) throw new Error(data.error || ('HTTP ' + response.status));
+if (!response.ok || !data.gif_url) throw new Error(data.error || ('HTTP ' + response.status));
 
-say('');
-tg.shareMessage(data.prepared_id, (sent) => {
-if (sent) say(dict.share_gif_sent);
+const name = String(data.gif_url).split('/').pop();
+const sent = await fetch(API_BASE + '/api/share/send', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData, skin_id: skin.id, name }),
 });
+const sentData = await sent.json().catch(() => ({}));
+if (!sent.ok) throw new Error(sentData.error || ('HTTP ' + sent.status));
+say(dict.share_sent_dm);
 return true;
 }
