@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 46;
+const APP3D_VERSION = 47;
 
 let threeLoading = null;
 
@@ -1842,16 +1842,29 @@ throw err;
 return gifencLoading;
 }
 
-function drawShareFrame(ctx, glCanvas, title, size){
+function drawShareFrame(ctx, glCanvas, title, size, bgImage){
 const { width: W, height: H } = size || SHARE_GIF;
 // Шрифты и отступы — от ширины GIF (360), чтобы картинка выглядела так же.
 const k = W / SHARE_GIF.width;
+if (bgImage){
+ctx.drawImage(bgImage, 0, 0, W, H);
+} else {
 const bg = ctx.createRadialGradient(W / 2, H / 2, 10 * k, W / 2, H / 2, W * 0.7);
 bg.addColorStop(0, '#2a1650');
 bg.addColorStop(1, '#0c0816');
 ctx.fillStyle = bg;
 ctx.fillRect(0, 0, W, H);
+}
 ctx.drawImage(glCanvas, 0, 0, W, H);
+// На светлом фоне карты подписи терялись — тёмные полосы под ними.
+if (bgImage){
+const top = ctx.createLinearGradient(0, 0, 0, 34 * k);
+top.addColorStop(0, 'rgba(8,6,14,0.75)'); top.addColorStop(1, 'rgba(8,6,14,0)');
+ctx.fillStyle = top; ctx.fillRect(0, 0, W, 34 * k);
+const bottom = ctx.createLinearGradient(0, H - 44 * k, 0, H);
+bottom.addColorStop(0, 'rgba(8,6,14,0)'); bottom.addColorStop(1, 'rgba(8,6,14,0.8)');
+ctx.fillStyle = bottom; ctx.fillRect(0, H - 44 * k, W, 44 * k);
+}
 ctx.font = `bold ${Math.round(13 * k)}px sans-serif`;
 ctx.fillStyle = '#ffffff';
 ctx.fillText(title, 12 * k, H - 14 * k, W - 24 * k);
@@ -2005,6 +2018,13 @@ if (!response.ok || !data.gif_url) throw new Error(data.error || ('HTTP ' + resp
 return { preparedId: data.prepared_id || null, name: String(data.gif_url).split('/').pop() };
 };
 
+if (kind === 'hands'){
+const handsPreparing = dict.share_hands_preparing || preparing;
+const clip = await render3DHandsVideo(buy3dEntry, Number(skin.float_value) || 0, title, skin.pattern,
+p => say(handsPreparing.replace('{p}', Math.round(p * 100))));
+return await upload(clip, 'video');
+}
+
 say(preparing.replace('{p}', '0'));
 // «GIF» — сначала видео (чётче, Telegram показывает его той же гифкой);
 // не умеет браузер или бот не принял — обычный GIF.
@@ -2157,4 +2177,113 @@ camera.near = 0.01;
 camera.updateProjectionMatrix();
 camera.position.set(0, 0, 0);
 camera.lookAt(0, -0.12, 1);
+}
+
+// ---------- «Поделиться»: видео ножа в руках ----------
+// Для ножей с комплектом анимаций (models/anim/<нож>/): руки крутят нож
+// со скином лота — анимация осмотра, фон — карта CS2 (размыта и
+// затемнена, как в просмотрщике), сверху логотип, снизу название.
+const SHARE_HANDS = { clip: 'lookat01', background: 'de_mirage.webp' };
+const handsPackCache = {};
+
+function handsAnimDir(entry){
+const name = ((String(entry && entry.model || '').match(/([a-z0-9_]+)\.glb$/i) || [])[1] || '').toLowerCase();
+return /^(knife_|bayonet)/.test(name) ? 'models/anim/' + name + '/' : null;
+}
+
+// Есть ли у ножа лота комплект анимаций (промис true/false).
+function hasHandsPack(entry){
+const dir = handsAnimDir(entry);
+if (!dir) return Promise.resolve(false);
+if (!(dir in handsPackCache)){
+handsPackCache[dir] = loadModelIndex()
+.then(() => fetch(modelsUrl(dir + 'index.json')))
+.then(r => r.ok ? r.json() : null)
+.then(index => !!(index && index.arms && index.knife && Array.isArray(index.clips)
+&& index.clips.some(c => /^lookat/.test(c.id))))
+.catch(() => false);
+}
+return handsPackCache[dir];
+}
+
+function canShareInHands(skin){
+if (!canShare3DLot(skin) || !pickShareVideoMime()) return Promise.resolve(false);
+return hasHandsPack(buy3dEntry);
+}
+
+// Фон карты для кадра: размытие — уменьшением и обратным растяжением
+// (ctx.filter есть не во всех WebView), плюс затемнение.
+function loadShareBackground(W, H){
+return new Promise(resolve => {
+const img = new Image();
+img.crossOrigin = 'anonymous';
+img.onload = () => {
+const small = document.createElement('canvas');
+small.width = Math.max(1, Math.round(W / 8));
+small.height = Math.max(1, Math.round(H / 8));
+const sctx = small.getContext('2d');
+const r = Math.max(small.width / img.width, small.height / img.height);
+sctx.drawImage(img, (small.width - img.width * r) / 2, (small.height - img.height * r) / 2, img.width * r, img.height * r);
+const big = document.createElement('canvas');
+big.width = W; big.height = H;
+const bctx = big.getContext('2d');
+bctx.imageSmoothingQuality = 'high';
+bctx.drawImage(small, 0, 0, W, H);
+bctx.fillStyle = 'rgba(0,0,0,0.3)';
+bctx.fillRect(0, 0, W, H);
+resolve(big);
+};
+img.onerror = () => resolve(null);
+img.src = modelsUrl('models/backgrounds/' + SHARE_HANDS.background);
+});
+}
+
+async function render3DHandsVideo(entry, wear, title, seed, onProgress){
+await loadGltfLoader();
+await loadModelIndex();
+const dir = handsAnimDir(entry);
+if (!dir) throw new Error('no_hands');
+const { width: W, height: H, supersample: ss } = SHARE_VIDEO;
+const [ih, [skin, weapon], bg] = await Promise.all([
+loadInHandsScene(THREE, dir, SHARE_HANDS.clip),
+loadSkinWithWeapon(THREE, entry.skin, entry.weapon),
+loadShareBackground(W, H),
+]);
+applySkinToModel(THREE, ih.knifeGroup, skin, wear, weapon, 'none', seed);
+
+const glCanvas = document.createElement('canvas');
+glCanvas.width = W * ss;
+glCanvas.height = H * ss;
+const renderer = new THREE.WebGLRenderer({ canvas: glCanvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
+const scene = new THREE.Scene();
+try {
+renderer.setPixelRatio(1);
+renderer.setSize(W * ss, H * ss, false);
+renderer.setClearColor(0x000000, 0);
+await setupViewerScene(THREE, renderer, scene);
+scene.add(ih.root);
+const camera = new THREE.PerspectiveCamera(IN_HANDS_FOV, W / H, 0.01, 10);
+placeInHandsCamera(THREE, ih, camera);
+camera.aspect = W / H;
+camera.updateProjectionMatrix();
+
+const out = document.createElement('canvas');
+out.width = W;
+out.height = H;
+const ctx = out.getContext('2d');
+return await recordCanvasVideo(out, (p) => {
+ih.setTime(Math.min(p, 0.999) * ih.duration);
+renderer.render(scene, camera);
+drawShareFrame(ctx, glCanvas, title, SHARE_VIDEO, bg);
+}, Object.assign({}, SHARE_VIDEO, { seconds: ih.duration }), onProgress);
+} finally {
+scene.traverse(node => {
+if (node.geometry) node.geometry.dispose();
+if (node.material){
+(Array.isArray(node.material) ? node.material : [node.material]).forEach(m => m.dispose());
+}
+});
+renderer.dispose();
+if (renderer.forceContextLoss) renderer.forceContextLoss();
+}
 }
