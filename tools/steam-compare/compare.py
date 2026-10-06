@@ -62,6 +62,21 @@ WEARS = [('Field-Tested', 0.25), ('Minimal Wear', 0.1), ('Factory New', 0.03),
          ('Well-Worn', 0.41), ('Battle-Scarred', 0.6)]
 
 
+def spread_sample(names, k):
+    """
+    k названий вразброс по всему списку (через равный шаг), со сдвигом
+    по неделе года — за несколько запусков пройдём все. Подряд идущий
+    кусок отсортированного списка брал скины двух-трёх стволов.
+    """
+    n = len(names)
+    if not k or k >= n:
+        return list(names)
+    step = n / k
+    week = datetime.date.today().isocalendar()[1]
+    shift = week % max(int(step), 1)
+    return [names[(int(i * step) + shift) % n] for i in range(k)]
+
+
 def prepare_csfloat(out, index, names):
     """
     Образцы с CSFloat: для каждого скина — реальные экземпляры с разными
@@ -126,10 +141,7 @@ def prepare(out):
             # Широкая сверка: MAX_SKINS скинов с 3D, по кругу от запуска к
             # запуску (неделя года), по PER_SKIN образцов на скин.
             all_names = sorted(n for n, e in index.items() if isinstance(e, dict) and e.get('skin'))
-            k = MAX_SKINS or len(all_names)
-            week = datetime.date.today().isocalendar()[1]
-            start = (week * k) % max(len(all_names), 1)
-            names = (all_names + all_names)[start:start + k] if k < len(all_names) else all_names
+            names = spread_sample(all_names, MAX_SKINS)
         jobs = prepare_csfloat(out, index, names)
         # Группа раскраски (формат и стиль) — чтобы видеть, какой тип
         # раскрасок рисуется хуже всего, и чинить целыми группами.
@@ -159,10 +171,7 @@ def prepare(out):
     if only:
         chosen = [n for n in names if n in only]
     elif MAX_SKINS and len(names) > MAX_SKINS:
-        # По кругу: каждую неделю следующий кусок списка.
-        week = datetime.date.today().isocalendar()[1]
-        start = (week * MAX_SKINS) % len(names)
-        chosen = (names + names)[start:start + MAX_SKINS]
+        chosen = spread_sample(names, MAX_SKINS)
     else:
         chosen = names
 
