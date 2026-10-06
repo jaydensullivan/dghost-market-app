@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 37;
+const APP3D_VERSION = 38;
 
 let threeLoading = null;
 
@@ -526,6 +526,11 @@ const k = Number(window.DGHOST_TPL_SCALE) || 1;
 return skin.format === 'template' && [1, 2].indexOf(skin.params.paint_style) !== -1 ? k : 1;
 }
 
+function colorVec4(THREE, list){
+const v = Array.isArray(list) ? list.map(Number) : [0, 0, 0, 0];
+return new THREE.Vector4(v[0] || 0, v[1] || 0, v[2] || 0, v[3] || 0);
+}
+
 function isKnifeName(name){
 return name === 'bayonet' || name.indexOf('knife') === 0;
 }
@@ -750,6 +755,12 @@ uSkinMetal: { value: skin.metalness || pattern },
 // магазин и мелкие детали.
 uPbn: { value: skin.pbn || pattern },
 uHasPbn: { value: skin.pbn ? 1 : 0 },
+// Металличность и шероховатость каждого из четырёх цветов (шаблоны:
+// у MP7 Amberline оранжевый и белый — металлик, тёмные детали — нет).
+uColorMetal: { value: colorVec4(THREE, skin.params.color_metalness) },
+uColorRough: { value: colorVec4(THREE, skin.params.color_roughness) },
+uHasColorMetal: { value: Array.isArray(skin.params.color_metalness) ? 1 : 0 },
+uHasColorRough: { value: Array.isArray(skin.params.color_roughness) ? 1 : 0 },
 uHasSkinMetal: { value: skin.metalness ? 1 : 0 },
 uPaintRoughness: { value: ANODIZED.roughness },
 uHasPaintRoughness: { value: isAnodized(skin.params) ? 1 : 0 },
@@ -846,7 +857,11 @@ vSkinUv = uv;
 // Проекция сбоку: обе оси делим на длину оружия, чтобы узор не
 // растягивался по высоте.
 vec3 rootPos = (uToRoot * vec4(position, 1.0)).xyz - uProjMin;
-vProjUv = vec2(dot(rootPos, uProjU), dot(rootPos, uProjV)) / uProjLen;`);
+vProjUv = vec2(dot(rootPos, uProjU), dot(rootPos, uProjV)) / uProjLen;
+// Вдоль ствола узор идёт от дула к прикладу — сверено с реальными
+// экземплярами CSFloat по паттернам (MP7 Amberline: совпадение цвета
+// 68% → 78%; у Glock Moonrise луна встала ближе к дулу, как в игре).
+vProjUv.x = -vProjUv.x;`);
 
 shader.fragmentShader = shader.fragmentShader
 .replace('#include <common>', `#include <common>
@@ -875,6 +890,10 @@ uniform float uPaintRoughness;
 uniform sampler2D uSkinMetal;
 uniform sampler2D uPbn;
 uniform int uHasPbn;
+uniform vec4 uColorMetal;
+uniform vec4 uColorRough;
+uniform int uHasColorMetal;
+uniform int uHasColorRough;
 uniform int uHasSkinMetal;
 uniform int uHasPaintRoughness;
 uniform int uUseColors;
@@ -890,6 +909,8 @@ varying vec2 vProjUv;`)
 .replace('#include <color_fragment>', `#include <color_fragment>
 // Доля покрытия краской — нужна ниже, для металличности.
 float skinCover = 0.0;
+// Какой из четырёх цветов где лежит — для металличности по цветам.
+vec4 colorWeight = vec4(1.0, 0.0, 0.0, 0.0);
 {
 // Родной вид ствола: то, что видно на неокрашиваемых деталях.
 vec3 base = uHasWeapon == 1 ? texture2D(uBaseColor, vSkinUv).rgb : vec3(0.22);
@@ -935,11 +956,17 @@ pattern = uColors[0];
 pattern = mix(pattern, uColors[1], m.r);
 pattern = mix(pattern, uColors[2], m.g);
 pattern = mix(pattern, uColors[3], m.b);
+colorWeight = mix(colorWeight, vec4(0.0, 1.0, 0.0, 0.0), m.r);
+colorWeight = mix(colorWeight, vec4(0.0, 0.0, 1.0, 0.0), m.g);
+colorWeight = mix(colorWeight, vec4(0.0, 0.0, 0.0, 1.0), m.b);
 if (uHasPbn == 1){
 vec3 zone = texture2D(uPbn, vSkinUv).rgb;
 pattern = mix(pattern, uColors[1], zone.r);
 pattern = mix(pattern, uColors[2], zone.g);
 pattern = mix(pattern, uColors[3], zone.b);
+colorWeight = mix(colorWeight, vec4(0.0, 1.0, 0.0, 0.0), zone.r);
+colorWeight = mix(colorWeight, vec4(0.0, 0.0, 1.0, 0.0), zone.g);
+colorWeight = mix(colorWeight, vec4(0.0, 0.0, 0.0, 1.0), zone.b);
 }
 }
 pattern *= uColorBrightness;
@@ -980,11 +1007,13 @@ if (uMaskChannel != 4) diffuseColor.rgb = result;
 // металлической (paint_metalness = 1): там, где она лежит, берём
 // металличность из params.json, на голом металле — как было.
 .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>
-metalnessFactor = mix(metalnessFactor,
-uHasSkinMetal == 1 ? texture2D(uSkinMetal, vSkinUv).r : uPaintMetalness, skinCover);`)
+float paintMetal = uHasSkinMetal == 1 ? texture2D(uSkinMetal, vSkinUv).r
+: (uHasColorMetal == 1 ? dot(colorWeight, uColorMetal) : uPaintMetalness);
+metalnessFactor = mix(metalnessFactor, paintMetal, skinCover);`)
 // Анодированная краска — полированная, где бы она ни лежала.
 .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
-if (uHasPaintRoughness == 1) roughnessFactor = mix(roughnessFactor, uPaintRoughness, skinCover);`);
+if (uHasPaintRoughness == 1) roughnessFactor = mix(roughnessFactor, uPaintRoughness, skinCover);
+if (uHasColorRough == 1) roughnessFactor = mix(roughnessFactor, dot(colorWeight, uColorRough), skinCover);`);
 };
 
 node.material = material;
