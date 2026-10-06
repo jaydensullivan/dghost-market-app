@@ -54,9 +54,46 @@ export_one() {
     return 1
 }
 
+echo "::group::weapons/models/shared — всё, кроме текстур"
+grep -iE '^weapons/models/shared/' "$D" | grep -viE '\.vtex_c|\.vmat_c' | sed 's/ crc=.*//' | head -80
+echo "::endgroup::"
+echo "::group::всё про butterfly (любые файлы)"
+grep -i 'butterfly' "$D" | grep -viE '\.vtex_c|\.vmat_c|sticker|paints|econ' | sed 's/ crc=.*//' | head -60
+echo "::endgroup::"
+echo "::group::наборы анимаций (vanmgrph / vagrp / animset)"
+grep -iE '\.(vanmgrph|vagrp|vnmgraph|vnmclip|vnmskel)_c|animset|animgraph' "$D" | grep -iE 'weapon|knife|arms|first|v_' | sed 's/ crc=.*//' | head -80
+echo "::endgroup::"
+
+# Модель рук со всеми анимациями — какие клипы в ней есть.
+ARMS=weapons/models/shared/arms/weapon_arms.vmdl_c
+echo "::group::экспорт рук с анимациями"
+rm -rf "$OUT"; mkdir -p "$OUT"
+export_one "$ARMS" --gltf_export_format glb --gltf_export_animations && echo "  руки: ок"
+find "$OUT" -name '*.glb' -exec ls -la {} \;
+echo "::endgroup::"
+python3 - "$OUT" <<'PY'
+import json, os, struct, sys
+for path, dirs, files in os.walk(sys.argv[1]):
+    for f in files:
+        if not f.endswith('.glb'):
+            continue
+        b = open(os.path.join(path, f), 'rb').read()
+        n = struct.unpack('<I', b[12:16])[0]
+        j = json.loads(b[20:20 + n])
+        anims = j.get('animations', [])
+        print(f'== {f}: {len(b) // 1024} КБ, узлов {len(j.get("nodes", []))}, мешей {len(j.get("meshes", []))}, анимаций {len(anims)}')
+        def dur(a):
+            return max([(j['accessors'][s['input']].get('max') or [0])[0] for s in a.get('samplers', [])] or [0])
+        names = [(a.get('name') or '', dur(a), len(a.get('channels', []))) for a in anims]
+        knife = [x for x in names if 'butterfly' in x[0].lower() or 'knife' in x[0].lower()]
+        print(f'   клипов с knife/butterfly: {len(knife)}')
+        for nm, d, c in knife[:80]:
+            print(f'   {nm}: {d:.2f} с, каналов {c}')
+        print('   первые 40 клипов:', ', '.join(x[0] for x in names[:40]))
+PY
+
 MDL=$(grep -iE "weapons/models/knife/$KNIFE/[^ ]*\.vmdl_c" "$D" | sed 's/ crc=.*//' | grep -viE 'phys|ag_|_ag\.' | head -1)
 echo "Модель ножа: $MDL"
-rm -rf "$OUT"; mkdir -p "$OUT"
 if [ -n "$MDL" ]; then
     echo "::group::экспорт glb"
     export_one "$MDL" --gltf_export_format glb --gltf_export_animations && echo "  с --gltf_export_animations: ок" \
