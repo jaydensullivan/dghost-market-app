@@ -848,7 +848,7 @@ uHasSkinMask: { value: skin.mask && skin.format !== 'vcompmat' ? 1 : 0 },
 uHasGrunge: { value: skin.grunge ? 1 : 0 },
 uHasWear: { value: skin.wear ? 1 : 0 },
 uBaseColor: { value: weapon ? weapon.color : null },
-uPaintMask: { value: weapon ? weapon.masks : null },
+uPaintMask: { value: skin.zones || (weapon ? weapon.masks : null) },
 uAo: { value: weapon ? weapon.ao : null },
 uWearAmount: { value: Math.max(0, Math.min(1, wear || 0)) },
 uPatternScale: { value: (skin.params.pattern_scale || 1) * weaponPatternScale(skin, weaponName) * templateScaleTest(skin) },
@@ -1235,6 +1235,10 @@ ao: pickLayer(textures, SKIN_LAYER_ALIASES.ao),
 ramp: textures.ramp || null,
 metalness: textures.metalness || null,
 pbn: textures.pbn || null,
+// Свои маски зон ствола (g_tPaintByNumberMasks при
+// g_bOverrideDefaultMasks): цвета 1–3 шаблона ложатся по их R/G/B
+// вместо масок самого ствола (Pink Pearl, Royal Guard, Leafhopper).
+zones: textures.zones || null,
 };
 
 const names = Object.keys(wanted);

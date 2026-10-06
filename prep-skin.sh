@@ -212,6 +212,37 @@ if template_style is not None:
     if 'pbn' in textures and not re.search(
             r'g_bUsePaintByNumberMasks"(?:(?!m_strName).)*?m_bValueBoolean\s*=\s*true', recipe, re.S):
         textures.pop('pbn', None)
+    # Свои маски зон ствола вместо стандартных (g_bOverrideDefaultMasks):
+    # цвета 1–3 ложатся по их R/G/B. Без них у Pink Pearl, Royal Guard и
+    # Leafhopper цвета попадали не на те детали.
+    def recipe_texture(name):
+        found = None
+        for m in re.finditer(r'm_strName\s*=\s*"%s"(.*?)(?=m_strName\s*=|\Z)' % name, recipe, re.S):
+            t = re.search(r'resource_name:"([^"]+)"', m.group(1))
+            if t:
+                found = t.group(1)
+        return found
+    def png_for(resource):
+        stem = re.sub(r'\.vtex$', '', os.path.basename(resource).lower())
+        base = re.sub(r'_(tga|psd|png)_[0-9a-f]+$', '', stem)
+        for _, p in pngs:
+            pstem = os.path.basename(p)[:-4].lower()
+            if pstem == stem or re.sub(r'_(tga|psd|png)_[0-9a-f]+$', '', pstem) == base:
+                return p
+        return None
+    zones_res = recipe_texture('g_tPaintByNumberMasks')
+    if loose.get('g_bOverrideDefaultMasks#b') and zones_res and 'materials/default/' not in zones_res:
+        zp = png_for(zones_res)
+        if zp:
+            img = Image.open(zp).convert('RGB')
+            if max(img.size) > 1024:
+                k = 1024 / max(img.size)
+                img = img.resize((int(img.size[0] * k), int(img.size[1] * k)), Image.LANCZOS)
+            img.save(os.path.join(dest, 'zones.webp'), 'WEBP', quality=90, method=6, exact=True)
+            textures['zones'] = 'zones.webp'
+            print(f'  zones: {os.path.basename(zp)}')
+        else:
+            print(f'  zones: нет картинки для {zones_res}')
     wear = sorted(glob.glob(os.path.join(shared, 'wear_*.webp')))
     if wear:
         textures['wear'] = 'models/shared/' + os.path.basename(wear[0])
@@ -236,8 +267,8 @@ if template_style is not None:
         'finish': finish,
         'material': 'weapons/paints/' + compfile.split('/weapons/paints/', 1)[-1],
         'format': 'template',
-        # 4 — металличность/шероховатость по цветам.
-        'prep_version': 4,
+        # 4 — металличность/шероховатость по цветам; 5 — свои маски зон.
+        'prep_version': 5,
         'textures': textures,
         'shader': shader,
     }

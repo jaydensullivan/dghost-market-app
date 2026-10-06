@@ -451,7 +451,8 @@ build_skin() {
 #  2 — WebP терял цвет под нулевой альфой (AWP Printstream полосатый),
 #      у закалки (gsch_…) не было палитры;
 #  3 — зоны покраски (paint by number: MP7 Amberline выходил белым) и
-#      металличность краски (SSG 08 Zeno — металлик, а не белая матовая).
+#      металличность краски (SSG 08 Zeno — металлик, а не белая матовая);
+#  5 (шаблоны) — свои маски зон ствола вместо стандартных.
 # Что нужно, смотрим по рецепту из recipes/. Остальным просто ставим версию.
 if [ "$MODE" != "status" ] && [ -d "$REPO/models/skins" ]; then
 python3 - "$REPO/models/skins" "$REPO/recipes" <<'PY'
@@ -471,7 +472,7 @@ for finish in sorted(os.listdir(root)):
     if not os.path.isfile(pfile):
         continue
     meta = json.load(open(pfile, encoding='utf-8'))
-    target = 4 if meta.get('format') == 'template' else 3
+    target = 5 if meta.get('format') == 'template' else 3
     if meta.get('format') not in ('vcompmat', 'template') or meta.get('prep_version', 1) >= target:
         continue
     pattern = os.path.join(root, finish, 'pattern.webp')
@@ -485,6 +486,9 @@ for finish in sorted(os.listdir(root)):
         # 4: у шаблона заданы металличность/шероховатость по цветам.
         or meta.get('format') == 'template' and meta.get('prep_version', 1) < 4
            and re.search(r'"g_vPaintMetalness"', recipe) is not None
+        # 5: свои маски зон ствола (Pink Pearl, Royal Guard, Leafhopper).
+        or meta.get('format') == 'template'
+           and uses(recipe, 'g_bOverrideDefaultMasks', 'g_tPaintByNumberMasks')
     )
     if need:
         # Без params.json скин не считается готовым (skin_ready) и соберётся заново.
