@@ -66,12 +66,13 @@ for name, keys, max_side, mode in WANTED:
         print(f'  {name}: не нашёл')
         continue
 
-    img = Image.open(png)
+    # Режим — до уменьшения: RGBA Pillow уменьшает с домножением на
+    # альфу, а у масок она почти нулевая (маска выходила чёрной).
+    img = Image.open(png).convert(mode)
     w, h = img.size
     if max(w, h) > max_side:
         k = max_side / max(w, h)
         img = img.resize((int(w * k), int(h * k)), Image.LANCZOS)
-    img = img.convert(mode)
 
     out = os.path.join(dest, name + '.webp')
     # Маску сохраняем без потерь: от неё зависит, где лежит краска.
@@ -89,38 +90,63 @@ for name, keys, max_side, mode in WANTED:
 # (composite_inputs/…_masks, <ствол>_default_color/ao/rough). Без них
 # мини-апп заливал HD-корпус одним цветом. Всегда пишем ключ "hd"
 # (null — не нашлось), чтобы build-all.sh не пересобирал ствол заново.
+# Какие файлы берёт игра — из composite_inputs.vmat HD-корпуса: g_tMasks
+# (зоны), g_tColor (основа под краской; у M249 это substrate_color, а не
+# default_color). AO — родной default_ao (в composite лежит cavity с
+# другой раскладкой каналов). Если vmat не нашёлся — по именам файлов.
 HD_WANTED = [
-    ('masks', r'composite_inputs/[^/]*_masks', 1024, 'RGB'),
-    ('color', r'materials/[^/]*_default_color', 2048, 'RGB'),
-    ('rough', r'materials/[^/]*_default_rough', 1024, 'L'),
-    ('ao',    r'materials/[^/]*_default_ao', 1024, 'L'),
+    ('masks', 'g_tMasks', r'composite_inputs/[^/]*_masks', 1024, 'RGB'),
+    ('color', 'g_tColor', r'materials/[^/]*_default_color', 2048, 'RGB'),
+    ('rough', None, r'materials/[^/]*_default_rough', 1024, 'L'),
+    ('ao', None, r'materials/[^/]*_default_ao', 1024, 'L'),
 ]
 # Папка HD-корпуса в игре; у M4A4 и Glock она зовётся не как в items_game.
 # Строго своя папка: в выемке для m4a1 лежат и файлы m4a1_silencer.
 hd_dir = {'m4a1': 'm4a4', 'glock': 'glock18'}.get(weapon, weapon)
-hd_cands = [c.replace(os.sep, '/') for c in candidates
-            if f'/weapons/models/{hd_dir}/materials/' in c.replace(os.sep, '/').lower()]
-hd = {}
-for name, pat, max_side, mode in HD_WANTED:
+hd_marker = f'/weapons/models/{hd_dir}/materials/'
+hd_cands = [c.replace(os.sep, '/') for c in candidates if hd_marker in c.replace(os.sep, '/').lower()]
+hd_vmat_params = {}
+for path, dirs, files in os.walk(src):
+    for f in files:
+        full = os.path.join(path, f).replace(os.sep, '/')
+        if f.endswith('_composite_inputs.vmat') and hd_marker in full.lower():
+            text = open(full, encoding='utf-8', errors='ignore').read()
+            hd_vmat_params = dict(re.findall(r'"(g_t[A-Za-z]+)"\s+"([^"]+)"', text))
+
+def hd_file(param, pat):
+    ref = hd_vmat_params.get(param) if param else None
+    if ref:
+        stem = os.path.splitext(os.path.basename(ref))[0].lower()
+        exact = [c for c in hd_cands if os.path.splitext(os.path.basename(c))[0].lower() == stem]
+        if exact:
+            return exact[0]
     found = sorted((c for c in hd_cands if re.search(pat, c.lower())), key=len)
-    if not found:
+    return found[0] if found else None
+
+hd = {}
+for name, param, pat, max_side, mode in HD_WANTED:
+    path = hd_file(param, pat)
+    if not path:
         print(f'  hd {name}: не нашёл')
         continue
-    img = Image.open(found[0])
+    # Сначала режим, потом размер: при уменьшении RGBA Pillow домножает
+    # цвет на альфу, а у масок она почти нулевая — маска выходила чёрной.
+    img = Image.open(path).convert(mode)
     w, h = img.size
     if max(w, h) > max_side:
         k = max_side / max(w, h)
         img = img.resize((int(w * k), int(h * k)), Image.LANCZOS)
-    img = img.convert(mode)
     os.makedirs(os.path.join(dest, 'hd'), exist_ok=True)
     out = os.path.join(dest, 'hd', name + '.webp')
     if name == 'masks':
         img.save(out, 'WEBP', lossless=True)
     else:
         img.save(out, 'WEBP', quality=88, method=6)
-    print(f'  hd {name}: {os.path.basename(found[0])} {w}x{h} → {img.size[0]}x{img.size[1]}')
+    print(f'  hd {name}: {os.path.basename(path)} {w}x{h} → {img.size[0]}x{img.size[1]}')
     hd[name] = 'hd/' + name + '.webp'
 result['hd'] = {'textures': hd} if all(k in hd for k in ('masks', 'color', 'ao')) else None
+# 2 — маска без порчи альфой и основа из composite_inputs.
+result['hd_version'] = 2
 
 with open(os.path.join(dest, 'params.json'), 'w', encoding='utf-8') as f:
     json.dump(result, f, ensure_ascii=False, indent=2)
