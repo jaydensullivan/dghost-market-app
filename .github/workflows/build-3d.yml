@@ -177,9 +177,31 @@ jobs:
           git config user.name "DGhost 3D bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+      # Проба (only = probe): только печатает из индекса архива файлы
+      # стволов и composite_inputs — по ним ищем маски HD-корпусов.
+      # Ничего не собирает и не коммитит.
+      - name: Проба архива
+        if: inputs.only == 'probe'
+        run: |
+          T="$WORK/tools/Source2Viewer-CLI"
+          "$T" -i "$WORK/game/game/csgo/pak01_dir.vpk" --vpk_dir > "$WORK/vpk_dir.txt" 2>/dev/null || true
+          wc -l "$WORK/vpk_dir.txt"
+          echo "::group::composite_inputs"
+          grep -i 'composite_input' "$WORK/vpk_dir.txt" | head -80
+          echo "::endgroup::"
+          for w in m249 m4a1_silencer ak47; do
+            echo "::group::$w"
+            grep -i "weapons/models/$w/" "$WORK/vpk_dir.txt" | grep -viE 'sticker|\.vmdl|\.vphys|\.vanim|anim' | head -80
+            echo "::endgroup::"
+          done
+          echo "::group::masks (всё)"
+          grep -iE '_masks?[_.]' "$WORK/vpk_dir.txt" | grep -i 'weapons/models' | head -80
+          echo "::endgroup::"
+
       # Останавливаемся за полчаса до лимита задачи: всё собранное уже
       # закоммичено, следующий запуск продолжит.
       - name: Сборка
+        if: inputs.only != 'probe'
         env:
           REPO: ${{ github.workspace }}/assets
           ONLY: ${{ inputs.only }}
@@ -202,7 +224,7 @@ jobs:
       # Диапазоны pattern seed (сдвиг и поворот узора) для всех готовых
       # раскрасок — из рецептов игры; считается только для новых.
       - name: Pattern seed
-        if: always()
+        if: always() && inputs.only != 'probe'
         env:
           REPO: ${{ github.workspace }}/assets
         run: |
@@ -221,7 +243,7 @@ jobs:
       # Cloudflare не выкладывается): артефакты GitHub лежат на хосте,
       # закрытом для облачного окружения, где их разбирают.
       - name: Рецепты раскрасок (в ветку)
-        if: always()
+        if: always() && inputs.only != 'probe'
         run: |
           [ -d "$WORK/export-recipes" ] || { echo "Рецептов нет — шаг пропущен."; exit 0; }
           cd "$GITHUB_WORKSPACE/assets"
@@ -238,7 +260,7 @@ jobs:
       # стилей — архивом к запуску: по ним разбираем, как игра собирает
       # раскраски нового формата (Printstream и др.), не гадая по логу.
       - name: Рецепты раскрасок (архив)
-        if: always()
+        if: always() && inputs.only != 'probe'
         uses: actions/upload-artifact@v4
         with:
           name: recipes
@@ -249,7 +271,7 @@ jobs:
       # Логи того, что не собралось в этом запуске, — прямо в журнал
       # задачи, чтобы разбирать ошибки без доступа к серверу.
       - name: Логи неудач
-        if: always()
+        if: always() && inputs.only != 'probe'
         run: |
           cd "$GITHUB_WORKSPACE/assets"
           shown=0
