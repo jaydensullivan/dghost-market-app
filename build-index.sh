@@ -240,6 +240,20 @@ os.makedirs(models_dir, exist_ok=True)
 with open(out, "w", encoding="utf-8") as f:
     json.dump(index, f, ensure_ascii=False, indent=1, sort_keys=True)
 
+# Номер раскраски (paint_index, его отдаёт inspect лота) → папка
+# раскраски. Нужен, чтобы показать точную фазу Doppler/Gamma Doppler
+# (Ruby, Sapphire, Phase 1–4): в названии предмета фазы нет, и по
+# одному названию в 3D всегда выходила одна и та же фаза.
+paint_index = {}
+pk_start = items.find('"paint_kits"')
+if pk_start != -1:
+    for m in re.finditer(r'\n\t\t"(\d+)"\s*\n\t\t\{\s*\n\t\t\t"name"\s+"([A-Za-z0-9_]+)"', items[pk_start:]):
+        if m.group(2) in have_skins:
+            paint_index[m.group(1)] = f"models/skins/{m.group(2)}"
+with open(os.path.join(models_dir, "paint_index.json"), "w", encoding="utf-8") as f:
+    json.dump(paint_index, f, ensure_ascii=False, indent=0, sort_keys=True)
+print(f"  номеров раскрасок с 3D: {len(paint_index)}")
+
 print(f"  моделей в репозитории: {len(have_models)}")
 print(f"  раскрасок в репозитории: {len(have_skins)}")
 print(f"  записей в таблице: {len(index)}")

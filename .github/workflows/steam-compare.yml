@@ -22,6 +22,9 @@ on:
       tpl_scale:
         description: "Проба: множитель масштаба узора шаблонных спрея/гидрографии (пусто — как в мини-аппе)"
         default: ""
+      per_skin:
+        description: "CSFloat: сколько экземпляров (паттернов) на скин"
+        default: "3"
       ref_source:
         description: "С чем сверять: steam (одна картинка на скин) или csfloat (реальные экземпляры с разными паттернами; нужен секрет OPS_API_KEY и список скинов)"
         default: "steam"
@@ -42,6 +45,7 @@ jobs:
       ONLY_NAMES: ${{ github.event.inputs.only_names || '' }}
       TPL_SCALE: ${{ github.event.inputs.tpl_scale || '' }}
       REF_SOURCE: ${{ github.event.inputs.ref_source || 'steam' }}
+      PER_SKIN: ${{ github.event.inputs.per_skin || '3' }}
       OPS_API_KEY: ${{ secrets.OPS_API_KEY }}
       OUT: ${{ github.workspace }}/out
     steps:
@@ -92,6 +96,7 @@ jobs:
           # Пробные запуски (свой список или множитель) — в отдельную папку,
           # чтобы не затирать еженедельный отчёт.
           DIR=reports/steam-compare
+          [ "$REF_SOURCE" = "csfloat" ] && DIR=reports/csfloat-compare
           if [ -n "$TPL_SCALE" ] || [ -n "$ONLY_NAMES" ]; then
             DIR="reports/steam-compare-probe/${REF_SOURCE}-scale-${TPL_SCALE:-1}"
           fi
@@ -120,6 +125,11 @@ jobs:
           import json, sys
           r = json.load(open(sys.argv[1], encoding='utf-8'))
           print(f"### Сверка со Steam: {r['checked']} скинов, среднее сходство {r['average_score']}")
+          if r.get('groups'):
+              print("| группа | образцов | сходство |\n|---|---|---|")
+              for g in r['groups']:
+                  print(f"| {g['group']} | {g['count']} | {g['average_score']} |")
+              print()
           print("| сходство | скин | что не так |\n|---|---|---|")
           for s in r['skins'][:20]:
               print(f"| {s['score']} | {s['name']} | {'; '.join(s['notes']) or '—'} |")
