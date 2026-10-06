@@ -1644,7 +1644,7 @@ let shareReady = null;
 
 function setShareBusy(busy){
 shareBusy = busy;
-['shareLinkBtn', 'sharePhotoBtn', 'shareGifBtn', 'shareSendBtn'].forEach(id => {
+['shareLinkBtn', 'sharePhotoBtn', 'shareGifBtn', 'shareHandsBtn', 'shareSendBtn'].forEach(id => {
 document.getElementById(id).disabled = busy;
 });
 }
@@ -1658,6 +1658,15 @@ document.getElementById('shareItemTitle').textContent =
 const has3d = typeof canShare3DLot === 'function' && canShare3DLot(shareSkin);
 document.getElementById('sharePhotoBtn').style.display = has3d ? '' : 'none';
 document.getElementById('shareGifBtn').style.display = has3d ? '' : 'none';
+// Видео «в руках» — только у ножей с комплектом анимаций.
+const handsBtn = document.getElementById('shareHandsBtn');
+handsBtn.style.display = 'none';
+if (has3d && typeof canShareInHands === 'function'){
+const forSkin = shareSkin;
+canShareInHands(shareSkin).then(ok => {
+if (ok && shareSkin === forSkin) handsBtn.style.display = '';
+});
+}
 shareStatus.textContent = '';
 shareReady = null;
 document.getElementById('shareSendBtn').style.display = 'none';
@@ -1735,6 +1744,7 @@ shareViaDm();
 });
 document.getElementById('sharePhotoBtn').addEventListener('click', () => shareMedia('photo'));
 document.getElementById('shareGifBtn').addEventListener('click', () => shareMedia('gif'));
+document.getElementById('shareHandsBtn').addEventListener('click', () => shareMedia('hands'));
 
 document.getElementById('shareLinkBtn').addEventListener('click', () => {
 if (!shareSkin) return;
