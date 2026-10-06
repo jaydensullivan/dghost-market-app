@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 52;
+const APP3D_VERSION = 53;
 
 let threeLoading = null;
 
@@ -623,8 +623,10 @@ function legacyPatinaStyle(skin){
 return (!skin.format || skin.format === 'legacy') && [7, 8].indexOf(skin.params.paint_style) !== -1;
 }
 // Патина (стиль 7): узор тонирует сам металл ствола — умножаем на его
-// яркость (не цвет: у старых корпусов база бежевая/деревянная). Подобрано
-// по CSFloat (10 скинов): ошибка яркости 16 → 10. Для gunsmith (8) — гамма.
+// яркость (не цвет: у старых корпусов база бежевая/деревянная) и кладём
+// только на металл (R маски ствола): у MAC-10 Carnivore в игре красная
+// одна ствольная коробка, магазин и рукоять серые. Подобрано по CSFloat
+// (10 скинов): ошибка яркости 16 → 7. Для gunsmith (8) — гамма.
 // Новые скины на шаблоне gunsmith (gs_template: Run Run Run, Traitor,
 // Half Sleeve, Arctic Camo Panels) без степени выходили светлее игры на
 // 10–24 по яркости; степень 1.6 (по CSFloat) — ошибка 18 → 4.
@@ -821,10 +823,11 @@ const CHANNELS = { r: 0, g: 1, b: 2, none: 3, debug: 4 };
 // (рукоять остаётся родной: Butterfly — чёрная с красной вставкой),
 // а анодирование (Fade, Doppler, Moonrise) в игре ложится только на
 // металл: у Glock Moonrise окрашен затвор, рамка остаётся серой.
+// Так же и патина (стиль 7) — обработка металла.
 const weaponName = weapon ? weapon.name || '' : '';
 let maskName = String(maskChannel || 'none').toLowerCase();
 if (maskName === 'none' && weapon && weapon.masks
-&& (isKnifeName(weaponName) || isAnodized(skin.params))) maskName = 'r';
+&& (isKnifeName(weaponName) || isAnodized(skin.params) || legacyPatinaBlend(skin))) maskName = 'r';
 const channel = CHANNELS[maskName] ?? 3;
 
 // Однотонной раскраске узор не нужен, но сэмплер в шейдере должен
@@ -1125,7 +1128,7 @@ colorWeight = mix(colorWeight, vec4(0.0, 0.0, 1.0, 0.0), zone.g);
 colorWeight = mix(colorWeight, vec4(0.0, 0.0, 0.0, 1.0), zone.b);
 }
 }
-if (uPatinaBlend == 1) pattern = pattern * uColors[0] * vec3(dot(base, vec3(0.299, 0.587, 0.114))) * 2.4;
+if (uPatinaBlend == 1) pattern = pattern * uColors[0] * vec3(dot(base, vec3(0.299, 0.587, 0.114))) * 3.4;
 else if (uPatternGamma != 1.0) pattern = pow(pattern, vec3(uPatternGamma));
 pattern *= uColorBrightness;
 
