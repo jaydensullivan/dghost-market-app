@@ -195,6 +195,10 @@ jobs:
             grep -i "weapons/models/$w/" "$WORK/vpk_dir.txt" | grep -viE 'sticker|\.vmdl|\.vphys|\.vanim|anim' | head -80
             echo "::endgroup::"
           done
+          # Фоны главного меню и картинки карт — для фона 3D «как в CS».
+          echo "::group::фоны"
+          grep -iE 'panorama/images/(map_icons/screenshots|backgrounds|mainmenu)|backgrounds?/.*\.(vtex_c|webm|png)|map_backgrounds|mainmenu' "$WORK/vpk_dir.txt" | sed 's/ crc=.*//' | head -120
+          echo "::endgroup::"
           # Выемка HD-набора и статистика каналов исходных PNG.
           for w in m249 ak47; do
             rm -rf "$WORK/export-model"
