@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 40;
+const APP3D_VERSION = 41;
 
 let threeLoading = null;
 
@@ -467,14 +467,45 @@ masks: 'masks.webp',
 rough: 'rough.webp',
 ao: 'ao.webp',
 }, meta.textures || {});
+return loadWeaponTextures(THREE, base, textures).then(pack => {
+pack.name = weaponNameFromDir(dir);
+// Текстуры HD-корпуса (маска зон, родной цвет, AO) — грузятся, только
+// когда раскраска легла на HD-корпус (loadSkinWithWeapon).
+pack.hdBase = base;
+pack.hdTextures = meta.hd && meta.hd.textures ? meta.hd.textures : null;
+return pack;
+});
+});
+}
+
+function loadWeaponTextures(THREE, base, textures){
 const names = ['color', 'masks', 'rough', 'ao'];
-return Promise.all(names.map(name =>
-loadSkinTexture(THREE, resolveSkinPath(base, textures[name]), name === 'color')
+return Promise.all(names.map(name => textures[name]
+? loadSkinTexture(THREE, resolveSkinPath(base, textures[name]), name === 'color')
+: Promise.resolve(null)
 )).then(loaded => {
-const pack = { name: weaponNameFromDir(dir) };
+const pack = {};
 names.forEach((name, i) => { pack[name] = loaded[i]; });
 return pack;
 });
+}
+
+// Раскраска и текстуры ствола. Под HD-корпус у ствола свои маска зон и
+// родной цвет: без них однотонные и шаблонные раскраски заливали всю
+// модель одним цветом (M249 Impact Drill — целиком жёлтый).
+function loadSkinWithWeapon(THREE, skinDir, weaponDir){
+return Promise.all([
+loadSkinPack(THREE, skinDir),
+weaponDir ? loadWeaponPack(THREE, weaponDir).catch(() => null) : Promise.resolve(null),
+]).then(([skin, weapon]) => {
+if (!weapon || !weapon.hdTextures || !skinUsesHdBody(skin)) return [skin, weapon];
+return loadWeaponTextures(THREE, weapon.hdBase, weapon.hdTextures)
+.then(hd => {
+hd.name = weapon.name;
+weapon.hd = hd.masks && hd.color && hd.ao ? hd : null;
+return [skin, weapon];
+})
+.catch(() => [skin, weapon]);
 });
 }
 
@@ -688,10 +719,10 @@ function applySkinToModel(THREE, object, skin, wear, weapon, maskChannel, seed){
 // У ножей корпус один, и маска ствола им нужна всегда (иначе краска
 // ложилась и на рукоять — Falchion Gamma Doppler).
 const useHd = selectModelBody(object, skinUsesHdBody(skin));
-// Текстуры ствола (маски зон, цвет, AO) сняты со старого корпуса — на
-// HD-корпусе развёртка другая, и они дают розовые края и пятна.
-// Раскраска нового формата и так покрывает ствол целиком.
-if (useHd) weapon = null;
+// Текстуры ствола (маски зон, цвет, AO) старого корпуса на HD-корпусе
+// не годятся: развёртка другая, они дают розовые края и пятна. Для HD
+// берём его собственный набор (если сборка его уже положила).
+if (useHd) weapon = weapon && weapon.hd ? weapon.hd : null;
 // 0,1,2 — каналы маски; 3 — красить всё без маски; 4 — показать
 // саму маску цветом (отладка: видно, какой канал за что отвечает).
 const CHANNELS = { r: 0, g: 1, b: 2, none: 3, debug: 4 };
@@ -825,7 +856,8 @@ if (skin.rough){
 material.roughnessMap = skin.rough;
 material.roughness = 1.0;
 } else if (weapon && weapon.rough) material.roughnessMap = weapon.rough;
-if (isAnodized(skin.params)) material.envMapIntensity = ANODIZED.envIntensity;
+// Сила отражений — из набора света (в three r160 у сцены её ещё нет).
+material.envMapIntensity = (isAnodized(skin.params) ? ANODIZED.envIntensity : 1) * lightPreset().env;
 
 // Рельеф и затенение из комплекта скина — новый формат отдаёт их
 // отдельными слоями, и с ними металл перестаёт быть плоским.
@@ -1133,35 +1165,52 @@ return pack;
 // Цвет, тонмаппинг, свет и отражения — общие для просмотрщика и GIF,
 // чтобы анимация в чате выглядела так же, как 3D в приложении.
 // Возвращает промис, который выполняется, когда готовы отражения.
+// Наборы света. «game» — подобран по скриншотам осмотра в CS2 (CSFloat,
+// 14 скинов): яркость как в игре (было светлее на 10 по L, стало ±0).
+// «showcase» — прежний, ярче.
+// window.DGHOST_LIGHT (только для сверки) подменяет параметры набора.
+const LIGHT_PRESETS = {
+showcase: { tone: 'aces', exposure: 1.1, ambient: 0.55, key: 2.4, front: 1.2, neon: 0.25, rim: 0.2, env: 1 },
+game: { tone: 'aces', exposure: 0.7, ambient: 0.55, key: 2.4, front: 1.2, neon: 0.25, rim: 0.2, env: 1 },
+};
+let currentLightPreset = 'game';
+function lightPreset(){
+const base = LIGHT_PRESETS[currentLightPreset] || LIGHT_PRESETS.game;
+const test = window.DGHOST_LIGHT;
+return test && typeof test === 'object' ? Object.assign({}, base, test) : base;
+}
+
 function setupViewerScene(THREE, renderer, scene){
+const L = lightPreset();
 // В three r152+ цвета по умолчанию в линейном пространстве —
 // без этого металл выглядит блёклым. В r128 свойства нет, и
 // присваивание просто игнорируется.
 if (renderer.debug) renderer.debug.checkShaderErrors = true;
 if ('outputColorSpace' in renderer) renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.1;
+const TONE = { aces: 'ACESFilmicToneMapping', agx: 'AgXToneMapping', reinhard: 'ReinhardToneMapping', linear: 'LinearToneMapping' };
+renderer.toneMapping = THREE[TONE[L.tone]] ?? THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = L.exposure;
 
 // Нейтральный белый свет — чтобы металл читался как металл, а не
 // как розовая пластмасса. Боковые подсветки тоже нейтральные: даже
 // слабый фиолетовый и розовый «неон» на металлической краске (SSG 08
 // Zeno) давал яркие розовые блики, а на белых скинах — розовый оттенок.
 // Фирменный фиолетовый остаётся в фоне просмотрщика.
-scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+scene.add(new THREE.AmbientLight(0xffffff, L.ambient));
 
-const key = new THREE.DirectionalLight(0xffffff, 2.4);
+const key = new THREE.DirectionalLight(0xffffff, L.key);
 key.position.set(3, 4, 5);
 scene.add(key);
 
-const front = new THREE.DirectionalLight(0xffffff, 1.2);
+const front = new THREE.DirectionalLight(0xffffff, L.front);
 front.position.set(0, 1, 6);
 scene.add(front);
 
-const neonKey = new THREE.DirectionalLight(0xCCD5FF, 0.25);
+const neonKey = new THREE.DirectionalLight(0xCCD5FF, L.neon);
 neonKey.position.set(-3, 3, 2);
 scene.add(neonKey);
 
-const neonRim = new THREE.DirectionalLight(0xCCD5FF, 0.2);
+const neonRim = new THREE.DirectionalLight(0xCCD5FF, L.rim);
 neonRim.position.set(-4, -1, -3);
 scene.add(neonRim);
 
@@ -1177,8 +1226,75 @@ scene.environment = pmrem.fromScene(new mod.RoomEnvironment(), 0.04).texture;
 .catch(() => {});
 }
 
+// ---------- фон 3D ----------
+// Встроенные фоны и фоны карт CS2 (как в главном меню игры, где идёт
+// осмотр). Картинки карт сборка кладёт на CDN 3D: models/backgrounds/
+// index.json — [{ id, name, file }]. Выбор запоминается на устройстве.
+const VIEWER_BG_KEY = 'dghost3dBg';
+let viewerBgList = null;
+function loadViewerBackgrounds(){
+if (viewerBgList) return Promise.resolve(viewerBgList);
+return loadModelIndex()
+.then(() => fetch(modelsUrl('models/backgrounds/index.json')))
+.then(r => r.ok ? r.json() : [])
+.catch(() => [])
+.then(list => {
+viewerBgList = Array.isArray(list) ? list.filter(b => b && b.id && /^[\w.-]+$/.test(b.file || "")) : [];
+return viewerBgList;
+});
+}
+
+function applyViewerBackground(id){
+const stage = document.querySelector('.viewer3d-stage');
+if (!stage) return;
+const map = (viewerBgList || []).find(b => b.id === id);
+stage.removeAttribute('data-bg');
+stage.removeAttribute('data-bg-image');
+stage.style.backgroundImage = '';
+if (map){
+stage.setAttribute('data-bg-image', id);
+stage.style.backgroundImage = `url("${modelsUrl('models/backgrounds/' + map.file)}")`;
+} else if (id === 'inspect'){
+stage.setAttribute('data-bg', 'inspect');
+}
+document.querySelectorAll('#viewer3dBgs .viewer3d-bg').forEach(btn => {
+btn.setAttribute('aria-checked', btn.dataset.bg === id ? 'true' : 'false');
+});
+}
+
+function renderViewerBackgrounds(dict){
+const box = document.getElementById('viewer3dBgs');
+if (!box) return;
+box.setAttribute('aria-label', dict.v3_bg_label || 'Background');
+let saved = 'inspect';
+try { saved = localStorage.getItem(VIEWER_BG_KEY) || 'inspect'; } catch (e) {}
+const draw = (maps) => {
+const items = [{ id: 'studio', name: dict.v3_bg_studio }, { id: 'inspect', name: dict.v3_bg_inspect }]
+.concat(maps.map(m => ({ id: m.id, name: m.name || m.id })));
+if (!items.some(i => i.id === saved)) saved = 'inspect';
+box.innerHTML = '';
+items.forEach(item => {
+const btn = document.createElement('button');
+btn.type = 'button';
+btn.className = 'viewer3d-bg';
+btn.dataset.bg = item.id;
+btn.setAttribute('role', 'radio');
+btn.textContent = item.name;
+btn.addEventListener('click', () => {
+try { localStorage.setItem(VIEWER_BG_KEY, item.id); } catch (e) {}
+applyViewerBackground(item.id);
+});
+box.appendChild(btn);
+});
+applyViewerBackground(saved);
+};
+draw(viewerBgList || []);
+if (!viewerBgList) loadViewerBackgrounds().then(maps => { if (maps.length) draw(maps); });
+}
+
 function open3DViewer(modelUrl, title, skinDir, wearValue, weaponDir, maskChannel, seed){
 const dict = I18N[currentLang] || I18N.ru;
+renderViewerBackgrounds(dict);
 const mode = get3DMode() || 'full';
 const status = document.getElementById('viewer3dStatus');
 status.innerHTML = '';
@@ -1255,10 +1371,7 @@ setupViewerScene(THREE, renderer, scene);
 
 // Раскраска лота, если она указана.
 if (skinDir){
-Promise.all([
-loadSkinPack(THREE, skinDir),
-weaponDir ? loadWeaponPack(THREE, weaponDir).catch(() => null) : Promise.resolve(null),
-])
+loadSkinWithWeapon(THREE, skinDir, weaponDir)
 .then(([skin, weapon]) => {
 if (!skin.pattern && !skin.solid) throw new Error('не загрузился узор');
 applySkinToModel(THREE, object, skin, wearValue, weapon, maskChannel, seed);
@@ -1513,10 +1626,7 @@ const response = await fetch(modelsUrl(entry.model));
 if (!response.ok) throw new Error('model ' + response.status);
 const buffer = await response.arrayBuffer();
 const gltf = await parseGlb(buffer).catch(() => parseGlb(stripTexturesFromGlb(buffer)));
-const [skin, weapon] = await Promise.all([
-loadSkinPack(THREE, entry.skin),
-entry.weapon ? loadWeaponPack(THREE, entry.weapon).catch(() => null) : null,
-]);
+const [skin, weapon] = await loadSkinWithWeapon(THREE, entry.skin, entry.weapon);
 if (!skin.pattern && !skin.solid) throw new Error('не загрузился узор');
 
 const glCanvas = document.createElement('canvas');

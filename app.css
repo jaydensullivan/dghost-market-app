@@ -2675,6 +2675,14 @@ overflow:hidden;
 touch-action:none;
 }
 .viewer3d-stage canvas{ width:100%; height:100%; display:block; }
+/* Фон 3D: студия или фоны как в CS2 (картинки карт — с CDN 3D). */
+.viewer3d-stage[data-bg="inspect"]{ background:radial-gradient(ellipse at 50% 40%, #5a5f66 0%, #2b2e33 55%, #16181b 100%); }
+.viewer3d-stage[data-bg-image]{ background-size:cover; background-position:center; }
+.viewer3d-bgs{ display:flex; gap:6px; overflow-x:auto; margin-top:8px; padding-bottom:2px; scrollbar-width:none; }
+.viewer3d-bgs::-webkit-scrollbar{ display:none; }
+.viewer3d-bg{ flex:0 0 auto; height:30px; padding:0 12px; border-radius:15px; border:1px solid var(--red-dim);
+  background:var(--surface); color:var(--silver); font-family:'Inter', sans-serif; font-size:12px; white-space:nowrap; cursor:pointer; }
+.viewer3d-bg[aria-checked="true"]{ border-color:var(--red); color:#fff; background:rgba(123,44,255,0.25); }
 .viewer3d-status{
 position:absolute; left:0; right:0; bottom:10px; text-align:center;
 font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted);
