@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 45;
+const APP3D_VERSION = 46;
 
 let threeLoading = null;
 
@@ -396,6 +396,56 @@ camera.far = distance * 10;
 camera.updateProjectionMatrix();
 
 return distance;
+}
+
+// Кадр для «Поделиться»: модель целиком и по центру на всех углах
+// покачивания. Считаем только видимые меши (у ножей и стволов в файле
+// есть скрытый второй корпус — из-за него центр уезжал вбок, а нож
+// обрезался сверху и снизу). Сверху место под логотип, снизу — под
+// подпись; модель встаёт в середину оставшейся полосы.
+const SHARE_FRAME = { top: 0.1, bottom: 0.16, side: 0.06 };
+function frameShareView(THREE, object, camera, angles){
+const isShown = (node) => { for (let n = node; n; n = n.parent){ if (n.visible === false) return false; } return true; };
+const keep = object.rotation.y;
+// Углы бокса каждого видимого меша на каждом угле покачивания — точнее
+// общего бокса: длинный ствол, уходя в глубину, не раздувает кадр.
+const points = [];
+const corner = new THREE.Vector3();
+angles.forEach(a => {
+object.rotation.y = a;
+object.updateMatrixWorld(true);
+object.traverse(node => {
+if (!node.isMesh || !node.geometry || !isShown(node)) return;
+if (!node.geometry.boundingBox) node.geometry.computeBoundingBox();
+const bb = node.geometry.boundingBox;
+for (let i = 0; i < 8; i++){
+corner.set(i & 1 ? bb.max.x : bb.min.x, i & 2 ? bb.max.y : bb.min.y, i & 4 ? bb.max.z : bb.min.z);
+points.push(corner.clone().applyMatrix4(node.matrixWorld));
+}
+});
+});
+object.rotation.y = keep;
+if (!points.length) return;
+const box = new THREE.Box3().setFromPoints(points);
+const center = box.getCenter(new THREE.Vector3());
+const tanV = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2);
+const tanH = tanV * camera.aspect;
+const fillV = 1 - SHARE_FRAME.top - SHARE_FRAME.bottom;
+const fillH = 1 - 2 * SHARE_FRAME.side;
+// Камера смотрит вдоль -Z на центр: каждая точка должна попасть в
+// свою долю кадра на своей глубине.
+let dist = 0;
+points.forEach(p => {
+const dx = Math.abs(p.x - center.x), dy = Math.abs(p.y - center.y), dz = p.z - center.z;
+dist = Math.max(dist, dx / (tanH * fillH) + dz, dy / (tanV * fillV) + dz);
+});
+// Середина полосы между логотипом и подписью — чуть выше центра кадра.
+const shift = (SHARE_FRAME.bottom - SHARE_FRAME.top) * tanV * dist;
+camera.position.set(center.x, center.y - shift, center.z + dist);
+camera.lookAt(center.x, center.y - shift, center.z);
+camera.near = Math.max(dist / 100, 0.001);
+camera.far = dist * 10;
+camera.updateProjectionMatrix();
 }
 
 function countTriangles(THREE, object){
@@ -1848,11 +1898,13 @@ object.add(gltf.scene);
 selectModelBody(object, false);
 scene.add(object);
 fitObjectToView(THREE, gltf.scene, camera);
-// Ствол только покачивается, запас под полный оборот не нужен.
-// На картинке кадр один — оставляем запас, чтобы ножи (они стоят
-// вертикально) не обрезались сверху и снизу.
-if (!still) camera.position.multiplyScalar(0.78);
 applySkinToModel(THREE, object, skin, wear, weapon, 'none', seed);
+// Кадр — по всем углам покачивания (у картинки — по её одному ракурсу).
+if (still !== 'transparent'){
+const swing = [];
+for (let i = 0; i < 16; i++) swing.push(Math.PI / 2 + 0.6 * Math.sin(i / 16 * Math.PI * 2));
+frameShareView(THREE, object, camera, still ? [Math.PI / 2 + 0.3] : swing);
+}
 await setupViewerScene(THREE, renderer, scene);
 
 const out = document.createElement('canvas');
