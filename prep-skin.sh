@@ -316,7 +316,9 @@ if template_style is not None:
     wear = sorted(glob.glob(os.path.join(shared, 'wear_*.webp')))
     if wear:
         textures['wear'] = 'models/shared/' + os.path.basename(wear[0])
+    tm = re.search(r'templates/([a-z]+_[a-z_]*template)\.vmat', recipe)
     shader = {
+        'paint_template': tm.group(1) if tm else None,
         'paint_style': template_style,
         'pattern_scale': next((v for k, v in loose.items() if 'PatternTexCoordScale' in k and isinstance(v, float)), 1.0) or 1.0,
         'pattern_rotation': loose.get('g_flPatternTexCoordRotation', 0.0) if isinstance(loose.get('g_flPatternTexCoordRotation', 0.0), float) else 0.0,

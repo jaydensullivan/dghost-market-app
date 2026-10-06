@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 54;
+const APP3D_VERSION = 55;
 
 let threeLoading = null;
 
@@ -915,6 +915,7 @@ uMaskChannel: { value: channel },
 // краски плывёт по радуге с углом взгляда. x — сила, y — масштаб,
 // z — сдвиг оттенка (g_flIridescentStrength/Scale/HueShift рецепта).
 uIrid: { value: iridescentVec(THREE, skin.params) },
+uIridByMetal: { value: /case_hardening/.test(String(skin.params.paint_template || '')) ? 1 : 0 },
 uPearl: { value: skin.pearl || pattern },
 uHasPearl: { value: skin.pearl ? 1 : 0 },
 uOverlay: { value: skin.overlay || pattern },
@@ -1001,7 +1002,7 @@ skin.pbn ? 'DG_PBN' : '',
 skin.zones ? 'DG_ZONES' : '',
 skin.overlay ? 'DG_OVERLAY' : '',
 skin.overlayMask ? 'DG_OVERLAY_MASK' : '',
-skin.pearl ? 'DG_PEARL' : '',
+skin.pearl && !uniforms.uIridByMetal.value ? 'DG_PEARL' : '',
 ].filter(Boolean);
 material.customProgramCacheKey = () => 'dghost-skin:' + shaderDefines.join(',');
 material.onBeforeCompile = (shader) => {
@@ -1077,6 +1078,7 @@ uniform float uMaskGamma;
 uniform float uColorBrightness;
 uniform float uPatternGamma;
 uniform vec3 uIrid;
+uniform int uIridByMetal;
 #ifdef DG_ZONES
 uniform sampler2D uZones;
 #define DG_ZONE_TEX uZones
@@ -1230,6 +1232,10 @@ float iridMask = 1.0;
 #ifdef DG_PEARL
 if (uHasPearl == 1) iridMask = texture2D(uPearl, vSkinUv).r;
 #endif
+// У закалки (so_case_hardening: R8 Leafhopper) цвет даёт палитра на
+// металле, а маска перламутра — это белая перламутровая рукоять:
+// переливаем металл по металличности цветов.
+if (uIridByMetal == 1) iridMask = uHasColorMetal == 1 ? dot(colorWeight, uColorMetal) : 1.0;
 painted = mix(painted, painted * rainbow * uIridGain, clamp(uIrid.x, 0.0, 1.0) * iridMask);
 result = mix(base, painted, skinCover);
 }

@@ -538,9 +538,10 @@ for finish in sorted(os.listdir(root)):
         continue
     recipe = open(rpath, encoding='utf-8', errors='ignore').read()
     shader = meta.setdefault('shader', {})
-    # Шаблон рецепта: у gunsmith (gs_…) узор смешивается со степенью.
+    # Шаблон рецепта: у gunsmith (gs_…) узор смешивается со степенью,
+    # у закалки (…case_hardening…) иризация ложится по металлу.
     tm = re.search(r'templates/([a-z]+_[a-z_]*template)\.vmat', recipe)
-    if meta.get('format') == 'vcompmat' and tm and shader.get('paint_template') != tm.group(1):
+    if tm and shader.get('paint_template') != tm.group(1):
         shader['paint_template'] = tm.group(1)
         with open(pfile, 'w', encoding='utf-8') as f:
             json.dump(meta, f, ensure_ascii=False, indent=2)
