@@ -26,6 +26,9 @@ fs.mkdirSync(oursDir, { recursive: true });
       return fs.existsSync(file) ? route.fulfill({ path: file, contentType: 'application/javascript' }) : route.abort();
     });
   }
+  if (process.env.TPL_SCALE){
+    await page.addInitScript(k => { window.DGHOST_TPL_SCALE = Number(k); }, process.env.TPL_SCALE);
+  }
   await page.goto(base, { waitUntil: 'load' });
   await page.waitForTimeout(3000);
 
