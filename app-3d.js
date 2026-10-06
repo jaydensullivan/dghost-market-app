@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 39;
+const APP3D_VERSION = 40;
 
 let threeLoading = null;
 
@@ -526,6 +526,11 @@ const k = Number(window.DGHOST_TPL_SCALE) || 1;
 return skin.format === 'template' && [1, 2].indexOf(skin.params.paint_style) !== -1 ? k : 1;
 }
 
+const PATINA_PATTERN_GAMMA = 1.8;
+function legacyPatinaStyle(skin){
+return (!skin.format || skin.format === 'legacy') && [7, 8].indexOf(skin.params.paint_style) !== -1;
+}
+
 function colorVec4(THREE, list){
 const v = Array.isArray(list) ? list.map(Number) : [0, 0, 0, 0];
 return new THREE.Vector4(v[0] || 0, v[1] || 0, v[2] || 0, v[3] || 0);
@@ -769,6 +774,11 @@ uColors: { value: skinColors(THREE, skin.params) },
 // Узор грузится как sRGB, а маске нужны исходные значения каналов.
 uMaskGamma: { value: THREE.SRGBColorSpace ? 1 / 2.2 : 1 },
 uColorBrightness: { value: skin.params.color_brightness || 1 },
+// Патина (7) и Gunsmith (8) старого формата выходили бледно-пастельными
+// (по сверке с CSFloat светлее игры на 30–50 по яркости). Степень 1.8
+// у узора возвращает и яркость, и оттенок: Decimator — тёмно-синий,
+// Night Terror и Nebula Crusader — оранжевые, Magma — тёмная.
+uPatternGamma: { value: legacyPatinaStyle(skin) ? PATINA_PATTERN_GAMMA : 1 },
 uMaskChannel: { value: channel },
 uHasWeapon: { value: weapon && weapon.color ? 1 : 0 },
 };
@@ -901,6 +911,7 @@ uniform int uSolid;
 uniform vec3 uColors[4];
 uniform float uMaskGamma;
 uniform float uColorBrightness;
+uniform float uPatternGamma;
 uniform int uMaskChannel;
 uniform int uHasWeapon;
 uniform int uProjected;
@@ -969,6 +980,7 @@ colorWeight = mix(colorWeight, vec4(0.0, 0.0, 1.0, 0.0), zone.g);
 colorWeight = mix(colorWeight, vec4(0.0, 0.0, 0.0, 1.0), zone.b);
 }
 }
+if (uPatternGamma != 1.0) pattern = pow(pattern, vec3(uPatternGamma));
 pattern *= uColorBrightness;
 
 // Потёртость: краска сходит там, где маска износа меньше float.
