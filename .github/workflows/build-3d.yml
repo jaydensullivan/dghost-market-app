@@ -184,6 +184,7 @@ jobs:
         if: inputs.only == 'probe'
         run: |
           T="$WORK/tools/Source2Viewer-CLI"
+          export STEAM_USER="$STEAM_USERNAME"
           "$T" -i "$WORK/game/game/csgo/pak01_dir.vpk" --vpk_dir > "$WORK/vpk_dir.txt" 2>/dev/null || true
           wc -l "$WORK/vpk_dir.txt"
           echo "::group::composite_inputs"
@@ -192,6 +193,28 @@ jobs:
           for w in m249 m4a1_silencer ak47; do
             echo "::group::$w"
             grep -i "weapons/models/$w/" "$WORK/vpk_dir.txt" | grep -viE 'sticker|\.vmdl|\.vphys|\.vanim|anim' | head -80
+            echo "::endgroup::"
+          done
+          # Выемка HD-набора и статистика каналов исходных PNG.
+          for w in m249 ak47; do
+            rm -rf "$WORK/export-model"
+            (cd "$GITHUB_WORKSPACE/assets" && bash fix-model.sh "$w" > "$WORK/probe-$w.log" 2>&1) || true
+            echo "::group::$w composite_inputs.vmat"
+            find "$WORK/export-model" -path '*weapons/models/*composite_inputs*.vmat' -exec cat {} \; | grep -iE 'g_t|F_|g_b|g_fl|g_v' | head -60
+            echo "::endgroup::"
+            echo "::group::$w PNG"
+            python3 - "$WORK/export-model" <<'PY'
+          import os, sys
+          from PIL import Image
+          for path, dirs, files in os.walk(sys.argv[1]):
+              for f in sorted(files):
+                  if not f.endswith('.png'):
+                      continue
+                  p = os.path.join(path, f)
+                  im = Image.open(p)
+                  ext = im.getextrema()
+                  print(p.split('export-model/')[-1], im.mode, im.size, ext)
+          PY
             echo "::endgroup::"
           done
           echo "::group::masks (всё)"
