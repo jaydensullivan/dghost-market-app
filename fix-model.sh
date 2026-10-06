@@ -67,7 +67,6 @@ echo "==> 1/3 Читаю индекс"
 weapon_aliases() {
     case "$1" in
         glock)         echo "glock glock18" ;;
-        m4a1)          echo "m4a1 m4a4" ;;
         m4a1_silencer) echo "m4a1_silencer m4a1_s" ;;
         usp_silencer)  echo "usp_silencer pist_223 usp" ;;
         cz75a)         echo "cz75a cz_75" ;;

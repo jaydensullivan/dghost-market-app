@@ -317,9 +317,7 @@ weapon_state() {
         fi
     done
     local model="нет"
-    # "hd" в params.json — набор HD-корпуса уже искали (см. build_model).
-    if [ -f "$REPO/models/$weapon.glb" ] && [ -f "$REPO/models/weapons/$weapon/masks.webp" ] \
-        && grep -q '"hd"' "$REPO/models/weapons/$weapon/params.json" 2>/dev/null; then
+    if [ -f "$REPO/models/$weapon.glb" ] && [ -f "$REPO/models/weapons/$weapon/masks.webp" ]; then
         model="есть"
     fi
     echo "$have|$gave_up|$model|$missing"
@@ -394,38 +392,6 @@ build_model() {
     if [ ! -f "$REPO/models/weapons/$weapon/masks.webp" ]; then
         echo "   ❌ базовые текстуры не собрались, лог: $WORK/build-$weapon.log"
         return 1
-    fi
-
-    # Ствол собран раньше, без набора HD-корпуса: дозабираем только его.
-    # prep-model.sh пишет во временную папку, в params.json ствола
-    # добавляется один ключ "hd" — старые текстуры не трогаются, даже
-    # если выемка не удалась.
-    local wdir="$REPO/models/weapons/$weapon"
-    if ! grep -q '"hd"' "$wdir/params.json" 2>/dev/null; then
-        echo "   набор HD-корпуса"
-        rm -rf "$WORK/export-model" "$WORK/hd-tmp"
-        bash fix-model.sh "$weapon" >> "$WORK/build-$weapon.log" 2>&1
-        steam_refused "$WORK/build-$weapon.log" && return 1
-        REPO="$WORK/hd-tmp" bash prep-model.sh "$weapon" 2>&1 | grep -E '^\s+hd ' || true
-        python3 - "$WORK/hd-tmp/models/weapons/$weapon" "$wdir" <<'PY'
-import json, os, shutil, sys
-tmp, dest = sys.argv[1:3]
-try:
-    hd = json.load(open(os.path.join(tmp, 'params.json'), encoding='utf-8')).get('hd')
-except Exception:
-    hd = None
-if hd and os.path.isdir(os.path.join(tmp, 'hd')):
-    shutil.rmtree(os.path.join(dest, 'hd'), ignore_errors=True)
-    shutil.copytree(os.path.join(tmp, 'hd'), os.path.join(dest, 'hd'))
-else:
-    hd = None
-path = os.path.join(dest, 'params.json')
-meta = json.load(open(path, encoding='utf-8'))
-meta['hd'] = hd
-with open(path, 'w', encoding='utf-8') as f:
-    json.dump(meta, f, ensure_ascii=False, indent=2)
-print('   hd:', 'есть' if hd else 'нет')
-PY
     fi
 
     commit_if_changed "модель и текстуры $weapon"

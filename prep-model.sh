@@ -45,14 +45,8 @@ for path, dirs, files in os.walk(src):
         if f.endswith('.png'):
             candidates.append(os.path.join(path, f))
 
-# Папку HD-корпуса M4A4 (m4a4) fix-model.sh вынимает только ради набора
-# HD ниже — в выбор старого набора она не попадает, как и раньше.
-NEW_ALIAS_DIRS = {'m4a1': '/weapons/models/m4a4/'}
-
 def pick(keys):
-    skip = NEW_ALIAS_DIRS.get(weapon)
-    matches = [c for c in candidates if any(k in os.path.basename(c).lower() for k in keys)
-               and not (skip and skip in c.replace(os.sep, '/').lower())]
+    matches = [c for c in candidates if any(k in os.path.basename(c).lower() for k in keys)]
     if not matches:
         return None
     matches.sort(key=lambda p: (bool(re.search(r'_(psd|tga)_[0-9a-f]{8}', p)), len(p)))
@@ -82,45 +76,6 @@ for name, keys, max_side, mode in WANTED:
 
     print(f'  {name}: {w}x{h} → {img.size[0]}x{img.size[1]}, {os.path.getsize(out)/1024:.0f} КБ')
     result['textures'][name] = name + '.webp'
-
-# Набор HD-корпуса: в CS2 у ствола две развёртки, и раскраски нового
-# формата (однотонные, шаблоны, часть спреев) лежат на HD-корпусе. Его
-# маска зон и родные текстуры — в weapons/models/<ствол>/materials/
-# (composite_inputs/…_masks, <ствол>_default_color/ao/rough). Без них
-# мини-апп заливал HD-корпус одним цветом. Всегда пишем ключ "hd"
-# (null — не нашлось), чтобы build-all.sh не пересобирал ствол заново.
-HD_WANTED = [
-    ('masks', r'composite_inputs/[^/]*_masks', 1024, 'RGB'),
-    ('color', r'materials/[^/]*_default_color', 2048, 'RGB'),
-    ('rough', r'materials/[^/]*_default_rough', 1024, 'L'),
-    ('ao',    r'materials/[^/]*_default_ao', 1024, 'L'),
-]
-# Папка HD-корпуса в игре; у M4A4 и Glock она зовётся не как в items_game.
-# Строго своя папка: в выемке для m4a1 лежат и файлы m4a1_silencer.
-hd_dir = {'m4a1': 'm4a4', 'glock': 'glock18'}.get(weapon, weapon)
-hd_cands = [c.replace(os.sep, '/') for c in candidates
-            if f'/weapons/models/{hd_dir}/materials/' in c.replace(os.sep, '/').lower()]
-hd = {}
-for name, pat, max_side, mode in HD_WANTED:
-    found = sorted((c for c in hd_cands if re.search(pat, c.lower())), key=len)
-    if not found:
-        print(f'  hd {name}: не нашёл')
-        continue
-    img = Image.open(found[0])
-    w, h = img.size
-    if max(w, h) > max_side:
-        k = max_side / max(w, h)
-        img = img.resize((int(w * k), int(h * k)), Image.LANCZOS)
-    img = img.convert(mode)
-    os.makedirs(os.path.join(dest, 'hd'), exist_ok=True)
-    out = os.path.join(dest, 'hd', name + '.webp')
-    if name == 'masks':
-        img.save(out, 'WEBP', lossless=True)
-    else:
-        img.save(out, 'WEBP', quality=88, method=6)
-    print(f'  hd {name}: {os.path.basename(found[0])} {w}x{h} → {img.size[0]}x{img.size[1]}')
-    hd[name] = 'hd/' + name + '.webp'
-result['hd'] = {'textures': hd} if all(k in hd for k in ('masks', 'color', 'ao')) else None
 
 with open(os.path.join(dest, 'params.json'), 'w', encoding='utf-8') as f:
     json.dump(result, f, ensure_ascii=False, indent=2)
