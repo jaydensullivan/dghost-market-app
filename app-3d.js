@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 42;
+const APP3D_VERSION = 43;
 
 let threeLoading = null;
 
@@ -1245,19 +1245,64 @@ return viewerBgList;
 });
 }
 
+// Эффекты фона карты, как при осмотре в игре: карта чуть не в фокусе
+// (глубина резкости) и сдвигается при повороте скина (параллакс).
+// window.DGHOST_BG_FX — только для проверки: { blur, parallax }.
+const VIEWER_BG_FX = { blur: 3, parallax: 14 };
+function viewerBgFx(){
+const t = window.DGHOST_BG_FX;
+return t && typeof t === 'object' ? Object.assign({}, VIEWER_BG_FX, t) : VIEWER_BG_FX;
+}
+
+// Слой с картинкой карты — отдельный элемент за холстом: размываем и
+// двигаем только его, а не скин. Стили — прямо в style (кэш app.css).
+function viewerBgLayer(stage){
+let layer = stage.querySelector('.viewer3d-bglayer');
+if (!layer){
+layer = document.createElement('div');
+layer.className = 'viewer3d-bglayer';
+Object.assign(layer.style, {
+position: 'absolute', inset: '-8%', zIndex: '0', pointerEvents: 'none',
+backgroundPosition: 'center', backgroundSize: 'cover', backgroundRepeat: 'no-repeat',
+willChange: 'transform',
+});
+stage.insertBefore(layer, stage.firstChild);
+const canvas = stage.querySelector('canvas');
+if (canvas){ canvas.style.position = 'relative'; canvas.style.zIndex = '1'; }
+const status = stage.querySelector('.viewer3d-status');
+if (status) status.style.zIndex = '2';
+}
+return layer;
+}
+
+// Параллакс: фон уходит в сторону, противоположную повороту скина.
+function updateViewerBgParallax(rotationY){
+const layer = document.querySelector('.viewer3d-stage .viewer3d-bglayer');
+if (!layer || layer.style.display === 'none') return;
+const shift = Math.sin(rotationY || 0) * viewerBgFx().parallax;
+layer.style.transform = `translate3d(${(-shift).toFixed(1)}px, 0, 0)`;
+}
+
 function applyViewerBackground(id){
 const stage = document.querySelector('.viewer3d-stage');
 if (!stage) return;
 const map = (viewerBgList || []).find(b => b.id === id);
+const layer = viewerBgLayer(stage);
 // Фон задаём прямо в style: WebView Telegram держит app.css в кэше, и
 // фон через одни лишь CSS-правила мог не меняться.
 stage.removeAttribute('data-bg');
 stage.removeAttribute('data-bg-image');
 stage.style.background = '';
+layer.style.display = 'none';
 if (map){
+const fx = viewerBgFx();
 stage.setAttribute('data-bg-image', id);
+stage.style.background = '#15171a';
+layer.style.display = 'block';
 // Лёгкое затемнение — на пёстром скриншоте карты скин не теряется.
-stage.style.background = `linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.25)), #15171a center / cover no-repeat url("${modelsUrl('models/backgrounds/' + map.file)}")`;
+layer.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.25)), url("${modelsUrl('models/backgrounds/' + map.file)}")`;
+layer.style.filter = fx.blur ? `blur(${fx.blur}px)` : '';
+layer.style.transform = '';
 } else if (id === 'inspect'){
 stage.setAttribute('data-bg', 'inspect');
 stage.style.background = VIEWER_BG_INSPECT;
@@ -1436,6 +1481,7 @@ canvas.addEventListener('mouseup', onEnd);
 
 const animate = () => {
 if (autoRotate) object.rotation.y += 0.006;
+updateViewerBgParallax(object.rotation.y);
 renderer.render(scene, camera);
 viewer3d.raf = requestAnimationFrame(animate);
 };
