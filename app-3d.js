@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 40;
+const APP3D_VERSION = 41;
 
 let threeLoading = null;
 
@@ -856,7 +856,8 @@ if (skin.rough){
 material.roughnessMap = skin.rough;
 material.roughness = 1.0;
 } else if (weapon && weapon.rough) material.roughnessMap = weapon.rough;
-if (isAnodized(skin.params)) material.envMapIntensity = ANODIZED.envIntensity;
+// Сила отражений — из набора света (в three r160 у сцены её ещё нет).
+material.envMapIntensity = (isAnodized(skin.params) ? ANODIZED.envIntensity : 1) * lightPreset().env;
 
 // Рельеф и затенение из комплекта скина — новый формат отдаёт их
 // отдельными слоями, и с ними металл перестаёт быть плоским.
@@ -1164,35 +1165,52 @@ return pack;
 // Цвет, тонмаппинг, свет и отражения — общие для просмотрщика и GIF,
 // чтобы анимация в чате выглядела так же, как 3D в приложении.
 // Возвращает промис, который выполняется, когда готовы отражения.
+// Наборы света. «game» — подобран по скриншотам осмотра в CS2 (CSFloat,
+// 14 скинов): яркость как в игре (было светлее на 10 по L, стало ±0).
+// «showcase» — прежний, ярче.
+// window.DGHOST_LIGHT (только для сверки) подменяет параметры набора.
+const LIGHT_PRESETS = {
+showcase: { tone: 'aces', exposure: 1.1, ambient: 0.55, key: 2.4, front: 1.2, neon: 0.25, rim: 0.2, env: 1 },
+game: { tone: 'aces', exposure: 0.7, ambient: 0.55, key: 2.4, front: 1.2, neon: 0.25, rim: 0.2, env: 1 },
+};
+let currentLightPreset = 'game';
+function lightPreset(){
+const base = LIGHT_PRESETS[currentLightPreset] || LIGHT_PRESETS.game;
+const test = window.DGHOST_LIGHT;
+return test && typeof test === 'object' ? Object.assign({}, base, test) : base;
+}
+
 function setupViewerScene(THREE, renderer, scene){
+const L = lightPreset();
 // В three r152+ цвета по умолчанию в линейном пространстве —
 // без этого металл выглядит блёклым. В r128 свойства нет, и
 // присваивание просто игнорируется.
 if (renderer.debug) renderer.debug.checkShaderErrors = true;
 if ('outputColorSpace' in renderer) renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.1;
+const TONE = { aces: 'ACESFilmicToneMapping', agx: 'AgXToneMapping', reinhard: 'ReinhardToneMapping', linear: 'LinearToneMapping' };
+renderer.toneMapping = THREE[TONE[L.tone]] ?? THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = L.exposure;
 
 // Нейтральный белый свет — чтобы металл читался как металл, а не
 // как розовая пластмасса. Боковые подсветки тоже нейтральные: даже
 // слабый фиолетовый и розовый «неон» на металлической краске (SSG 08
 // Zeno) давал яркие розовые блики, а на белых скинах — розовый оттенок.
 // Фирменный фиолетовый остаётся в фоне просмотрщика.
-scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+scene.add(new THREE.AmbientLight(0xffffff, L.ambient));
 
-const key = new THREE.DirectionalLight(0xffffff, 2.4);
+const key = new THREE.DirectionalLight(0xffffff, L.key);
 key.position.set(3, 4, 5);
 scene.add(key);
 
-const front = new THREE.DirectionalLight(0xffffff, 1.2);
+const front = new THREE.DirectionalLight(0xffffff, L.front);
 front.position.set(0, 1, 6);
 scene.add(front);
 
-const neonKey = new THREE.DirectionalLight(0xCCD5FF, 0.25);
+const neonKey = new THREE.DirectionalLight(0xCCD5FF, L.neon);
 neonKey.position.set(-3, 3, 2);
 scene.add(neonKey);
 
-const neonRim = new THREE.DirectionalLight(0xCCD5FF, 0.2);
+const neonRim = new THREE.DirectionalLight(0xCCD5FF, L.rim);
 neonRim.position.set(-4, -1, -3);
 scene.add(neonRim);
 
