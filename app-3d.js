@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 43;
+const APP3D_VERSION = 44;
 
 let threeLoading = null;
 
@@ -1634,6 +1634,55 @@ const GIFENC_URL = 'https://cdn.jsdelivr.net/npm/gifenc@1.0.3/dist/gifenc.esm.js
 const SHARE_GIF = { width: 360, height: 240, frames: 36, delay: 70, colors: 128 };
 // Картинка для «Поделиться» — один кадр крупнее, чем у GIF.
 const SHARE_PHOTO = { width: 1080, height: 720, quality: 0.9 };
+// Видео вместо GIF: Telegram показывает его той же «гифкой», но без
+// потолка в 256 цветов — чётко и легче. Кадр рисуется вдвое крупнее и
+// уменьшается (гладкие края), длина — один цикл покачивания.
+const SHARE_VIDEO = { width: 960, height: 640, fps: 30, seconds: 4, bitrate: 5000000, supersample: 2 };
+
+// Формат записи: MP4 (H.264) — Safari/iOS и свежий Chrome; иначе WebM
+// (бот перекодирует его в MP4). null — запись видео недоступна.
+function pickShareVideoMime(){
+if (typeof MediaRecorder === 'undefined' || !MediaRecorder.isTypeSupported) return null;
+const list = ['video/mp4;codecs=avc1.42E01E', 'video/mp4;codecs=avc1', 'video/mp4',
+'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+return list.find(type => { try { return MediaRecorder.isTypeSupported(type); } catch (e) { return false; } }) || null;
+}
+
+// Запись холста: кадры кладём в поток сами (requestFrame), время — по
+// часам: на медленном телефоне кадров меньше, но скорость та же.
+async function recordCanvasVideo(canvas, drawAt, opts, onProgress){
+const mime = pickShareVideoMime();
+if (!mime || !canvas.captureStream) throw new Error('video_unsupported');
+const stream = canvas.captureStream(0);
+const track = stream.getVideoTracks()[0];
+const manual = track && typeof track.requestFrame === 'function';
+const live = manual ? stream : canvas.captureStream(opts.fps);
+const recorder = new MediaRecorder(live, { mimeType: mime, videoBitsPerSecond: opts.bitrate });
+const chunks = [];
+recorder.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+const stopped = new Promise(resolve => { recorder.onstop = resolve; });
+const total = opts.seconds * 1000;
+drawAt(0);
+recorder.start();
+const start = performance.now();
+for (;;){
+const t = Math.min(performance.now() - start, total);
+drawAt(t / total);
+if (manual) track.requestFrame();
+if (onProgress) onProgress(t / total);
+if (t >= total) break;
+const next = start + Math.ceil((t + 1) / (1000 / opts.fps)) * (1000 / opts.fps);
+await new Promise(resolve => setTimeout(resolve, Math.max(0, next - performance.now())));
+}
+await new Promise(resolve => setTimeout(resolve, 1000 / opts.fps));
+recorder.stop();
+await stopped;
+live.getTracks().forEach(tr => tr.stop());
+const blob = new Blob(chunks, { type: mime.split(';')[0] });
+if (!blob.size) throw new Error('video_empty');
+return new Uint8Array(await blob.arrayBuffer());
+}
+
 let gifencLoading = null;
 
 function loadGifEncoder(){
@@ -1666,11 +1715,15 @@ ctx.fillText('DGHOSTMARKET', 12 * k, 18 * k);
 
 // still: true — вместо GIF один кадр JPEG (SHARE_PHOTO);
 // 'transparent' — один кадр PNG без фона и подписи (сверка со Steam).
+// still: 'video' — видео (MP4/WebM) вместо GIF (SHARE_VIDEO).
 async function render3DGif(entry, wear, title, onProgress, seed, still){
-const size = still ? SHARE_PHOTO : SHARE_GIF;
+const video = still === 'video';
+if (video) still = false;
+const size = still ? SHARE_PHOTO : (video ? SHARE_VIDEO : SHARE_GIF);
 const { width: W, height: H } = size;
 const { frames, delay, colors } = SHARE_GIF;
-const [, gifenc] = await Promise.all([loadGltfLoader(), still ? null : loadGifEncoder()]);
+const ss = video ? SHARE_VIDEO.supersample : 1;
+const [, gifenc] = await Promise.all([loadGltfLoader(), (still || video) ? null : loadGifEncoder()]);
 
 await loadModelIndex();
 const response = await fetch(modelsUrl(entry.model));
@@ -1681,13 +1734,13 @@ const [skin, weapon] = await loadSkinWithWeapon(THREE, entry.skin, entry.weapon)
 if (!skin.pattern && !skin.solid) throw new Error('не загрузился узор');
 
 const glCanvas = document.createElement('canvas');
-glCanvas.width = W;
-glCanvas.height = H;
+glCanvas.width = W * ss;
+glCanvas.height = H * ss;
 const renderer = new THREE.WebGLRenderer({ canvas: glCanvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
 const scene = new THREE.Scene();
 try {
 renderer.setPixelRatio(1);
-renderer.setSize(W, H, false);
+renderer.setSize(W * ss, H * ss, false);
 renderer.setClearColor(0x000000, 0);
 
 const camera = new THREE.PerspectiveCamera(40, W / H, 0.05, 100);
@@ -1724,6 +1777,14 @@ if (onProgress) onProgress(1);
 const blob = await new Promise(resolve => out.toBlob(resolve, 'image/jpeg', SHARE_PHOTO.quality));
 if (!blob) throw new Error('не получилось сохранить картинку');
 return new Uint8Array(await blob.arrayBuffer());
+}
+
+if (video){
+return await recordCanvasVideo(out, (p) => {
+object.rotation.y = Math.PI / 2 + 0.6 * Math.sin(p * Math.PI * 2);
+renderer.render(scene, camera);
+drawShareFrame(ctx, glCanvas, title, size);
+}, SHARE_VIDEO, onProgress);
 }
 
 const encoder = gifenc.GIFEncoder();
@@ -1780,12 +1841,11 @@ const title = (skin.stattrak ? 'StatTrak™ ' : '') + skin.title;
 const say = (text) => { if (onStatus) onStatus(text); };
 const preparing = still ? dict.share_photo_preparing : dict.share_gif_preparing;
 
-say(preparing.replace('{p}', '0'));
-const bytes = await render3DGif(buy3dEntry, Number(skin.float_value) || 0, title,
-p => say(preparing.replace('{p}', Math.round(p * 100))), skin.pattern, still);
-
-const payload = { init_data: tg.initData, skin_id: skin.id, kind: still ? 'photo' : 'gif' };
-payload[still ? 'image_base64' : 'gif_base64'] = bytesToBase64(bytes);
+const progress = p => say(preparing.replace('{p}', Math.round(p * 100)));
+const upload = async (bytes, sendKind) => {
+const field = { photo: 'image_base64', gif: 'gif_base64', video: 'video_base64' }[sendKind];
+const payload = { init_data: tg.initData, skin_id: skin.id, kind: sendKind };
+payload[field] = bytesToBase64(bytes);
 const response = await fetch(API_BASE + '/api/share/prepare', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
@@ -1794,6 +1854,22 @@ body: JSON.stringify(payload),
 const data = await response.json().catch(() => ({}));
 if (!response.ok || !data.gif_url) throw new Error(data.error || ('HTTP ' + response.status));
 return { preparedId: data.prepared_id || null, name: String(data.gif_url).split('/').pop() };
+};
+
+say(preparing.replace('{p}', '0'));
+// «GIF» — сначала видео (чётче, Telegram показывает его той же гифкой);
+// не умеет браузер или бот не принял — обычный GIF.
+if (!still && pickShareVideoMime()){
+try {
+const clip = await render3DGif(buy3dEntry, Number(skin.float_value) || 0, title, progress, skin.pattern, 'video');
+return await upload(clip, 'video');
+} catch (e) {
+console.warn('3D: видео для «Поделиться» не вышло, делаю GIF —', e);
+say(preparing.replace('{p}', '0'));
+}
+}
+const bytes = await render3DGif(buy3dEntry, Number(skin.float_value) || 0, title, progress, skin.pattern, still);
+return await upload(bytes, still ? 'photo' : 'gif');
 }
 
 // Окно Telegram «выбрать, кому отправить» (Bot API 8.0+).
