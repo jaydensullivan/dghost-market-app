@@ -22,6 +22,9 @@ on:
       tpl_scale:
         description: "Проба: множитель масштаба узора шаблонных спрея/гидрографии (пусто — как в мини-аппе)"
         default: ""
+      ref_source:
+        description: "С чем сверять: steam (одна картинка на скин) или csfloat (реальные экземпляры с разными паттернами; нужен секрет OPS_API_KEY и список скинов)"
+        default: "steam"
 
 concurrency:
   group: steam-compare
@@ -38,6 +41,8 @@ jobs:
       MAX_SKINS: ${{ github.event.inputs.max_skins || '250' }}
       ONLY_NAMES: ${{ github.event.inputs.only_names || '' }}
       TPL_SCALE: ${{ github.event.inputs.tpl_scale || '' }}
+      REF_SOURCE: ${{ github.event.inputs.ref_source || 'steam' }}
+      OPS_API_KEY: ${{ secrets.OPS_API_KEY }}
       OUT: ${{ github.workspace }}/out
     steps:
       - uses: actions/checkout@v4
@@ -88,7 +93,7 @@ jobs:
           # чтобы не затирать еженедельный отчёт.
           DIR=reports/steam-compare
           if [ -n "$TPL_SCALE" ] || [ -n "$ONLY_NAMES" ]; then
-            DIR="reports/steam-compare-probe/scale-${TPL_SCALE:-1}"
+            DIR="reports/steam-compare-probe/${REF_SOURCE}-scale-${TPL_SCALE:-1}"
           fi
           rm -rf "$DIR"
           mkdir -p "$DIR"
