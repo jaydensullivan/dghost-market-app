@@ -1813,3 +1813,65 @@ const data = await sent.json().catch(() => ({}));
 if (!sent.ok) throw new Error(data.error || ('HTTP ' + sent.status));
 return true;
 }
+
+// ---------- нож в руках (анимация осмотра, как на F в игре) ----------
+// Комплект из сборки (build-anim.sh): models/anim/<нож>/ — руки и нож со
+// скелетом, клипы анимаций (скелет вьюмодели: руки + кости ножа) и
+// текстуры рук. Скелет берём из клипа, руки и нож привязываем к его
+// костям по именам, скелет ножа вешаем на кость оружия «wpn» правой руки
+// (в игре он прикрепляемый, m_bIsAttachableProp).
+function rebindSkinnedMeshes(THREE, source, skeletonRoot){
+const meshes = [];
+source.traverse(node => { if (node.isSkinnedMesh) meshes.push(node); });
+meshes.forEach(mesh => {
+const old = mesh.skeleton;
+const bones = old.bones.map(b => skeletonRoot.getObjectByName(b.name) || b);
+mesh.bind(new THREE.Skeleton(bones, old.boneInverses), mesh.bindMatrix);
+mesh.frustumCulled = false;
+});
+return meshes;
+}
+
+async function loadInHandsScene(THREE, animDir, clipId){
+await loadGltfLoader();
+const base = modelsUrl(animDir).replace(/\/+$/, '') + '/';
+const index = await fetch(base + 'index.json').then(r => r.ok ? r.json() : null);
+if (!index || !index.arms || !index.knife || !index.clips || !index.clips.length) throw new Error('нет комплекта анимаций');
+const clipInfo = index.clips.find(c => c.id === clipId) || index.clips.find(c => /^lookat/.test(c.id)) || index.clips[0];
+const glb = (file) => fetch(base + file).then(r => {
+if (!r.ok) throw new Error(file + ' ' + r.status);
+return r.arrayBuffer();
+}).then(parseGlb);
+const [arms, knife, clip] = await Promise.all([glb(index.arms), glb(index.knife), glb(clipInfo.file)]);
+
+const root = clip.scene;
+// Пустые «ссылки на меш» скелетов — точки в начале координат, прячем.
+root.traverse(node => { if (node.isPoints) node.visible = false; });
+const wpn = root.getObjectByName('wpn');
+const knifeSkel = root.children.find(c => /knife|bayonet/.test(c.name) && !/empty/.test(c.name) && !c.isPoints);
+if (wpn && knifeSkel) wpn.add(knifeSkel);
+
+const armMeshes = rebindSkinnedMeshes(THREE, arms.scene, root);
+const knifeMeshes = rebindSkinnedMeshes(THREE, knife.scene, root);
+armMeshes.forEach(m => root.add(m));
+const knifeGroup = new THREE.Group();
+knifeMeshes.forEach(m => knifeGroup.add(m));
+root.add(knifeGroup);
+
+// Текстуры рук: кожа и перчатка (по имени материала).
+const tex = index.textures || {};
+const loadTex = (file) => file ? loadSkinTexture(THREE, base + file, true) : Promise.resolve(null);
+const [skinTex, gloveTex] = await Promise.all([loadTex(tex.skin), loadTex(tex.glove)]);
+armMeshes.forEach(mesh => {
+const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+mats.forEach(m => {
+const t = /glove/i.test(m.name || '') ? gloveTex : skinTex;
+if (t){ m.map = t; m.color && m.color.set(0xffffff); m.needsUpdate = true; }
+});
+});
+
+const mixer = new THREE.AnimationMixer(root);
+const action = mixer.clipAction(clip.animations[0]);
+action.play();
+return { root, knifeGroup, mixer, action, duration: clip.animations[0].duration, clips: index.clips };
+}
