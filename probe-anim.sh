@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+#
+# Проба: анимации ножа в руках (осмотр, как на F в игре). Печатает, что
+# лежит в архиве (модели рук, анимации ножа), и пробует вынуть модель
+# ножа с анимациями в .glb — смотрим, какие клипы доходят до glTF.
+# Ничего не коммитит. Запуск: сборка 3D с only = probe-anim.
+#
+set -uo pipefail
+WORK="${WORK:-/tmp/cs2-assets}"
+TOOLS="$WORK/tools"
+GAME="$WORK/game"
+VPK="$GAME/game/csgo/pak01_dir.vpk"
+OUT="$WORK/export-anim"
+KNIFE="${KNIFE:-knife_butterfly}"
+STEAM_USER="${STEAM_USER:-landofdinasty}"
+T="$TOOLS/Source2Viewer-CLI"
+
+[ -s "$WORK/vpk_dir.txt" ] || "$T" -i "$VPK" --vpk_dir > "$WORK/vpk_dir.txt" 2>/dev/null
+D="$WORK/vpk_dir.txt"
+
+echo "::group::Source2Viewer: параметры glTF и анимаций"
+"$T" --help 2>&1 | grep -iE 'gltf|anim|export|format' | head -40
+echo "::endgroup::"
+
+echo "::group::$KNIFE — модели, анимации, графы"
+grep -i "$KNIFE" "$D" | grep -iE '\.(vmdl|vanim|vanmgrph|vagrp|vseq|vmdl_prefab)_c' | sed 's/ crc=.*//' | head -80
+echo "::endgroup::"
+
+echo "::group::руки (arms / viewmodel)"
+grep -iE '(^|/)(arms|v_models|viewmodel)[^ ]*\.vmdl_c|first_person|fp_arms|_arms\.vmdl' "$D" | sed 's/ crc=.*//' | head -60
+echo "::endgroup::"
+
+echo "::group::анимации осмотра (inspect) — общие"
+grep -iE 'inspect|lookat' "$D" | grep -iE '\.(vanim|vanmgrph|vseq)_c' | sed 's/ crc=.*//' | head -60
+echo "::endgroup::"
+
+download_chunk() {
+    printf 'regex:^game/csgo/pak01_%s\\.vpk$\n' "$1" > "$WORK/fl-anim.txt"
+    (cd "$TOOLS" && dotnet DepotDownloader.dll -app 730 -username "$STEAM_USER" -no-mobile \
+        -remember-password -filelist "$WORK/fl-anim.txt" -dir "$GAME") > "$WORK/dd-anim.log" 2>&1 < /dev/null
+}
+
+# Вынуть один файл; при нехватке куска архива — докачать и повторить.
+export_one() {
+    local file="$1"; shift
+    local missing
+    for attempt in 1 2 3 4 5; do
+        "$T" -i "$VPK" -o "$OUT" -d --vpk_filepath "$file" "$@" > "$WORK/anim-one.log" 2>&1
+        grep -qiE 'exception|error' "$WORK/anim-one.log" || return 0
+        missing=$(grep -oE 'pak01_[0-9]{3}' "$WORK/anim-one.log" | grep -oE '[0-9]{3}' | head -1 || true)
+        [ -z "$missing" ] && { tail -5 "$WORK/anim-one.log"; return 1; }
+        download_chunk "$missing"
+    done
+    return 1
+}
+
+MDL=$(grep -iE "weapons/models/knife/$KNIFE/[^ ]*\.vmdl_c" "$D" | sed 's/ crc=.*//' | grep -viE 'phys|ag_|_ag\.' | head -1)
+echo "Модель ножа: $MDL"
+rm -rf "$OUT"; mkdir -p "$OUT"
+if [ -n "$MDL" ]; then
+    echo "::group::экспорт glb"
+    export_one "$MDL" --gltf_export_format glb --gltf_export_animations && echo "  с --gltf_export_animations: ок" \
+        || export_one "$MDL" --gltf_export_format glb && echo "  без флага анимаций: ок"
+    find "$OUT" -name '*.glb' -exec ls -la {} \;
+    echo "::endgroup::"
+fi
+
+# Что внутри glb: узлы, скелет, клипы анимации и их длительность.
+python3 - "$OUT" <<'PY'
+import json, os, struct, sys
+for path, dirs, files in os.walk(sys.argv[1]):
+    for f in files:
+        if not f.endswith('.glb'):
+            continue
+        b = open(os.path.join(path, f), 'rb').read()
+        n = struct.unpack('<I', b[12:16])[0]
+        j = json.loads(b[20:20 + n])
+        print(f'== {f}: {len(b) // 1024} КБ, узлов {len(j.get("nodes", []))}, мешей {len(j.get("meshes", []))}, '
+              f'скинов {len(j.get("skins", []))}, анимаций {len(j.get("animations", []))}')
+        for a in j.get('animations', [])[:60]:
+            # длительность — по max у входных аксессоров
+            tmax = 0
+            for s in a.get('samplers', []):
+                acc = j['accessors'][s['input']]
+                tmax = max(tmax, (acc.get('max') or [0])[0])
+            print(f'   клип {a.get("name")}: каналов {len(a.get("channels", []))}, {tmax:.2f} с')
+PY
