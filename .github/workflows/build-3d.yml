@@ -197,7 +197,10 @@ jobs:
           done
           # Фоны главного меню и картинки карт — для фона 3D «как в CS».
           echo "::group::фоны"
-          grep -iE 'panorama/images/(map_icons/screenshots|backgrounds|mainmenu)|backgrounds?/.*\.(vtex_c|webm|png)|map_backgrounds|mainmenu' "$WORK/vpk_dir.txt" | sed 's/ crc=.*//' | head -120
+          grep -iE '^panorama/images/' "$WORK/vpk_dir.txt" | grep -iE 'map_icons/screenshots|background|mainmenu|maps?/' | grep -viE 'sound|particle|\.vcss|\.vjs' | sed 's/ crc=.*//' | head -150
+          echo "--- maps/ui"
+          grep -iE '^maps/(ui|backgrounds)' "$WORK/vpk_dir.txt" | sed 's/ crc=.*//' | head -40
+          ls "$WORK/game/game/csgo/maps" 2>/dev/null | head -40
           echo "::endgroup::"
           # Выемка HD-набора и статистика каналов исходных PNG.
           for w in m249 ak47; do

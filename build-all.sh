@@ -596,6 +596,13 @@ while IFS=$'\t' read -r -u 3 weapon kits; do
 
 done 3< "$PLAN"
 
+# Фоны 3D «как в CS» (скриншоты карт) — один раз, если их ещё нет.
+if [ "$STEAM_DOWN" != "1" ] && [ ! -f "$REPO/models/backgrounds/index.json" ]; then
+    log "Фоны карт"
+    bash build-backgrounds.sh 2>&1 | tail -15
+    commit_if_changed "фоны карт"
+fi
+
 # Индекс — ещё раз в конце: если все стволы уже готовы, цикл выше его не
 # трогает, и новые поля (например, models/paint_index.json) не появлялись.
 if [ "$STEAM_DOWN" != "1" ]; then
