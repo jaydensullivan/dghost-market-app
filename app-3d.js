@@ -891,6 +891,8 @@ uMaskChannel: { value: channel },
 // краски плывёт по радуге с углом взгляда. x — сила, y — масштаб,
 // z — сдвиг оттенка (g_flIridescentStrength/Scale/HueShift рецепта).
 uIrid: { value: iridescentVec(THREE, skin.params) },
+uPearl: { value: skin.pearl || pattern },
+uHasPearl: { value: skin.pearl ? 1 : 0 },
 uIridPhase: { value: IRIDESCENT.phase },
 uIridGain: { value: IRIDESCENT.gain },
 uHasWeapon: { value: weapon && weapon.color ? 1 : 0 },
@@ -1027,6 +1029,8 @@ uniform float uMaskGamma;
 uniform float uColorBrightness;
 uniform float uPatternGamma;
 uniform vec3 uIrid;
+uniform sampler2D uPearl;
+uniform int uHasPearl;
 uniform float uIridPhase;
 uniform float uIridGain;
 uniform int uPatinaBlend;
@@ -1132,7 +1136,8 @@ if (uIrid.x > 0.0){
 float facing = 1.0 - abs(dot(normalize(vNormal), normalize(vViewPosition)));
 float hue = fract(uIridPhase - uIrid.z - uIrid.y * facing);
 vec3 rainbow = clamp(abs(fract(hue + vec3(0.0, 2.0 / 3.0, 1.0 / 3.0)) * 6.0 - 3.0) - 1.0, 0.0, 1.0);
-painted = mix(painted, painted * rainbow * uIridGain, clamp(uIrid.x, 0.0, 1.0));
+float iridMask = uHasPearl == 1 ? texture2D(uPearl, vSkinUv).r : 1.0;
+painted = mix(painted, painted * rainbow * uIridGain, clamp(uIrid.x, 0.0, 1.0) * iridMask);
 result = mix(base, painted, skinCover);
 }
 
@@ -1239,6 +1244,9 @@ pbn: textures.pbn || null,
 // g_bOverrideDefaultMasks): цвета 1–3 шаблона ложатся по их R/G/B
 // вместо масок самого ствола (Pink Pearl, Royal Guard, Leafhopper).
 zones: textures.zones || null,
+// Маска перламутра (g_tPearlescenceMask): где лежит иризация. У R8
+// Leafhopper переливается металл, а рукоять остаётся белой.
+pearl: textures.pearl || null,
 };
 
 const names = Object.keys(wanted);

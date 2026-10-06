@@ -243,6 +243,23 @@ if template_style is not None:
             print(f'  zones: {os.path.basename(zp)}')
         else:
             print(f'  zones: нет картинки для {zones_res}')
+    # Маска перламутра: где лежит иризация (у R8 Leafhopper — металл,
+    # рукоять белая). Стандартная чёрная маска — иризации нет вовсе.
+    pearl_res = recipe_texture('g_tPearlescenceMask')
+    pearl_off = False
+    if loose.get('g_bUsePearlescenceMask#b') and pearl_res:
+        if 'default_black' in pearl_res:
+            pearl_off = True
+        elif 'materials/default/' not in pearl_res:
+            pp = png_for(pearl_res)
+            if pp:
+                img = Image.open(pp).convert('L')
+                if max(img.size) > 1024:
+                    k = 1024 / max(img.size)
+                    img = img.resize((int(img.size[0] * k), int(img.size[1] * k)), Image.LANCZOS)
+                img.save(os.path.join(dest, 'pearl.webp'), 'WEBP', quality=90, method=6, exact=True)
+                textures['pearl'] = 'pearl.webp'
+                print(f'  pearl: {os.path.basename(pp)}')
     wear = sorted(glob.glob(os.path.join(shared, 'wear_*.webp')))
     if wear:
         textures['wear'] = 'models/shared/' + os.path.basename(wear[0])
@@ -260,7 +277,7 @@ if template_style is not None:
     }
     # Иризация (Leafhopper, Marsh, Pink Pearl): сила, масштаб, сдвиг оттенка.
     irid = loose.get('g_flIridescentStrength')
-    if isinstance(irid, float) and irid > 0:
+    if isinstance(irid, float) and irid > 0 and not pearl_off:
         shader['iridescent'] = [round(irid, 4), loose.get('g_flIridescentScale', 1.0),
                                 loose.get('g_flIridescentHueShift', 0.0)]
     meta = {

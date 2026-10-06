@@ -452,7 +452,8 @@ build_skin() {
 #      у закалки (gsch_…) не было палитры;
 #  3 — зоны покраски (paint by number: MP7 Amberline выходил белым) и
 #      металличность краски (SSG 08 Zeno — металлик, а не белая матовая);
-#  5 (шаблоны) — свои маски зон ствола вместо стандартных.
+#  5 (шаблоны) — свои маски зон ствола вместо стандартных и маска
+#      перламутра (где лежит иризация).
 # Что нужно, смотрим по рецепту из recipes/. Остальным просто ставим версию.
 if [ "$MODE" != "status" ] && [ -d "$REPO/models/skins" ]; then
 python3 - "$REPO/models/skins" "$REPO/recipes" <<'PY'
@@ -488,7 +489,8 @@ for finish in sorted(os.listdir(root)):
            and re.search(r'"g_vPaintMetalness"', recipe) is not None
         # 5: свои маски зон ствола (Pink Pearl, Royal Guard, Leafhopper).
         or meta.get('format') == 'template'
-           and uses(recipe, 'g_bOverrideDefaultMasks', 'g_tPaintByNumberMasks')
+           and (uses(recipe, 'g_bOverrideDefaultMasks', 'g_tPaintByNumberMasks')
+                or uses(recipe, 'g_bUsePearlescenceMask', 'g_tPearlescenceMask'))
     )
     if need:
         # Без params.json скин не считается готовым (skin_ready) и соберётся заново.
@@ -532,6 +534,11 @@ for finish in sorted(os.listdir(root)):
     recipe = open(rpath, encoding='utf-8', errors='ignore').read()
     irid = last_float(recipe, 'g_flIridescentStrength', 0.0)
     if irid <= 0:
+        continue
+    # Включена стандартная чёрная маска перламутра — иризации нет.
+    pearl_on = re.search(r'"g_bUsePearlescenceMask"(?:(?!m_strName).)*?m_bValueBoolean\s*=\s*true', recipe, re.S)
+    pearl_tex = re.findall(r'"g_tPearlescenceMask"(?:(?!m_strName).)*?resource_name:"([^"]+)"', recipe, re.S)
+    if pearl_on and pearl_tex and 'default_black' in pearl_tex[-1]:
         continue
     meta.setdefault('shader', {})['iridescent'] = [
         round(irid, 4), last_float(recipe, 'g_flIridescentScale', 1.0),
