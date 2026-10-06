@@ -49,6 +49,10 @@ echo "▸ руки"
 export_one weapons/models/shared/arms/weapon_arms.vmdl_c \
     --gltf_export_format glb --gltf_export_materials --gltf_textures_adapt || echo "  (руки не вынулись)"
 
+echo "▸ нож со скелетом (ручки бабочки и т.п. двигаются костями)"
+MDL=$(grep -oE "weapons/models/knife/$KNIFE/weapon_$KNIFE\.vmdl_c" "$WORK/vpk_dir.txt" | head -1)
+[ -n "$MDL" ] && { export_one "$MDL" --gltf_export_format glb || echo "  (нож не вынулся)"; }
+
 CLIPS=$(grep -oE "animation/anims/viewmodel/knife/$KNIFE/(lookat0[1-3]|idle1|draw)_$SHORT\.vnmclip_c" "$WORK/vpk_dir.txt" | sort -u)
 for c in $CLIPS; do
     echo "▸ клип $(basename "$c" .vnmclip_c)"
@@ -58,7 +62,7 @@ done
 python3 - "$OUT" "$DEST" "$SHORT" <<'PY'
 import json, os, shutil, struct, sys
 out, dest, short = sys.argv[1:4]
-index = {'arms': None, 'clips': []}
+index = {'arms': None, 'knife': None, 'clips': []}
 for path, dirs, files in os.walk(out):
     for f in files:
         if not f.endswith('.glb') or 'physics' in f:
@@ -73,6 +77,9 @@ for path, dirs, files in os.walk(out):
         if f == 'weapon_arms.glb':
             name = 'arms.glb'
             index['arms'] = name
+        elif f.startswith('weapon_knife') or f.startswith('weapon_bayonet'):
+            name = 'knife.glb'
+            index['knife'] = name
         else:
             name = f.replace('_' + short, '')
             index['clips'].append({'id': os.path.splitext(name)[0], 'file': name,
