@@ -27,6 +27,7 @@ import os
 import re
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -56,7 +57,8 @@ def clean_name(name):
 
 # ---------------------------------------------------------------- prepare
 
-WEARS = [('Factory New', 0.03), ('Minimal Wear', 0.1), ('Field-Tested', 0.25),
+# Сначала износы, которых на рынке больше всего, — меньше запросов к CSFloat.
+WEARS = [('Field-Tested', 0.25), ('Minimal Wear', 0.1), ('Factory New', 0.03),
          ('Well-Worn', 0.41), ('Battle-Scarred', 0.6)]
 
 
@@ -83,6 +85,11 @@ def prepare_csfloat(out, index, names):
             try:
                 with urllib.request.urlopen(req, timeout=60) as r:
                     refs = json.loads(r.read()).get('refs', [])
+            except urllib.error.HTTPError as e:
+                print(f'  ✗ CSFloat {name} ({wear_name}): HTTP {e.code}')
+                if e.code in (429, 502):
+                    time.sleep(30)  # лимит CSFloat — переждать
+                continue
             except Exception as e:
                 print(f'  ✗ CSFloat {name} ({wear_name}): {e}')
                 continue
@@ -113,8 +120,29 @@ def prepare(out):
     index = json.loads(fetch(MODELS_CDN + 'models/index.json'))
     if os.environ.get('REF_SOURCE') == 'csfloat':
         only = [n.strip() for n in os.environ.get('ONLY_NAMES', '').split(';') if n.strip()]
-        names = [n for n in only if n in index] or sys.exit('Для CSFloat укажи скины в ONLY_NAMES.')
+        if only:
+            names = [n for n in only if n in index]
+        else:
+            # Широкая сверка: MAX_SKINS скинов с 3D, по кругу от запуска к
+            # запуску (неделя года), по PER_SKIN образцов на скин.
+            all_names = sorted(n for n, e in index.items() if isinstance(e, dict) and e.get('skin'))
+            k = MAX_SKINS or len(all_names)
+            week = datetime.date.today().isocalendar()[1]
+            start = (week * k) % max(len(all_names), 1)
+            names = (all_names + all_names)[start:start + k] if k < len(all_names) else all_names
         jobs = prepare_csfloat(out, index, names)
+        # Группа раскраски (формат и стиль) — чтобы видеть, какой тип
+        # раскрасок рисуется хуже всего, и чинить целыми группами.
+        groups = {}
+        for job in jobs:
+            skin_dir = job['entry'].get('skin')
+            if skin_dir not in groups:
+                try:
+                    meta = json.loads(fetch(MODELS_CDN + skin_dir + '/params.json'))
+                    groups[skin_dir] = f"{meta.get('format') or 'legacy'}/стиль {meta.get('shader', {}).get('paint_style', '?')}"
+                except Exception:
+                    groups[skin_dir] = '?'
+            job['group'] = groups[skin_dir]
         with open(os.path.join(out, 'jobs.json'), 'w', encoding='utf-8') as f:
             json.dump(jobs, f, ensure_ascii=False, indent=1)
         print(f'Образцов CSFloat к сверке: {len(jobs)}')
@@ -277,6 +305,7 @@ def analyze(out):
         crops[job['slug']] = (s_crop, o_crop)
         rows.append({
             'name': job['name'], 'slug': job['slug'], 'skin': job['entry'].get('skin'),
+            'group': job.get('group'),
             'score': score, 'notes': notes,
             'steam': {'L': round(fs['L'], 1), 'chroma': round(fs['chroma'], 1), 'main_hue': fs['main_hue']},
             'ours': {'L': round(fo['L'], 1), 'chroma': round(fo['chroma'], 1), 'main_hue': fo['main_hue']},
@@ -299,9 +328,15 @@ def analyze(out):
             sheet.paste(t, ((i % cols) * tw, (i // cols) * th))
         sheet.save(os.path.join(out, 'worst.jpg'), quality=82)
 
+    by_group = {}
+    for r in rows:
+        if r.get('group'):
+            by_group.setdefault(r['group'], []).append(r['score'])
     report = {
         'date': datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC'),
         'checked': len(rows),
+        'groups': sorted(({'group': g, 'count': len(v), 'average_score': round(float(np.mean(v)), 1)}
+                          for g, v in by_group.items()), key=lambda x: x['average_score']),
         'not_rendered': missing,
         'average_score': round(float(np.mean([r['score'] for r in rows])), 1) if rows else None,
         'skins': rows,
