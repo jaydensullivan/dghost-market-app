@@ -561,6 +561,13 @@ while IFS=$'\t' read -r -u 3 weapon kits; do
 
 done 3< "$PLAN"
 
+# Индекс — ещё раз в конце: если все стволы уже готовы, цикл выше его не
+# трогает, и новые поля (например, models/paint_index.json) не появлялись.
+if [ "$STEAM_DOWN" != "1" ]; then
+    bash build-index.sh > "$WORK/build-index.log" 2>&1 || echo "   ⚠️ индекс не обновился, лог: $WORK/build-index.log"
+    commit_if_changed "индекс"
+fi
+
 MINUTES=$(( ($(date +%s) - START) / 60 ))
 
 log "Запуск завершён за $MINUTES мин"
