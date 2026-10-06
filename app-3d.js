@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 38;
+const APP3D_VERSION = 39;
 
 let threeLoading = null;
 
@@ -1387,6 +1387,30 @@ return map;
 return modelIndexLoading;
 }
 
+// Номер раскраски → папка (models/paint_index.json, строит
+// build-index.sh). По названию «Karambit | Doppler» фазу не узнать, а
+// по paint_index лота (его отдаёт inspect) — точно: Ruby, Sapphire,
+// Black Pearl, Phase 1–4, Emerald.
+let paintIndexLoading = null;
+function loadPaintIndex(){
+if (!paintIndexLoading){
+paintIndexLoading = loadModelIndex()
+.then(() => fetch(modelsBase + 'models/paint_index.json', { cache: 'no-cache' }))
+.then(r => r.ok ? r.json() : {})
+.catch(() => ({}));
+}
+return paintIndexLoading;
+}
+
+// Запись для 3D по лоту: по названию, а папку раскраски — по номеру
+// раскраски лота, если он известен.
+function modelEntryForSkin(map, paintMap, skin){
+const entry = map[modelIndexKey(skin && skin.title)];
+if (!entry) return null;
+const exact = skin && skin.paint_index != null ? paintMap[String(skin.paint_index)] : null;
+return exact && exact !== entry.skin ? Object.assign({}, entry, { skin: exact }) : entry;
+}
+
 // «StatTrak™ AK-47 | Redline (Field-Tested)» → «ak-47 | redline».
 function modelIndexKey(title){
 return String(title || '')
@@ -1405,10 +1429,10 @@ if (!buy3dBtn) return;
 buy3dBtn.style.display = 'none';
 buy3dEntry = null;
 buy3dSkin = skin;
-loadModelIndex().then(map => {
+Promise.all([loadModelIndex(), loadPaintIndex()]).then(([map, paintMap]) => {
 // Пока грузился индекс, могли открыть другой лот.
 if (buy3dSkin !== skin) return;
-const entry = map[modelIndexKey(skin && skin.title)];
+const entry = modelEntryForSkin(map, paintMap, skin);
 if (!entry || !entry.model || !entry.skin) return;
 buy3dEntry = entry;
 buy3dBtn.style.display = '';
