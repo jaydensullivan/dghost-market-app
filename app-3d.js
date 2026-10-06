@@ -1256,7 +1256,8 @@ stage.removeAttribute('data-bg-image');
 stage.style.background = '';
 if (map){
 stage.setAttribute('data-bg-image', id);
-stage.style.background = `#15171a center / cover no-repeat url("${modelsUrl('models/backgrounds/' + map.file)}")`;
+// Лёгкое затемнение — на пёстром скриншоте карты скин не теряется.
+stage.style.background = `linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.25)), #15171a center / cover no-repeat url("${modelsUrl('models/backgrounds/' + map.file)}")`;
 } else if (id === 'inspect'){
 stage.setAttribute('data-bg', 'inspect');
 stage.style.background = VIEWER_BG_INSPECT;
