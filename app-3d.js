@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 44;
+const APP3D_VERSION = 45;
 
 let threeLoading = null;
 
@@ -1342,6 +1342,44 @@ draw(viewerBgList || []);
 if (!viewerBgList) loadViewerBackgrounds().then(maps => { if (maps.length) draw(maps); });
 }
 
+// Кнопки вида: «3D» и «В руках 1/2/3» (клипы осмотра из комплекта
+// анимаций ножа). Без комплекта ряд скрыт.
+function markViewerView(id){
+document.querySelectorAll('#viewer3dViews .viewer3d-bg').forEach(btn => {
+btn.setAttribute('aria-checked', btn.dataset.view === id ? 'true' : 'false');
+});
+}
+
+function renderViewerViews(dict, knifeName, onPick){
+const box = document.getElementById('viewer3dViews');
+if (!box) return;
+box.hidden = true;
+box.innerHTML = '';
+if (!/^(knife_|bayonet)/.test(knifeName)) return;
+fetch(modelsUrl('models/anim/' + knifeName + '/index.json'))
+.then(r => r.ok ? r.json() : null)
+.catch(() => null)
+.then(index => {
+const inspects = index && Array.isArray(index.clips) ? index.clips.filter(c => /^lookat/.test(c.id)) : [];
+if (!inspects.length) return;
+box.setAttribute('aria-label', dict.v3_view_label || 'View');
+const items = [{ id: '3d', name: dict.v3_view_3d || '3D' }]
+.concat(inspects.map((c, i) => ({ id: c.id, name: (dict.v3_view_inspect || 'In hands {n}').replace('{n}', i + 1) })));
+items.forEach(item => {
+const btn = document.createElement('button');
+btn.type = 'button';
+btn.className = 'viewer3d-bg';
+btn.dataset.view = item.id;
+btn.setAttribute('role', 'radio');
+btn.textContent = item.name;
+btn.addEventListener('click', () => onPick(item.id === '3d' ? null : item.id));
+box.appendChild(btn);
+});
+markViewerView('3d');
+box.hidden = false;
+});
+}
+
 function open3DViewer(modelUrl, title, skinDir, wearValue, weaponDir, maskChannel, seed){
 const dict = I18N[currentLang] || I18N.ru;
 renderViewerBackgrounds(dict);
@@ -1436,8 +1474,11 @@ status.textContent = dict.v3_skin_failed;
 
 let autoRotate = true;
 let dragging = false, lastX = 0, lastY = 0, pinchStart = 0;
+// Режим «В руках»: анимация осмотра вместо вращения модели.
+let hands = null;
 
 const onStart = (e) => {
+if (hands) return;
 if (e.touches && e.touches.length === 2){
 pinchStart = Math.hypot(
 e.touches[0].clientX - e.touches[1].clientX,
@@ -1479,15 +1520,71 @@ canvas.addEventListener('mousedown', onStart);
 canvas.addEventListener('mousemove', onMove);
 canvas.addEventListener('mouseup', onEnd);
 
+const clock = { last: performance.now() };
 const animate = () => {
+const now = performance.now();
+const dt = Math.min(0.1, (now - clock.last) / 1000);
+clock.last = now;
+if (hands){
+hands.t = (hands.t + dt) % hands.ih.duration;
+hands.ih.setTime(hands.t);
+updateViewerBgParallax(Math.sin(now / 2600) * 0.4);
+renderer.render(scene, hands.camera);
+} else {
 if (autoRotate) object.rotation.y += 0.006;
 updateViewerBgParallax(object.rotation.y);
 renderer.render(scene, camera);
+}
 viewer3d.raf = requestAnimationFrame(animate);
 };
 
 viewer3d = { renderer, scene, camera, object, raf: 0 };
 animate();
+
+// Ножи с комплектом анимаций (models/anim/<нож>/) — кнопки «В руках».
+const handsCache = {};
+const setView = async (clipId) => {
+if (!clipId){
+if (hands){ scene.remove(hands.ih.root); hands = null; }
+object.visible = true;
+markViewerView('3d');
+return;
+}
+const animDir = 'models/anim/' + knifeName + '/';
+status.textContent = dict.v3_hands_loading;
+markViewerView(clipId);
+try {
+if (!handsCache[clipId]){
+const ih = await loadInHandsScene(THREE, animDir, clipId);
+if (skinDir){
+const [skin, weapon] = await loadSkinWithWeapon(THREE, skinDir, weaponDir);
+applySkinToModel(THREE, ih.knifeGroup, skin, wearValue, weapon, maskChannel, seed);
+}
+handsCache[clipId] = ih;
+}
+if (!viewer3d || viewer3d.renderer !== renderer) return;
+if (hands) scene.remove(hands.ih.root);
+const ih = handsCache[clipId];
+const handsCamera = new THREE.PerspectiveCamera(IN_HANDS_FOV, canvas.clientWidth / canvas.clientHeight, 0.01, 10);
+placeInHandsCamera(THREE, ih, handsCamera);
+// viewmodel_fov в CS2 — по горизонтали кадра 4:3; на узком экране
+// телефона расширяем вертикальный угол, чтобы руки и нож влезли.
+const aspect = canvas.clientWidth / canvas.clientHeight;
+const hfov = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(IN_HANDS_FOV) / 2) * 4 / 3);
+handsCamera.fov = Math.max(IN_HANDS_FOV, THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(hfov / 2) / aspect)));
+handsCamera.updateProjectionMatrix();
+scene.add(ih.root);
+object.visible = false;
+hands = { ih, camera: handsCamera, t: 0 };
+status.textContent = '';
+} catch (err) {
+console.warn('3D: руки не загрузились —', err);
+status.textContent = dict.v3_hands_failed;
+markViewerView('3d');
+}
+};
+const knifeName = ((String(modelUrl).match(/([a-z0-9_]+)\.glb$/i) || [])[1] || '').toLowerCase();
+renderViewerViews(dict, knifeName, setView);
 
 status.textContent = `${dict.v3_triangles}: ${countTriangles(THREE, object).toLocaleString('ru-RU')}`
 + (texturesDropped ? ' · без текстур' : '');
