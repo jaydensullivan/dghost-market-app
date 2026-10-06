@@ -46,8 +46,14 @@ export_one() {
 rm -rf "$OUT"; mkdir -p "$OUT" "$DEST"
 
 echo "▸ руки"
+# Со скелетом — без материалов: с --gltf_export_materials экспортёр отдавал
+# руки одним неподвижным мешем без костей. Текстуры (кожа, перчатка) —
+# отдельным экспортом в свою папку, оттуда берём только PNG.
+export_one weapons/models/shared/arms/weapon_arms.vmdl_c --gltf_export_format glb || echo "  (руки не вынулись)"
+OUT_MAIN="$OUT"; OUT="$WORK/export-anim-tex"; rm -rf "$OUT"; mkdir -p "$OUT"
 export_one weapons/models/shared/arms/weapon_arms.vmdl_c \
-    --gltf_export_format glb --gltf_export_materials --gltf_textures_adapt || echo "  (руки не вынулись)"
+    --gltf_export_format glb --gltf_export_materials --gltf_textures_adapt || echo "  (текстуры рук не вынулись)"
+TEXDIR="$OUT"; OUT="$OUT_MAIN"
 
 echo "▸ нож со скелетом (ручки бабочки и т.п. двигаются костями)"
 MDL=$(grep -oE "weapons/models/knife/$KNIFE/weapon_$KNIFE\.vmdl_c" "$WORK/vpk_dir.txt" | head -1)
@@ -59,9 +65,9 @@ for c in $CLIPS; do
     export_one "$c" --gltf_export_format glb --gltf_export_animations || echo "  (не вынулся)"
 done
 
-python3 - "$OUT" "$DEST" "$SHORT" <<'PY'
+python3 - "$OUT" "$DEST" "$SHORT" "$TEXDIR" <<'PY'
 import json, os, shutil, struct, sys
-out, dest, short = sys.argv[1:4]
+out, dest, short, texdir = sys.argv[1:5]
 index = {'arms': None, 'knife': None, 'clips': []}
 for path, dirs, files in os.walk(out):
     for f in files:
@@ -87,6 +93,24 @@ for path, dirs, files in os.walk(out):
         shutil.copy(src, os.path.join(dest, name))
         print(f'  {name}: {len(b) // 1024} КБ, узлов {len(j.get("nodes", []))}, мешей {len(j.get("meshes", []))}, '
               f'анимаций {len(anims)}' + (f', {dur(anims[0]):.2f} с' if anims else ''))
+# Текстуры рук: цвет кожи и перчатки (по именам материалов).
+from PIL import Image
+index['textures'] = {}
+for path, dirs, files in os.walk(texdir):
+    for f in files:
+        low = f.lower()
+        if not low.endswith('.png') or '_color' not in low:
+            continue
+        key = 'glove' if 'glove' in low else ('skin' if 'arm' in low else None)
+        if not key or key in index['textures']:
+            continue
+        img = Image.open(os.path.join(path, f)).convert('RGB')
+        if max(img.size) > 1024:
+            img.thumbnail((1024, 1024))
+        name = f'arms_{key}.webp'
+        img.save(os.path.join(dest, name), 'WEBP', quality=85, method=6)
+        index['textures'][key] = name
+        print(f'  {name}: из {f}')
 index['clips'].sort(key=lambda c: c['id'])
 with open(os.path.join(dest, 'index.json'), 'w', encoding='utf-8') as f:
     json.dump(index, f, ensure_ascii=False, indent=1)
