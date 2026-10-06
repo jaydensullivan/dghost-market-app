@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 49;
+const APP3D_VERSION = 50;
 
 let threeLoading = null;
 
@@ -629,6 +629,14 @@ function legacyPatinaBlend(skin){
 return legacyPatinaStyle(skin) && skin.params.paint_style === 7;
 }
 
+// Фаза радуги и усиление подобраны по CSFloat (Leafhopper — зелёный,
+// Marsh — салатовый): см. tools/steam-compare.
+const IRIDESCENT = { phase: 0.0, gain: 1.6 };
+function iridescentVec(THREE, params){
+const v = Array.isArray(params.iridescent) ? params.iridescent.map(Number) : [0, 1, 0];
+return new THREE.Vector3(v[0] || 0, v[1] || 1, v[2] || 0);
+}
+
 function colorVec4(THREE, list){
 const v = Array.isArray(list) ? list.map(Number) : [0, 0, 0, 0];
 return new THREE.Vector4(v[0] || 0, v[1] || 0, v[2] || 0, v[3] || 0);
@@ -879,6 +887,12 @@ uColorBrightness: { value: skin.params.color_brightness || 1 },
 uPatternGamma: { value: legacyPatinaStyle(skin) && !legacyPatinaBlend(skin) ? PATINA_PATTERN_GAMMA : 1 },
 uPatinaBlend: { value: legacyPatinaBlend(skin) ? 1 : 0 },
 uMaskChannel: { value: channel },
+// Иризация (шаблоны soe/aq: Leafhopper, Marsh, Pink Pearl): оттенок
+// краски плывёт по радуге с углом взгляда. x — сила, y — масштаб,
+// z — сдвиг оттенка (g_flIridescentStrength/Scale/HueShift рецепта).
+uIrid: { value: iridescentVec(THREE, skin.params) },
+uIridPhase: { value: IRIDESCENT.phase },
+uIridGain: { value: IRIDESCENT.gain },
 uHasWeapon: { value: weapon && weapon.color ? 1 : 0 },
 };
 
@@ -1012,6 +1026,9 @@ uniform vec3 uColors[4];
 uniform float uMaskGamma;
 uniform float uColorBrightness;
 uniform float uPatternGamma;
+uniform vec3 uIrid;
+uniform float uIridPhase;
+uniform float uIridGain;
 uniform int uPatinaBlend;
 uniform int uMaskChannel;
 uniform int uHasWeapon;
@@ -1110,6 +1127,14 @@ paintable *= texture2D(uSkinMask, vSkinUv).r;
 vec3 painted = pattern * mix(0.88, 1.0, grunge);
 skinCover = paintable * kept;
 vec3 result = mix(base, painted, skinCover);
+
+if (uIrid.x > 0.0){
+float facing = 1.0 - abs(dot(normalize(vNormal), normalize(vViewPosition)));
+float hue = fract(uIridPhase - uIrid.z - uIrid.y * facing);
+vec3 rainbow = clamp(abs(fract(hue + vec3(0.0, 2.0 / 3.0, 1.0 / 3.0)) * 6.0 - 3.0) - 1.0, 0.0, 1.0);
+painted = mix(painted, painted * rainbow * uIridGain, clamp(uIrid.x, 0.0, 1.0));
+result = mix(base, painted, skinCover);
+}
 
 if (uHasWeapon == 1){
 result *= mix(0.55, 1.0, texture2D(uAo, vSkinUv).r);

@@ -499,6 +499,46 @@ print(f'Раскраски нового формата: пересоберу {re
 PY
 fi
 
+# Иризация (оттенок плывёт с углом взгляда: Leafhopper, Marsh) — только
+# числа из рецепта, текстуры не нужны: дописываем в готовые params.json.
+if [ "$MODE" != "status" ] && [ -d "$REPO/models/skins" ]; then
+python3 - "$REPO/models/skins" "$REPO/recipes" <<'PY'
+import json, os, re, sys
+root, recipes = sys.argv[1], sys.argv[2]
+
+def last_float(recipe, name, default):
+    val = default
+    for m in re.finditer(r'm_strName\s*=\s*"%s"(.*?)(?=m_strName\s*=|\Z)' % name, recipe, re.S):
+        v = re.search(r'm_flValueFloatX\s*=\s*(-?[\d.]+(?:[eE][-+]?\d+)?)', m.group(1))
+        if v:
+            val = float(v.group(1))
+    return val
+
+added = 0
+for finish in sorted(os.listdir(root)):
+    pfile = os.path.join(root, finish, 'params.json')
+    if not os.path.isfile(pfile):
+        continue
+    meta = json.load(open(pfile, encoding='utf-8'))
+    if meta.get('format') not in ('vcompmat', 'template') or 'iridescent' in meta.get('shader', {}):
+        continue
+    rpath = os.path.join(recipes, meta.get('material', ''))
+    if not os.path.isfile(rpath):
+        continue
+    recipe = open(rpath, encoding='utf-8', errors='ignore').read()
+    irid = last_float(recipe, 'g_flIridescentStrength', 0.0)
+    if irid <= 0:
+        continue
+    meta.setdefault('shader', {})['iridescent'] = [
+        round(irid, 4), last_float(recipe, 'g_flIridescentScale', 1.0),
+        last_float(recipe, 'g_flIridescentHueShift', 0.0)]
+    with open(pfile, 'w', encoding='utf-8') as f:
+        json.dump(meta, f, ensure_ascii=False, indent=2)
+    added += 1
+print(f'Иризация дописана: {added}')
+PY
+fi
+
 START=$(date +%s)
 NEW_SKINS=0; NEW_MODELS=0; FAILED_NOW=0; SKIPPED_WEAPONS=0
 STOPPED_FOR_SIZE=0

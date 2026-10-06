@@ -227,6 +227,11 @@ if template_style is not None:
         'color_metalness': loose.get('g_vPaintMetalness#4'),
         'color_roughness': loose.get('g_vPaintRoughness#4') if loose.get('g_bUseRoughnessByColor#b') else None,
     }
+    # Иризация (Leafhopper, Marsh, Pink Pearl): сила, масштаб, сдвиг оттенка.
+    irid = loose.get('g_flIridescentStrength')
+    if isinstance(irid, float) and irid > 0:
+        shader['iridescent'] = [round(irid, 4), loose.get('g_flIridescentScale', 1.0),
+                                loose.get('g_flIridescentHueShift', 0.0)]
     meta = {
         'finish': finish,
         'material': 'weapons/paints/' + compfile.split('/weapons/paints/', 1)[-1],
@@ -254,12 +259,18 @@ if wear:
 
 # Закалка: насколько узор (альфа альбедо) сдвигает цвет по палитре
 # и с какого места палитры начинать.
+def recipe_float(name, default):
+    m = re.search(r'm_strName\s*=\s*"%s"(.*?)(?=m_strName\s*=|\Z)' % name, recipe, re.S)
+    v = m and re.search(r'm_flValueFloatX\s*=\s*(-?[\d.]+(?:[eE][-+]?\d+)?)', m.group(1))
+    return float(v.group(1)) if v else default
+
 shader = {}
+# Иризация: оттенок краски плывёт по радуге с углом взгляда.
+irid = recipe_float('g_flIridescentStrength', 0.0)
+if irid > 0:
+    shader['iridescent'] = [round(irid, 4), recipe_float('g_flIridescentScale', 1.0),
+                            recipe_float('g_flIridescentHueShift', 0.0)]
 if 'ramp' in textures:
-    def recipe_float(name, default):
-        m = re.search(r'm_strName\s*=\s*"%s"(.*?)(?=m_strName\s*=|\Z)' % name, recipe, re.S)
-        v = m and re.search(r'm_flValueFloatX\s*=\s*(-?[\d.]+(?:[eE][-+]?\d+)?)', m.group(1))
-        return float(v.group(1)) if v else default
     shader['case_hardening'] = {
         'pattern_influence': recipe_float('g_flCaseHardeningPatternInfluence', 1.0),
         'ramp_offset': recipe_float('g_flCaseHardeningRampOffset', 0.0),
