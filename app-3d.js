@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 51;
+const APP3D_VERSION = 52;
 
 let threeLoading = null;
 
@@ -639,6 +639,12 @@ return legacyPatinaStyle(skin) && skin.params.paint_style === 7;
 // Фаза радуги и усиление подобраны по CSFloat (Leafhopper — зелёный,
 // Marsh — салатовый): см. tools/steam-compare.
 const IRIDESCENT = { phase: 0.0, gain: 1.6 };
+// x — зона (0 — везде, 1 — основа, 2–4 — R/G/B масок зон), y — сила,
+// z — яркость (F_OVERLAY_MASK, g_fOverlayStrength/Brightness рецепта).
+function overlayVec(THREE, params){
+const o = params.overlay || {};
+return new THREE.Vector3(Number(o.mask) || 0, o.strength ?? 1, o.brightness ?? 1);
+}
 function iridescentVec(THREE, params){
 const v = Array.isArray(params.iridescent) ? params.iridescent.map(Number) : [0, 1, 0];
 return new THREE.Vector3(v[0] || 0, v[1] || 1, v[2] || 0);
@@ -900,6 +906,11 @@ uMaskChannel: { value: channel },
 uIrid: { value: iridescentVec(THREE, skin.params) },
 uPearl: { value: skin.pearl || pattern },
 uHasPearl: { value: skin.pearl ? 1 : 0 },
+uOverlay: { value: skin.overlay || pattern },
+uHasOverlay: { value: skin.overlay ? 1 : 0 },
+uOverlayMask: { value: skin.overlayMask || pattern },
+uHasOverlayMask: { value: skin.overlayMask ? 1 : 0 },
+uOverlayParams: { value: overlayVec(THREE, skin.params) },
 uIridPhase: { value: IRIDESCENT.phase },
 uIridGain: { value: IRIDESCENT.gain },
 uHasWeapon: { value: weapon && weapon.color ? 1 : 0 },
@@ -1036,6 +1047,11 @@ uniform float uMaskGamma;
 uniform float uColorBrightness;
 uniform float uPatternGamma;
 uniform vec3 uIrid;
+uniform sampler2D uOverlay;
+uniform int uHasOverlay;
+uniform sampler2D uOverlayMask;
+uniform int uHasOverlayMask;
+uniform vec3 uOverlayParams;
 uniform sampler2D uPearl;
 uniform int uHasPearl;
 uniform float uIridPhase;
@@ -1138,6 +1154,22 @@ paintable *= texture2D(uSkinMask, vSkinUv).r;
 vec3 painted = pattern * mix(0.88, 1.0, grunge);
 skinCover = paintable * kept;
 vec3 result = mix(base, painted, skinCover);
+
+// Оверлей: у непрозрачной картинки режимы 0 и 4 рецепта ведут себя
+// как замена цвета (розовая рамка Pink Pearl, панели Arctic Camo).
+if (uHasOverlay == 1){
+vec4 ov = texture2D(uOverlay, vSkinUv);
+float ovW = ov.a * uOverlayParams.y;
+if (uOverlayParams.x > 0.5){
+vec3 zm = uHasWeapon == 1 ? texture2D(uPaintMask, vSkinUv).rgb : vec3(0.0);
+float zone = uOverlayParams.x < 1.5 ? 1.0 - max(zm.r, max(zm.g, zm.b))
+: (uOverlayParams.x < 2.5 ? zm.r : (uOverlayParams.x < 3.5 ? zm.g : zm.b));
+ovW *= zone;
+}
+if (uHasOverlayMask == 1) ovW *= texture2D(uOverlayMask, vSkinUv).r;
+painted = mix(painted, ov.rgb * uOverlayParams.z, clamp(ovW, 0.0, 1.0));
+result = mix(base, painted, skinCover);
+}
 
 if (uIrid.x > 0.0){
 float facing = 1.0 - abs(dot(normalize(vNormal), normalize(vViewPosition)));
@@ -1254,6 +1286,10 @@ zones: textures.zones || null,
 // Маска перламутра (g_tPearlescenceMask): где лежит иризация. У R8
 // Leafhopper переливается металл, а рукоять остаётся белой.
 pearl: textures.pearl || null,
+// Оверлей поверх краски (розовая рамка Pink Pearl, монеты Royal Guard,
+// панели Arctic Camo) и его своя маска.
+overlay: textures.overlay || null,
+overlayMask: textures.overlay_mask || null,
 };
 
 const names = Object.keys(wanted);
@@ -1261,7 +1297,7 @@ const names = Object.keys(wanted);
 return Promise.all(names.map(name => {
 const file = wanted[name];
 if (!file) return Promise.resolve(null);
-const isColor = SKIN_COLOR_LAYERS.indexOf(name) !== -1 || name === 'ramp';
+const isColor = SKIN_COLOR_LAYERS.indexOf(name) !== -1 || name === 'ramp' || name === 'overlay';
 return loadSkinTexture(THREE, resolveSkinPath(base, file), isColor);
 })).then(loaded => {
 const pack = { params: meta.shader || {}, format: meta.format || null };

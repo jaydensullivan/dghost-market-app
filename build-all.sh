@@ -452,8 +452,9 @@ build_skin() {
 #      у закалки (gsch_…) не было палитры;
 #  3 — зоны покраски (paint by number: MP7 Amberline выходил белым) и
 #      металличность краски (SSG 08 Zeno — металлик, а не белая матовая);
-#  5 (шаблоны) — свои маски зон ствола вместо стандартных и маска
-#      перламутра (где лежит иризация).
+#  4 (vcompmat) — оверлей поверх краски (Arctic Camo Panels);
+#  5 (шаблоны) — свои маски зон ствола вместо стандартных, маска
+#      перламутра (где лежит иризация) и оверлей (Pink Pearl).
 # Что нужно, смотрим по рецепту из recipes/. Остальным просто ставим версию.
 if [ "$MODE" != "status" ] && [ -d "$REPO/models/skins" ]; then
 python3 - "$REPO/models/skins" "$REPO/recipes" <<'PY'
@@ -473,7 +474,7 @@ for finish in sorted(os.listdir(root)):
     if not os.path.isfile(pfile):
         continue
     meta = json.load(open(pfile, encoding='utf-8'))
-    target = 5 if meta.get('format') == 'template' else 3
+    target = 5 if meta.get('format') == 'template' else 4
     if meta.get('format') not in ('vcompmat', 'template') or meta.get('prep_version', 1) >= target:
         continue
     pattern = os.path.join(root, finish, 'pattern.webp')
@@ -482,8 +483,9 @@ for finish in sorted(os.listdir(root)):
     need = (
         (meta.get('prep_version', 1) < 2 and meta.get('format') == 'vcompmat'
          and os.path.isfile(pattern) and 'A' in Image.open(pattern).getbands())
-        or uses(recipe, 'g_bUsePaintByNumberMasks', 'g_tPaintByNumberMasks') and meta.get('format') == 'template'
-        or uses(recipe, 'g_bUseMetalness', 'g_tPaintMetalness')
+        or meta.get('prep_version', 1) < 3 and (
+            uses(recipe, 'g_bUsePaintByNumberMasks', 'g_tPaintByNumberMasks') and meta.get('format') == 'template'
+            or uses(recipe, 'g_bUseMetalness', 'g_tPaintMetalness'))
         # 4: у шаблона заданы металличность/шероховатость по цветам.
         or meta.get('format') == 'template' and meta.get('prep_version', 1) < 4
            and re.search(r'"g_vPaintMetalness"', recipe) is not None
@@ -491,6 +493,8 @@ for finish in sorted(os.listdir(root)):
         or meta.get('format') == 'template'
            and (uses(recipe, 'g_bOverrideDefaultMasks', 'g_tPaintByNumberMasks')
                 or uses(recipe, 'g_bUsePearlescenceMask', 'g_tPearlescenceMask'))
+        # 4 (vcompmat) / 5 (шаблоны): оверлей поверх краски.
+        or meta.get('prep_version', 1) < target and uses(recipe, 'g_bUseOverlay', 'g_tOverlay')
     )
     if need:
         # Без params.json скин не считается готовым (skin_ready) и соберётся заново.

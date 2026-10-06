@@ -153,6 +153,74 @@ if ('pattern' not in textures and recipe_pattern
         textures['pattern'] = 'pattern.webp'
         print(f'  pattern (из рецепта): {os.path.basename(src_png)}')
 
+# Значения переменных рецепта: берём последнее вхождение (сначала идут
+# описания переменных, потом их значения у этого скина).
+def recipe_block_values(name, pattern):
+    found = None
+    for m in re.finditer(r'm_strName\s*=\s*"%s"(.*?)(?=m_strName\s*=|\Z)' % name, recipe, re.S):
+        v = re.search(pattern, m.group(1))
+        if v:
+            found = v.group(1)
+    return found
+
+def recipe_texture(name):
+    return recipe_block_values(name, r'resource_name:"([^"]+)"')
+
+def recipe_bool(name):
+    return recipe_block_values(name, r'm_bValueBoolean\s*=\s*(true|false)') == 'true'
+
+def recipe_num(name, default):
+    v = recipe_block_values(name, r'm_(?:flValueFloatX|nValueIntX)\s*=\s*(-?[\d.]+(?:[eE][-+]?\d+)?)')
+    return float(v) if v is not None else default
+
+def png_for(resource):
+    """Картинка для текстуры рецепта: сперва точное имя (у масок одного
+    ствола имена отличаются только хэшем), потом без хэша."""
+    stem = re.sub(r'\.vtex$', '', os.path.basename(resource).lower())
+    base = re.sub(r'_(tga|psd|png)_[0-9a-f]+$', '', stem)
+    names = [(os.path.basename(p)[:-4].lower(), p) for _, p in pngs]
+    for pstem, p in names:
+        if pstem == stem:
+            return p
+    for pstem, p in names:
+        if re.sub(r'_(tga|psd|png)_[0-9a-f]+$', '', pstem) == base:
+            return p
+    return None
+
+def save_layer(src_png, name, mode, max_side=1024):
+    img = Image.open(src_png)
+    img = img.convert(mode)
+    if max(img.size) > max_side:
+        k = max_side / max(img.size)
+        img = resize_bands(img, (max(1, int(img.size[0] * k)), max(1, int(img.size[1] * k))))
+    img.save(os.path.join(dest, name + '.webp'), 'WEBP', quality=90, method=6, exact=True)
+    textures[name] = name + '.webp'
+    print(f'  {name}: {os.path.basename(src_png)}')
+
+def add_overlay(shader):
+    """Оверлей (g_tOverlay): картинка поверх краски — розовая рамка Pink
+    Pearl, монеты на глушителе Royal Guard, панели Arctic Camo. Режимы
+    0 и 4 у непрозрачной картинки ведут себя как замена цвета; маска —
+    зона (1 — основа, 2–4 — R/G/B масок зон) и/или своя текстура."""
+    if not recipe_bool('g_bUseOverlay'):
+        return
+    res = recipe_texture('g_tOverlay')
+    op = res and 'materials/default/' not in res and png_for(res)
+    if not op:
+        return
+    save_layer(op, 'overlay', 'RGBA', 2048)
+    mres = recipe_texture('g_tOverlayMask')
+    if recipe_bool('g_bUseOverlayMask') and mres and 'materials/default/' not in mres:
+        mp = png_for(mres)
+        if mp:
+            save_layer(mp, 'overlay_mask', 'L')
+    shader['overlay'] = {
+        'blend': int(recipe_num('F_OVERLAY_BLEND_MODE', 0)),
+        'mask': int(recipe_num('F_OVERLAY_MASK', 0)),
+        'strength': recipe_num('g_fOverlayStrength', 1.0),
+        'brightness': recipe_num('g_fOverlayBrightness', 1.0),
+    }
+
 template_style = None
 if 'pattern' not in textures:
     m = re.search(r'templates/([a-z]+)_[a-z0-9_]*template\.vmat', recipe)
@@ -215,21 +283,6 @@ if template_style is not None:
     # Свои маски зон ствола вместо стандартных (g_bOverrideDefaultMasks):
     # цвета 1–3 ложатся по их R/G/B. Без них у Pink Pearl, Royal Guard и
     # Leafhopper цвета попадали не на те детали.
-    def recipe_texture(name):
-        found = None
-        for m in re.finditer(r'm_strName\s*=\s*"%s"(.*?)(?=m_strName\s*=|\Z)' % name, recipe, re.S):
-            t = re.search(r'resource_name:"([^"]+)"', m.group(1))
-            if t:
-                found = t.group(1)
-        return found
-    def png_for(resource):
-        stem = re.sub(r'\.vtex$', '', os.path.basename(resource).lower())
-        base = re.sub(r'_(tga|psd|png)_[0-9a-f]+$', '', stem)
-        for _, p in pngs:
-            pstem = os.path.basename(p)[:-4].lower()
-            if pstem == stem or re.sub(r'_(tga|psd|png)_[0-9a-f]+$', '', pstem) == base:
-                return p
-        return None
     zones_res = recipe_texture('g_tPaintByNumberMasks')
     if loose.get('g_bOverrideDefaultMasks#b') and zones_res and 'materials/default/' not in zones_res:
         zp = png_for(zones_res)
@@ -275,6 +328,7 @@ if template_style is not None:
         'color_metalness': loose.get('g_vPaintMetalness#4'),
         'color_roughness': loose.get('g_vPaintRoughness#4') if loose.get('g_bUseRoughnessByColor#b') else None,
     }
+    add_overlay(shader)
     # Иризация (Leafhopper, Marsh, Pink Pearl): сила, масштаб, сдвиг оттенка.
     irid = loose.get('g_flIridescentStrength')
     if isinstance(irid, float) and irid > 0 and not pearl_off:
@@ -329,14 +383,16 @@ if 'ramp' in textures:
         'ramp_offset': recipe_float('g_flCaseHardeningRampOffset', 0.0),
     }
 
+add_overlay(shader)
+
 rel = compfile.split('/weapons/paints/', 1)[-1]
 meta = {
     'finish': finish,
     'material': 'weapons/paints/' + rel,
     'format': 'vcompmat',
     # 2 — альбедо с exact=True (цвет под нулевой альфой цел) и палитра закалки;
-    # 3 — зоны покраски (pbn) и металличность краски.
-    'prep_version': 3,
+    # 3 — зоны покраски (pbn) и металличность краски; 4 — оверлей.
+    'prep_version': 4,
     'textures': textures,
     'shader': shader,
 }
