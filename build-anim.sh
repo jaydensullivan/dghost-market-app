@@ -69,6 +69,7 @@ mkdir -p "$ANIM/arms"
 if [ ! -f "$ANIM/arms/arms.glb" ]; then
     echo "▸ руки"
     rm -rf "$WORK/export-arms" "$WORK/export-arms-tex"
+    mkdir -p "$WORK/export-arms" "$WORK/export-arms-tex"
     export_one "$WORK/export-arms" weapons/models/shared/arms/weapon_arms.vmdl_c \
         --gltf_export_format glb --gltf_export_animations || echo "  (руки не вынулись)"
     # Текстуры (кожа, перчатка) — отдельным экспортом с материалами: с ним
