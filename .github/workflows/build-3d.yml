@@ -236,10 +236,26 @@ jobs:
           cd "$GITHUB_WORKSPACE/assets"
           STEAM_USER="$STEAM_USERNAME" bash probe-anim.sh
 
+      # Комплект анимаций ножа (only = anim:<нож>, например anim:knife_butterfly):
+      # руки и клипы в models/anim/<нож>/ ветки 3d-assets.
+      - name: Анимации ножа
+        if: startsWith(inputs.only, 'anim:')
+        env:
+          REPO: ${{ github.workspace }}/assets
+          ONLY: ${{ inputs.only }}
+        run: |
+          cd "$REPO"
+          KNIFE="${ONLY#anim:}" STEAM_USER="$STEAM_USERNAME" bash build-anim.sh
+          if [ -n "$(git status --porcelain models)" ]; then
+            git add models
+            git commit -q -m "3D: анимации ${ONLY#anim:}"
+            git push -q || { git pull -q --rebase && git push -q; }
+          fi
+
       # Останавливаемся за полчаса до лимита задачи: всё собранное уже
       # закоммичено, следующий запуск продолжит.
       - name: Сборка
-        if: ${{ !startsWith(inputs.only, 'probe') }}
+        if: ${{ !startsWith(inputs.only, 'probe') && !startsWith(inputs.only, 'anim:') }}
         env:
           REPO: ${{ github.workspace }}/assets
           ONLY: ${{ inputs.only }}
@@ -262,7 +278,7 @@ jobs:
       # Диапазоны pattern seed (сдвиг и поворот узора) для всех готовых
       # раскрасок — из рецептов игры; считается только для новых.
       - name: Pattern seed
-        if: always() && !startsWith(inputs.only, 'probe')
+        if: always() && !startsWith(inputs.only, 'probe') && !startsWith(inputs.only, 'anim:')
         env:
           REPO: ${{ github.workspace }}/assets
         run: |
@@ -281,7 +297,7 @@ jobs:
       # Cloudflare не выкладывается): артефакты GitHub лежат на хосте,
       # закрытом для облачного окружения, где их разбирают.
       - name: Рецепты раскрасок (в ветку)
-        if: always() && !startsWith(inputs.only, 'probe')
+        if: always() && !startsWith(inputs.only, 'probe') && !startsWith(inputs.only, 'anim:')
         run: |
           [ -d "$WORK/export-recipes" ] || { echo "Рецептов нет — шаг пропущен."; exit 0; }
           cd "$GITHUB_WORKSPACE/assets"
@@ -298,7 +314,7 @@ jobs:
       # стилей — архивом к запуску: по ним разбираем, как игра собирает
       # раскраски нового формата (Printstream и др.), не гадая по логу.
       - name: Рецепты раскрасок (архив)
-        if: always() && !startsWith(inputs.only, 'probe')
+        if: always() && !startsWith(inputs.only, 'probe') && !startsWith(inputs.only, 'anim:')
         uses: actions/upload-artifact@v4
         with:
           name: recipes
@@ -309,7 +325,7 @@ jobs:
       # Логи того, что не собралось в этом запуске, — прямо в журнал
       # задачи, чтобы разбирать ошибки без доступа к серверу.
       - name: Логи неудач
-        if: always() && !startsWith(inputs.only, 'probe')
+        if: always() && !startsWith(inputs.only, 'probe') && !startsWith(inputs.only, 'anim:')
         run: |
           cd "$GITHUB_WORKSPACE/assets"
           shown=0
