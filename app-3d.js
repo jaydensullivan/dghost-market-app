@@ -643,9 +643,13 @@ return legacyPatinaStyle(skin) && skin.params.paint_style === 7;
 const IRIDESCENT = { phase: 0.0, gain: 1.6 };
 // x — зона (0 — везде, 1 — основа, 2–4 — R/G/B масок зон), y — сила,
 // z — яркость (F_OVERLAY_MASK, g_fOverlayStrength/Brightness рецепта).
+// Проверены режимы 0 и 4 и зоны 0–4; остальные (полутона Halftone:
+// режим 2, зона 6) пока не рисуем, чтобы не испортить скин.
 function overlayVec(THREE, params){
 const o = params.overlay || {};
-return new THREE.Vector3(Number(o.mask) || 0, o.strength ?? 1, o.brightness ?? 1);
+const blend = Number(o.blend) || 0, mask = Number(o.mask) || 0;
+const known = (blend === 0 || blend === 4) && mask >= 0 && mask <= 4;
+return new THREE.Vector3(mask, known ? (o.strength ?? 1) : 0, o.brightness ?? 1);
 }
 function iridescentVec(THREE, params){
 const v = Array.isArray(params.iridescent) ? params.iridescent.map(Number) : [0, 1, 0];
