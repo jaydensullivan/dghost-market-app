@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 41;
+const APP3D_VERSION = 42;
 
 let threeLoading = null;
 
@@ -1231,6 +1231,7 @@ scene.environment = pmrem.fromScene(new mod.RoomEnvironment(), 0.04).texture;
 // осмотр). Картинки карт сборка кладёт на CDN 3D: models/backgrounds/
 // index.json — [{ id, name, file }]. Выбор запоминается на устройстве.
 const VIEWER_BG_KEY = 'dghost3dBg';
+const VIEWER_BG_INSPECT = 'radial-gradient(ellipse at 50% 40%, #5a5f66 0%, #2b2e33 55%, #16181b 100%)';
 let viewerBgList = null;
 function loadViewerBackgrounds(){
 if (viewerBgList) return Promise.resolve(viewerBgList);
@@ -1248,14 +1249,17 @@ function applyViewerBackground(id){
 const stage = document.querySelector('.viewer3d-stage');
 if (!stage) return;
 const map = (viewerBgList || []).find(b => b.id === id);
+// Фон задаём прямо в style: WebView Telegram держит app.css в кэше, и
+// фон через одни лишь CSS-правила мог не меняться.
 stage.removeAttribute('data-bg');
 stage.removeAttribute('data-bg-image');
-stage.style.backgroundImage = '';
+stage.style.background = '';
 if (map){
 stage.setAttribute('data-bg-image', id);
-stage.style.backgroundImage = `url("${modelsUrl('models/backgrounds/' + map.file)}")`;
+stage.style.background = `#15171a center / cover no-repeat url("${modelsUrl('models/backgrounds/' + map.file)}")`;
 } else if (id === 'inspect'){
 stage.setAttribute('data-bg', 'inspect');
+stage.style.background = VIEWER_BG_INSPECT;
 }
 document.querySelectorAll('#viewer3dBgs .viewer3d-bg').forEach(btn => {
 btn.setAttribute('aria-checked', btn.dataset.bg === id ? 'true' : 'false');
@@ -1269,7 +1273,7 @@ box.setAttribute('aria-label', dict.v3_bg_label || 'Background');
 let saved = 'inspect';
 try { saved = localStorage.getItem(VIEWER_BG_KEY) || 'inspect'; } catch (e) {}
 const draw = (maps) => {
-const items = [{ id: 'studio', name: dict.v3_bg_studio }, { id: 'inspect', name: dict.v3_bg_inspect }]
+const items = [{ id: 'studio', name: dict.v3_bg_studio || 'Studio' }, { id: 'inspect', name: dict.v3_bg_inspect || 'CS2' }]
 .concat(maps.map(m => ({ id: m.id, name: m.name || m.id })));
 if (!items.some(i => i.id === saved)) saved = 'inspect';
 box.innerHTML = '';
