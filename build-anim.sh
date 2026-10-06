@@ -46,10 +46,11 @@ export_one() {
 rm -rf "$OUT"; mkdir -p "$OUT" "$DEST"
 
 echo "▸ руки"
-# Со скелетом — без материалов: с --gltf_export_materials экспортёр отдавал
+# Кости экспортёр отдаёт только с --gltf_export_animations (без него —
+# неподвижный меш). Со скелетом — без материалов: с --gltf_export_materials экспортёр отдавал
 # руки одним неподвижным мешем без костей. Текстуры (кожа, перчатка) —
 # отдельным экспортом в свою папку, оттуда берём только PNG.
-export_one weapons/models/shared/arms/weapon_arms.vmdl_c --gltf_export_format glb || echo "  (руки не вынулись)"
+export_one weapons/models/shared/arms/weapon_arms.vmdl_c --gltf_export_format glb --gltf_export_animations || echo "  (руки не вынулись)"
 OUT_MAIN="$OUT"; OUT="$WORK/export-anim-tex"; rm -rf "$OUT"; mkdir -p "$OUT"
 export_one weapons/models/shared/arms/weapon_arms.vmdl_c \
     --gltf_export_format glb --gltf_export_materials --gltf_textures_adapt || echo "  (текстуры рук не вынулись)"
@@ -57,7 +58,7 @@ TEXDIR="$OUT"; OUT="$OUT_MAIN"
 
 echo "▸ нож со скелетом (ручки бабочки и т.п. двигаются костями)"
 MDL=$(grep -oE "weapons/models/knife/$KNIFE/weapon_$KNIFE\.vmdl_c" "$WORK/vpk_dir.txt" | head -1)
-[ -n "$MDL" ] && { export_one "$MDL" --gltf_export_format glb || echo "  (нож не вынулся)"; }
+[ -n "$MDL" ] && { export_one "$MDL" --gltf_export_format glb --gltf_export_animations || echo "  (нож не вынулся)"; }
 
 CLIPS=$(grep -oE "animation/anims/viewmodel/knife/$KNIFE/(lookat0[1-3]|idle1|draw)_$SHORT\.vnmclip_c" "$WORK/vpk_dir.txt" | sort -u)
 for c in $CLIPS; do
