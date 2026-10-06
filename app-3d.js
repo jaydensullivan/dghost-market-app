@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 53;
+const APP3D_VERSION = 54;
 
 let threeLoading = null;
 
@@ -868,7 +868,11 @@ uHasSkinMask: { value: skin.mask && skin.format !== 'vcompmat' ? 1 : 0 },
 uHasGrunge: { value: skin.grunge ? 1 : 0 },
 uHasWear: { value: skin.wear ? 1 : 0 },
 uBaseColor: { value: weapon ? weapon.color : null },
-uPaintMask: { value: skin.zones || (weapon ? weapon.masks : null) },
+uPaintMask: { value: weapon ? weapon.masks : null },
+// Свои маски зон скина — только для раскладки цветов и зоны оверлея;
+// где краска лежит вообще (клинок ножа, металл), решает маска ствола.
+uZones: { value: skin.zones || (weapon && weapon.masks) || pattern },
+uHasZones: { value: skin.zones || (weapon && weapon.masks) ? 1 : 0 },
 uAo: { value: weapon ? weapon.ao : null },
 uWearAmount: { value: Math.max(0, Math.min(1, wear || 0)) },
 uPatternScale: { value: (skin.params.pattern_scale || 1) * weaponPatternScale(skin, weaponName) * templateScaleTest(skin) },
@@ -988,6 +992,18 @@ uProjMin: { value: projCenter.clone() },
 uProjLen: { value: projLen },
 };
 
+// Редкие слои подключаются только у тех скинов, где они есть: на
+// телефонах обычно 16 текстурных слотов, и все сразу в шейдер не влезут.
+const shaderDefines = [
+uniforms.uHasRamp.value ? 'DG_RAMP' : '',
+skin.metalness ? 'DG_SKIN_METAL' : '',
+skin.pbn ? 'DG_PBN' : '',
+skin.zones ? 'DG_ZONES' : '',
+skin.overlay ? 'DG_OVERLAY' : '',
+skin.overlayMask ? 'DG_OVERLAY_MASK' : '',
+skin.pearl ? 'DG_PEARL' : '',
+].filter(Boolean);
+material.customProgramCacheKey = () => 'dghost-skin:' + shaderDefines.join(',');
 material.onBeforeCompile = (shader) => {
 Object.assign(shader.uniforms, uniforms, meshUniforms);
 
@@ -1016,8 +1032,11 @@ vProjUv.x = -vProjUv.x;`);
 
 shader.fragmentShader = shader.fragmentShader
 .replace('#include <common>', `#include <common>
+${shaderDefines.map(d => '#define ' + d).join('\n')}
 uniform sampler2D uPattern;
+#ifdef DG_RAMP
 uniform sampler2D uRamp;
+#endif
 uniform int uHasRamp;
 uniform float uRampInfluence;
 uniform float uRampOffset;
@@ -1038,8 +1057,12 @@ uniform float uWearScale;
 uniform float uGrungeScale;
 uniform float uPaintMetalness;
 uniform float uPaintRoughness;
+#ifdef DG_SKIN_METAL
 uniform sampler2D uSkinMetal;
+#endif
+#ifdef DG_PBN
 uniform sampler2D uPbn;
+#endif
 uniform int uHasPbn;
 uniform vec4 uColorMetal;
 uniform vec4 uColorRough;
@@ -1054,12 +1077,25 @@ uniform float uMaskGamma;
 uniform float uColorBrightness;
 uniform float uPatternGamma;
 uniform vec3 uIrid;
+#ifdef DG_ZONES
+uniform sampler2D uZones;
+#define DG_ZONE_TEX uZones
+#else
+#define DG_ZONE_TEX uPaintMask
+#endif
+uniform int uHasZones;
+#ifdef DG_OVERLAY
 uniform sampler2D uOverlay;
+#endif
 uniform int uHasOverlay;
+#ifdef DG_OVERLAY_MASK
 uniform sampler2D uOverlayMask;
+#endif
 uniform int uHasOverlayMask;
 uniform vec3 uOverlayParams;
+#ifdef DG_PEARL
 uniform sampler2D uPearl;
+#endif
 uniform int uHasPearl;
 uniform float uIridPhase;
 uniform float uIridGain;
@@ -1102,6 +1138,7 @@ vec2 patternUv = uProjected == 1 ? puv * uPatternScale + 0.5 : (puv + 0.5) * uPa
 vec4 patternTex = texture2D(uPattern, patternUv + uPatternOffset);
 vec3 pattern = patternTex.rgb;
 // Закалка: альфа узора выбирает цвет палитры, альбедо его оттеняет.
+#ifdef DG_RAMP
 if (uHasRamp == 1){
 float rampU = fract(patternTex.a * uRampInfluence + uRampOffset);
 // По диагонали: палитра бывает и горизонтальной, и вертикальной
@@ -1109,10 +1146,11 @@ float rampU = fract(patternTex.a * uRampInfluence + uRampOffset);
 float rampT = clamp(rampU, 0.002, 0.998);
 pattern *= texture2D(uRamp, vec2(rampT, rampT)).rgb;
 }
+#endif
 if (uUseColors == 1){
 // Первый цвет — основа, остальные ложатся по каналам маски.
 // У однотонных раскрасок маской служат зоны покраски самого ствола.
-vec3 m = uSolid == 1 && uHasWeapon == 1 ? masks.rgb
+vec3 m = uSolid == 1 && uHasZones == 1 ? texture2D(DG_ZONE_TEX, vSkinUv).rgb
 : (uSolid == 2 ? vec3(0.0) : pow(pattern, vec3(uMaskGamma)));
 if (uSolid == 2 && uHasWeapon == 1) paintable *= masks.r;
 pattern = uColors[0];
@@ -1122,6 +1160,7 @@ pattern = mix(pattern, uColors[3], m.b);
 colorWeight = mix(colorWeight, vec4(0.0, 1.0, 0.0, 0.0), m.r);
 colorWeight = mix(colorWeight, vec4(0.0, 0.0, 1.0, 0.0), m.g);
 colorWeight = mix(colorWeight, vec4(0.0, 0.0, 0.0, 1.0), m.b);
+#ifdef DG_PBN
 if (uHasPbn == 1){
 vec3 zone = texture2D(uPbn, vSkinUv).rgb;
 pattern = mix(pattern, uColors[1], zone.r);
@@ -1131,6 +1170,7 @@ colorWeight = mix(colorWeight, vec4(0.0, 1.0, 0.0, 0.0), zone.r);
 colorWeight = mix(colorWeight, vec4(0.0, 0.0, 1.0, 0.0), zone.g);
 colorWeight = mix(colorWeight, vec4(0.0, 0.0, 0.0, 1.0), zone.b);
 }
+#endif
 }
 if (uPatinaBlend == 1) pattern = pattern * uColors[0] * vec3(dot(base, vec3(0.299, 0.587, 0.114))) * 3.4;
 else if (uPatternGamma != 1.0) pattern = pow(pattern, vec3(uPatternGamma));
@@ -1164,25 +1204,32 @@ vec3 result = mix(base, painted, skinCover);
 
 // Оверлей: у непрозрачной картинки режимы 0 и 4 рецепта ведут себя
 // как замена цвета (розовая рамка Pink Pearl, панели Arctic Camo).
+#ifdef DG_OVERLAY
 if (uHasOverlay == 1){
 vec4 ov = texture2D(uOverlay, vSkinUv);
 float ovW = ov.a * uOverlayParams.y;
 if (uOverlayParams.x > 0.5){
-vec3 zm = uHasWeapon == 1 ? texture2D(uPaintMask, vSkinUv).rgb : vec3(0.0);
+vec3 zm = uHasZones == 1 ? texture2D(DG_ZONE_TEX, vSkinUv).rgb : vec3(0.0);
 float zone = uOverlayParams.x < 1.5 ? 1.0 - max(zm.r, max(zm.g, zm.b))
 : (uOverlayParams.x < 2.5 ? zm.r : (uOverlayParams.x < 3.5 ? zm.g : zm.b));
 ovW *= zone;
 }
+#ifdef DG_OVERLAY_MASK
 if (uHasOverlayMask == 1) ovW *= texture2D(uOverlayMask, vSkinUv).r;
+#endif
 painted = mix(painted, ov.rgb * uOverlayParams.z, clamp(ovW, 0.0, 1.0));
 result = mix(base, painted, skinCover);
 }
+#endif
 
 if (uIrid.x > 0.0){
 float facing = 1.0 - abs(dot(normalize(vNormal), normalize(vViewPosition)));
 float hue = fract(uIridPhase - uIrid.z - uIrid.y * facing);
 vec3 rainbow = clamp(abs(fract(hue + vec3(0.0, 2.0 / 3.0, 1.0 / 3.0)) * 6.0 - 3.0) - 1.0, 0.0, 1.0);
-float iridMask = uHasPearl == 1 ? texture2D(uPearl, vSkinUv).r : 1.0;
+float iridMask = 1.0;
+#ifdef DG_PEARL
+if (uHasPearl == 1) iridMask = texture2D(uPearl, vSkinUv).r;
+#endif
 painted = mix(painted, painted * rainbow * uIridGain, clamp(uIrid.x, 0.0, 1.0) * iridMask);
 result = mix(base, painted, skinCover);
 }
@@ -1197,8 +1244,10 @@ if (uMaskChannel != 4) diffuseColor.rgb = result;
 // металлической (paint_metalness = 1): там, где она лежит, берём
 // металличность из params.json, на голом металле — как было.
 .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>
-float paintMetal = uHasSkinMetal == 1 ? texture2D(uSkinMetal, vSkinUv).r
-: (uHasColorMetal == 1 ? dot(colorWeight, uColorMetal) : uPaintMetalness);
+float paintMetal = uHasColorMetal == 1 ? dot(colorWeight, uColorMetal) : uPaintMetalness;
+#ifdef DG_SKIN_METAL
+if (uHasSkinMetal == 1) paintMetal = texture2D(uSkinMetal, vSkinUv).r;
+#endif
 metalnessFactor = mix(metalnessFactor, paintMetal, skinCover);`)
 // Анодированная краска — полированная, где бы она ни лежала.
 .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
