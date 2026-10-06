@@ -64,6 +64,26 @@ echo "::group::наборы анимаций (vanmgrph / vagrp / animset)"
 grep -iE '\.(vanmgrph|vagrp|vnmgraph|vnmclip|vnmskel)_c|animset|animgraph' "$D" | grep -iE 'weapon|knife|arms|first|v_' | sed 's/ crc=.*//' | head -80
 echo "::endgroup::"
 
+# Клипы нового формата (AnimGraph 2, .vnmclip) — что из них даёт экспортёр.
+CLIPDIR="animation/anims/viewmodel/knife/$KNIFE"
+SHORT="${KNIFE#knife_}"
+for f in "$CLIPDIR/lookat01_$SHORT.vnmclip_c" "animation/skeletons/weapons/$KNIFE.vnmskel_c" "animation/graphs/viewmodel/viewmodel_$KNIFE.vnmgraph_c"; do
+    echo "::group::выемка $f"
+    rm -rf "$WORK/export-clip"; mkdir -p "$WORK/export-clip"
+    OUT_SAVE="$OUT"; OUT="$WORK/export-clip"
+    export_one "$f" && echo "  -d: ок" || echo "  -d: не вышло"
+    export_one "$f" --gltf_export_format glb --gltf_export_animations && echo "  glb: ок" || echo "  glb: не вышло"
+    OUT="$OUT_SAVE"
+    find "$WORK/export-clip" -type f -exec ls -la {} \;
+    for t in $(find "$WORK/export-clip" -type f ! -name '*.glb' | head -3); do echo "--- $t"; head -c 1500 "$t"; echo; done
+    tail -3 "$WORK/anim-one.log"
+    echo "::endgroup::"
+done
+echo "::group::Source2Viewer: версия и типы ресурсов"
+"$T" --version 2>&1 | head -3
+"$T" --help 2>&1 | grep -iE 'skel|clip|nm|anim' | head -10
+echo "::endgroup::"
+
 # Модель рук со всеми анимациями — какие клипы в ней есть.
 ARMS=weapons/models/shared/arms/weapon_arms.vmdl_c
 echo "::group::экспорт рук с анимациями"
