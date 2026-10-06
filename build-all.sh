@@ -436,7 +436,8 @@ for finish in sorted(os.listdir(root)):
     if not os.path.isfile(pfile):
         continue
     meta = json.load(open(pfile, encoding='utf-8'))
-    if meta.get('format') not in ('vcompmat', 'template') or meta.get('prep_version', 1) >= 3:
+    target = 4 if meta.get('format') == 'template' else 3
+    if meta.get('format') not in ('vcompmat', 'template') or meta.get('prep_version', 1) >= target:
         continue
     pattern = os.path.join(root, finish, 'pattern.webp')
     rpath = os.path.join(recipes, meta.get('material', ''))
@@ -446,13 +447,16 @@ for finish in sorted(os.listdir(root)):
          and os.path.isfile(pattern) and 'A' in Image.open(pattern).getbands())
         or uses(recipe, 'g_bUsePaintByNumberMasks', 'g_tPaintByNumberMasks') and meta.get('format') == 'template'
         or uses(recipe, 'g_bUseMetalness', 'g_tPaintMetalness')
+        # 4: у шаблона заданы металличность/шероховатость по цветам.
+        or meta.get('format') == 'template' and meta.get('prep_version', 1) < 4
+           and re.search(r'"g_vPaintMetalness"', recipe) is not None
     )
     if need:
         # Без params.json скин не считается готовым (skin_ready) и соберётся заново.
         os.remove(pfile)
         redo += 1
     else:
-        meta['prep_version'] = 3
+        meta['prep_version'] = target
         with open(pfile, 'w', encoding='utf-8') as f:
             json.dump(meta, f, ensure_ascii=False, indent=2)
         stamped += 1

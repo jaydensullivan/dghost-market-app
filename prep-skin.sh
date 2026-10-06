@@ -172,6 +172,14 @@ if template_style is not None:
         f = re.search(r'm_flValueFloatX\s*=\s*(-?[\d.]+(?:[eE][-+]?\d+)?)', body)
         if f:
             loose[name] = float(f.group(1))
+        # FLOAT4 по цветам (g_vPaintMetalness, g_vPaintRoughness): X..W — цвета 0..3.
+        if re.search(r'LOOSE_VARIABLE_TYPE_FLOAT4', body):
+            vals = [re.search(r'm_flValueFloat%s\s*=\s*(-?[\d.]+(?:[eE][-+]?\d+)?)' % a, body) for a in 'XYZW']
+            if all(vals):
+                loose[name + '#4'] = [round(float(v.group(1)), 4) for v in vals]
+        b = re.search(r'm_bValueBoolean\s*=\s*(true|false)', body)
+        if b:
+            loose[name + '#b'] = b.group(1) == 'true'
 
 if template_style is not None:
     colors = [loose.get('g_vColor%d' % i) for i in range(4)]
@@ -214,12 +222,17 @@ if template_style is not None:
         'color_brightness': 1.0,
         'paint_metalness': 0,
         'colors': [c or [0, 0, 0] for c in colors],
+        # Металличность и шероховатость каждого из четырёх цветов (MP7
+        # Amberline: оранжевый и белый — металлик, тёмный — нет).
+        'color_metalness': loose.get('g_vPaintMetalness#4'),
+        'color_roughness': loose.get('g_vPaintRoughness#4') if loose.get('g_bUseRoughnessByColor#b') else None,
     }
     meta = {
         'finish': finish,
         'material': 'weapons/paints/' + compfile.split('/weapons/paints/', 1)[-1],
         'format': 'template',
-        'prep_version': 3,
+        # 4 — металличность/шероховатость по цветам.
+        'prep_version': 4,
         'textures': textures,
         'shader': shader,
     }
