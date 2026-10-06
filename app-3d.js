@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 47;
+const APP3D_VERSION = 48;
 
 let threeLoading = null;
 
@@ -528,6 +528,15 @@ return pack;
 });
 }
 
+let whiteTex = null;
+function whiteTexture(THREE){
+if (!whiteTex){
+whiteTex = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1);
+whiteTex.needsUpdate = true;
+}
+return whiteTex;
+}
+
 function loadWeaponTextures(THREE, base, textures){
 const names = ['color', 'masks', 'rough', 'ao'];
 return Promise.all(names.map(name => textures[name]
@@ -552,7 +561,9 @@ if (!weapon || !weapon.hdTextures || !skinUsesHdBody(skin)) return [skin, weapon
 return loadWeaponTextures(THREE, weapon.hdBase, weapon.hdTextures)
 .then(hd => {
 hd.name = weapon.name;
-weapon.hd = hd.masks && hd.color && hd.ao ? hd : null;
+// AO у HD-набора бывает не у всех стволов — тогда без затенения.
+if (hd.masks && hd.color && !hd.ao) hd.ao = whiteTexture(THREE);
+weapon.hd = hd.masks && hd.color ? hd : null;
 return [skin, weapon];
 })
 .catch(() => [skin, weapon]);

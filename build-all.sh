@@ -319,7 +319,7 @@ weapon_state() {
     local model="нет"
     # hd_version в params.json — набор HD-корпуса уже искали (см. build_model).
     if [ -f "$REPO/models/$weapon.glb" ] && [ -f "$REPO/models/weapons/$weapon/masks.webp" ] \
-        && grep -q '"hd_version": 2' "$REPO/models/weapons/$weapon/params.json" 2>/dev/null; then
+        && grep -q '"hd_version": 3' "$REPO/models/weapons/$weapon/params.json" 2>/dev/null; then
         model="есть"
     fi
     echo "$have|$gave_up|$model|$missing"
@@ -401,7 +401,7 @@ build_model() {
     # добавляется один ключ "hd" — старые текстуры не трогаются, даже
     # если выемка не удалась.
     local wdir="$REPO/models/weapons/$weapon"
-    if ! grep -q '"hd_version": 2' "$wdir/params.json" 2>/dev/null; then
+    if ! grep -q '"hd_version": 3' "$wdir/params.json" 2>/dev/null; then
         echo "   набор HD-корпуса"
         rm -rf "$WORK/export-model" "$WORK/hd-tmp"
         bash fix-model.sh "$weapon" >> "$WORK/build-$weapon.log" 2>&1
@@ -422,7 +422,7 @@ else:
 path = os.path.join(dest, 'params.json')
 meta = json.load(open(path, encoding='utf-8'))
 meta['hd'] = hd
-meta['hd_version'] = 2
+meta['hd_version'] = 3
 with open(path, 'w', encoding='utf-8') as f:
     json.dump(meta, f, ensure_ascii=False, indent=2)
 print('   hd:', 'есть' if hd else 'нет')
