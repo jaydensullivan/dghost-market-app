@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 50;
+const APP3D_VERSION = 51;
 
 let threeLoading = null;
 
@@ -625,6 +625,13 @@ return (!skin.format || skin.format === 'legacy') && [7, 8].indexOf(skin.params.
 // Патина (стиль 7): узор тонирует сам металл ствола — умножаем на его
 // яркость (не цвет: у старых корпусов база бежевая/деревянная). Подобрано
 // по CSFloat (10 скинов): ошибка яркости 16 → 10. Для gunsmith (8) — гамма.
+// Новые скины на шаблоне gunsmith (gs_template: Run Run Run, Traitor,
+// Half Sleeve, Arctic Camo Panels) без степени выходили светлее игры на
+// 10–24 по яркости; степень 1.6 (по CSFloat) — ошибка 18 → 4.
+const GUNSMITH_TEMPLATE_GAMMA = 1.6;
+function gunsmithTemplate(skin){
+return skin.format === 'vcompmat' && /^gs_(extended_)?template$/.test(String(skin.params.paint_template || ''));
+}
 function legacyPatinaBlend(skin){
 return legacyPatinaStyle(skin) && skin.params.paint_style === 7;
 }
@@ -884,7 +891,7 @@ uColorBrightness: { value: skin.params.color_brightness || 1 },
 // (по сверке с CSFloat светлее игры на 30–50 по яркости). Степень 1.8
 // у узора возвращает и яркость, и оттенок: Decimator — тёмно-синий,
 // Night Terror и Nebula Crusader — оранжевые, Magma — тёмная.
-uPatternGamma: { value: legacyPatinaStyle(skin) && !legacyPatinaBlend(skin) ? PATINA_PATTERN_GAMMA : 1 },
+uPatternGamma: { value: legacyPatinaStyle(skin) && !legacyPatinaBlend(skin) ? PATINA_PATTERN_GAMMA : (gunsmithTemplate(skin) ? GUNSMITH_TEMPLATE_GAMMA : 1) },
 uPatinaBlend: { value: legacyPatinaBlend(skin) ? 1 : 0 },
 uMaskChannel: { value: channel },
 // Иризация (шаблоны soe/aq: Leafhopper, Marsh, Pink Pearl): оттенок

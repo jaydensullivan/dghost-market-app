@@ -313,6 +313,11 @@ def recipe_float(name, default):
     return float(v.group(1)) if v else default
 
 shader = {}
+# Шаблон рецепта (gs_template — gunsmith: Run Run Run, Traitor, Arctic
+# Camo Panels): по нему просмотрщик подбирает, как смешивать узор.
+tm = re.search(r'templates/([a-z]+_[a-z_]*template)\.vmat', recipe)
+if tm:
+    shader['paint_template'] = tm.group(1)
 # Иризация: оттенок краски плывёт по радуге с углом взгляда.
 irid = recipe_float('g_flIridescentStrength', 0.0)
 if irid > 0:

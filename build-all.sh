@@ -505,8 +505,9 @@ print(f'Раскраски нового формата: пересоберу {re
 PY
 fi
 
-# Иризация (оттенок плывёт с углом взгляда: Leafhopper, Marsh) — только
-# числа из рецепта, текстуры не нужны: дописываем в готовые params.json.
+# Иризация (оттенок плывёт с углом взгляда: Leafhopper, Marsh) и шаблон
+# рецепта (gunsmith) — только данные из рецепта, текстуры не нужны:
+# дописываем в готовые params.json.
 if [ "$MODE" != "status" ] && [ -d "$REPO/models/skins" ]; then
 python3 - "$REPO/models/skins" "$REPO/recipes" <<'PY'
 import json, os, re, sys
@@ -520,18 +521,28 @@ def last_float(recipe, name, default):
             val = float(v.group(1))
     return val
 
-added = 0
+added = templated = 0
 for finish in sorted(os.listdir(root)):
     pfile = os.path.join(root, finish, 'params.json')
     if not os.path.isfile(pfile):
         continue
     meta = json.load(open(pfile, encoding='utf-8'))
-    if meta.get('format') not in ('vcompmat', 'template') or 'iridescent' in meta.get('shader', {}):
+    if meta.get('format') not in ('vcompmat', 'template'):
         continue
     rpath = os.path.join(recipes, meta.get('material', ''))
     if not os.path.isfile(rpath):
         continue
     recipe = open(rpath, encoding='utf-8', errors='ignore').read()
+    shader = meta.setdefault('shader', {})
+    # Шаблон рецепта: у gunsmith (gs_…) узор смешивается со степенью.
+    tm = re.search(r'templates/([a-z]+_[a-z_]*template)\.vmat', recipe)
+    if meta.get('format') == 'vcompmat' and tm and shader.get('paint_template') != tm.group(1):
+        shader['paint_template'] = tm.group(1)
+        with open(pfile, 'w', encoding='utf-8') as f:
+            json.dump(meta, f, ensure_ascii=False, indent=2)
+        templated += 1
+    if 'iridescent' in shader:
+        continue
     irid = last_float(recipe, 'g_flIridescentStrength', 0.0)
     if irid <= 0:
         continue
@@ -546,7 +557,7 @@ for finish in sorted(os.listdir(root)):
     with open(pfile, 'w', encoding='utf-8') as f:
         json.dump(meta, f, ensure_ascii=False, indent=2)
     added += 1
-print(f'Иризация дописана: {added}')
+print(f'Иризация дописана: {added}, шаблон рецепта: {templated}')
 PY
 fi
 
