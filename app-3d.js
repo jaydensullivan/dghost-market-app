@@ -1226,8 +1226,75 @@ scene.environment = pmrem.fromScene(new mod.RoomEnvironment(), 0.04).texture;
 .catch(() => {});
 }
 
+// ---------- фон 3D ----------
+// Встроенные фоны и фоны карт CS2 (как в главном меню игры, где идёт
+// осмотр). Картинки карт сборка кладёт на CDN 3D: models/backgrounds/
+// index.json — [{ id, name, file }]. Выбор запоминается на устройстве.
+const VIEWER_BG_KEY = 'dghost3dBg';
+let viewerBgList = null;
+function loadViewerBackgrounds(){
+if (viewerBgList) return Promise.resolve(viewerBgList);
+return loadModelIndex()
+.then(() => fetch(modelsUrl('models/backgrounds/index.json')))
+.then(r => r.ok ? r.json() : [])
+.catch(() => [])
+.then(list => {
+viewerBgList = Array.isArray(list) ? list.filter(b => b && b.id && /^[\w.-]+$/.test(b.file || "")) : [];
+return viewerBgList;
+});
+}
+
+function applyViewerBackground(id){
+const stage = document.querySelector('.viewer3d-stage');
+if (!stage) return;
+const map = (viewerBgList || []).find(b => b.id === id);
+stage.removeAttribute('data-bg');
+stage.removeAttribute('data-bg-image');
+stage.style.backgroundImage = '';
+if (map){
+stage.setAttribute('data-bg-image', id);
+stage.style.backgroundImage = `url("${modelsUrl('models/backgrounds/' + map.file)}")`;
+} else if (id === 'inspect'){
+stage.setAttribute('data-bg', 'inspect');
+}
+document.querySelectorAll('#viewer3dBgs .viewer3d-bg').forEach(btn => {
+btn.setAttribute('aria-checked', btn.dataset.bg === id ? 'true' : 'false');
+});
+}
+
+function renderViewerBackgrounds(dict){
+const box = document.getElementById('viewer3dBgs');
+if (!box) return;
+box.setAttribute('aria-label', dict.v3_bg_label || 'Background');
+let saved = 'inspect';
+try { saved = localStorage.getItem(VIEWER_BG_KEY) || 'inspect'; } catch (e) {}
+const draw = (maps) => {
+const items = [{ id: 'studio', name: dict.v3_bg_studio }, { id: 'inspect', name: dict.v3_bg_inspect }]
+.concat(maps.map(m => ({ id: m.id, name: m.name || m.id })));
+if (!items.some(i => i.id === saved)) saved = 'inspect';
+box.innerHTML = '';
+items.forEach(item => {
+const btn = document.createElement('button');
+btn.type = 'button';
+btn.className = 'viewer3d-bg';
+btn.dataset.bg = item.id;
+btn.setAttribute('role', 'radio');
+btn.textContent = item.name;
+btn.addEventListener('click', () => {
+try { localStorage.setItem(VIEWER_BG_KEY, item.id); } catch (e) {}
+applyViewerBackground(item.id);
+});
+box.appendChild(btn);
+});
+applyViewerBackground(saved);
+};
+draw(viewerBgList || []);
+if (!viewerBgList) loadViewerBackgrounds().then(maps => { if (maps.length) draw(maps); });
+}
+
 function open3DViewer(modelUrl, title, skinDir, wearValue, weaponDir, maskChannel, seed){
 const dict = I18N[currentLang] || I18N.ru;
+renderViewerBackgrounds(dict);
 const mode = get3DMode() || 'full';
 const status = document.getElementById('viewer3dStatus');
 status.innerHTML = '';
