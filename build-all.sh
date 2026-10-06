@@ -142,6 +142,20 @@ print(data[kind][name])
 PY
 }
 
+# Сборка научилась новому (узор из рецепта у кастомных cu_… —
+# Stratosphere и др.) — один раз даём всем раскраскам из списка
+# неудач новые попытки. Номер в поле reset: поменял правила — подними.
+python3 - "$FAILURES" <<'PY'
+import json, os, sys
+path, RESET = sys.argv[1], 4
+if os.path.exists(path):
+    data = json.load(open(path, encoding="utf-8"))
+    if data.get("reset") != RESET:
+        print(f"Список неудач: сбрасываю {len(data.get('skins') or {})} раскрасок (новые правила сборки)")
+        data["skins"], data["reset"] = {}, RESET
+        json.dump(data, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1, sort_keys=True)
+PY
+
 load_failures
 
 cd "$REPO" || { echo "❌ Нет репозитория $REPO"; exit 1; }

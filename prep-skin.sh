@@ -130,6 +130,29 @@ for layer, key, max_side, color in LAYERS:
 # где), как у старых гидрографий и спреев. Переводим в те же параметры,
 # что у старого формата, — просмотрщик уже умеет их показывать.
 # ------------------------------------------------------------
+# Узор, на который прямо ссылается рецепт (g_tPattern). У кастомной
+# раскраски нового формата (шаблон cu_…template: Stratosphere,
+# Iridescent и др.) это готовая цветная картинка, но без «albedo» в
+# имени файла — раньше её не узнавали, брали карту металличности и
+# падали на «нет цветов». Такую картинку берём как обычное альбедо.
+def stem_base(path):
+    return re.sub(r'_(tga|psd|png)_[0-9a-f]+$', '', os.path.basename(path)[:-4].lower())
+
+m = re.search(r'"g_tPattern"(?:(?!m_strName).)*?m_strTextureContentAssetPath\s*=\s*"([^"]+)"', recipe, re.S)
+recipe_pattern = os.path.splitext(os.path.basename(m.group(1)))[0].lower() if m else None
+if ('pattern' not in textures and recipe_pattern
+        and re.search(r'templates/cu_[a-z0-9_]*template\.vmat', recipe)):
+    src_png = next((p for _, p in pngs if stem_base(p) == recipe_pattern), None)
+    if src_png:
+        img = Image.open(src_png)
+        if max(img.size) > 2048:
+            k = 2048 / max(img.size)
+            img = resize_bands(img, (int(img.size[0] * k), int(img.size[1] * k)))
+        img = img.convert('RGBA' if 'A' in img.getbands() else 'RGB')
+        img.save(os.path.join(dest, 'pattern.webp'), 'WEBP', quality=88, method=6, exact=True)
+        textures['pattern'] = 'pattern.webp'
+        print(f'  pattern (из рецепта): {os.path.basename(src_png)}')
+
 template_style = None
 if 'pattern' not in textures:
     m = re.search(r'templates/([a-z]+)_[a-z0-9_]*template\.vmat', recipe)
@@ -158,7 +181,7 @@ if template_style is not None:
         # рельефа/затенения, не маски зон ствола и не наклейка-оверлей.
         def pattern_like(path):
             base = os.path.basename(path).lower()
-            if re.search(r'normal|ambient_occlusion|_ao_|rough|masks|overlay|sfx|grunge|wear|default_', base):
+            if re.search(r'normal|ambient_occlusion|_ao_|rough|metalness|masks|overlay|sfx|grunge|wear|default_', base):
                 return False
             return 'paintkits' in path.replace('\\', '/')
         cands = [p for _, p in pngs if pattern_like(p)]
