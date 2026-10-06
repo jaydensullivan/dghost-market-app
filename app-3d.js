@@ -467,14 +467,45 @@ masks: 'masks.webp',
 rough: 'rough.webp',
 ao: 'ao.webp',
 }, meta.textures || {});
+return loadWeaponTextures(THREE, base, textures).then(pack => {
+pack.name = weaponNameFromDir(dir);
+// Текстуры HD-корпуса (маска зон, родной цвет, AO) — грузятся, только
+// когда раскраска легла на HD-корпус (loadSkinWithWeapon).
+pack.hdBase = base;
+pack.hdTextures = meta.hd && meta.hd.textures ? meta.hd.textures : null;
+return pack;
+});
+});
+}
+
+function loadWeaponTextures(THREE, base, textures){
 const names = ['color', 'masks', 'rough', 'ao'];
-return Promise.all(names.map(name =>
-loadSkinTexture(THREE, resolveSkinPath(base, textures[name]), name === 'color')
+return Promise.all(names.map(name => textures[name]
+? loadSkinTexture(THREE, resolveSkinPath(base, textures[name]), name === 'color')
+: Promise.resolve(null)
 )).then(loaded => {
-const pack = { name: weaponNameFromDir(dir) };
+const pack = {};
 names.forEach((name, i) => { pack[name] = loaded[i]; });
 return pack;
 });
+}
+
+// Раскраска и текстуры ствола. Под HD-корпус у ствола свои маска зон и
+// родной цвет: без них однотонные и шаблонные раскраски заливали всю
+// модель одним цветом (M249 Impact Drill — целиком жёлтый).
+function loadSkinWithWeapon(THREE, skinDir, weaponDir){
+return Promise.all([
+loadSkinPack(THREE, skinDir),
+weaponDir ? loadWeaponPack(THREE, weaponDir).catch(() => null) : Promise.resolve(null),
+]).then(([skin, weapon]) => {
+if (!weapon || !weapon.hdTextures || !skinUsesHdBody(skin)) return [skin, weapon];
+return loadWeaponTextures(THREE, weapon.hdBase, weapon.hdTextures)
+.then(hd => {
+hd.name = weapon.name;
+weapon.hd = hd.masks && hd.color && hd.ao ? hd : null;
+return [skin, weapon];
+})
+.catch(() => [skin, weapon]);
 });
 }
 
@@ -688,10 +719,10 @@ function applySkinToModel(THREE, object, skin, wear, weapon, maskChannel, seed){
 // У ножей корпус один, и маска ствола им нужна всегда (иначе краска
 // ложилась и на рукоять — Falchion Gamma Doppler).
 const useHd = selectModelBody(object, skinUsesHdBody(skin));
-// Текстуры ствола (маски зон, цвет, AO) сняты со старого корпуса — на
-// HD-корпусе развёртка другая, и они дают розовые края и пятна.
-// Раскраска нового формата и так покрывает ствол целиком.
-if (useHd) weapon = null;
+// Текстуры ствола (маски зон, цвет, AO) старого корпуса на HD-корпусе
+// не годятся: развёртка другая, они дают розовые края и пятна. Для HD
+// берём его собственный набор (если сборка его уже положила).
+if (useHd) weapon = weapon && weapon.hd ? weapon.hd : null;
 // 0,1,2 — каналы маски; 3 — красить всё без маски; 4 — показать
 // саму маску цветом (отладка: видно, какой канал за что отвечает).
 const CHANNELS = { r: 0, g: 1, b: 2, none: 3, debug: 4 };
@@ -1255,10 +1286,7 @@ setupViewerScene(THREE, renderer, scene);
 
 // Раскраска лота, если она указана.
 if (skinDir){
-Promise.all([
-loadSkinPack(THREE, skinDir),
-weaponDir ? loadWeaponPack(THREE, weaponDir).catch(() => null) : Promise.resolve(null),
-])
+loadSkinWithWeapon(THREE, skinDir, weaponDir)
 .then(([skin, weapon]) => {
 if (!skin.pattern && !skin.solid) throw new Error('не загрузился узор');
 applySkinToModel(THREE, object, skin, wearValue, weapon, maskChannel, seed);
@@ -1513,10 +1541,7 @@ const response = await fetch(modelsUrl(entry.model));
 if (!response.ok) throw new Error('model ' + response.status);
 const buffer = await response.arrayBuffer();
 const gltf = await parseGlb(buffer).catch(() => parseGlb(stripTexturesFromGlb(buffer)));
-const [skin, weapon] = await Promise.all([
-loadSkinPack(THREE, entry.skin),
-entry.weapon ? loadWeaponPack(THREE, entry.weapon).catch(() => null) : null,
-]);
+const [skin, weapon] = await loadSkinWithWeapon(THREE, entry.skin, entry.weapon);
 if (!skin.pattern && !skin.solid) throw new Error('не загрузился узор');
 
 const glCanvas = document.createElement('canvas');
