@@ -27,6 +27,7 @@ import os
 import re
 import sys
 import time
+import urllib.parse
 import urllib.request
 
 import numpy as np
@@ -55,9 +56,69 @@ def clean_name(name):
 
 # ---------------------------------------------------------------- prepare
 
+WEARS = [('Factory New', 0.03), ('Minimal Wear', 0.1), ('Field-Tested', 0.25),
+         ('Well-Worn', 0.41), ('Battle-Scarred', 0.6)]
+
+
+def prepare_csfloat(out, index, names):
+    """
+    Образцы с CSFloat: для каждого скина — реальные экземпляры с разными
+    сидами (через бота: /api/ops/csfloat_refs, ключ OPS_API_KEY) и их
+    скриншоты. Рендерим наш 3D с тем же сидом и float — сравнение
+    один к одному, по паттернам.
+    """
+    api_base = os.environ.get('OPS_URL', 'https://api.dghostmarket.com').rstrip('/')
+    key = os.environ.get('OPS_API_KEY', '')
+    if not key:
+        sys.exit('Нет OPS_API_KEY (секрет репозитория) — образцы CSFloat не получить.')
+    per_skin = int(os.environ.get('PER_SKIN', '10'))
+    jobs = []
+    for name in names:
+        seen = set()
+        for wear_name, _ in WEARS:
+            if len(seen) >= per_skin:
+                break
+            q = urllib.parse.urlencode({'name': f'{clean_name(name)} ({wear_name})', 'limit': 50})
+            req = urllib.request.Request(f'{api_base}/api/ops/csfloat_refs?{q}', headers=dict(UA, **{'X-Ops-Key': key}))
+            try:
+                with urllib.request.urlopen(req, timeout=60) as r:
+                    refs = json.loads(r.read()).get('refs', [])
+            except Exception as e:
+                print(f'  ✗ CSFloat {name} ({wear_name}): {e}')
+                continue
+            for ref in refs:
+                seed = ref.get('paint_seed')
+                if seed is None or seed in seen or not ref.get('playside'):
+                    continue
+                slug = slugify(f'{name}_{seed}')
+                dest = os.path.join(out, 'steam', slug + '.png')
+                try:
+                    Image.open(io.BytesIO(fetch(ref['playside']))).convert('RGBA').save(dest)
+                except Exception as e:
+                    print(f'  ✗ скриншот {name} #{seed}: {e}')
+                    continue
+                seen.add(seed)
+                jobs.append({'name': f'{name} · паттерн {seed}', 'slug': slug, 'entry': index[name],
+                             'seed': seed, 'wear': ref.get('float_value') or 0.05})
+                time.sleep(0.3)
+                if len(seen) >= per_skin:
+                    break
+            time.sleep(1)
+        print(f'  {name}: образцов {len(seen)}')
+    return jobs
+
+
 def prepare(out):
     os.makedirs(os.path.join(out, 'steam'), exist_ok=True)
     index = json.loads(fetch(MODELS_CDN + 'models/index.json'))
+    if os.environ.get('REF_SOURCE') == 'csfloat':
+        only = [n.strip() for n in os.environ.get('ONLY_NAMES', '').split(';') if n.strip()]
+        names = [n for n in only if n in index] or sys.exit('Для CSFloat укажи скины в ONLY_NAMES.')
+        jobs = prepare_csfloat(out, index, names)
+        with open(os.path.join(out, 'jobs.json'), 'w', encoding='utf-8') as f:
+            json.dump(jobs, f, ensure_ascii=False, indent=1)
+        print(f'Образцов CSFloat к сверке: {len(jobs)}')
+        return
     api = json.loads(fetch(SKINS_API, timeout=120))
     images = {}
     for s in api:

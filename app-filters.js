@@ -1299,9 +1299,10 @@ WW: 'Well-Worn',
 BS: 'Battle-Scarred',
 };
 
-function buyDetailRow(label, value){
+function buyDetailRow(label, value, key){
 if (value === null || value === undefined || value === '') return '';
-return `<div class="buy-detail-row"><div class="buy-detail-label">${label}</div><div class="buy-detail-value">${value}</div></div>`;
+const keyAttr = key ? ` data-detail="${key}"` : '';
+return `<div class="buy-detail-row"${keyAttr}><div class="buy-detail-label">${label}</div><div class="buy-detail-value">${value}</div></div>`;
 }
 
 // ---------------- Мини-график истории цены (SVG, без библиотек) ----------------
@@ -1419,7 +1420,7 @@ buyDetailRow(dict.detail_wear, skin.wear ? (wearMap[skin.wear] || skin.wear) : n
 buyDetailRow(dict.detail_rarity, skin.rarity ? (rarityMap[skin.rarity] || skin.rarity) : null),
 buyDetailRow('StatTrak', skin.stattrak ? dict.value_yes : null),
 buyDetailRow('Float', (skin.float_value !== null && skin.float_value !== undefined) ? formatFloat(skin.float_value) : null),
-buyDetailRow(dict.detail_price, formatCoins(skin.price)),
+buyDetailRow(dict.detail_price, formatCoins(skin.price), 'price'),
 ].join('');
 
 buyDetailsTable.innerHTML = rows;
@@ -1831,7 +1832,10 @@ return r.json();
 buyStatus.textContent = (I18N[currentLang] || I18N.ru).status_price_updated;
 pendingBuySkin.price = data.price;
 buyPrice.textContent = formatCoins(data.price);
-buyDetailsTable.innerHTML = buyDetailsTable.innerHTML.replace(/Цена<\/div><div class="buy-detail-value">[^<]*/, 'Цена</div><div class="buy-detail-value">' + formatCoins(data.price));
+// Строка цены — по метке data-detail: раньше искали слово «Цена», и в
+// узбекском и английском интерфейсе цена в таблице оставалась старой.
+const priceCell = buyDetailsTable.querySelector('[data-detail="price"] .buy-detail-value');
+if (priceCell) priceCell.textContent = formatCoins(data.price);
 buyPriceEdit.style.display = 'none';
 buyEditPriceBtn.style.display = '';
 buySavePriceBtn.style.display = 'none';

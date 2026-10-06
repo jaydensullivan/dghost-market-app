@@ -518,6 +518,14 @@ if ([1, 2, 4, 5, 7].indexOf(params.paint_style) === -1) return 1;
 return WEAPON_UV_SCALE[weaponName] || 1;
 }
 
+// Только для сверки со Steam (tools/steam-compare, TPL_SCALE): множитель
+// масштаба узора у шаблонных спрея и гидрографии — подбираем, как его
+// понимает игра. В мини-аппе window.DGHOST_TPL_SCALE не задан — 1.
+function templateScaleTest(skin){
+const k = Number(window.DGHOST_TPL_SCALE) || 1;
+return skin.format === 'template' && [1, 2].indexOf(skin.params.paint_style) !== -1 ? k : 1;
+}
+
 function isKnifeName(name){
 return name === 'bayonet' || name.indexOf('knife') === 0;
 }
@@ -727,7 +735,7 @@ uBaseColor: { value: weapon ? weapon.color : null },
 uPaintMask: { value: weapon ? weapon.masks : null },
 uAo: { value: weapon ? weapon.ao : null },
 uWearAmount: { value: Math.max(0, Math.min(1, wear || 0)) },
-uPatternScale: { value: (skin.params.pattern_scale || 1) * weaponPatternScale(skin, weaponName) },
+uPatternScale: { value: (skin.params.pattern_scale || 1) * weaponPatternScale(skin, weaponName) * templateScaleTest(skin) },
 // Поворот узора в params.json — в градусах.
 uPatternRotation: { value: placement.rotation * Math.PI / 180 },
 // Сдвиг узора по seed (в долях текстуры).

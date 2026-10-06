@@ -26,6 +26,9 @@ fs.mkdirSync(oursDir, { recursive: true });
       return fs.existsSync(file) ? route.fulfill({ path: file, contentType: 'application/javascript' }) : route.abort();
     });
   }
+  if (process.env.TPL_SCALE){
+    await page.addInitScript(k => { window.DGHOST_TPL_SCALE = Number(k); }, process.env.TPL_SCALE);
+  }
   await page.goto(base, { waitUntil: 'load' });
   await page.waitForTimeout(3000);
 
@@ -33,14 +36,14 @@ fs.mkdirSync(oursDir, { recursive: true });
   for (const [i, job] of jobs.entries()){
     const started = Date.now();
     const result = await Promise.race([
-      page.evaluate(async (entry) => {
+      page.evaluate(async ([entry, wear, seed]) => {
         try {
-          const bytes = await render3DGif(entry, 0.05, '', null, null, 'transparent');
+          const bytes = await render3DGif(entry, wear, '', null, seed, 'transparent');
           return { b64: bytesToBase64(bytes) };
         } catch (e) {
           return { error: String(e && e.message || e) };
         }
-      }, job.entry),
+      }, [job.entry, job.wear ?? 0.05, job.seed ?? null]),
       new Promise(resolve => setTimeout(() => resolve({ error: 'таймаут 90 с' }), 90000)),
     ]);
     if (result.b64){
