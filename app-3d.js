@@ -1817,21 +1817,11 @@ return true;
 // ---------- нож в руках (анимация осмотра, как на F в игре) ----------
 // Комплект из сборки (build-anim.sh): models/anim/<нож>/ — руки и нож со
 // скелетом, клипы анимаций (скелет вьюмодели: руки + кости ножа) и
-// текстуры рук. Скелет берём из клипа, руки и нож привязываем к его
-// костям по именам, скелет ножа вешаем на кость оружия «wpn» правой руки
-// (в игре он прикрепляемый, m_bIsAttachableProp).
-function rebindSkinnedMeshes(THREE, source, skeletonRoot){
-const meshes = [];
-source.traverse(node => { if (node.isSkinnedMesh) meshes.push(node); });
-meshes.forEach(mesh => {
-const old = mesh.skeleton;
-const bones = old.bones.map(b => skeletonRoot.getObjectByName(b.name) || b);
-mesh.bind(new THREE.Skeleton(bones, old.boneInverses), mesh.bindMatrix);
-mesh.frustumCulled = false;
-});
-return meshes;
-}
-
+// текстуры рук. Клип проигрываем прямо на скелете рук и ножа (кости
+// сопоставляются по именам): в руках есть кости тела (ключицы,
+// позвоночник), которых нет в клипе, — они остаются в покое, а не
+// растягивают меш. Нож вешаем на кость оружия «wpn» правой руки (в игре
+// его скелет прикрепляемый, m_bIsAttachableProp).
 async function loadInHandsScene(THREE, animDir, clipId){
 await loadGltfLoader();
 const base = modelsUrl(animDir).replace(/\/+$/, '') + '/';
@@ -1844,34 +1834,49 @@ return r.arrayBuffer();
 }).then(parseGlb);
 const [arms, knife, clip] = await Promise.all([glb(index.arms), glb(index.knife), glb(clipInfo.file)]);
 
-const root = clip.scene;
-// Пустые «ссылки на меш» скелетов — точки в начале координат, прячем.
-root.traverse(node => { if (node.isPoints) node.visible = false; });
-const wpn = root.getObjectByName('wpn');
-const knifeSkel = root.children.find(c => /knife|bayonet/.test(c.name) && !/empty/.test(c.name) && !c.isPoints);
-if (wpn && knifeSkel) wpn.add(knifeSkel);
+const root = new THREE.Group();
+root.add(arms.scene);
+const wpn = arms.scene.getObjectByName('wpn');
+(wpn || arms.scene).add(knife.scene);
+root.traverse(node => { if (node.isSkinnedMesh) node.frustumCulled = false; });
 
-const armMeshes = rebindSkinnedMeshes(THREE, arms.scene, root);
-const knifeMeshes = rebindSkinnedMeshes(THREE, knife.scene, root);
-armMeshes.forEach(m => root.add(m));
-const knifeGroup = new THREE.Group();
-knifeMeshes.forEach(m => knifeGroup.add(m));
-root.add(knifeGroup);
-
-// Текстуры рук: кожа и перчатка (по имени материала).
+// Текстуры рук: кожа и перчатка (две части меша; у перчатки в имени
+// материала или второй примитив).
 const tex = index.textures || {};
 const loadTex = (file) => file ? loadSkinTexture(THREE, base + file, true) : Promise.resolve(null);
 const [skinTex, gloveTex] = await Promise.all([loadTex(tex.skin), loadTex(tex.glove)]);
-armMeshes.forEach(mesh => {
-const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-mats.forEach(m => {
-const t = /glove/i.test(m.name || '') ? gloveTex : skinTex;
-if (t){ m.map = t; m.color && m.color.set(0xffffff); m.needsUpdate = true; }
-});
+let part = 0;
+arms.scene.traverse(node => {
+if (!node.isMesh) return;
+const isGlove = /glove/i.test((node.material && node.material.name) || '') || part > 0;
+part++;
+const t = isGlove ? (gloveTex || skinTex) : skinTex;
+if (t){
+node.material = new THREE.MeshStandardMaterial({ map: t, roughness: 0.75, metalness: 0 });
+}
 });
 
+// Клип: оставляем только дорожки костей, которые есть в руках или ноже.
+const names = new Set();
+root.traverse(node => names.add(node.name));
+const src = clip.animations[0];
+const tracks = src.tracks.filter(t => names.has(t.name.split('.')[0]));
+const anim = new THREE.AnimationClip(src.name, src.duration, tracks);
 const mixer = new THREE.AnimationMixer(root);
-const action = mixer.clipAction(clip.animations[0]);
+const action = mixer.clipAction(anim);
 action.play();
-return { root, knifeGroup, mixer, action, duration: clip.animations[0].duration, clips: index.clips };
+const knifeGroup = knife.scene;
+return { root, knifeGroup, mixer, action, duration: anim.duration, clips: index.clips, bones: arms.scene };
+}
+
+// Камера от первого лица: глаз вьюмодели — начало координат клипа (кисти
+// в ~40 см перед ним), смотрит вперёд (+Z) и чуть вниз, угол обзора как у
+// оружия в CS2 (viewmodel_fov 68).
+const IN_HANDS_FOV = 68;
+function placeInHandsCamera(THREE, ih, camera){
+camera.fov = IN_HANDS_FOV;
+camera.near = 0.01;
+camera.updateProjectionMatrix();
+camera.position.set(0, 0, 0);
+camera.lookAt(0, -0.12, 1);
 }
