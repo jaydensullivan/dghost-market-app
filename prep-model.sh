@@ -98,7 +98,7 @@ HD_WANTED = [
     ('masks', 'g_tMasks', r'composite_inputs/[^/]*_masks', 1024, 'RGB'),
     ('color', 'g_tColor', r'materials/[^/]*_default_color', 2048, 'RGB'),
     ('rough', None, r'materials/[^/]*_default_rough', 1024, 'L'),
-    ('ao', None, r'materials/[^/]*_default_ao', 1024, 'L'),
+    ('ao', None, r'materials/[^/]*_default_ao|materials/[^/]*_ao[_.]|materials/[^/]*ambient_?occlusion', 1024, 'L'),
 ]
 # Папка HD-корпуса в игре; у M4A4 и Glock она зовётся не как в items_game.
 # Строго своя папка: в выемке для m4a1 лежат и файлы m4a1_silencer.
@@ -144,9 +144,11 @@ for name, param, pat, max_side, mode in HD_WANTED:
         img.save(out, 'WEBP', quality=88, method=6)
     print(f'  hd {name}: {os.path.basename(path)} {w}x{h} → {img.size[0]}x{img.size[1]}')
     hd[name] = 'hd/' + name + '.webp'
-result['hd'] = {'textures': hd} if all(k in hd for k in ('masks', 'color', 'ao')) else None
-# 2 — маска без порчи альфой и основа из composite_inputs.
-result['hd_version'] = 2
+# AO у части стволов (Glock, MP7, AUG…) называется иначе или его нет —
+# он необязателен: без него мини-апп обойдётся без затенения.
+result['hd'] = {'textures': hd} if all(k in hd for k in ('masks', 'color')) else None
+# 2 — маска без порчи альфой и основа из composite_inputs; 3 — AO необязателен.
+result['hd_version'] = 3
 
 with open(os.path.join(dest, 'params.json'), 'w', encoding='utf-8') as f:
     json.dump(result, f, ensure_ascii=False, indent=2)

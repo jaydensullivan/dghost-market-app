@@ -319,7 +319,7 @@ weapon_state() {
     local model="нет"
     # hd_version в params.json — набор HD-корпуса уже искали (см. build_model).
     if [ -f "$REPO/models/$weapon.glb" ] && [ -f "$REPO/models/weapons/$weapon/masks.webp" ] \
-        && grep -q '"hd_version": 2' "$REPO/models/weapons/$weapon/params.json" 2>/dev/null; then
+        && grep -q '"hd_version": 3' "$REPO/models/weapons/$weapon/params.json" 2>/dev/null; then
         model="есть"
     fi
     echo "$have|$gave_up|$model|$missing"
@@ -401,7 +401,7 @@ build_model() {
     # добавляется один ключ "hd" — старые текстуры не трогаются, даже
     # если выемка не удалась.
     local wdir="$REPO/models/weapons/$weapon"
-    if ! grep -q '"hd_version": 2' "$wdir/params.json" 2>/dev/null; then
+    if ! grep -q '"hd_version": 3' "$wdir/params.json" 2>/dev/null; then
         echo "   набор HD-корпуса"
         rm -rf "$WORK/export-model" "$WORK/hd-tmp"
         bash fix-model.sh "$weapon" >> "$WORK/build-$weapon.log" 2>&1
@@ -422,7 +422,7 @@ else:
 path = os.path.join(dest, 'params.json')
 meta = json.load(open(path, encoding='utf-8'))
 meta['hd'] = hd
-meta['hd_version'] = 2
+meta['hd_version'] = 3
 with open(path, 'w', encoding='utf-8') as f:
     json.dump(meta, f, ensure_ascii=False, indent=2)
 print('   hd:', 'есть' if hd else 'нет')
@@ -451,7 +451,10 @@ build_skin() {
 #  2 — WebP терял цвет под нулевой альфой (AWP Printstream полосатый),
 #      у закалки (gsch_…) не было палитры;
 #  3 — зоны покраски (paint by number: MP7 Amberline выходил белым) и
-#      металличность краски (SSG 08 Zeno — металлик, а не белая матовая).
+#      металличность краски (SSG 08 Zeno — металлик, а не белая матовая);
+#  4 (vcompmat) — оверлей поверх краски (Arctic Camo Panels);
+#  5 (шаблоны) — свои маски зон ствола вместо стандартных, маска
+#      перламутра (где лежит иризация) и оверлей (Pink Pearl).
 # Что нужно, смотрим по рецепту из recipes/. Остальным просто ставим версию.
 if [ "$MODE" != "status" ] && [ -d "$REPO/models/skins" ]; then
 python3 - "$REPO/models/skins" "$REPO/recipes" <<'PY'
@@ -471,7 +474,7 @@ for finish in sorted(os.listdir(root)):
     if not os.path.isfile(pfile):
         continue
     meta = json.load(open(pfile, encoding='utf-8'))
-    target = 4 if meta.get('format') == 'template' else 3
+    target = 5 if meta.get('format') == 'template' else 4
     if meta.get('format') not in ('vcompmat', 'template') or meta.get('prep_version', 1) >= target:
         continue
     pattern = os.path.join(root, finish, 'pattern.webp')
@@ -480,11 +483,18 @@ for finish in sorted(os.listdir(root)):
     need = (
         (meta.get('prep_version', 1) < 2 and meta.get('format') == 'vcompmat'
          and os.path.isfile(pattern) and 'A' in Image.open(pattern).getbands())
-        or uses(recipe, 'g_bUsePaintByNumberMasks', 'g_tPaintByNumberMasks') and meta.get('format') == 'template'
-        or uses(recipe, 'g_bUseMetalness', 'g_tPaintMetalness')
+        or meta.get('prep_version', 1) < 3 and (
+            uses(recipe, 'g_bUsePaintByNumberMasks', 'g_tPaintByNumberMasks') and meta.get('format') == 'template'
+            or uses(recipe, 'g_bUseMetalness', 'g_tPaintMetalness'))
         # 4: у шаблона заданы металличность/шероховатость по цветам.
         or meta.get('format') == 'template' and meta.get('prep_version', 1) < 4
            and re.search(r'"g_vPaintMetalness"', recipe) is not None
+        # 5: свои маски зон ствола (Pink Pearl, Royal Guard, Leafhopper).
+        or meta.get('format') == 'template'
+           and (uses(recipe, 'g_bOverrideDefaultMasks', 'g_tPaintByNumberMasks')
+                or uses(recipe, 'g_bUsePearlescenceMask', 'g_tPearlescenceMask'))
+        # 4 (vcompmat) / 5 (шаблоны): оверлей поверх краски.
+        or meta.get('prep_version', 1) < target and uses(recipe, 'g_bUseOverlay', 'g_tOverlay')
     )
     if need:
         # Без params.json скин не считается готовым (skin_ready) и соберётся заново.
@@ -496,6 +506,63 @@ for finish in sorted(os.listdir(root)):
             json.dump(meta, f, ensure_ascii=False, indent=2)
         stamped += 1
 print(f'Раскраски нового формата: пересоберу {redo}, без изменений {stamped}')
+PY
+fi
+
+# Иризация (оттенок плывёт с углом взгляда: Leafhopper, Marsh) и шаблон
+# рецепта (gunsmith) — только данные из рецепта, текстуры не нужны:
+# дописываем в готовые params.json.
+if [ "$MODE" != "status" ] && [ -d "$REPO/models/skins" ]; then
+python3 - "$REPO/models/skins" "$REPO/recipes" <<'PY'
+import json, os, re, sys
+root, recipes = sys.argv[1], sys.argv[2]
+
+def last_float(recipe, name, default):
+    val = default
+    for m in re.finditer(r'm_strName\s*=\s*"%s"(.*?)(?=m_strName\s*=|\Z)' % name, recipe, re.S):
+        v = re.search(r'm_flValueFloatX\s*=\s*(-?[\d.]+(?:[eE][-+]?\d+)?)', m.group(1))
+        if v:
+            val = float(v.group(1))
+    return val
+
+added = templated = 0
+for finish in sorted(os.listdir(root)):
+    pfile = os.path.join(root, finish, 'params.json')
+    if not os.path.isfile(pfile):
+        continue
+    meta = json.load(open(pfile, encoding='utf-8'))
+    if meta.get('format') not in ('vcompmat', 'template'):
+        continue
+    rpath = os.path.join(recipes, meta.get('material', ''))
+    if not os.path.isfile(rpath):
+        continue
+    recipe = open(rpath, encoding='utf-8', errors='ignore').read()
+    shader = meta.setdefault('shader', {})
+    # Шаблон рецепта: у gunsmith (gs_…) узор смешивается со степенью,
+    # у закалки (…case_hardening…) иризация ложится по металлу.
+    tm = re.search(r'templates/([a-z]+_[a-z_]*template)\.vmat', recipe)
+    if tm and shader.get('paint_template') != tm.group(1):
+        shader['paint_template'] = tm.group(1)
+        with open(pfile, 'w', encoding='utf-8') as f:
+            json.dump(meta, f, ensure_ascii=False, indent=2)
+        templated += 1
+    if 'iridescent' in shader:
+        continue
+    irid = last_float(recipe, 'g_flIridescentStrength', 0.0)
+    if irid <= 0:
+        continue
+    # Включена стандартная чёрная маска перламутра — иризации нет.
+    pearl_on = re.search(r'"g_bUsePearlescenceMask"(?:(?!m_strName).)*?m_bValueBoolean\s*=\s*true', recipe, re.S)
+    pearl_tex = re.findall(r'"g_tPearlescenceMask"(?:(?!m_strName).)*?resource_name:"([^"]+)"', recipe, re.S)
+    if pearl_on and pearl_tex and 'default_black' in pearl_tex[-1]:
+        continue
+    meta.setdefault('shader', {})['iridescent'] = [
+        round(irid, 4), last_float(recipe, 'g_flIridescentScale', 1.0),
+        last_float(recipe, 'g_flIridescentHueShift', 0.0)]
+    with open(pfile, 'w', encoding='utf-8') as f:
+        json.dump(meta, f, ensure_ascii=False, indent=2)
+    added += 1
+print(f'Иризация дописана: {added}, шаблон рецепта: {templated}')
 PY
 fi
 

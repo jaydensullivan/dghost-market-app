@@ -236,6 +236,16 @@ jobs:
           cd "$GITHUB_WORKSPACE/assets"
           STEAM_USER="$STEAM_USERNAME" bash probe-anim.sh
 
+      # Проба раскрасок (only = probe-skin:<kit,kit>): рецепты vcompmat с
+      # общими частями и статистика текстур — см. probe-skin.sh.
+      - name: Проба раскрасок
+        if: startsWith(inputs.only, 'probe-skin:')
+        env:
+          ONLY: ${{ inputs.only }}
+        run: |
+          cd "$GITHUB_WORKSPACE/assets"
+          KITS="${ONLY#probe-skin:}" STEAM_USER="$STEAM_USERNAME" bash probe-skin.sh
+
       # Комплект анимаций ножа (only = anim:<нож>, например anim:knife_butterfly):
       # руки и клипы в models/anim/<нож>/ ветки 3d-assets.
       - name: Анимации ножа
