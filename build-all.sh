@@ -553,6 +553,17 @@ for finish in sorted(os.listdir(root)):
         with open(pfile, 'w', encoding='utf-8') as f:
             json.dump(meta, f, ensure_ascii=False, indent=2)
         templated += 1
+    # Маска перламутра vcompmat часто тот же файл, что и sfx (Aphrodite):
+    # подставляем его, если рецепт указывает на *_sfx_mask.
+    tex = meta.get('textures', {})
+    if meta.get('format') == 'vcompmat' and 'pearl' not in tex and 'sfx' in tex:
+        pr = re.findall(r'"g_tPearlescenceMask"(?:(?!m_strName).)*?resource_name:"([^"]+)"', recipe, re.S)
+        on = re.search(r'"g_bUsePearlescenceMask"(?:(?!m_strName).)*?m_bValueBoolean\s*=\s*true', recipe, re.S)
+        if on and pr and 'sfx_mask' in pr[-1]:
+            tex['pearl'] = tex['sfx']
+            with open(pfile, 'w', encoding='utf-8') as f:
+                json.dump(meta, f, ensure_ascii=False, indent=2)
+            templated += 1
     if 'iridescent' in shader:
         continue
     irid = last_float(recipe, 'g_flIridescentStrength', 0.0)

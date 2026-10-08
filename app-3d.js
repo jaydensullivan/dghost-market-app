@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 57;
+const APP3D_VERSION = 58;
 
 let threeLoading = null;
 
@@ -642,7 +642,9 @@ return legacyPatinaStyle(skin) && skin.params.paint_style === 7;
 }
 
 // Фаза радуги и усиление подобраны по CSFloat (Leafhopper — зелёный,
-// Marsh — салатовый): см. tools/steam-compare.
+// Marsh — салатовый): см. tools/steam-compare. Сила в шейдере не больше
+// 0.5: у AK-47 Aphrodite в рецепте 1.26, а в игре приклад перламутровый,
+// а не радужный.
 const IRIDESCENT = { phase: 0.0, gain: 1.6 };
 // x — зона (0 — везде, 1 — основа, 2–4 — R/G/B масок зон), y — сила,
 // z — яркость (F_OVERLAY_MASK, g_fOverlayStrength/Brightness рецепта).
@@ -927,7 +929,7 @@ uMaskChannel: { value: channel },
 // краски плывёт по радуге с углом взгляда. x — сила, y — масштаб,
 // z — сдвиг оттенка (g_flIridescentStrength/Scale/HueShift рецепта).
 uIrid: { value: iridescentVec(THREE, skin.params) },
-uIridByMetal: { value: /case_hardening/.test(String(skin.params.paint_template || '')) ? 1 : 0 },
+uIridByMetal: { value: /^so_case_hardening/.test(String(skin.params.paint_template || '')) ? 1 : 0 },
 uPearl: { value: skin.pearl || pattern },
 uHasPearl: { value: skin.pearl ? 1 : 0 },
 uOverlay: { value: skin.overlay || pattern },
@@ -1252,7 +1254,7 @@ if (uHasPearl == 1) iridMask = texture2D(uPearl, vSkinUv).r;
 // металле, а маска перламутра — это белая перламутровая рукоять:
 // переливаем металл по металличности цветов.
 if (uIridByMetal == 1) iridMask = uHasColorMetal == 1 ? dot(colorWeight, uColorMetal) : 1.0;
-painted = mix(painted, painted * rainbow * uIridGain, clamp(uIrid.x, 0.0, 1.0) * iridMask);
+painted = mix(painted, painted * rainbow * uIridGain, clamp(uIrid.x, 0.0, 0.5) * iridMask);
 result = mix(base, painted, skinCover);
 }
 

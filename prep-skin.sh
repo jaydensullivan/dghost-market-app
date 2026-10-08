@@ -389,6 +389,15 @@ if 'ramp' in textures:
 
 add_overlay(shader)
 
+# Маска перламутра (где лежит иризация): у AK-47 Aphrodite радуга только
+# на прикладе и цевье, а не по всему оружию.
+pearl_res = recipe_texture('g_tPearlescenceMask')
+if 'iridescent' in shader and recipe_bool('g_bUsePearlescenceMask') and pearl_res \
+        and 'materials/default/' not in pearl_res:
+    pp = png_for(pearl_res)
+    if pp:
+        save_layer(pp, 'pearl', 'L')
+
 rel = compfile.split('/weapons/paints/', 1)[-1]
 meta = {
     'finish': finish,
