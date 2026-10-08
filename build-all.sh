@@ -546,6 +546,13 @@ for finish in sorted(os.listdir(root)):
         with open(pfile, 'w', encoding='utf-8') as f:
             json.dump(meta, f, ensure_ascii=False, indent=2)
         templated += 1
+    # Закалка: геометрическое влияние на палитру (Heat Treated, Rainbow Spoon).
+    ch = shader.get('case_hardening')
+    if isinstance(ch, dict) and 'geometric_influence' not in ch:
+        ch['geometric_influence'] = last_float(recipe, 'g_flCaseHardeningGeometricInfluence', 0.0)
+        with open(pfile, 'w', encoding='utf-8') as f:
+            json.dump(meta, f, ensure_ascii=False, indent=2)
+        templated += 1
     if 'iridescent' in shader:
         continue
     irid = last_float(recipe, 'g_flIridescentStrength', 0.0)

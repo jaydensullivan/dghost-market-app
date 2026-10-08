@@ -383,6 +383,8 @@ if 'ramp' in textures:
     shader['case_hardening'] = {
         'pattern_influence': recipe_float('g_flCaseHardeningPatternInfluence', 1.0),
         'ramp_offset': recipe_float('g_flCaseHardeningRampOffset', 0.0),
+        # Насколько место на оружии сдвигает цвет по палитре.
+        'geometric_influence': recipe_float('g_flCaseHardeningGeometricInfluence', 0.0),
     }
 
 add_overlay(shader)

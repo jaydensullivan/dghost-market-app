@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 56;
+const APP3D_VERSION = 57;
 
 let threeLoading = null;
 
@@ -634,6 +634,9 @@ const GUNSMITH_TEMPLATE_GAMMA = 1.6;
 function gunsmithTemplate(skin){
 return skin.format === 'vcompmat' && /^gs_(extended_)?template$/.test(String(skin.params.paint_template || ''));
 }
+function noiseCaseHardening(skin){
+return !!skin.ramp && skin.format === 'vcompmat' && /^(aq|so)_case_hardening_template$/.test(String(skin.params.paint_template || ''));
+}
 function legacyPatinaBlend(skin){
 return legacyPatinaStyle(skin) && skin.params.paint_style === 7;
 }
@@ -857,10 +860,11 @@ const hardening = skin.ramp ? (skin.params.case_hardening || {}) : null;
 const uniforms = {
 uPattern: { value: pattern },
 uRamp: { value: skin.ramp || pattern },
-// Палитру закалки пока не применяем: у Zeno она (красный→синий)
-// красила весь ствол в красный — как именно игра её смешивает,
-// надо сверить с картинкой Steam.
-uHasRamp: { value: 0 },
+// Закалка с шумом (aq_/so_case_hardening: Heat Treated, Rainbow Spoon,
+// Solitude): цвет целиком из 2D-палитры. У gunsmith-закалки (Zeno) узор —
+// настоящая картинка, и без палитры она ближе к игре — её не трогаем.
+uHasRamp: { value: noiseCaseHardening(skin) ? 1 : 0 },
+uRampGeo: { value: hardening ? Number(hardening.geometric_influence) || 0 : 0 },
 uRampInfluence: { value: hardening ? Number(hardening.pattern_influence ?? 1) : 1 },
 uRampOffset: { value: hardening ? Number(hardening.ramp_offset) || 0 : 0 },
 // 1 — несколько цветов по зонам ствола, 2 — один цвет (анодирование:
@@ -1049,6 +1053,7 @@ uniform sampler2D uRamp;
 uniform int uHasRamp;
 uniform float uRampInfluence;
 uniform float uRampOffset;
+uniform float uRampGeo;
 uniform sampler2D uWearMask;
 uniform sampler2D uGrunge;
 uniform sampler2D uSkinMask;
@@ -1150,11 +1155,14 @@ vec3 pattern = patternTex.rgb;
 // Закалка: альфа узора выбирает цвет палитры, альбедо его оттеняет.
 #ifdef DG_RAMP
 if (uHasRamp == 1){
-float rampU = fract(patternTex.a * uRampInfluence + uRampOffset);
-// По диагонали: палитра бывает и горизонтальной, и вертикальной
-// (у Zeno — квадрат 256×256 с градиентом сверху вниз).
-float rampT = clamp(rampU, 0.002, 0.998);
-pattern *= texture2D(uRamp, vec2(rampT, rampT)).rgb;
+// Место в палитре: сдвиг + шум узора (R, исходные значения канала) +
+// положение на оружии (g_flCaseHardeningGeometricInfluence) — вдоль
+// ствола по горизонтали, по высоте по вертикали. Сверено по CSFloat:
+// Heat Treated сине-пурпурный, Solitude синий с золотым рисунком.
+float noiseR = pow(patternTex.r, uMaskGamma);
+float rampU = fract(uRampOffset + uRampInfluence * noiseR + uRampGeo * (vProjUv.x + 0.5));
+float rampV = 0.5 + uRampGeo * vProjUv.y;
+pattern = texture2D(uRamp, clamp(vec2(rampU, rampV), 0.002, 0.998)).rgb;
 }
 #endif
 if (uUseColors == 1){
@@ -1262,9 +1270,16 @@ float paintMetal = uHasColorMetal == 1 ? dot(colorWeight, uColorMetal) : uPaintM
 #ifdef DG_SKIN_METAL
 if (uHasSkinMetal == 1) paintMetal = texture2D(uSkinMetal, vSkinUv).r;
 #endif
+#ifdef DG_RAMP
+// Закалка — это цвет каленого металла: полированный металлик.
+if (uHasRamp == 1) paintMetal = 1.0;
+#endif
 metalnessFactor = mix(metalnessFactor, paintMetal, skinCover);`)
 // Анодированная краска — полированная, где бы она ни лежала.
 .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
+#ifdef DG_RAMP
+if (uHasRamp == 1) roughnessFactor = mix(roughnessFactor, 0.3, skinCover);
+#endif
 if (uHasPaintRoughness == 1) roughnessFactor = mix(roughnessFactor, uPaintRoughness, skinCover);
 if (uHasColorRough == 1) roughnessFactor = mix(roughnessFactor, dot(colorWeight, uColorRough), skinCover);`);
 };
