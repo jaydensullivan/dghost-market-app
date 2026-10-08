@@ -148,7 +148,13 @@ def prepare(out):
             # Широкая сверка: MAX_SKINS скинов с 3D, по кругу от запуска к
             # запуску (неделя года), по PER_SKIN образцов на скин.
             all_names = sorted(n for n, e in index.items() if isinstance(e, dict) and e.get('skin'))
-            names = spread_sample(all_names, MAX_SKINS)
+            batch = os.environ.get('BATCH', '')
+            if batch:
+                # Полная сверка частями: BATCH=i/n — каждый n-й скин, начиная с i.
+                i, n = (int(v) for v in batch.split('/'))
+                names = all_names[i - 1::n]
+            else:
+                names = spread_sample(all_names, MAX_SKINS)
         jobs = prepare_csfloat(out, index, names)
         # Группа раскраски (формат и стиль) — чтобы видеть, какой тип
         # раскрасок рисуется хуже всего, и чинить целыми группами.
