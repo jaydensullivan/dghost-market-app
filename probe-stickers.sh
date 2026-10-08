@@ -17,8 +17,9 @@ D="$WORK/vpk_dir.txt"
 
 extract() {
     local f="$1" i miss
+    [ -z "$f" ] && return 1
     for i in 1 2 3 4 5 6; do
-        "$T" -i "$VPK" -o "$OUT" -d --vpk_filepath "$f" > "$OUT/one.log" 2>&1
+        timeout 300 "$T" -i "$VPK" -o "$OUT" -d --vpk_filepath "$f" > "$OUT/one.log" 2>&1
         miss=$(grep -oE 'pak01_[0-9]{3}\.vpk' "$OUT/one.log" | grep -oE '[0-9]{3}' | head -1 || true)
         [ -z "$miss" ] && return 0
         printf 'regex:^game/csgo/pak01_%s\\.vpk$\n' "$miss" > "$OUT/fl.txt"
@@ -43,8 +44,7 @@ for W in ${WEAPONS//,/ }; do
         extract "$pos" || true
         python3 - "$OUT" "$(basename "${pos%.vtex_c}")" <<'PY'
 import os, sys
-import numpy as np
-from PIL import Image
+from PIL import Image, ImageStat
 root, stem = sys.argv[1], sys.argv[2]
 for path, dirs, files in os.walk(root):
     for f in files:
@@ -53,11 +53,9 @@ for path, dirs, files in os.walk(root):
             print('файл', f, os.path.getsize(p))
             try:
                 im = Image.open(p); print(' режим', im.mode, im.size)
-                a = np.asarray(im).astype(float)
-                a = a.reshape(-1, a.shape[-1]) if a.ndim == 3 else a.reshape(-1, 1)
-                nz = a[(np.abs(a).sum(1) > 0)]
-                for i in range(a.shape[1]):
-                    print('  канал', i, 'min', nz[:, i].min().round(3), 'max', nz[:, i].max().round(3), 'mean', nz[:, i].mean().round(3))
+                for i, b in enumerate(im.split()):
+                    st = ImageStat.Stat(b)
+                    print('  канал', i, 'min/max', st.extrema[0], 'mean', round(st.mean[0], 3))
             except Exception as e:
                 print(' не открыть PIL:', e)
 PY
