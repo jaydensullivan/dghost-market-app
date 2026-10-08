@@ -246,6 +246,16 @@ jobs:
           cd "$GITHUB_WORKSPACE/assets"
           KITS="${ONLY#probe-skin:}" STEAM_USER="$STEAM_USERNAME" bash probe-skin.sh
 
+      # Проба наклеек (only = probe-stickers:<ствол>): слоты наклеек в
+      # модели и items_game — см. probe-stickers.sh.
+      - name: Проба наклеек
+        if: startsWith(inputs.only, 'probe-stickers:')
+        env:
+          ONLY: ${{ inputs.only }}
+        run: |
+          cd "$GITHUB_WORKSPACE/assets"
+          WEAPONS="${ONLY#probe-stickers:}" STEAM_USER="$STEAM_USERNAME" bash probe-stickers.sh
+
       # Комплект анимаций ножа (only = anim:<нож>, например anim:knife_butterfly):
       # руки и клипы в models/anim/<нож>/ ветки 3d-assets.
       - name: Анимации ножа

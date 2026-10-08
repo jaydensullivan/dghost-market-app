@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 58;
+const APP3D_VERSION = 59;
 
 let threeLoading = null;
 
@@ -523,9 +523,81 @@ pack.name = weaponNameFromDir(dir);
 // когда раскраска легла на HD-корпус (loadSkinWithWeapon).
 pack.hdBase = base;
 pack.hdTextures = meta.hd && meta.hd.textures ? meta.hd.textures : null;
+// Слоты наклеек из материала ствола (prep-stickers.sh).
+pack.stickerSlots = Array.isArray(meta.stickers) ? meta.stickers : [];
 return pack;
 });
 });
+}
+
+// ---------- Наклейки ----------
+// В игре наклейка ложится по второй развёртке модели (TEXCOORD_1): её
+// центр — в точке uv1 = 0.5 + смещение слота из материала ствола,
+// ширина — 1/масштаб. Сверено со скриншотами CSFloat (AK-47, Glock-18,
+// Desert Eagle). Все наклейки лота — в одном холсте-атласе: так они
+// занимают один текстурный слот, а не пять.
+const STICKER_CELL = 256;
+const STICKER_MAX = 5;
+
+// Картинки наклеек — с CDN Steam, а он не отдаёт CORS-заголовок; без
+// него WebGL картинку не возьмёт, поэтому — через бота.
+function stickerImageUrl(url){
+const big = /\/economy\/image\/[^/]+$/.test(url) ? url + '/256fx256f' : url;
+return API_BASE + '/api/sticker_image?url=' + encodeURIComponent(big);
+}
+
+function loadStickerImage(url){
+return new Promise((resolve) => {
+const img = new Image();
+img.crossOrigin = 'anonymous';
+img.onload = () => resolve(img);
+img.onerror = () => resolve(null);
+img.src = stickerImageUrl(url);
+});
+}
+
+// Наклейки лота ({slot, image, wear}) → атлас и список для шейдера.
+// Наклейки без картинки или со слотом, которого у ствола нет, пропускаем.
+async function loadStickerAtlas(THREE, stickers){
+const list = (Array.isArray(stickers) ? stickers : [])
+.filter(st => st && st.image && Number.isInteger(Number(st.slot)))
+.slice(0, STICKER_MAX);
+if (!list.length) return null;
+const images = await Promise.all(list.map(st => loadStickerImage(st.image)));
+const canvas = document.createElement('canvas');
+canvas.width = STICKER_CELL * STICKER_MAX;
+canvas.height = STICKER_CELL;
+const ctx = canvas.getContext('2d');
+const items = [];
+images.forEach((img, i) => {
+if (!img) return;
+const k = Math.min(STICKER_CELL / img.width, STICKER_CELL / img.height);
+const w = img.width * k, h = img.height * k;
+ctx.drawImage(img, i * STICKER_CELL + (STICKER_CELL - w) / 2, (STICKER_CELL - h) / 2, w, h);
+items.push({ cell: i, slot: Number(list[i].slot), wear: Math.min(1, Math.max(0, Number(list[i].wear) || 0)) });
+});
+if (!items.length) return null;
+const texture = new THREE.CanvasTexture(canvas);
+if ('colorSpace' in texture) texture.colorSpace = THREE.SRGBColorSpace;
+texture.flipY = false;
+texture.needsUpdate = true;
+return { texture, items };
+}
+
+// Параметры наклеек для шейдера: по слоту лота — позиция из ствола.
+function stickerUniforms(THREE, atlas, weapon){
+const P = [], Q = [];
+const slots = weapon && weapon.stickerSlots ? weapon.stickerSlots : [];
+(atlas ? atlas.items : []).forEach(it => {
+const def = slots.find(sl => Number(sl.slot) === it.slot);
+if (!def || P.length >= STICKER_MAX) return;
+const sc = Array.isArray(def.scale) ? def.scale : [def.scale, def.scale];
+P.push(new THREE.Vector4(def.off[0], def.off[1], sc[0], def.rot || 0));
+Q.push(new THREE.Vector4(it.cell, it.wear, sc[1] || sc[0], 0));
+});
+const count = P.length;
+while (P.length < STICKER_MAX){ P.push(new THREE.Vector4()); Q.push(new THREE.Vector4()); }
+return { count, P, Q };
 }
 
 let whiteTex = null;
@@ -820,7 +892,7 @@ return skin.format === 'vcompmat' || skin.format === 'template';
 }
 
 // wear — float предмета (0 = новый, 1 = полностью убитый).
-function applySkinToModel(THREE, object, skin, wear, weapon, maskChannel, seed){
+function applySkinToModel(THREE, object, skin, wear, weapon, maskChannel, seed, stickerAtlas){
 // true — только если у модели правда есть HD-корпус и он включён.
 // У ножей корпус один, и маска ствола им нужна всегда (иначе краска
 // ложилась и на рукоять — Falchion Gamma Doppler).
@@ -941,6 +1013,13 @@ uIridPhase: { value: IRIDESCENT.phase },
 uIridGain: { value: IRIDESCENT.gain },
 uHasWeapon: { value: weapon && weapon.color ? 1 : 0 },
 };
+const stk = stickerUniforms(THREE, stickerAtlas, weapon);
+if (stk.count){
+uniforms.uStkAtlas = { value: stickerAtlas.texture };
+uniforms.uStkCount = { value: stk.count };
+uniforms.uStkP = { value: stk.P };
+uniforms.uStkQ = { value: stk.Q };
+}
 
 // Спрей (2) и аэрография (5) в CS наносятся проекцией сбоку на всё
 // оружие, а не по развёртке: развёртка разрезана на куски, и Fade по
@@ -1007,9 +1086,17 @@ uProjMin: { value: projCenter.clone() },
 uProjLen: { value: projLen },
 };
 
+// Наклейки — по второй развёртке (в three r160 это uv1, в старом
+// r128 — uv2; uv2, скопированный из первой развёртки ради AO, не годится).
+const g = node.geometry;
+const stkUv = g && (g.attributes.uv1 || (g.attributes.uv2 !== g.attributes.uv ? g.attributes.uv2 : null));
+const stickersHere = stk.count > 0 && !!stkUv;
+if (stickersHere) g.setAttribute('dgStkUv', stkUv);
+
 // Редкие слои подключаются только у тех скинов, где они есть: на
 // телефонах обычно 16 текстурных слотов, и все сразу в шейдер не влезут.
 const shaderDefines = [
+stickersHere ? 'DG_STICKERS' : '',
 uniforms.uHasRamp.value ? 'DG_RAMP' : '',
 skin.metalness ? 'DG_SKIN_METAL' : '',
 skin.pbn ? 'DG_PBN' : '',
@@ -1027,6 +1114,11 @@ Object.assign(shader.uniforms, uniforms, meshUniforms);
 // vUv роняла компиляцию шейдера — меш просто исчезал.
 shader.vertexShader = shader.vertexShader
 .replace('#include <common>', `#include <common>
+${stickersHere ? '#define DG_STICKERS' : ''}
+#ifdef DG_STICKERS
+attribute vec2 dgStkUv;
+varying vec2 vStkUv;
+#endif
 varying vec2 vSkinUv;
 varying vec2 vProjUv;
 uniform mat4 uToRoot;
@@ -1036,6 +1128,9 @@ uniform vec3 uProjMin;
 uniform float uProjLen;`)
 .replace('#include <begin_vertex>', `#include <begin_vertex>
 vSkinUv = uv;
+#ifdef DG_STICKERS
+vStkUv = dgStkUv;
+#endif
 // Проекция сбоку: обе оси делим на длину оружия, чтобы узор не
 // растягивался по высоте.
 vec3 rootPos = (uToRoot * vec4(position, 1.0)).xyz - uProjMin;
@@ -1049,6 +1144,13 @@ shader.fragmentShader = shader.fragmentShader
 .replace('#include <common>', `#include <common>
 ${shaderDefines.map(d => '#define ' + d).join('\n')}
 uniform sampler2D uPattern;
+#ifdef DG_STICKERS
+uniform sampler2D uStkAtlas;
+uniform int uStkCount;
+uniform vec4 uStkP[${STICKER_MAX}];
+uniform vec4 uStkQ[${STICKER_MAX}];
+varying vec2 vStkUv;
+#endif
 #ifdef DG_RAMP
 uniform sampler2D uRamp;
 #endif
@@ -1125,6 +1227,8 @@ varying vec2 vProjUv;`)
 .replace('#include <color_fragment>', `#include <color_fragment>
 // Доля покрытия краской — нужна ниже, для металличности.
 float skinCover = 0.0;
+// Доля покрытия наклейками — они матовые и не металлические.
+float stkCover = 0.0;
 // Какой из четырёх цветов где лежит — для металличности по цветам.
 vec4 colorWeight = vec4(1.0, 0.0, 0.0, 0.0);
 {
@@ -1263,7 +1367,27 @@ result *= mix(0.55, 1.0, texture2D(uAo, vSkinUv).r);
 }
 
 if (uMaskChannel != 4) diffuseColor.rgb = result;
-}`)
+}
+#ifdef DG_STICKERS
+// Наклейки поверх краски. P: смещение слота (x, y), масштаб по x,
+// поворот (рад); Q: ячейка атласа, затёртость, масштаб по y.
+for (int i = 0; i < ${STICKER_MAX}; i++){
+if (i >= uStkCount) break;
+vec4 sp = uStkP[i];
+vec4 sq = uStkQ[i];
+vec2 d = vStkUv - 0.5 - sp.xy;
+float rc = cos(sp.w), rs = sin(sp.w);
+d = vec2(rc * d.x - rs * d.y, rs * d.x + rc * d.y) * vec2(sp.z, sq.z);
+vec2 suv = d + 0.5;
+if (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) continue;
+vec4 st = texture2D(uStkAtlas, vec2((sq.x + suv.x) / ${STICKER_MAX}.0, suv.y));
+// Затёртость: наклейка бледнеет и истирается пятнами по маске износа.
+float a = st.a;
+if (sq.y > 0.0) a *= smoothstep(sq.y - 0.15, sq.y + 0.15, texture2D(uWearMask, vSkinUv).r * 0.6 + 0.4 * (1.0 - sq.y));
+diffuseColor.rgb = mix(diffuseColor.rgb, st.rgb, a);
+stkCover = max(stkCover, a);
+}
+#endif`)
 // Краска бывает и не металлической (большинство скинов), и
 // металлической (paint_metalness = 1): там, где она лежит, берём
 // металличность из params.json, на голом металле — как было.
@@ -1276,14 +1400,16 @@ if (uHasSkinMetal == 1) paintMetal = texture2D(uSkinMetal, vSkinUv).r;
 // Закалка — это цвет каленого металла: полированный металлик.
 if (uHasRamp == 1) paintMetal = 1.0;
 #endif
-metalnessFactor = mix(metalnessFactor, paintMetal, skinCover);`)
+metalnessFactor = mix(metalnessFactor, paintMetal, skinCover);
+metalnessFactor = mix(metalnessFactor, 0.0, stkCover);`)
 // Анодированная краска — полированная, где бы она ни лежала.
 .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
 #ifdef DG_RAMP
 if (uHasRamp == 1) roughnessFactor = mix(roughnessFactor, 0.3, skinCover);
 #endif
 if (uHasPaintRoughness == 1) roughnessFactor = mix(roughnessFactor, uPaintRoughness, skinCover);
-if (uHasColorRough == 1) roughnessFactor = mix(roughnessFactor, dot(colorWeight, uColorRough), skinCover);`);
+if (uHasColorRough == 1) roughnessFactor = mix(roughnessFactor, dot(colorWeight, uColorRough), skinCover);
+roughnessFactor = mix(roughnessFactor, 0.45, stkCover);`);
 };
 
 node.material = material;
@@ -1617,7 +1743,7 @@ box.hidden = false;
 });
 }
 
-function open3DViewer(modelUrl, title, skinDir, wearValue, weaponDir, maskChannel, seed){
+function open3DViewer(modelUrl, title, skinDir, wearValue, weaponDir, maskChannel, seed, stickers){
 const dict = I18N[currentLang] || I18N.ru;
 renderViewerBackgrounds(dict);
 const mode = get3DMode() || 'full';
@@ -1696,10 +1822,14 @@ setupViewerScene(THREE, renderer, scene);
 
 // Раскраска лота, если она указана.
 if (skinDir){
-loadSkinWithWeapon(THREE, skinDir, weaponDir)
-.then(([skin, weapon]) => {
+Promise.all([
+loadSkinWithWeapon(THREE, skinDir, weaponDir),
+// Наклейки лота: не загрузились — ствол всё равно покажем.
+loadStickerAtlas(THREE, stickers).catch(() => null),
+])
+.then(([[skin, weapon], atlas]) => {
 if (!skin.pattern && !skin.solid) throw new Error('не загрузился узор');
-applySkinToModel(THREE, object, skin, wearValue, weapon, maskChannel, seed);
+applySkinToModel(THREE, object, skin, wearValue, weapon, maskChannel, seed, atlas);
 status.textContent = `${dict.v3_skin_on} · float ${formatFloat(wearValue || 0)}`;
 setTimeout(() => { status.textContent = ''; }, 3000);
 })
@@ -1954,7 +2084,7 @@ buy3dBtn.addEventListener('click', () => {
 if (!buy3dEntry || !buy3dSkin) return;
 const skin = buy3dSkin;
 const title = skin.stattrak ? 'StatTrak™ ' + skin.title : skin.title;
-open3DViewer(buy3dEntry.model, title, buy3dEntry.skin, Number(skin.float_value) || 0, buy3dEntry.weapon || null, 'none', skin.pattern);
+open3DViewer(buy3dEntry.model, title, buy3dEntry.skin, Number(skin.float_value) || 0, buy3dEntry.weapon || null, 'none', skin.pattern, skin.stickers);
 });
 }
 
@@ -2063,7 +2193,7 @@ ctx.fillText('DGHOSTMARKET', 12 * k, 18 * k);
 // still: true — вместо GIF один кадр JPEG (SHARE_PHOTO);
 // 'transparent' — один кадр PNG без фона и подписи (сверка со Steam).
 // still: 'video' — видео (MP4/WebM) вместо GIF (SHARE_VIDEO).
-async function render3DGif(entry, wear, title, onProgress, seed, still){
+async function render3DGif(entry, wear, title, onProgress, seed, still, stickers){
 const video = still === 'video';
 if (video) still = false;
 const size = still ? SHARE_PHOTO : (video ? SHARE_VIDEO : SHARE_GIF);
@@ -2077,7 +2207,10 @@ const response = await fetch(modelsUrl(entry.model));
 if (!response.ok) throw new Error('model ' + response.status);
 const buffer = await response.arrayBuffer();
 const gltf = await parseGlb(buffer).catch(() => parseGlb(stripTexturesFromGlb(buffer)));
-const [skin, weapon] = await loadSkinWithWeapon(THREE, entry.skin, entry.weapon);
+const [[skin, weapon], stickerAtlas] = await Promise.all([
+loadSkinWithWeapon(THREE, entry.skin, entry.weapon),
+loadStickerAtlas(THREE, stickers).catch(() => null),
+]);
 if (!skin.pattern && !skin.solid) throw new Error('не загрузился узор');
 
 const glCanvas = document.createElement('canvas');
@@ -2098,12 +2231,16 @@ object.add(gltf.scene);
 selectModelBody(object, false);
 scene.add(object);
 fitObjectToView(THREE, gltf.scene, camera);
-applySkinToModel(THREE, object, skin, wear, weapon, 'none', seed);
+applySkinToModel(THREE, object, skin, wear, weapon, 'none', seed, stickerAtlas);
+// С наклейками — вид с той стороны, где они наклеены (дулом влево, как
+// при осмотре в игре); без них — как раньше.
+const side = stickerAtlas ? -Math.PI / 2 : Math.PI / 2;
+const tilt = stickerAtlas ? -0.3 : 0.3;
 // Кадр — по всем углам покачивания (у картинки — по её одному ракурсу).
 if (still !== 'transparent'){
 const swing = [];
-for (let i = 0; i < 16; i++) swing.push(Math.PI / 2 + 0.6 * Math.sin(i / 16 * Math.PI * 2));
-frameShareView(THREE, object, camera, still ? [Math.PI / 2 + 0.3] : swing);
+for (let i = 0; i < 16; i++) swing.push(side + 0.6 * Math.sin(i / 16 * Math.PI * 2));
+frameShareView(THREE, object, camera, still ? [side + tilt] : swing);
 }
 await setupViewerScene(THREE, renderer, scene);
 
@@ -2114,7 +2251,7 @@ const ctx = out.getContext('2d', { willReadFrequently: true });
 
 if (still){
 // Тот же ракурс, что в середине покачивания GIF, чуть повёрнутый к камере.
-object.rotation.y = Math.PI / 2 + 0.3;
+object.rotation.y = side + tilt;
 renderer.render(scene, camera);
 if (still === 'transparent'){
 const png = await new Promise(resolve => glCanvas.toBlob(resolve, 'image/png'));
@@ -2130,7 +2267,7 @@ return new Uint8Array(await blob.arrayBuffer());
 
 if (video){
 return await recordCanvasVideo(out, (p) => {
-object.rotation.y = Math.PI / 2 + 0.6 * Math.sin(p * Math.PI * 2);
+object.rotation.y = side + 0.6 * Math.sin(p * Math.PI * 2);
 renderer.render(scene, camera);
 drawShareFrame(ctx, glCanvas, title, size);
 }, SHARE_VIDEO, onProgress);
@@ -2141,7 +2278,7 @@ const encoder = gifenc.GIFEncoder();
 for (let i = 0; i < frames; i++){
 // Не полный оборот, а покачивание ±35° вокруг вида сбоку: при
 // обороте ствол половину времени смотрел в камеру торцом.
-object.rotation.y = Math.PI / 2 + 0.6 * Math.sin((i / frames) * Math.PI * 2);
+object.rotation.y = side + 0.6 * Math.sin((i / frames) * Math.PI * 2);
 renderer.render(scene, camera);
 drawShareFrame(ctx, glCanvas, title);
 const { data } = ctx.getImageData(0, 0, W, H);
@@ -2217,14 +2354,14 @@ say(preparing.replace('{p}', '0'));
 // не умеет браузер или бот не принял — обычный GIF.
 if (!still && pickShareVideoMime()){
 try {
-const clip = await render3DGif(buy3dEntry, Number(skin.float_value) || 0, title, progress, skin.pattern, 'video');
+const clip = await render3DGif(buy3dEntry, Number(skin.float_value) || 0, title, progress, skin.pattern, 'video', skin.stickers);
 return await upload(clip, 'video');
 } catch (e) {
 console.warn('3D: видео для «Поделиться» не вышло, делаю GIF —', e);
 say(preparing.replace('{p}', '0'));
 }
 }
-const bytes = await render3DGif(buy3dEntry, Number(skin.float_value) || 0, title, progress, skin.pattern, still);
+const bytes = await render3DGif(buy3dEntry, Number(skin.float_value) || 0, title, progress, skin.pattern, still, skin.stickers);
 return await upload(bytes, still ? 'photo' : 'gif');
 }
 

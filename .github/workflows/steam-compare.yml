@@ -28,6 +28,9 @@ on:
       ref_source:
         description: "С чем сверять: steam (одна картинка на скин) или csfloat (реальные экземпляры с разными паттернами; нужен секрет OPS_API_KEY и список скинов)"
         default: "steam"
+      stickers_only:
+        description: "CSFloat: только экземпляры с наклейками на своих местах (проба наклеек; полные скриншоты — в shots/)"
+        default: ""
 
 concurrency:
   group: steam-compare
@@ -46,6 +49,7 @@ jobs:
       TPL_SCALE: ${{ github.event.inputs.tpl_scale || '' }}
       REF_SOURCE: ${{ github.event.inputs.ref_source || 'steam' }}
       PER_SKIN: ${{ github.event.inputs.per_skin || '3' }}
+      STICKERS_ONLY: ${{ github.event.inputs.stickers_only || '' }}
       OPS_API_KEY: ${{ secrets.OPS_API_KEY }}
       OUT: ${{ github.workspace }}/out
     steps:
@@ -99,12 +103,17 @@ jobs:
           [ "$REF_SOURCE" = "csfloat" ] && DIR=reports/csfloat-compare
           if [ -n "$TPL_SCALE" ] || [ -n "$ONLY_NAMES" ]; then
             DIR="reports/steam-compare-probe/${REF_SOURCE}-scale-${TPL_SCALE:-1}"
+            [ -n "$STICKERS_ONLY" ] && DIR="reports/steam-compare-probe/stickers"
           fi
           rm -rf "$DIR"
           mkdir -p "$DIR"
           cp "$OUT/report.json" "$DIR/"
           [ -f "$OUT/worst.jpg" ] && cp "$OUT/worst.jpg" "$DIR/"
           [ -d "$OUT/pairs" ] && cp -r "$OUT/pairs" "$DIR/"
+          if [ -n "$STICKERS_ONLY" ]; then
+            mkdir -p "$DIR/shots"
+            cp "$OUT"/steam/*.png "$DIR/shots/" 2>/dev/null || true
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A reports
