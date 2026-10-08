@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 62;
+const APP3D_VERSION = 63;
 
 let threeLoading = null;
 
@@ -808,7 +808,10 @@ return out;
 // Матовой краской они выходили пастельными; металлом с шероховатостью
 // ствола — тёмными. Полированный металл и более яркие отражения дают
 // насыщенный цвет, как на картинках Steam.
-const ANODIZED = { metalness: 1, roughness: 0.3, envIntensity: 5 };
+// knifeRoughness: клинки ножей в игре светлее, с белёсыми бликами — сверка
+// со Steam по 60 Doppler/Gamma Doppler/Marble Fade: 71.1 → 73.2 (на
+// анодированном огнестреле 0.45 хуже — там остаётся 0.3).
+const ANODIZED = { metalness: 1, roughness: 0.3, knifeRoughness: 0.45, envIntensity: 5 };
 function isAnodized(params){
 return [3, 4, 5].indexOf(params.paint_style) !== -1;
 }
@@ -1007,7 +1010,7 @@ uColorRough: { value: colorVec4(THREE, skin.params.color_roughness) },
 uHasColorMetal: { value: Array.isArray(skin.params.color_metalness) ? 1 : 0 },
 uHasColorRough: { value: Array.isArray(skin.params.color_roughness) ? 1 : 0 },
 uHasSkinMetal: { value: skin.metalness ? 1 : 0 },
-uPaintRoughness: { value: ANODIZED.roughness },
+uPaintRoughness: { value: isKnifeName(weaponName) ? ANODIZED.knifeRoughness : ANODIZED.roughness },
 uHasPaintRoughness: { value: isAnodized(skin.params) ? 1 : 0 },
 uUseColors: { value: skin.solid || skinUsesColorMask(skin.params) ? 1 : 0 },
 uColors: { value: skinColors(THREE, skin.params) },
