@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 65;
+const APP3D_VERSION = 66;
 
 let threeLoading = null;
 
@@ -937,6 +937,9 @@ if (useHd) weapon = weapon && weapon.hd ? weapon.hd : null;
 // 0,1,2 — каналы маски; 3 — красить всё без маски; 4 — показать
 // саму маску цветом (отладка: видно, какой канал за что отвечает).
 const CHANNELS = { r: 0, g: 1, b: 2, none: 3, debug: 4 };
+// Ножи, где и не-анодированная раскраска лежит только на клинке
+// (Crimson Web — паутина на клинке, рукоять родная): сверка 62.8 → 68.2.
+const KNIFE_BLADE_ONLY = new Set(['hy_webs']);
 // По умолчанию — без маски: у стилей вроде custom paint (Redline)
 // краска покрывает ствол целиком, а текстура masks в CS2 хранит не
 // зоны покраски, а свойства поверхности.
@@ -950,7 +953,8 @@ const weaponName = weapon ? weapon.name || '' : '';
 let maskName = String(maskChannel || 'none').toLowerCase();
 if (maskName === 'none' && SKIN_MASK_OVERRIDES[skin.finish] && weapon && weapon.masks) maskName = SKIN_MASK_OVERRIDES[skin.finish];
 if (maskName === 'none' && weapon && weapon.masks && !weapon.masksRedEmpty
-&& (isAnodized(skin.params) || legacyPatinaMetal(skin))) maskName = 'r';
+&& (isAnodized(skin.params) || legacyPatinaMetal(skin)
+|| (isKnifeName(weaponName) && KNIFE_BLADE_ONLY.has(skin.finish)))) maskName = 'r';
 const channel = CHANNELS[maskName] ?? 3;
 
 // Однотонной раскраске узор не нужен, но сэмплер в шейдере должен
