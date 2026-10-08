@@ -47,6 +47,26 @@ export_one() {
     return 1
 }
 
+# Огнестрел (не нож): папка модели в файлах игры и папка клипов вьюмодели
+# (animation/anims/viewmodel/<pistol|rifle>/<…>/, клипы lookat01_ak и т.п.).
+gun_model_dir() {
+    case "$1" in
+        glock) echo "glock18" ;;
+        *)     echo "$1" ;;
+    esac
+}
+gun_clip_dir() {
+    case "$1" in
+        ak47)      echo "rifle/rifle_ak" ;;
+        m4a1)      echo "rifle/rifle_m4a4" ;;
+        glock)     echo "pistol/pistol_glock18" ;;
+        hkp2000)   echo "pistol/pistol_hkp2000" ;;
+        deagle|cz75a|elite|fiveseven|p250|revolver|taser|tec9) echo "pistol/pistol_$1" ;;
+        *)         echo "rifle/rifle_$1" ;;
+    esac
+}
+is_knife() { [[ "$1" == knife_* || "$1" == bayonet ]]; }
+
 # Папка ножа в файлах игры: у части ножей она зовётся не как в items_game.
 knife_dir() {
     case "$1" in
@@ -103,12 +123,19 @@ fi
 # ---------- ножи ----------
 ALL_CLIP_DIRS=$(grep -oE 'animation/anims/viewmodel/knife/[^/]+/' "$D" | sort -u)
 for knife in $KNIFE; do
+  if is_knife "$knife"; then
     dir=$(knife_dir "$knife")
     short="${dir#knife_}"
     # Папка клипов: точное имя, иначе — содержащая короткое имя.
     clipdir=$(echo "$ALL_CLIP_DIRS" | grep -E "/knife/$dir/\$" | head -1)
     [ -z "$clipdir" ] && clipdir=$(echo "$ALL_CLIP_DIRS" | grep -E "/knife/[^/]*$short[^/]*/\$" | head -1)
     mdl=$(grep -oE "weapons/models/knife/$dir/[^ /]+\.vmdl_c" "$D" | grep -viE 'phys|_ag' | head -1)
+  else
+    # Огнестрел: модель без магазина и без физики, клипы — своей папки.
+    clipdir="animation/anims/viewmodel/$(gun_clip_dir "$knife")/"
+    grep -q "$clipdir" "$D" || clipdir=""
+    mdl=$(grep -oE "weapons/models/$(gun_model_dir "$knife")/weapon_[^ /]+\.vmdl_c" "$D" | grep -viE 'phys|_ag|_mag|_stattrak|_uid' | head -1)
+  fi
     echo "▸ $knife: модель ${mdl:-—}, клипы ${clipdir:-—}"
     if [ -z "$mdl" ] || [ -z "$clipdir" ]; then
         echo "  пропускаю: не нашлись модель или клипы"
@@ -117,7 +144,7 @@ for knife in $KNIFE; do
     out="$WORK/export-anim-$knife"
     rm -rf "$out"; mkdir -p "$out"
     export_one "$out" "$mdl" --gltf_export_format glb --gltf_export_animations || { echo "  (нож не вынулся)"; continue; }
-    for c in $(grep -oE "${clipdir}(lookat0[1-3]|idle1|draw)[^ /]*\.vnmclip_c" "$D" | grep -v '+' | sort -u); do
+    for c in $(grep -oE "${clipdir}(lookat0[1-3]|idle1?|draw)[^ /]*\.vnmclip_c" "$D" | grep -v '+' | grep -vE '_draw_|transfix|_lgcy|slide_back' | sort -u); do
         export_one "$out" "$c" --gltf_export_format glb --gltf_export_animations || echo "  (клип $(basename "$c") не вынулся)"
     done
     mkdir -p "$ANIM/$knife"
@@ -141,10 +168,11 @@ for path, dirs, files in os.walk(out):
             shutil.copy(src, os.path.join(dest, 'knife.glb'))
             index['knife'] = 'knife.glb'
             continue
-        m = re.match(r'(lookat0[1-3]|idle1|draw)', f)
-        if not m or not anims:
+        # Ножи: lookat01_karambit, idle1_…; огнестрел: lookat01_ak, idle_ak.
+        m = re.match(r'(lookat0[1-3]|idle1?|draw)_', f)
+        if not m or not anims or '_draw_' in f or 'transfix' in f:
             continue
-        cid = m.group(1)
+        cid = 'idle1' if m.group(1) == 'idle' else m.group(1)
         if any(c['id'] == cid for c in index['clips']):
             continue
         dur = max([(j['accessors'][s['input']].get('max') or [0])[0] for a in anims for s in a.get('samplers', [])] or [0])
