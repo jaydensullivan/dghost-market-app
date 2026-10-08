@@ -733,7 +733,13 @@ return skin.format === 'vcompmat' && /^gs_(extended_)?template$/.test(String(ski
 function noiseCaseHardening(skin){
 return !!skin.ramp && skin.format === 'vcompmat' && /^(aq|so)_case_hardening_template$/.test(String(skin.params.paint_template || ''));
 }
+// Тонировка цветом — только у патины со своими цветами. У Case Hardened
+// (aq_oiled) цветов нет: цвет — сам узор, иначе ствол выходил чёрным.
 function legacyPatinaBlend(skin){
+return legacyPatinaMetal(skin) && Array.isArray(skin.params.colors) && skin.params.colors.length > 0;
+}
+// Патина и закалка старого формата — обработка металла: только по R маски.
+function legacyPatinaMetal(skin){
 return legacyPatinaStyle(skin) && skin.params.paint_style === 7;
 }
 
@@ -943,7 +949,7 @@ const weaponName = weapon ? weapon.name || '' : '';
 let maskName = String(maskChannel || 'none').toLowerCase();
 if (maskName === 'none' && SKIN_MASK_OVERRIDES[skin.finish] && weapon && weapon.masks) maskName = SKIN_MASK_OVERRIDES[skin.finish];
 if (maskName === 'none' && weapon && weapon.masks && !weapon.masksRedEmpty
-&& (isKnifeName(weaponName) || isAnodized(skin.params) || legacyPatinaBlend(skin))) maskName = 'r';
+&& (isKnifeName(weaponName) || isAnodized(skin.params) || legacyPatinaMetal(skin))) maskName = 'r';
 const channel = CHANNELS[maskName] ?? 3;
 
 // Однотонной раскраске узор не нужен, но сэмплер в шейдере должен
