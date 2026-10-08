@@ -112,6 +112,12 @@ def prepare_csfloat(out, index, names):
                 seed = ref.get('paint_seed')
                 if seed is None or seed in seen or not ref.get('playside'):
                     continue
+                # Проба наклеек: только экземпляры с наклейками на своих местах
+                # (без сдвига) — по ним сверяем, куда 3D ставит наклейки.
+                if os.environ.get('STICKERS_ONLY') and not [
+                        st for st in ref.get('stickers') or []
+                        if st.get('slot') is not None and not st.get('offset_x') and not st.get('offset_y')]:
+                    continue
                 slug = slugify(f'{name}_{seed}')
                 dest = os.path.join(out, 'steam', slug + '.png')
                 try:
@@ -121,7 +127,8 @@ def prepare_csfloat(out, index, names):
                     continue
                 seen.add(seed)
                 jobs.append({'name': f'{name} · паттерн {seed}', 'slug': slug, 'entry': index[name],
-                             'seed': seed, 'wear': ref.get('float_value') or 0.05})
+                             'seed': seed, 'wear': ref.get('float_value') or 0.05,
+                             'stickers': ref.get('stickers') or []})
                 time.sleep(0.3)
                 if len(seen) >= per_skin:
                     break
@@ -315,6 +322,7 @@ def analyze(out):
         rows.append({
             'name': job['name'], 'slug': job['slug'], 'skin': job['entry'].get('skin'),
             'group': job.get('group'),
+            'stickers': job.get('stickers') or None,
             'score': score, 'notes': notes,
             'steam': {'L': round(fs['L'], 1), 'chroma': round(fs['chroma'], 1), 'main_hue': fs['main_hue']},
             'ours': {'L': round(fo['L'], 1), 'chroma': round(fo['chroma'], 1), 'main_hue': fo['main_hue']},
