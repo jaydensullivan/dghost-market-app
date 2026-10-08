@@ -30,6 +30,8 @@ extract() {
     return 1
 }
 
+pip install --quiet OpenEXR numpy >/dev/null 2>&1 || true
+
 for W in ${WEAPONS//,/ }; do
     echo "::group::$W — слоты наклеек"
     vm=$(grep -iE "^weapons/models/$W/materials/weapon_[a-z]+_$W\.vmat_c" "$D" | sed 's/ crc=.*//' | head -1)
@@ -52,12 +54,19 @@ for path, dirs, files in os.walk(root):
             p = os.path.join(path, f)
             print('файл', f, os.path.getsize(p))
             try:
-                im = Image.open(p); print(' режим', im.mode, im.size)
-                for i, b in enumerate(im.split()):
-                    st = ImageStat.Stat(b)
-                    print('  канал', i, 'min/max', st.extrema[0], 'mean', round(st.mean[0], 3))
+                import OpenEXR, numpy as np
+                f = OpenEXR.File(p)
+                ch = f.channels()
+                print(' каналы', list(ch.keys()))
+                for name, c in ch.items():
+                    a = np.asarray(c.pixels, dtype=float)
+                    a = a.reshape(-1, a.shape[-1]) if a.ndim == 3 else a.reshape(-1, 1)
+                    nz = a[np.abs(a).sum(1) > 0]
+                    for i in range(a.shape[1]):
+                        print('  ', name, i, 'min', round(float(nz[:, i].min()), 4), 'max', round(float(nz[:, i].max()), 4),
+                              'mean', round(float(nz[:, i].mean()), 4), 'покрыто', round(len(nz) / len(a), 3))
             except Exception as e:
-                print(' не открыть PIL:', e)
+                print(' EXR не прочитан:', e)
 PY
     fi
     echo "::endgroup::"
