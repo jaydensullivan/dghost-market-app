@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 64;
+const APP3D_VERSION = 65;
 
 let threeLoading = null;
 
@@ -940,16 +940,17 @@ const CHANNELS = { r: 0, g: 1, b: 2, none: 3, debug: 4 };
 // По умолчанию — без маски: у стилей вроде custom paint (Redline)
 // краска покрывает ствол целиком, а текстура masks в CS2 хранит не
 // зоны покраски, а свойства поверхности.
-// R в маске ствола — металлические детали. У ножей это клинок
-// (рукоять остаётся родной: Butterfly — чёрная с красной вставкой),
-// а анодирование (Fade, Doppler, Moonrise) в игре ложится только на
-// металл: у Glock Moonrise окрашен затвор, рамка остаётся серой.
-// Так же и патина (стиль 7) — обработка металла.
+// R в маске ствола — металлические детали. Анодирование (Fade, Doppler,
+// Moonrise) в игре ложится только на металл: у Glock Moonrise окрашен
+// затвор, рамка серая; у ножей — клинок (рукоять Butterfly Fade родная).
+// Так же и патина (стиль 7) — обработка металла. Остальные стили и у ножей
+// красят всю модель (Bayonet Ultraviolet — фиолетовая рукоять, Butterfly
+// Boreal Forest — рукоять в камуфляже): сверка со Steam по 60 ножам 66 → 69.
 const weaponName = weapon ? weapon.name || '' : '';
 let maskName = String(maskChannel || 'none').toLowerCase();
 if (maskName === 'none' && SKIN_MASK_OVERRIDES[skin.finish] && weapon && weapon.masks) maskName = SKIN_MASK_OVERRIDES[skin.finish];
 if (maskName === 'none' && weapon && weapon.masks && !weapon.masksRedEmpty
-&& (isKnifeName(weaponName) || isAnodized(skin.params) || legacyPatinaMetal(skin))) maskName = 'r';
+&& (isAnodized(skin.params) || legacyPatinaMetal(skin))) maskName = 'r';
 const channel = CHANNELS[maskName] ?? 3;
 
 // Однотонной раскраске узор не нужен, но сэмплер в шейдере должен
