@@ -52,6 +52,7 @@ export_one() {
 gun_model_dir() {
     case "$1" in
         glock) echo "glock18" ;;
+        m4a1)  echo "m4a4" ;;
         *)     echo "$1" ;;
     esac
 }

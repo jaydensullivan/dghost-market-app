@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 60;
+const APP3D_VERSION = 61;
 
 let threeLoading = null;
 
@@ -1742,7 +1742,7 @@ const box = document.getElementById('viewer3dViews');
 if (!box) return;
 box.hidden = true;
 box.innerHTML = '';
-if (!/^(knife_|bayonet)/.test(knifeName)) return;
+if (!/^[a-z0-9_]+$/.test(knifeName || '')) return;
 fetch(modelsUrl('models/anim/' + knifeName + '/index.json'))
 .then(r => r.ok ? r.json() : null)
 .catch(() => null)
@@ -2454,7 +2454,10 @@ const [arms, knife, clip] = await Promise.all([glb(index.arms), glb(index.knife)
 
 const root = clip.scene;
 root.traverse(node => { if (node.isPoints) node.visible = false; });
-const knifeSkel = root.children.find(c => /knife|bayonet/.test(c.name) && !c.isPoints);
+// Скелет оружия в клипе: у ножей …knife_karambit…, у огнестрела
+// animation/skeletons/weapons/ak47.vnmskel (загрузчик glTF вырезает из
+// имён «/» и «.»: animationskeletonsweaponsak47vnmskel).
+const knifeSkel = root.children.find(c => /skeletons_?weapons|knife|bayonet/.test(c.name) && !/empty_?mesh/.test(c.name) && !c.isPoints);
 const armMeshes = rebindToSkeleton(THREE, arms.scene, root);
 armMeshes.forEach(m => root.add(m));
 const knifeGroup = new THREE.Group();
@@ -2536,7 +2539,9 @@ const handsPackCache = {};
 
 function handsAnimDir(entry){
 const name = ((String(entry && entry.model || '').match(/([a-z0-9_]+)\.glb$/i) || [])[1] || '').toLowerCase();
-return /^(knife_|bayonet)/.test(name) ? 'models/anim/' + name + '/' : null;
+// Комплект «в руках» бывает и у ножей, и у огнестрела (models/anim/<модель>/);
+// нет комплекта — index.json не найдётся, и режим просто не появится.
+return name ? 'models/anim/' + name + '/' : null;
 }
 
 // Есть ли у ножа лота комплект анимаций (промис true/false).
