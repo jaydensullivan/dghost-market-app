@@ -59,6 +59,9 @@ gun_model_dir() {
 gun_clip_dir() {
     case "$1" in
         ak47)      echo "rifle/rifle_ak" ;;
+        # Своих клипов осмотра у M4A1-S и USP-S в игре нет — общие.
+        m4a1_silencer) echo "rifle/_default_rifle" ;;
+        usp_silencer)  echo "pistol/_default_pistol" ;;
         m4a1)      echo "rifle/rifle_m4a4" ;;
         glock)     echo "pistol/pistol_glock18" ;;
         hkp2000)   echo "pistol/pistol_hkp2000" ;;

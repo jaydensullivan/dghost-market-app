@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 63;
+const APP3D_VERSION = 64;
 
 let threeLoading = null;
 
@@ -2466,7 +2466,9 @@ const knifeSkel = root.children.find(c => /skeletons_?weapons|knife|bayonet/.tes
 const armMeshes = rebindToSkeleton(THREE, arms.scene, root);
 armMeshes.forEach(m => root.add(m));
 const knifeGroup = new THREE.Group();
-rebindToSkeleton(THREE, knife.scene, knifeSkel || root).forEach(m => knifeGroup.add(m));
+// Кобура (у Dual Berettas — eholster) — для вида от третьего лица; в руках
+// она висела огромной фигурой у камеры.
+rebindToSkeleton(THREE, knife.scene, knifeSkel || root).forEach(m => { if (!/holster/i.test(m.name)) knifeGroup.add(m); });
 root.add(knifeGroup);
 
 // Точка хвата ножа (ag1_hand_r) — её нет в клипе, достраиваем под
