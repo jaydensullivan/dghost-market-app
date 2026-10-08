@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 59;
+const APP3D_VERSION = 60;
 
 let threeLoading = null;
 
@@ -617,8 +617,27 @@ return Promise.all(names.map(name => textures[name]
 )).then(loaded => {
 const pack = {};
 names.forEach((name, i) => { pack[name] = loaded[i]; });
+pack.masksRedEmpty = maskChannelEmpty(pack.masks, 0);
 return pack;
 });
+}
+
+// Пустой канал маски (у Shadow Daggers и Zeus сборка взяла чёрную маску):
+// по нему краска не ложилась бы никуда — ствол оставался без скина.
+function maskChannelEmpty(tex, channel){
+const img = tex && tex.image;
+if (!img || !img.width) return false;
+try {
+const c = document.createElement('canvas');
+c.width = c.height = 32;
+const ctx = c.getContext('2d', { willReadFrequently: true });
+ctx.drawImage(img, 0, 0, 32, 32);
+const d = ctx.getImageData(0, 0, 32, 32).data;
+for (let i = channel; i < d.length; i += 4) if (d[i] > 24) return false;
+return true;
+} catch (e) {
+return false;
+}
 }
 
 // Раскраска и текстуры ствола. Под HD-корпус у ствола свои маска зон и
@@ -679,6 +698,11 @@ function weaponPatternScale(skin, weaponName){
 const params = skin.params;
 if (skin.format === 'template' || skin.format === 'vcompmat') return 1;
 if ([1, 2, 4, 5, 7].indexOf(params.paint_style) === -1) return 1;
+// У ножей UVScale из items_game (у большинства — одна заглушка 0.36)
+// растягивал узор втрое: Gamma Doppler на Falchion выходил одним сплошным
+// пятном. Без него — как в игре (сверка со Steam по 60 Doppler/Gamma
+// Doppler/Marble Fade: 69.4 → 71.1; на остальных ножах без изменений).
+if (isKnifeName(weaponName)) return 1;
 return WEAPON_UV_SCALE[weaponName] || 1;
 }
 
@@ -915,7 +939,7 @@ const CHANNELS = { r: 0, g: 1, b: 2, none: 3, debug: 4 };
 const weaponName = weapon ? weapon.name || '' : '';
 let maskName = String(maskChannel || 'none').toLowerCase();
 if (maskName === 'none' && SKIN_MASK_OVERRIDES[skin.finish] && weapon && weapon.masks) maskName = SKIN_MASK_OVERRIDES[skin.finish];
-if (maskName === 'none' && weapon && weapon.masks
+if (maskName === 'none' && weapon && weapon.masks && !weapon.masksRedEmpty
 && (isKnifeName(weaponName) || isAnodized(skin.params) || legacyPatinaBlend(skin))) maskName = 'r';
 const channel = CHANNELS[maskName] ?? 3;
 
