@@ -138,7 +138,7 @@ for knife in $KNIFE; do
     # Огнестрел: модель без магазина и без физики, клипы — своей папки.
     clipdir="animation/anims/viewmodel/$(gun_clip_dir "$knife")/"
     grep -q "$clipdir" "$D" || clipdir=""
-    mdl=$(grep -oE "weapons/models/$(gun_model_dir "$knife")/weapon_[^ /]+\.vmdl_c" "$D" | grep -viE 'phys|_ag|_mag|_stattrak|_uid' | head -1)
+    mdl=$(grep -oE "weapons/models/$(gun_model_dir "$knife")/weapon_[^ /]+\.vmdl_c" "$D" | grep -viE 'phys|_ag|_mag\.vmdl|_stattrak|_uid' | head -1)
   fi
     echo "▸ $knife: модель ${mdl:-—}, клипы ${clipdir:-—}"
     if [ -z "$mdl" ] || [ -z "$clipdir" ]; then
