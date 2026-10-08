@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 61;
+const APP3D_VERSION = 62;
 
 let threeLoading = null;
 
@@ -1845,11 +1845,13 @@ const baseDistance = fitObjectToView(THREE, gltf.scene, camera);
 setupViewerScene(THREE, renderer, scene);
 
 // Раскраска лота, если она указана.
+// Наклейки лота: не загрузились — ствол всё равно покажем. Один атлас —
+// и для обычного вида, и для «в руках».
+const stickerAtlasReady = loadStickerAtlas(THREE, stickers).catch(() => null);
 if (skinDir){
 Promise.all([
 loadSkinWithWeapon(THREE, skinDir, weaponDir),
-// Наклейки лота: не загрузились — ствол всё равно покажем.
-loadStickerAtlas(THREE, stickers).catch(() => null),
+stickerAtlasReady,
 ])
 .then(([[skin, weapon], atlas]) => {
 if (!skin.pattern && !skin.solid) throw new Error('не загрузился узор');
@@ -1948,8 +1950,8 @@ try {
 if (!handsCache[clipId]){
 const ih = await loadInHandsScene(THREE, animDir, clipId);
 if (skinDir){
-const [skin, weapon] = await loadSkinWithWeapon(THREE, skinDir, weaponDir);
-applySkinToModel(THREE, ih.knifeGroup, skin, wearValue, weapon, maskChannel, seed);
+const [[skin, weapon], atlas] = await Promise.all([loadSkinWithWeapon(THREE, skinDir, weaponDir), stickerAtlasReady]);
+applySkinToModel(THREE, ih.knifeGroup, skin, wearValue, weapon, maskChannel, seed, atlas);
 }
 handsCache[clipId] = ih;
 }
@@ -2369,7 +2371,7 @@ return { preparedId: data.prepared_id || null, name: String(data.gif_url).split(
 if (kind === 'hands'){
 const handsPreparing = dict.share_hands_preparing || preparing;
 const clip = await render3DHandsVideo(buy3dEntry, Number(skin.float_value) || 0, title, skin.pattern,
-p => say(handsPreparing.replace('{p}', Math.round(p * 100))));
+p => say(handsPreparing.replace('{p}', Math.round(p * 100))), skin.stickers);
 return await upload(clip, 'video');
 }
 
@@ -2591,18 +2593,19 @@ img.src = modelsUrl('models/backgrounds/' + SHARE_HANDS.background);
 });
 }
 
-async function render3DHandsVideo(entry, wear, title, seed, onProgress){
+async function render3DHandsVideo(entry, wear, title, seed, onProgress, stickers){
 await loadGltfLoader();
 await loadModelIndex();
 const dir = handsAnimDir(entry);
 if (!dir) throw new Error('no_hands');
 const { width: W, height: H, supersample: ss } = SHARE_VIDEO;
-const [ih, [skin, weapon], bg] = await Promise.all([
+const [ih, [skin, weapon], bg, stickerAtlas] = await Promise.all([
 loadInHandsScene(THREE, dir, SHARE_HANDS.clip),
 loadSkinWithWeapon(THREE, entry.skin, entry.weapon),
 loadShareBackground(W, H),
+loadStickerAtlas(THREE, stickers).catch(() => null),
 ]);
-applySkinToModel(THREE, ih.knifeGroup, skin, wear, weapon, 'none', seed);
+applySkinToModel(THREE, ih.knifeGroup, skin, wear, weapon, 'none', seed, stickerAtlas);
 
 const glCanvas = document.createElement('canvas');
 glCanvas.width = W * ss;
