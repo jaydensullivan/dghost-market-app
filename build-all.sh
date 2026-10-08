@@ -317,9 +317,11 @@ weapon_state() {
         fi
     done
     local model="нет"
-    # hd_version в params.json — набор HD-корпуса уже искали (см. build_model).
+    # hd_version и stickers_version в params.json — набор HD-корпуса и
+    # слоты наклеек уже искали (см. build_model).
     if [ -f "$REPO/models/$weapon.glb" ] && [ -f "$REPO/models/weapons/$weapon/masks.webp" ] \
-        && grep -q '"hd_version": 3' "$REPO/models/weapons/$weapon/params.json" 2>/dev/null; then
+        && grep -q '"hd_version": 3' "$REPO/models/weapons/$weapon/params.json" 2>/dev/null \
+        && grep -q '"stickers_version": 1' "$REPO/models/weapons/$weapon/params.json" 2>/dev/null; then
         model="есть"
     fi
     echo "$have|$gave_up|$model|$missing"
@@ -427,6 +429,12 @@ with open(path, 'w', encoding='utf-8') as f:
     json.dump(meta, f, ensure_ascii=False, indent=2)
 print('   hd:', 'есть' if hd else 'нет')
 PY
+    fi
+
+    # Слоты наклеек из материала ствола (у ножей их нет — пустой список).
+    if ! grep -q '"stickers_version": 1' "$wdir/params.json" 2>/dev/null; then
+        REPO="$REPO" bash prep-stickers.sh "$weapon" 2>&1 | grep -E '^\s+наклейки' || true
+        steam_refused "$WORK/stk-dd.log" && return 1
     fi
 
     commit_if_changed "модель и текстуры $weapon"

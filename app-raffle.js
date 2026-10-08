@@ -102,7 +102,7 @@ rafflePrizeModel(ps.title || c.title).then(entry => {
 const btn = document.getElementById('rf3dBtn');
 if (!entry || !btn) return;
 btn.style.display = '';
-btn.onclick = () => open3DViewer(entry.model, ps.title || c.title, entry.skin, Number(ps.float_value) || 0, entry.weapon || null, 'none', ps.pattern);
+btn.onclick = () => open3DViewer(entry.model, ps.title || c.title, entry.skin, Number(ps.float_value) || 0, entry.weapon || null, 'none', ps.pattern, ps.stickers);
 });
 }
 
