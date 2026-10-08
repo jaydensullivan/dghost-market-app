@@ -3,7 +3,8 @@
 # Проба наклеек (only = probe-stickers:<ствол,ствол>): параметры слотов
 # наклеек из материала ствола (смещение, масштаб, поворот) и диапазон
 # карты позиций ствола (pos_pfm) — по ним считаем, куда ставить наклейку.
-# Ничего не коммитит.
+# Карты позиций (float16, npz) и маски наклеек — в reports/sticker-probe/
+# ветки 3d-assets.
 #
 set -uo pipefail
 WORK="${WORK:-/tmp/cs2-assets}"
@@ -34,6 +35,8 @@ pip install --quiet OpenEXR numpy >/dev/null 2>&1 || true
 
 for W in ${WEAPONS//,/ }; do
     echo "::group::$W — слоты наклеек"
+    export DEST="$PWD/reports/sticker-probe/$W"
+    mkdir -p "$DEST"
     vm=$(grep -iE "^weapons/models/$W/materials/weapon_[a-z]+_$W\.vmat_c" "$D" | sed 's/ crc=.*//' | head -1)
     [ -z "$vm" ] && vm=$(grep -iE "^weapons/models/$W/materials/[^/]*\.vmat_c" "$D" | sed 's/ crc=.*//' | grep -v composite | head -1)
     echo "материал: $vm"
@@ -65,9 +68,27 @@ for path, dirs, files in os.walk(root):
                     for i in range(a.shape[1]):
                         print('  ', name, i, 'min', round(float(nz[:, i].min()), 4), 'max', round(float(nz[:, i].max()), 4),
                               'mean', round(float(nz[:, i].mean()), 4), 'покрыто', round(len(nz) / len(a), 3))
+                dest = os.environ['DEST']
+                os.makedirs(dest, exist_ok=True)
+                rgb = np.stack([np.asarray(c.pixels, dtype=float) for c in ch.values()], 0)[0]
+                np.savez_compressed(os.path.join(dest, 'pos.npz'), pos=rgb[..., :3].astype(np.float16))
+                print(' сохранено', rgb.shape)
             except Exception as e:
                 print(' EXR не прочитан:', e)
 PY
     fi
+    mk=$(grep -iE "^weapons/models/$W/materials/stickers/[^ ]*_sticker_mask_hd[^ ]*\.vtex_c" "$D" | sed 's/ crc=.*//' | head -1)
+    if [ -n "$mk" ] && extract "$mk"; then
+        f=$(find "$OUT" -name "$(basename "${mk%.vtex_c}")*.png" | head -1)
+        [ -n "$f" ] && cp "$f" "$DEST/sticker_mask_hd.png"
+    fi
     echo "::endgroup::"
+done
+
+git add -A reports/sticker-probe
+git commit -q -m "3D: проба наклеек — карты позиций и маски" || exit 0
+for i in 1 2 3 4 5; do
+    git push -q origin HEAD:3d-assets && exit 0
+    sleep $((i * 5))
+    git pull -q --rebase origin 3d-assets
 done
