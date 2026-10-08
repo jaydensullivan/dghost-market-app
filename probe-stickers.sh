@@ -17,9 +17,8 @@ mkdir -p "$OUT"
 [ -s "$WORK/vpk_dir.txt" ] || "$T" -i "$VPK" --vpk_dir > "$WORK/vpk_dir.txt" 2>/dev/null
 D="$WORK/vpk_dir.txt"
 
-echo "::group::архив: файлы со словом sticker (кроме самих наклеек)"
-grep -i "sticker" "$D" | sed 's/ crc=.*//' | grep -viE '^materials/models/weapons/customization/stickers/[^/]+/[^/]+\.(vmat|vtex)_c' | head -120
-echo "всего строк со sticker: $(grep -ci sticker "$D")"
+echo "::group::архив: файлы ствола $W"
+grep -iE "^weapons/models/$W/" "$D" | sed 's/ crc=.*//' | head -40
 echo "::endgroup::"
 
 # Вынимает файл, докачивая недостающие куски (как fix-skin.sh).
@@ -57,4 +56,34 @@ if [ -n "$IGF" ]; then
     grep -n -i "sticker" "$IGF" | grep -viE '"name"|"item_name"|sticker_material' | head -60
     awk -v w="weapon_$W" 'index($0, "\"" w "_prefab\"") {p=1} p {print; n++} n>150 {exit}' "$IGF" | grep -n -i -A8 "sticker" | head -80
 fi
+echo "::endgroup::"
+
+echo "::group::scripts/weapons.vdata — про sticker"
+extract "scripts/weapons.vdata_c" || true
+VD=$(find "$OUT" -name 'weapons.vdata' | head -1)
+if [ -n "$VD" ]; then
+    echo "строк: $(wc -l < "$VD")"
+    grep -n -i "sticker\|keychain" "$VD" | head -60
+    awk -v w="weapon_$W" 'index($0, w) && /=/ {p=1} p {print; n++} n>120 {exit}' "$VD" | head -130
+fi
+echo "::endgroup::"
+
+echo "::group::маски наклеек $W"
+for f in $(grep -iE "^weapons/models/$W/materials/stickers/" "$D" | sed 's/ crc=.*//' | cut -d' ' -f1); do
+    extract "$f" || true
+done
+python3 - "$OUT" <<'PY'
+import os, sys
+from PIL import Image, ImageStat
+for path, dirs, files in os.walk(sys.argv[1]):
+    for f in sorted(files):
+        if 'sticker' in f and f.endswith('.png'):
+            im = Image.open(os.path.join(path, f)); st = ImageStat.Stat(im)
+            print(f, im.size, im.mode, [round(m) for m in st.mean], st.extrema)
+            # Сколько разных значений в каждом канале — слоты обычно размечены
+            # отдельными уровнями яркости или каналами.
+            for i, b in enumerate(im.split()):
+                h = b.histogram(); used = [v for v, c in enumerate(h) if c > 50]
+                print('  канал', 'RGBA'[i], 'уровней', len(used), used[:12], '...' if len(used) > 12 else '')
+PY
 echo "::endgroup::"
