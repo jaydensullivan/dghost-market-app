@@ -4175,3 +4175,15 @@ background:rgba(255,255,255,.03);
 .inv-protect-hint summary{ cursor:pointer; font-size:13px; color:var(--silver); }
 .inv-protect-hint summary::before{ content:"ℹ️ "; }
 .inv-protect-hint p{ margin:8px 0 0; font-size:12px; line-height:1.5; color:var(--muted); }
+
+/* Кнопка «Закрыть»/«Отмена» внизу листа видна всегда: длинный список
+   (уведомления, история) прокручивается под ней, а не уводит её вниз. */
+.edit-sheet > .edit-actions:last-child,
+.edit-sheet > button[id$="CloseBtn"]:last-child,
+.edit-sheet > button[id$="CancelBtn"]:last-child{
+position:sticky;
+bottom:-28px;
+z-index:2;
+background:var(--surface);
+box-shadow:0 28px 0 var(--surface), 0 -14px 14px -2px var(--surface);
+}

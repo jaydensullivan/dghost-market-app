@@ -142,3 +142,24 @@ const HTML_ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'
 function escapeHtml(str){
 return (str == null ? '' : String(str)).replace(/[&<>"']/g, ch => HTML_ESCAPES[ch]);
 }
+
+// Листы (.edit-overlay): тап по затемнённому фону закрывает лист тем же
+// путём, что и его кнопка «Закрыть»/«Отмена». Только если и нажатие, и
+// отпускание были на фоне (прокрутка внутри листа с отпусканием снаружи
+// не считается), и только у листов без полей ввода — чтобы случайный
+// тап не стёр заполненную форму.
+(function(){
+let downOnBackdrop = null;
+document.addEventListener('pointerdown', (e) => {
+downOnBackdrop = e.target.classList && e.target.classList.contains('edit-overlay') ? e.target : null;
+}, true);
+document.addEventListener('click', (e) => {
+const overlay = e.target;
+if (!overlay.classList || !overlay.classList.contains('edit-overlay') || overlay !== downOnBackdrop) return;
+downOnBackdrop = null;
+if (overlay.querySelector('input:not([type=hidden]), textarea, select')) return;
+const buttons = overlay.querySelectorAll('[id$="CloseBtn"], [id$="CancelBtn"], [id$="Cancel"]');
+const close = buttons[buttons.length - 1];
+if (close && close.offsetParent !== null) close.click();
+});
+})();
