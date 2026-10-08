@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 55;
+const APP3D_VERSION = 56;
 
 let threeLoading = null;
 
@@ -661,6 +661,13 @@ const v = Array.isArray(list) ? list.map(Number) : [0, 0, 0, 0];
 return new THREE.Vector4(v[0] || 0, v[1] || 0, v[2] || 0, v[3] || 0);
 }
 
+// Скины, у которых краска в игре лежит только на металле, хотя по
+// текстуре узора этого не видно: у AK-47 Fire Serpent приклад, рукоять
+// и цевьё остаются деревом (в узоре там тёмный фон). Сверено по CSFloat.
+const SKIN_MASK_OVERRIDES = {
+cu_fireserpent_ak47_bravo: 'r',
+};
+
 function isKnifeName(name){
 return name === 'bayonet' || name.indexOf('knife') === 0;
 }
@@ -830,6 +837,7 @@ const CHANNELS = { r: 0, g: 1, b: 2, none: 3, debug: 4 };
 // Так же и патина (стиль 7) — обработка металла.
 const weaponName = weapon ? weapon.name || '' : '';
 let maskName = String(maskChannel || 'none').toLowerCase();
+if (maskName === 'none' && SKIN_MASK_OVERRIDES[skin.finish] && weapon && weapon.masks) maskName = SKIN_MASK_OVERRIDES[skin.finish];
 if (maskName === 'none' && weapon && weapon.masks
 && (isKnifeName(weaponName) || isAnodized(skin.params) || legacyPatinaBlend(skin))) maskName = 'r';
 const channel = CHANNELS[maskName] ?? 3;
@@ -1362,7 +1370,7 @@ if (!file) return Promise.resolve(null);
 const isColor = SKIN_COLOR_LAYERS.indexOf(name) !== -1 || name === 'ramp' || name === 'overlay';
 return loadSkinTexture(THREE, resolveSkinPath(base, file), isColor);
 })).then(loaded => {
-const pack = { params: meta.shader || {}, format: meta.format || null };
+const pack = { params: meta.shader || {}, format: meta.format || null, finish: meta.finish || null };
 names.forEach((name, i) => { pack[name] = loaded[i]; });
 // Однотонные раскраски (so_, an_ и т. п.): узора у них в игре нет,
 // есть только цвета из материала — красим ими по маскам ствола.
