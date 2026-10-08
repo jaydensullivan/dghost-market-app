@@ -48,26 +48,6 @@ for f in $(find "$OUT" -name '*.vmdl' | head -3); do
     echo "::endgroup::"
 done
 
-echo "::group::items_game: наклейки у $W"
-IG=$(grep -iE '^scripts/items/items_game\.txt' "$D" | sed 's/ crc=.*//' | head -1)
-[ -n "$IG" ] && extract "$IG"
-IGF=$(find "$OUT" -name 'items_game.txt' | head -1)
-if [ -n "$IGF" ]; then
-    grep -n -i "sticker" "$IGF" | grep -viE '"name"|"item_name"|sticker_material' | head -60
-    awk -v w="weapon_$W" 'index($0, "\"" w "_prefab\"") {p=1} p {print; n++} n>150 {exit}' "$IGF" | grep -n -i -A8 "sticker" | head -80
-fi
-echo "::endgroup::"
-
-echo "::group::scripts/weapons.vdata — про sticker"
-extract "scripts/weapons.vdata_c" || true
-VD=$(find "$OUT" -name 'weapons.vdata' | head -1)
-if [ -n "$VD" ]; then
-    echo "строк: $(wc -l < "$VD")"
-    grep -n -i "sticker\|keychain" "$VD" | head -60
-    awk -v w="weapon_$W" 'index($0, w) && /=/ {p=1} p {print; n++} n>120 {exit}' "$VD" | head -130
-fi
-echo "::endgroup::"
-
 echo "::group::маски наклеек $W"
 for f in $(grep -iE "^weapons/models/$W/materials/stickers/" "$D" | sed 's/ crc=.*//' | cut -d' ' -f1); do
     extract "$f" || true
@@ -87,3 +67,27 @@ for path, dirs, files in os.walk(sys.argv[1]):
                 print('  канал', 'RGBA'[i], 'уровней', len(used), used[:12], '...' if len(used) > 12 else '')
 PY
 echo "::endgroup::"
+
+echo "::group::маски наклеек — картинки (base64, 256px)"
+python3 - "$OUT" <<'PY'
+import os, sys, io, base64
+from PIL import Image
+for path, dirs, files in os.walk(sys.argv[1]):
+    for f in sorted(files):
+        if 'sticker_mask' in f and f.endswith('.png'):
+            im = Image.open(os.path.join(path, f)).convert('RGB').resize((256, 256))
+            b = io.BytesIO(); im.save(b, 'PNG', optimize=True)
+            print('IMG', f, base64.b64encode(b.getvalue()).decode())
+PY
+echo "::endgroup::"
+
+for v in weapons/models/$W/materials/weapon_rif_$W.vmat_c weapons/models/$W/materials/composite_inputs/weapon_rif_${W}_composite_inputs.vmat_c; do
+    f=$(grep -iE "^${v//\//\\/}" "$D" | sed 's/ crc=.*//' | head -1)
+    [ -z "$f" ] && f=$(grep -iE "^weapons/models/$W/materials/.*$(basename "$v")" "$D" | sed 's/ crc=.*//' | head -1)
+    [ -z "$f" ] && continue
+    extract "$f" || true
+    m=$(find "$OUT" -name "$(basename "${f%_c}")" | head -1)
+    echo "::group::$f"
+    [ -n "$m" ] && cat "$m" | head -200
+    echo "::endgroup::"
+done
