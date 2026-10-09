@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 73;
+const APP3D_VERSION = 74;
 
 let threeLoading = null;
 
@@ -847,6 +847,19 @@ if (own > 0) return own;
 return isAnodized(params) ? ANODIZED.metalness : 0;
 }
 
+// Doppler, Gamma Doppler и мраморные (Ruby, Sapphire, Black Pearl,
+// Emerald) на ножах: у узора в альфе мраморный «дым», без него клинок
+// выходил плавными цветными полосами и слишком светлым. Яркость узора
+// умножаем на альфу (среднее ≈ 0.28) с коэффициентом 2 — сверка со Steam
+// по 75 ножам: 67.4 → 69.6. На остальных анодированных скинах альфа
+// значит другое (по 131 скину 78.2 → 70.5) — их не трогаем.
+const DOPPLER_SMOKE_K = 2;
+function dopplerSmokeK(skin, weaponName){
+if (skin.params.paint_style !== 4 || (skin.format && skin.format !== 'legacy')) return 0;
+if (!/doppler|marbleized/.test(skin.finish || '') || !isKnifeName(weaponName)) return 0;
+return DOPPLER_SMOKE_K;
+}
+
 // ---------- pattern seed ----------
 // Генератор случайных чисел Valve (CUniformRandomStream из Source SDK).
 // Игра сеет его paint seed предмета и по очереди берёт сдвиг узора по
@@ -1047,6 +1060,7 @@ uUseColors: { value: skin.solid || skinUsesColorMask(skin.params) ? 1 : 0 },
 uColors: { value: skinColors(THREE, skin.params) },
 // Узор грузится как sRGB, а маске нужны исходные значения каналов.
 uMaskGamma: { value: THREE.SRGBColorSpace ? 1 / 2.2 : 1 },
+uSmokeK: { value: dopplerSmokeK(skin, weaponName) },
 uColorBrightness: { value: skin.params.color_brightness || 1 },
 // Патина (7) и Gunsmith (8) старого формата выходили бледно-пастельными
 // (по сверке с CSFloat светлее игры на 30–50 по яркости). Степень 1.8
@@ -1264,6 +1278,7 @@ uniform int uUseColors;
 uniform int uSolid;
 uniform vec3 uColors[4];
 uniform float uMaskGamma;
+uniform float uSmokeK;
 uniform float uColorBrightness;
 uniform float uPatternGamma;
 uniform vec3 uIrid;
@@ -1375,6 +1390,8 @@ colorWeight = mix(colorWeight, vec4(0.0, 0.0, 0.0, 1.0), zone.b);
 if (uPatinaBlend == 1) pattern = pattern * uColors[0] * vec3(dot(base, vec3(0.299, 0.587, 0.114))) * uPatinaK;
 else if (uPatternGamma != 1.0) pattern = pow(pattern, vec3(uPatternGamma));
 pattern *= uColorBrightness;
+// Doppler на ножах: мраморный «дым» лежит в альфе узора.
+if (uSmokeK > 0.0) pattern *= patternTex.a * uSmokeK;
 
 // Потёртость: краска сходит там, где маска износа меньше float.
 // У части новых скинов своей маски износа нет — тогда считаем
