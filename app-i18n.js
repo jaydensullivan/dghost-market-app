@@ -9,6 +9,10 @@
 
 const I18N = {
 ru: {
+mp_badge_cheaper: "−{p}% к рынку",
+mp_badge_pricier: "дороже рынка на {p}%",
+mp_badge_times: "дороже рынка в {x} раза",
+mp_badge_lower_hint: "снизь цену, иначе лот не продастся",
 buy_guarantee: "Деньги у гаранта: если продавец не передаст скин за 24 ч — вернём. Продавец получит оплату только после доставки.",
 detail_pattern: "Паттерн",
 seller_line_verified: "✅ Проверенный продавец{rating} · {trades} сделок · {disputes} споров",
@@ -1198,6 +1202,10 @@ steam_link_linking: 'Привязываю...',
 steam_link_linked_ok: 'Привязано ✓',
 },
 uz: {
+mp_badge_cheaper: "bozordan −{p}%",
+mp_badge_pricier: "bozordan {p}% qimmat",
+mp_badge_times: "bozordan {x} baravar qimmat",
+mp_badge_lower_hint: "narxni tushiring, aks holda lot sotilmaydi",
 buy_guarantee: "Pul kafilda: sotuvchi skinni 24 soatda bermasa — qaytaramiz. Sotuvchi to'lovni faqat yetkazilgandan keyin oladi.",
 detail_pattern: "Pattern",
 seller_line_verified: "✅ Tekshirilgan sotuvchi{rating} · {trades} bitim · {disputes} nizo",
@@ -2387,6 +2395,10 @@ steam_link_linking: "Bog'lanmoqda...",
 steam_link_linked_ok: "Bog'landi ✓",
 },
 en: {
+mp_badge_cheaper: "−{p}% vs market",
+mp_badge_pricier: "{p}% above market",
+mp_badge_times: "{x}× the market price",
+mp_badge_lower_hint: "lower the price or it will not sell",
 buy_guarantee: "Money is held by the escrow: if the seller does not deliver the skin within 24 h, you get it back. The seller is paid only after delivery.",
 detail_pattern: "Pattern",
 seller_line_verified: "✅ Verified seller{rating} · {trades} deals · {disputes} disputes",

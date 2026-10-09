@@ -133,6 +133,35 @@ const mine = (typeof lastSkins !== 'undefined' ? lastSkins : []).filter(s => s.s
 box.innerHTML = mine.length
 ? mine.map(skinCardHtml).join('')
 : `<div class="skins-empty">${dict.lots_empty}</div>`;
+markOverpricedLots(mine);
+}
+
+// «Мои лоты»: красная пометка на лоте, цена которого сильно выше рынка
+// (совет Советника №3) — такие висят неделями. Рыночная цена по
+// каждому лоту запрашивается по очереди и кэшируется на сессию.
+const myLotMarketCache = new Map();
+
+function markOverpricedLots(lots){
+const dict = I18N[currentLang] || I18N.ru;
+const apply = (skin, data) => {
+const card = document.querySelector(`#myLotsList [data-card="${skin.id}"]`);
+if (!card || !data || !data.available || typeof data.diff_percent !== 'number') return;
+if (-data.diff_percent < MARKET_WARN_PRICIER) return;
+if (card.querySelector('.lot-overpriced')) return;
+const note = document.createElement('div');
+note.className = 'lot-overpriced';
+note.textContent = '⚠️ ' + marketGapText(dict, skin.price, data.market_price_uzs) + ' (' + formatCoins(data.market_price_uzs) + ') — ' + dict.mp_badge_lower_hint;
+card.appendChild(note);
+};
+let chain = Promise.resolve();
+lots.slice(0, 30).forEach(skin => {
+const key = skin.id + ':' + skin.price;
+if (myLotMarketCache.has(key)){ apply(skin, myLotMarketCache.get(key)); return; }
+chain = chain.then(() => fetch(API_BASE + '/api/market_price?skin_id=' + skin.id)
+.then(r => r.json())
+.then(data => { myLotMarketCache.set(key, data); apply(skin, data); })
+.catch(() => {}));
+});
 }
 
 document.getElementById('lotsDealsBtn').addEventListener('click', () => goToScreen('deals'));

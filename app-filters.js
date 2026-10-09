@@ -1575,9 +1575,46 @@ const sheet = document.querySelector('#buyOverlay .buy-sheet');
 if (sheet) sheet.scrollTop = 0;
 });
 
+// Плашка у названия (совет Советника №3): покупателю — выгода «−N% к
+// рынку», если лот дешевле хотя бы на 3%; продавцу на своём лоте —
+// предупреждение, если цена заметно выше рынка (лот не продастся).
+const MARKET_BADGE_MIN_CHEAPER = 3;
+const MARKET_WARN_PRICIER = 15;
+
+function marketGapText(dict, price, market){
+const ratio = market > 0 ? price / market : 0;
+if (ratio >= 2) return dict.mp_badge_times.replace('{x}', (Math.round(ratio * 10) / 10).toLocaleString(currentLang === 'en' ? 'en-US' : 'ru-RU'));
+return dict.mp_badge_pricier.replace('{p}', Math.round((ratio - 1) * 100));
+}
+
+function renderMarketBadge(data, skin){
+const badge = document.getElementById('buyMarketBadge');
+if (!badge) return;
+badge.hidden = true;
+badge.className = 'buy-market-badge';
+if (!data || !data.available || typeof data.diff_percent !== 'number' || !skin) return;
+const dict = I18N[currentLang] || I18N.ru;
+const isOwn = currentUserId && skin.seller_id === currentUserId;
+if (isOwn){
+if (-data.diff_percent >= MARKET_WARN_PRICIER){
+badge.textContent = '⚠️ ' + marketGapText(dict, skin.price, data.market_price_uzs) + ' — ' + dict.mp_badge_lower_hint;
+badge.classList.add('pricier');
+badge.hidden = false;
+}
+return;
+}
+if (data.diff_percent >= MARKET_BADGE_MIN_CHEAPER){
+badge.textContent = dict.mp_badge_cheaper.replace('{p}', Math.round(data.diff_percent));
+badge.classList.add('cheaper');
+badge.hidden = false;
+}
+}
+
 function loadMarketPriceComparison(skinId){
 const box = document.getElementById('marketPriceBox');
 box.style.display = 'none';
+const badge = document.getElementById('buyMarketBadge');
+if (badge) badge.hidden = true;
 fetch(API_BASE + '/api/market_price?skin_id=' + skinId)
 .then(r => r.json())
 .then(data => {
@@ -1585,6 +1622,7 @@ fetch(API_BASE + '/api/market_price?skin_id=' + skinId)
 // не показываем устаревшие данные не по тому лоту.
 if (!pendingBuySkin || pendingBuySkin.id !== skinId) return;
 renderMarketPriceBox(data);
+renderMarketBadge(data, pendingBuySkin);
 })
 .catch(() => {});
 }
