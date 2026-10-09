@@ -133,6 +133,7 @@ bv_steam: "Аккаунт Steam",
 bv_phone: "Номер телефона",
 bv_phone_btn: "📱 Подтвердить",
 bv_hint: "Покупки больше {sum} за сутки доступны после подтверждения аккаунта: войди через Steam и подтверди номер телефона через Telegram. Это разово.",
+err_generic: "Что-то пошло не так, попробуй ещё раз.",
 bv_error: "Для покупок больше {sum} за сутки подтверди аккаунт Steam и номер телефона.",
 bv_done: "✅ Готово — можно повторить покупку.",
 steam_login_btn: "🔐 Войти через Steam",
@@ -1253,6 +1254,7 @@ bv_steam: "Steam akkaunti",
 bv_phone: "Telefon raqami",
 bv_phone_btn: "📱 Tasdiqlash",
 bv_hint: "Bir kunda {sum} dan ortiq xaridlar akkaunt tasdiqlangandan keyin mumkin: Steam orqali kiring va telefon raqamini Telegram orqali tasdiqlang. Bu bir martalik.",
+err_generic: "Nimadir xato ketdi, qaytadan urinib ko'ring.",
 bv_error: "Bir kunda {sum} dan ortiq xarid uchun Steam akkaunti va telefon raqamini tasdiqlang.",
 bv_done: "✅ Tayyor — xaridni qaytadan bajarishingiz mumkin.",
 steam_login_btn: "🔐 Steam orqali kirish",
@@ -1457,7 +1459,7 @@ rf_need_more: "Yana taklif qilish kerak: {n}. Do'st havolangiz orqali DGhost'ni 
 rf_pending: "⏳ Ro'yxatdan o'tishni kutmoqda: {n}",
 rf_waiting_sub: "📣 Kanalga obunani kutmoqda: {n}",
 rf_rejected: "🚫 Hisoblanmadi (ikkinchi akkaunt yoki o'sha qurilma): {n}",
-rf_rules_html: "<p>🎟 {n} do'stingizni taklif qiling — chipta va ishtirokchi raqamini olasiz. Har {t} yangi do'st — yana bitta chipta.</p><p>👥 Do'st faqat havolangiz orqali kelib, DGhost'ni birinchi marta ochib, qoidalarni qabul qilsa hisoblanadi.</p><p>🏆 Taymer tugagach, tizim g'olibni barcha chiptalar orasidan tasodifiy tanlaydi. Natijani «Halollik tekshiruvi» blokida tekshirish mumkin.</p>",
+rf_rules_html: "<p>🎟 {n} do'stingizni taklif qiling — chipta va ishtirokchi raqamini olasiz. Har {t} yangi do'st — yana bitta chipta: {n} → 1, {n}×2 → 2, {n}×3 → 3.</p><p>👥 Do'st faqat havolangiz orqali kelib, DGhost'ni birinchi marta ochib, qoidalarni qabul qilsa hisoblanadi. Oldin ro'yxatdan o'tganlar va siz o'zingiz hisobga olinmaysiz.</p><p>🏆 Taymer tugagach, tizim g'olibni barcha chiptalar orasidan tasodifiy tanlaydi. Natijani «Halollik tekshiruvi» blokida tekshirish mumkin.</p>",
 rf_finished: "🏆 Sovg'a tarqatish yakunlandi!",
 rf_finished_eyebrow: "⏱ Sovg'a tarqatish yakunlandi",
 rf_finished_short: "yakunlandi",
@@ -2373,6 +2375,7 @@ bv_steam: "Steam account",
 bv_phone: "Phone number",
 bv_phone_btn: "📱 Confirm",
 bv_hint: "Purchases over {sum} per day require a verified account: sign in through Steam and confirm your phone number via Telegram. One time only.",
+err_generic: "Something went wrong, please try again.",
 bv_error: "For purchases over {sum} per day, verify your Steam account and phone number.",
 bv_done: "✅ Done — you can retry the purchase.",
 steam_login_btn: "🔐 Sign in through Steam",
@@ -2577,7 +2580,7 @@ rf_need_more: "Friends left to invite: {n}. A friend counts once they open DGhos
 rf_pending: "⏳ Waiting for sign-up: {n}",
 rf_waiting_sub: "📣 Waiting for channel subscription: {n}",
 rf_rejected: "🚫 Not counted (second account or same device): {n}",
-rf_rules_html: "<p>🎟 Invite {n} friends to get a ticket and an entry number. Every {t} new friends give one more ticket.</p><p>👥 A friend counts only if they came via your link, opened DGhost for the first time and accepted the terms.</p><p>🏆 When the timer ends, the system picks a random winner among all tickets. You can verify the result under «Fairness check».</p>",
+rf_rules_html: "<p>🎟 Invite {n} friends to get a ticket and an entry number. Every {t} new friends give one more ticket: {n} → 1, {n}×2 → 2, {n}×3 → 3.</p><p>👥 A friend counts only if they came via your link, opened DGhost for the first time and accepted the terms. Already registered users and you yourself don't count.</p><p>🏆 When the timer ends, the system picks a random winner among all tickets. You can verify the result under «Fairness check».</p>",
 rf_finished: "🏆 Giveaway finished!",
 rf_finished_eyebrow: "⏱ Giveaway finished",
 rf_finished_short: "finished",
@@ -3388,6 +3391,13 @@ const sellerHint = document.getElementById('sellerFeeHint');
 if (sellerHint){
 sellerHint.textContent = `С продажи будет удержана комиссия площадки — ${saleFeePercent}% от цены. Она списывается автоматически при снятии холда, тебе ничего доплачивать не нужно.`;
 }
+}
+
+// Словарь сообщений по языку: NAME_RU / NAME_UZ / NAME_EN. Чего нет в
+// UZ/EN — берём из RU, чтобы пользователь всё равно получил ответ.
+function langMessage(ru, uz, en, code){
+const map = currentLang === 'uz' ? uz : (currentLang === 'en' ? en : ru);
+return (map && map[code]) || ru[code] || null;
 }
 
 function applyTranslations(){

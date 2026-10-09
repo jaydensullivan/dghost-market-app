@@ -46,7 +46,7 @@ withdrawPayoutPreview.textContent = fee
 
 wAmount.addEventListener('input', updateWithdrawPayoutPreview);
 
-const WITHDRAW_ERROR_MESSAGES = {
+const WITHDRAW_ERROR_MESSAGES_RU = {
 no_payment_details: 'Укажи карту и Ф.И.О. владельца карты.',
 payout_name_mismatch: 'Вывод возможен только на свою карту: Ф.И.О. держателя должно совпадать с Ф.И.О. из проверки продавца. Впиши имя так, как на карте (можно латиницей). Если всё верно, а ошибка остаётся — напиши в поддержку.',
 no_crypto_details: 'Укажи адрес кошелька.',
@@ -56,6 +56,30 @@ not_configured: 'Вывод в крипту сейчас недоступен.',
 feature_disabled: 'Вывод сейчас временно недоступен.',
 totp_required: 'Неверный или устаревший код 2FA — попробуй новый код из приложения.',
 totp_locked: `Слишком много неверных попыток — 2FA временно заблокирована на ${15} минут.`,
+};
+
+const WITHDRAW_ERROR_MESSAGES_UZ = {
+no_payment_details: "Karta va karta egasining F.I.Sh.ni kiriting.",
+payout_name_mismatch: "Pul faqat o'z kartangizga chiqariladi: karta egasining F.I.Sh. sotuvchi tekshiruvidagi F.I.Sh. bilan mos bo'lishi kerak. Ismni kartadagidek yozing (lotincha ham mumkin). Hammasi to'g'ri, lekin xato qolsa — qo'llab-quvvatlash xizmatiga yozing.",
+no_crypto_details: "Hamyon manzilini kiriting.",
+below_minimum: "Summa chiqarish uchun minimaldan kam.",
+insufficient_funds: "Balansda mablag' yetarli emas.",
+not_configured: "Kriptoga chiqarish hozir mavjud emas.",
+feature_disabled: "Pul chiqarish hozircha vaqtincha mavjud emas.",
+totp_required: "2FA kodi noto'g'ri yoki eskirgan — ilovadagi yangi kodni kiriting.",
+totp_locked: `Juda ko'p noto'g'ri urinish — 2FA ${15} daqiqaga vaqtincha bloklandi.`,
+};
+
+const WITHDRAW_ERROR_MESSAGES_EN = {
+no_payment_details: "Enter the card and the cardholder's full name.",
+payout_name_mismatch: "Withdrawals go only to your own card: the cardholder's full name must match the name from seller verification. Write the name as it is on the card (Latin letters are fine). If everything is correct and the error persists, contact support.",
+no_crypto_details: 'Enter the wallet address.',
+below_minimum: 'The amount is below the withdrawal minimum.',
+insufficient_funds: 'Not enough funds on your balance.',
+not_configured: 'Crypto withdrawals are unavailable right now.',
+feature_disabled: 'Withdrawals are temporarily unavailable.',
+totp_required: 'Wrong or expired 2FA code — try a new code from the app.',
+totp_locked: `Too many wrong attempts — 2FA is locked for ${15} minutes.`,
 };
 
 function withdrawTrustLimitMessage(data){
@@ -124,7 +148,7 @@ body: JSON.stringify(payload)
 .then(async r => {
 if (!r.ok){
 const data = await r.json().catch(() => ({}));
-throw new Error(withdrawTrustLimitMessage(data) || WITHDRAW_ERROR_MESSAGES[data.error] || errorMessage(data.error));
+throw new Error(withdrawTrustLimitMessage(data) || langMessage(WITHDRAW_ERROR_MESSAGES_RU, WITHDRAW_ERROR_MESSAGES_UZ, WITHDRAW_ERROR_MESSAGES_EN, data.error) || errorMessage(data.error));
 }
 return r.json();
 })

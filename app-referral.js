@@ -291,7 +291,7 @@ amount: amount,
 .then(async r => {
 if (!r.ok){
 const data = await r.json().catch(() => ({}));
-throw new Error(TOPUP_ERROR_MESSAGES[data.error] || errorMessage(data.error));
+throw new Error(langMessage(TOPUP_ERROR_MESSAGES_RU, TOPUP_ERROR_MESSAGES_UZ, TOPUP_ERROR_MESSAGES_EN, data.error) || errorMessage(data.error));
 }
 return r.json();
 })

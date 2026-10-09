@@ -12,9 +12,17 @@ const topupCopyBtn = document.getElementById('topupCopyBtn');
 let topupDetailsRaw = '';
 let topupCardNumber = '';
 
-const TOPUP_ERROR_MESSAGES = {
+const TOPUP_ERROR_MESSAGES_RU = {
 below_minimum: 'Сумма меньше минимальной для пополнения.',
 feature_disabled: 'Пополнение сейчас временно недоступно.',
+};
+const TOPUP_ERROR_MESSAGES_UZ = {
+below_minimum: "Summa to'ldirish uchun minimaldan kam.",
+feature_disabled: "To'ldirish hozircha vaqtincha mavjud emas.",
+};
+const TOPUP_ERROR_MESSAGES_EN = {
+below_minimum: 'The amount is below the top-up minimum.',
+feature_disabled: 'Top-ups are temporarily unavailable.',
 };
 
 function loadTopupInfo(){
