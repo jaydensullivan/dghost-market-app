@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 70;
+const APP3D_VERSION = 71;
 
 let threeLoading = null;
 
@@ -1803,7 +1803,14 @@ box.hidden = false;
 });
 }
 
+// Номер текущей загрузки 3D. Каждое открытие и закрытие окна его
+// увеличивает: загрузка прошлого лота, закончившись позже, выбрасывается
+// и не рисует свою модель под чужим названием (Deagle под «AWP …»).
+let viewer3dLoadId = 0;
+
 function open3DViewer(modelUrl, title, skinDir, wearValue, weaponDir, maskChannel, seed, stickers){
+const loadId = ++viewer3dLoadId;
+const stale = () => loadId !== viewer3dLoadId;
 const dict = I18N[currentLang] || I18N.ru;
 renderViewerBackgrounds(dict);
 const mode = get3DMode() || 'full';
@@ -1847,7 +1854,7 @@ null, new Uint8Array(buffer, 0, Math.min(60, buffer.byteLength))
 magicWarning = `${(buffer.byteLength / 1024).toFixed(0)} КБ · начало: ${preview}`;
 console.warn('3D: неожиданное начало файла —', magicWarning);
 }
-status.textContent = dict.v3_size.replace('{mb}', (buffer.byteLength / 1048576).toFixed(1));
+if (!stale()) status.textContent = dict.v3_size.replace('{mb}', (buffer.byteLength / 1048576).toFixed(1));
 return buffer;
 })
 .then(buffer => parseGlb(buffer).catch(err => {
@@ -1861,6 +1868,7 @@ throw wrapped;
 });
 }))
 .then(gltf => {
+if (stale()) return;
 dispose3DViewer();
 const canvas = document.getElementById('viewer3dCanvas');
 const renderer = new THREE.WebGLRenderer({
@@ -1893,6 +1901,7 @@ loadSkinWithWeapon(THREE, skinDir, weaponDir),
 stickerAtlasReady,
 ])
 .then(([[skin, weapon], atlas]) => {
+if (stale()) return;
 if (!skin.pattern && !skin.solid) throw new Error('не загрузился узор');
 applySkinToModel(THREE, object, skin, wearValue, weapon, maskChannel, seed, atlas);
 status.textContent = `${dict.v3_skin_on} · float ${formatFloat(wearValue || 0)}`;
@@ -1900,7 +1909,7 @@ setTimeout(() => { status.textContent = ''; }, 3000);
 })
 .catch(err => {
 console.warn('3D: раскраска не применилась —', err);
-status.textContent = dict.v3_skin_failed;
+if (!stale()) status.textContent = dict.v3_skin_failed;
 });
 }
 
@@ -2045,6 +2054,7 @@ status.textContent = `${dict.v3_triangles}: ${countTriangles(THREE, object).toLo
 setTimeout(() => { status.textContent = ''; }, 2500);
 })
 .catch(err => {
+if (stale()) return;
 // Путь показываем рядом с причиной — чаще всего ошибка именно в нём.
 status.innerHTML = `${escapeHtml(err.message || dict.v3_failed)}<br><span style="opacity:.7;">${escapeHtml(modelUrl)}</span>`
 + (err.detail ? `<br><span class="v3-detail">${escapeHtml(err.detail)}</span>` : '');
@@ -2052,6 +2062,7 @@ status.innerHTML = `${escapeHtml(err.message || dict.v3_failed)}<br><span style=
 }
 
 document.getElementById('viewer3dCloseBtn').addEventListener('click', () => {
+viewer3dLoadId++;
 setViewerFullscreen(false);
 viewer3dOverlay.classList.remove('show');
 dispose3DViewer();
