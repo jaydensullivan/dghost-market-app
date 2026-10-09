@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 71;
+const APP3D_VERSION = 72;
 
 let threeLoading = null;
 
@@ -1084,7 +1084,12 @@ uniforms.uStkQ = { value: stk.Q };
 // оружие, а не по развёртке: развёртка разрезана на куски, и Fade по
 // ней ложился пятнами. Проекция — по двум самым длинным осям модели
 // (длина и высота), нормированным на её габариты.
-const projected = [2, 5].indexOf(skin.params.paint_style) !== -1 && !!skin.pattern;
+// Fade (стиль 5) на ножах — по развёртке: она у клинков разложена так,
+// что градиент целиком ложится на клинок, а проекция по всей длине
+// растягивала его на рукоять и кольцо (на клинке — одна оранжевая часть).
+// По 20 ножам с Fade сходство 62.3 → 67.9.
+const knifeFade = skin.params.paint_style === 5 && isKnifeName(weapon ? weapon.name || '' : '');
+const projected = [2, 5].indexOf(skin.params.paint_style) !== -1 && !!skin.pattern && !knifeFade;
 object.updateMatrixWorld(true);
 const rootInverse = new THREE.Matrix4().copy(object.matrixWorld).invert();
 const box = new THREE.Box3();
