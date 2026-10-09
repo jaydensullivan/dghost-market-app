@@ -89,13 +89,22 @@ def prepare_csfloat(out, index, names):
     if not key:
         sys.exit('Нет OPS_API_KEY (секрет репозитория) — образцы CSFloat не получить.')
     per_skin = int(os.environ.get('PER_SKIN', '10'))
+    # Номер раскраски → папка: у Doppler/Gamma Doppler одно название на все
+    # фазы, а рисунок у каждой фазы свой (как в мини-аппе, modelEntryForSkin).
+    try:
+        paint_map = json.loads(fetch(MODELS_CDN + 'models/paint_index.json'))
+    except Exception:
+        paint_map = {}
     jobs = []
     for name in names:
         seen = set()
+        # Ножи и перчатки на рынке — со звёздочкой: «★ Karambit | Doppler».
+        model = str(index[name].get('model') or '')
+        star = '★ ' if re.search(r'knife|bayonet|glove', model) else ''
         for wear_name, _ in WEARS:
             if len(seen) >= per_skin:
                 break
-            q = urllib.parse.urlencode({'name': f'{clean_name(name)} ({wear_name})', 'limit': 50})
+            q = urllib.parse.urlencode({'name': f'{star}{clean_name(name)} ({wear_name})', 'limit': 50})
             req = urllib.request.Request(f'{api_base}/api/ops/csfloat_refs?{q}', headers=dict(UA, **{'X-Ops-Key': key}))
             try:
                 with urllib.request.urlopen(req, timeout=60) as r:
@@ -126,7 +135,12 @@ def prepare_csfloat(out, index, names):
                     print(f'  ✗ скриншот {name} #{seed}: {e}')
                     continue
                 seen.add(seed)
-                jobs.append({'name': f'{name} · паттерн {seed}', 'slug': slug, 'entry': index[name],
+                entry = index[name]
+                exact = paint_map.get(str(ref.get('paint_index'))) if ref.get('paint_index') is not None else None
+                if exact and exact != entry.get('skin'):
+                    entry = dict(entry, skin=exact)
+                phase = f" · {ref['phase']}" if ref.get('phase') else ''
+                jobs.append({'name': f'{name}{phase} · паттерн {seed}', 'slug': slug, 'entry': entry,
                              'seed': seed, 'wear': ref.get('float_value') or 0.05,
                              'stickers': ref.get('stickers') or []})
                 time.sleep(0.3)
@@ -148,7 +162,13 @@ def prepare(out):
             # Широкая сверка: MAX_SKINS скинов с 3D, по кругу от запуска к
             # запуску (неделя года), по PER_SKIN образцов на скин.
             all_names = sorted(n for n, e in index.items() if isinstance(e, dict) and e.get('skin'))
-            names = spread_sample(all_names, MAX_SKINS)
+            batch = os.environ.get('BATCH', '')
+            if batch:
+                # Полная сверка частями: BATCH=i/n — каждый n-й скин, начиная с i.
+                i, n = (int(v) for v in batch.split('/'))
+                names = all_names[i - 1::n]
+            else:
+                names = spread_sample(all_names, MAX_SKINS)
         jobs = prepare_csfloat(out, index, names)
         # Группа раскраски (формат и стиль) — чтобы видеть, какой тип
         # раскрасок рисуется хуже всего, и чинить целыми группами.

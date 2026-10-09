@@ -256,6 +256,16 @@ jobs:
           cd "$GITHUB_WORKSPACE/assets"
           WEAPONS="${ONLY#probe-stickers:}" STEAM_USER="$STEAM_USERNAME" bash probe-stickers.sh
 
+      # Проба файлов игры (only = probe-files:<путь;re:выражение;…>) —
+      # см. probe-files.sh.
+      - name: Проба файлов
+        if: startsWith(inputs.only, 'probe-files:')
+        env:
+          ONLY: ${{ inputs.only }}
+        run: |
+          cd "$GITHUB_WORKSPACE/assets"
+          FILES="${ONLY#probe-files:}" STEAM_USER="$STEAM_USERNAME" bash probe-files.sh
+
       # Комплект анимаций ножа (only = anim:<нож>, например anim:knife_butterfly):
       # руки и клипы в models/anim/<нож>/ ветки 3d-assets.
       - name: Анимации ножа

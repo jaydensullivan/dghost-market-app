@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 59;
+const APP3D_VERSION = 66;
 
 let threeLoading = null;
 
@@ -617,8 +617,27 @@ return Promise.all(names.map(name => textures[name]
 )).then(loaded => {
 const pack = {};
 names.forEach((name, i) => { pack[name] = loaded[i]; });
+pack.masksRedEmpty = maskChannelEmpty(pack.masks, 0);
 return pack;
 });
+}
+
+// Пустой канал маски (у Shadow Daggers и Zeus сборка взяла чёрную маску):
+// по нему краска не ложилась бы никуда — ствол оставался без скина.
+function maskChannelEmpty(tex, channel){
+const img = tex && tex.image;
+if (!img || !img.width) return false;
+try {
+const c = document.createElement('canvas');
+c.width = c.height = 32;
+const ctx = c.getContext('2d', { willReadFrequently: true });
+ctx.drawImage(img, 0, 0, 32, 32);
+const d = ctx.getImageData(0, 0, 32, 32).data;
+for (let i = channel; i < d.length; i += 4) if (d[i] > 24) return false;
+return true;
+} catch (e) {
+return false;
+}
 }
 
 // Раскраска и текстуры ствола. Под HD-корпус у ствола свои маска зон и
@@ -679,6 +698,11 @@ function weaponPatternScale(skin, weaponName){
 const params = skin.params;
 if (skin.format === 'template' || skin.format === 'vcompmat') return 1;
 if ([1, 2, 4, 5, 7].indexOf(params.paint_style) === -1) return 1;
+// У ножей UVScale из items_game (у большинства — одна заглушка 0.36)
+// растягивал узор втрое: Gamma Doppler на Falchion выходил одним сплошным
+// пятном. Без него — как в игре (сверка со Steam по 60 Doppler/Gamma
+// Doppler/Marble Fade: 69.4 → 71.1; на остальных ножах без изменений).
+if (isKnifeName(weaponName)) return 1;
 return WEAPON_UV_SCALE[weaponName] || 1;
 }
 
@@ -709,7 +733,13 @@ return skin.format === 'vcompmat' && /^gs_(extended_)?template$/.test(String(ski
 function noiseCaseHardening(skin){
 return !!skin.ramp && skin.format === 'vcompmat' && /^(aq|so)_case_hardening_template$/.test(String(skin.params.paint_template || ''));
 }
+// Тонировка цветом — только у патины со своими цветами. У Case Hardened
+// (aq_oiled) цветов нет: цвет — сам узор, иначе ствол выходил чёрным.
 function legacyPatinaBlend(skin){
+return legacyPatinaMetal(skin) && Array.isArray(skin.params.colors) && skin.params.colors.length > 0;
+}
+// Патина и закалка старого формата — обработка металла: только по R маски.
+function legacyPatinaMetal(skin){
 return legacyPatinaStyle(skin) && skin.params.paint_style === 7;
 }
 
@@ -784,7 +814,10 @@ return out;
 // Матовой краской они выходили пастельными; металлом с шероховатостью
 // ствола — тёмными. Полированный металл и более яркие отражения дают
 // насыщенный цвет, как на картинках Steam.
-const ANODIZED = { metalness: 1, roughness: 0.3, envIntensity: 5 };
+// knifeRoughness: клинки ножей в игре светлее, с белёсыми бликами — сверка
+// со Steam по 60 Doppler/Gamma Doppler/Marble Fade: 71.1 → 73.2 (на
+// анодированном огнестреле 0.45 хуже — там остаётся 0.3).
+const ANODIZED = { metalness: 1, roughness: 0.3, knifeRoughness: 0.45, envIntensity: 5 };
 function isAnodized(params){
 return [3, 4, 5].indexOf(params.paint_style) !== -1;
 }
@@ -904,19 +937,24 @@ if (useHd) weapon = weapon && weapon.hd ? weapon.hd : null;
 // 0,1,2 — каналы маски; 3 — красить всё без маски; 4 — показать
 // саму маску цветом (отладка: видно, какой канал за что отвечает).
 const CHANNELS = { r: 0, g: 1, b: 2, none: 3, debug: 4 };
+// Ножи, где и не-анодированная раскраска лежит только на клинке
+// (Crimson Web — паутина на клинке, рукоять родная): сверка 62.8 → 68.2.
+const KNIFE_BLADE_ONLY = new Set(['hy_webs']);
 // По умолчанию — без маски: у стилей вроде custom paint (Redline)
 // краска покрывает ствол целиком, а текстура masks в CS2 хранит не
 // зоны покраски, а свойства поверхности.
-// R в маске ствола — металлические детали. У ножей это клинок
-// (рукоять остаётся родной: Butterfly — чёрная с красной вставкой),
-// а анодирование (Fade, Doppler, Moonrise) в игре ложится только на
-// металл: у Glock Moonrise окрашен затвор, рамка остаётся серой.
-// Так же и патина (стиль 7) — обработка металла.
+// R в маске ствола — металлические детали. Анодирование (Fade, Doppler,
+// Moonrise) в игре ложится только на металл: у Glock Moonrise окрашен
+// затвор, рамка серая; у ножей — клинок (рукоять Butterfly Fade родная).
+// Так же и патина (стиль 7) — обработка металла. Остальные стили и у ножей
+// красят всю модель (Bayonet Ultraviolet — фиолетовая рукоять, Butterfly
+// Boreal Forest — рукоять в камуфляже): сверка со Steam по 60 ножам 66 → 69.
 const weaponName = weapon ? weapon.name || '' : '';
 let maskName = String(maskChannel || 'none').toLowerCase();
 if (maskName === 'none' && SKIN_MASK_OVERRIDES[skin.finish] && weapon && weapon.masks) maskName = SKIN_MASK_OVERRIDES[skin.finish];
-if (maskName === 'none' && weapon && weapon.masks
-&& (isKnifeName(weaponName) || isAnodized(skin.params) || legacyPatinaBlend(skin))) maskName = 'r';
+if (maskName === 'none' && weapon && weapon.masks && !weapon.masksRedEmpty
+&& (isAnodized(skin.params) || legacyPatinaMetal(skin)
+|| (isKnifeName(weaponName) && KNIFE_BLADE_ONLY.has(skin.finish)))) maskName = 'r';
 const channel = CHANNELS[maskName] ?? 3;
 
 // Однотонной раскраске узор не нужен, но сэмплер в шейдере должен
@@ -983,7 +1021,7 @@ uColorRough: { value: colorVec4(THREE, skin.params.color_roughness) },
 uHasColorMetal: { value: Array.isArray(skin.params.color_metalness) ? 1 : 0 },
 uHasColorRough: { value: Array.isArray(skin.params.color_roughness) ? 1 : 0 },
 uHasSkinMetal: { value: skin.metalness ? 1 : 0 },
-uPaintRoughness: { value: ANODIZED.roughness },
+uPaintRoughness: { value: isKnifeName(weaponName) ? ANODIZED.knifeRoughness : ANODIZED.roughness },
 uHasPaintRoughness: { value: isAnodized(skin.params) ? 1 : 0 },
 uUseColors: { value: skin.solid || skinUsesColorMask(skin.params) ? 1 : 0 },
 uColors: { value: skinColors(THREE, skin.params) },
@@ -1718,7 +1756,7 @@ const box = document.getElementById('viewer3dViews');
 if (!box) return;
 box.hidden = true;
 box.innerHTML = '';
-if (!/^(knife_|bayonet)/.test(knifeName)) return;
+if (!/^[a-z0-9_]+$/.test(knifeName || '')) return;
 fetch(modelsUrl('models/anim/' + knifeName + '/index.json'))
 .then(r => r.ok ? r.json() : null)
 .catch(() => null)
@@ -1821,11 +1859,13 @@ const baseDistance = fitObjectToView(THREE, gltf.scene, camera);
 setupViewerScene(THREE, renderer, scene);
 
 // Раскраска лота, если она указана.
+// Наклейки лота: не загрузились — ствол всё равно покажем. Один атлас —
+// и для обычного вида, и для «в руках».
+const stickerAtlasReady = loadStickerAtlas(THREE, stickers).catch(() => null);
 if (skinDir){
 Promise.all([
 loadSkinWithWeapon(THREE, skinDir, weaponDir),
-// Наклейки лота: не загрузились — ствол всё равно покажем.
-loadStickerAtlas(THREE, stickers).catch(() => null),
+stickerAtlasReady,
 ])
 .then(([[skin, weapon], atlas]) => {
 if (!skin.pattern && !skin.solid) throw new Error('не загрузился узор');
@@ -1924,8 +1964,8 @@ try {
 if (!handsCache[clipId]){
 const ih = await loadInHandsScene(THREE, animDir, clipId);
 if (skinDir){
-const [skin, weapon] = await loadSkinWithWeapon(THREE, skinDir, weaponDir);
-applySkinToModel(THREE, ih.knifeGroup, skin, wearValue, weapon, maskChannel, seed);
+const [[skin, weapon], atlas] = await Promise.all([loadSkinWithWeapon(THREE, skinDir, weaponDir), stickerAtlasReady]);
+applySkinToModel(THREE, ih.knifeGroup, skin, wearValue, weapon, maskChannel, seed, atlas);
 }
 handsCache[clipId] = ih;
 }
@@ -2345,7 +2385,7 @@ return { preparedId: data.prepared_id || null, name: String(data.gif_url).split(
 if (kind === 'hands'){
 const handsPreparing = dict.share_hands_preparing || preparing;
 const clip = await render3DHandsVideo(buy3dEntry, Number(skin.float_value) || 0, title, skin.pattern,
-p => say(handsPreparing.replace('{p}', Math.round(p * 100))));
+p => say(handsPreparing.replace('{p}', Math.round(p * 100))), skin.stickers);
 return await upload(clip, 'video');
 }
 
@@ -2430,11 +2470,16 @@ const [arms, knife, clip] = await Promise.all([glb(index.arms), glb(index.knife)
 
 const root = clip.scene;
 root.traverse(node => { if (node.isPoints) node.visible = false; });
-const knifeSkel = root.children.find(c => /knife|bayonet/.test(c.name) && !c.isPoints);
+// Скелет оружия в клипе: у ножей …knife_karambit…, у огнестрела
+// animation/skeletons/weapons/ak47.vnmskel (загрузчик glTF вырезает из
+// имён «/» и «.»: animationskeletonsweaponsak47vnmskel).
+const knifeSkel = root.children.find(c => /skeletons_?weapons|knife|bayonet/.test(c.name) && !/empty_?mesh/.test(c.name) && !c.isPoints);
 const armMeshes = rebindToSkeleton(THREE, arms.scene, root);
 armMeshes.forEach(m => root.add(m));
 const knifeGroup = new THREE.Group();
-rebindToSkeleton(THREE, knife.scene, knifeSkel || root).forEach(m => knifeGroup.add(m));
+// Кобура (у Dual Berettas — eholster) — для вида от третьего лица; в руках
+// она висела огромной фигурой у камеры.
+rebindToSkeleton(THREE, knife.scene, knifeSkel || root).forEach(m => { if (!/holster/i.test(m.name)) knifeGroup.add(m); });
 root.add(knifeGroup);
 
 // Точка хвата ножа (ag1_hand_r) — её нет в клипе, достраиваем под
@@ -2512,7 +2557,9 @@ const handsPackCache = {};
 
 function handsAnimDir(entry){
 const name = ((String(entry && entry.model || '').match(/([a-z0-9_]+)\.glb$/i) || [])[1] || '').toLowerCase();
-return /^(knife_|bayonet)/.test(name) ? 'models/anim/' + name + '/' : null;
+// Комплект «в руках» бывает и у ножей, и у огнестрела (models/anim/<модель>/);
+// нет комплекта — index.json не найдётся, и режим просто не появится.
+return name ? 'models/anim/' + name + '/' : null;
 }
 
 // Есть ли у ножа лота комплект анимаций (промис true/false).
@@ -2562,18 +2609,19 @@ img.src = modelsUrl('models/backgrounds/' + SHARE_HANDS.background);
 });
 }
 
-async function render3DHandsVideo(entry, wear, title, seed, onProgress){
+async function render3DHandsVideo(entry, wear, title, seed, onProgress, stickers){
 await loadGltfLoader();
 await loadModelIndex();
 const dir = handsAnimDir(entry);
 if (!dir) throw new Error('no_hands');
 const { width: W, height: H, supersample: ss } = SHARE_VIDEO;
-const [ih, [skin, weapon], bg] = await Promise.all([
+const [ih, [skin, weapon], bg, stickerAtlas] = await Promise.all([
 loadInHandsScene(THREE, dir, SHARE_HANDS.clip),
 loadSkinWithWeapon(THREE, entry.skin, entry.weapon),
 loadShareBackground(W, H),
+loadStickerAtlas(THREE, stickers).catch(() => null),
 ]);
-applySkinToModel(THREE, ih.knifeGroup, skin, wear, weapon, 'none', seed);
+applySkinToModel(THREE, ih.knifeGroup, skin, wear, weapon, 'none', seed, stickerAtlas);
 
 const glCanvas = document.createElement('canvas');
 glCanvas.width = W * ss;
