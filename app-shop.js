@@ -67,7 +67,7 @@ bad_photo: 'Не удалось прочитать фото — попробуй
 evidence_empty: 'Добавь описание, Trade ID или скриншот.',
 evidence_limit: 'Ты уже отправил максимум доказательств по этому спору. Админ свяжется с тобой в боте.',
 item_no_longer_available: 'Этого предмета уже нет в инвентаре продавца — лот снят с продажи. Извини, оплата не потребуется.',
-balance_purchase_disabled: 'Оплата с баланса покупателем больше не поддерживается — выбери Stars, крипту или П2П.',
+balance_purchase_disabled: 'Оплата с баланса доступна только покупателям. Продавец деньги с продаж выводит — выбери Stars, крипту или П2П.',
 self_dealing: 'Нельзя предложить обмен самому себе или связанному аккаунту.',
 not_your_skin: 'Этот лот тебе не принадлежит.',
 target_mismatch: 'Лот уже сменил владельца — обнови страницу.',
@@ -120,7 +120,7 @@ bad_photo: "Rasmni o'qib bo'lmadi — boshqasini sinab ko'ring.",
 evidence_empty: "Tavsif, Trade ID yoki skrinshot qo'shing.",
 evidence_limit: "Bu nizo bo'yicha maksimal dalil yuborgansiz. Admin bot orqali siz bilan bog'lanadi.",
 item_no_longer_available: "Bu buyum endi sotuvchining inventarida yo'q — lot sotuvdan olindi. Uzr, to'lov talab qilinmaydi.",
-balance_purchase_disabled: "Xaridor uchun balansdan to'lov endi qo'llab-quvvatlanmaydi — Stars, kripto yoki P2P ni tanlang.",
+balance_purchase_disabled: "Balansdan to'lov faqat xaridorlar uchun. Sotuvchi savdodan tushgan pulni yechib oladi — Stars, kripto yoki P2P ni tanlang.",
 self_dealing: "O'zingizga yoki bog'langan akkauntga almashuv taklif qilib bo'lmaydi.",
 not_your_skin: "Bu lot sizga tegishli emas.",
 target_mismatch: "Lot egasi allaqachon o'zgargan — sahifani yangilang.",
@@ -173,7 +173,7 @@ bad_photo: "Couldn't read the photo — try another one.",
 evidence_empty: 'Add a description, a Trade ID or a screenshot.',
 evidence_limit: "You've already sent the maximum amount of evidence for this dispute. An admin will contact you in the bot.",
 item_no_longer_available: "This item is no longer in the seller's inventory — the listing was removed. Sorry, no payment is needed.",
-balance_purchase_disabled: 'Paying from balance is no longer supported for buyers — choose Stars, crypto or P2P.',
+balance_purchase_disabled: 'Paying from balance is for buyers only. Sellers withdraw their sales money — choose Stars, crypto or P2P.',
 self_dealing: "You can't offer a trade to yourself or a linked account.",
 not_your_skin: "This listing doesn't belong to you.",
 target_mismatch: 'The listing has already changed owner — refresh the page.',
@@ -342,6 +342,7 @@ fetch(API_BASE + '/api/me?init_data=' + encodeURIComponent(tg.initData))
 .then(data => {
 if (!data || data.error) return;
 document.getElementById('balanceAmount').textContent = formatCoins(data.available);
+myAvailableBalance = Number(data.available) || 0;
 balancePill.style.display = '';
 isAdmin = !!data.is_admin;
 isOwner = !!data.is_owner;
@@ -477,6 +478,7 @@ updateProfileSteamBlock();
 
 profileName.textContent = data.username || ('ID ' + data.user_id);
 profileBalanceAmount.textContent = formatCoins(data.available);
+myAvailableBalance = Number(data.available) || 0;
 profileHeld.innerHTML = data.held > 0
 ? (LOCK_ICON + ' ' + (I18N[currentLang] || I18N.ru).profile_held_label + ' ' + formatCoins(data.held))
 : '';

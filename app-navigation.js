@@ -20,6 +20,8 @@ let directStarsPurchaseEnabled = false;
 let directCryptoPurchaseEnabled = false;
 let directP2pPurchaseEnabled = false;
 let sellerKycStatus = 'none';
+// Сколько можно потратить с баланса (balance − held) — для кнопки «С баланса».
+let myAvailableBalance = 0;
 let currentUserTrust = null;
 
 const TRUST_BADGE_ICON = { new: '🌱', verified: '✅', trusted: '⭐' };

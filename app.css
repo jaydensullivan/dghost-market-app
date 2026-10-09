@@ -4235,3 +4235,7 @@ text-align:center;
 font-weight:700;
 }
 .admin-chip-badge[hidden]{ display:none; }
+
+/* «С баланса · 40 000 сум (доступно 50 000)» — остаток мельче */
+#buyConfirmBalance{ flex-wrap:wrap; column-gap:6px; row-gap:2px; }
+.pay-balance-left{ flex-basis:100%; text-align:center; font-weight:400; opacity:0.75; font-size:0.85em; }
