@@ -137,7 +137,7 @@ box.innerHTML = mine.length
 
 document.getElementById('lotsDealsBtn').addEventListener('click', () => goToScreen('deals'));
 
-// ---------- корзина в нижней навигации ----------
+// ---------- корзина (значок в шапке) ----------
 
 document.getElementById('navCartBtn').addEventListener('click', () => {
 renderCartOverlay();

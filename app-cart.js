@@ -13,11 +13,12 @@ applyFiltersAndRender();
 updateCartFab();
 }
 
-// Счётчик на вкладке «Корзина» в нижней навигации.
+// Корзина — значок в шапке со счётчиком; пустая корзина не занимает место.
 function updateCartFab(){
 const badge = document.getElementById('navCartBadge');
 badge.textContent = String(cart.length);
 badge.style.display = cart.length ? '' : 'none';
+document.getElementById('navCartBtn').style.display = cart.length ? '' : 'none';
 }
 
 function cartItemRowHtml(skin){

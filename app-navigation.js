@@ -215,8 +215,8 @@ document.getElementById('screenBuyRequests').style.display = name === 'buyReques
 document.getElementById('screenLots').style.display = name === 'lots' ? 'block' : 'none';
 tabShopBtn.classList.toggle('active', name === 'shop');
 tabProfileBtn.classList.toggle('active', name === 'profile');
-document.getElementById('tabAuctionsBtn').classList.toggle('active', name === 'auctions');
-document.getElementById('tabLotsBtn').classList.toggle('active', name === 'lots' || name === 'deals');
+document.getElementById('tabDealsBtn').classList.toggle('active', name === 'deals');
+document.getElementById('tabLotsBtn').classList.toggle('active', name === 'lots');
 // Нижняя навигация видна везде, кроме панели Admin — там своя кнопка «Назад».
 document.getElementById('bottomNav').style.display = name === 'admin' ? 'none' : 'flex';
 if (name === 'lots' && typeof renderMyLots === 'function'){
@@ -230,6 +230,8 @@ if (name === 'shop'){
 loadMe();
 loadSkins();
 } else if (name === 'buyRequests'){
+// Экран «Хочу»: «Слежу» (каталог желаний) и «Ищу» (заявки).
+loadWishlist();
 loadMyBuyRequests();
 loadPublicBuyRequests();
 } else if (name === 'profile'){
@@ -292,8 +294,10 @@ if (action === 'profile' || action === 'balance'){
 switchTab('profile');
 } else if (action === 'history'){
 switchTab('deals');
-} else if (action === 'buyRequests'){
+} else if (action === 'buyRequests' || action === 'wants'){
 switchTab('buyRequests');
+} else if (action === 'auctionsList'){
+goToScreen('auctions');
 } else if (action === 'sell'){
 goToScreen('lots');
 setTimeout(() => addSkinBtn.click(), 150);
@@ -345,7 +349,19 @@ displayScreen(name);
 document.getElementById('tabShopBtn').addEventListener('click', () => goToScreen('shop'));
 document.getElementById('tabProfileBtn').addEventListener('click', () => goToScreen('profile'));
 document.getElementById('tabLotsBtn').addEventListener('click', () => goToScreen('lots'));
-document.getElementById('tabAuctionsBtn').addEventListener('click', () => goToScreen('auctions'));
+document.getElementById('tabDealsBtn').addEventListener('click', () => goToScreen('deals'));
+
+// ---------- «Хочу»: вкладки «Слежу» / «Ищу» ----------
+function setWantsTab(tab){
+document.querySelectorAll('#wantsTabs [data-wants-tab]').forEach(b => b.classList.toggle('active', b.dataset.wantsTab === tab));
+document.getElementById('wantsPaneWatch').style.display = tab === 'watch' ? '' : 'none';
+document.getElementById('wantsPaneSeek').style.display = tab === 'seek' ? '' : 'none';
+}
+document.getElementById('wantsTabs').addEventListener('click', (e) => {
+const btn = e.target.closest('[data-wants-tab]');
+if (btn) setWantsTab(btn.dataset.wantsTab);
+});
+document.getElementById('openWantsBtn').addEventListener('click', () => goToScreen('buyRequests'));
 
 // Аватар Telegram-пользователя в нижней навигации, если доступен
 if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.photo_url){
