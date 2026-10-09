@@ -4239,3 +4239,8 @@ font-weight:700;
 /* «С баланса · 40 000 сум (доступно 50 000)» — остаток мельче */
 #buyConfirmBalance{ flex-wrap:wrap; column-gap:6px; row-gap:2px; }
 .pay-balance-left{ flex-basis:100%; text-align:center; font-weight:400; opacity:0.75; font-size:0.85em; }
+
+/* Страница лота: продавец под названием и строка гарантии над кнопкой */
+.seller-stats-top{ margin:8px 20px 0; font-size:12px; color:var(--muted); }
+.seller-line.verified{ color:var(--silver); }
+.buy-guarantee{ font-size:12px; line-height:1.35; color:var(--muted); text-align:center; margin:0 4px 8px; }

@@ -9,6 +9,9 @@
 
 const I18N = {
 ru: {
+buy_guarantee: "Деньги у гаранта: если продавец не передаст скин за 24 ч — вернём. Продавец получит оплату только после доставки.",
+detail_pattern: "Паттерн",
+seller_line_verified: "✅ Проверенный продавец{rating} · {trades} сделок · {disputes} споров",
 nav_deals: "Сделки",
 nav_sell: "Продать",
 header_menu_wants: "Хочу",
@@ -1195,6 +1198,9 @@ steam_link_linking: 'Привязываю...',
 steam_link_linked_ok: 'Привязано ✓',
 },
 uz: {
+buy_guarantee: "Pul kafilda: sotuvchi skinni 24 soatda bermasa — qaytaramiz. Sotuvchi to'lovni faqat yetkazilgandan keyin oladi.",
+detail_pattern: "Pattern",
+seller_line_verified: "✅ Tekshirilgan sotuvchi{rating} · {trades} bitim · {disputes} nizo",
 nav_deals: "Bitimlar",
 nav_sell: "Sotish",
 header_menu_wants: "Xohlayman",
@@ -2381,6 +2387,9 @@ steam_link_linking: "Bog'lanmoqda...",
 steam_link_linked_ok: "Bog'landi ✓",
 },
 en: {
+buy_guarantee: "Money is held by the escrow: if the seller does not deliver the skin within 24 h, you get it back. The seller is paid only after delivery.",
+detail_pattern: "Pattern",
+seller_line_verified: "✅ Verified seller{rating} · {trades} deals · {disputes} disputes",
 nav_deals: "Deals",
 nav_sell: "Sell",
 header_menu_wants: "Wants",

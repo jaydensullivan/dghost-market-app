@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="stylesheet" href="app.css?v=48">
+<link rel="stylesheet" href="app.css?v=49">
 </head>
 <body data-tab="shop">
 
@@ -1582,6 +1582,8 @@
 <h2 id="buyTitle">—</h2>
 <div class="buy-subtitle" id="buySubtitle"></div>
 </div>
+<!-- Продавец — сразу под названием: проверенный ли, сколько сделок и споров. -->
+<div id="sellerStatsBox" class="seller-stats-top" style="display:none;"></div>
 
 <div class="buy-actions-row">
 <button type="button" id="buyShareBtn" class="buy-action-btn">
@@ -1604,7 +1606,6 @@
 
 <div class="buy-details-table" id="buyDetailsTable"></div>
 <div class="buy-stickers" id="buyStickers" style="display:none;"></div>
-<div id="sellerStatsBox" style="display:none; margin:10px 20px 0; font-size:12px; color:var(--muted);"></div>
 <div class="market-price-box" id="marketPriceBox" style="display:none;"></div>
 <div class="similar-box" id="similarLotsBox" style="display:none;"></div>
 <div id="priceHistoryBox" style="display:none; margin:10px 20px 0; padding:10px; background:rgba(255,255,255,0.03); border-radius:10px;">
@@ -1631,6 +1632,8 @@
 <div class="buy-sticky-bar">
 <div class="edit-status buy-status-line" id="buyStatus"></div>
 <button type="button" id="buyCancel" style="display:none;" data-i18n="btn_cancel">Отмена</button>
+<!-- Гарантия сделки — прямо над кнопкой покупки (совет Советника). -->
+<div class="buy-guarantee" id="buyGuarantee" style="display:none;">🛡 <span data-i18n="buy_guarantee">Деньги у гаранта: если продавец не передаст скин за 24 ч — вернём. Продавец получит оплату только после доставки.</span></div>
 <!-- Одна основная кнопка: способ оплаты выбирается в отдельном окне. -->
 <button type="button" id="buyOpenPayBtn" class="buy-main-btn" style="display:none;"><span data-i18n="btn_buy">Купить</span> · <span id="buyMainPrice">—</span></button>
 <button type="button" id="buyMakeOfferBtn" class="steam-link-btn secondary" data-i18n="btn_make_offer">Предложить цену</button>
@@ -1953,14 +1956,14 @@
 </div>
 
 <script src="app-core.js?v=10"></script>
-<script src="app-i18n.js?v=64"></script>
+<script src="app-i18n.js?v=65"></script>
 <script src="app-navigation.js?v=14"></script>
 <script src="app-shop.js?v=21"></script>
 <script src="app-legal.js?v=2"></script>
 <script src="app-deals.js?v=12"></script>
 <script src="app-catalog.js?v=10"></script>
 <script src="app-cart.js?v=5"></script>
-<script src="app-filters.js?v=24"></script>
+<script src="app-filters.js?v=25"></script>
 <script src="app-steam.js?v=7"></script>
 <script src="app-topup.js?v=4"></script>
 <script src="app-history.js?v=6"></script>

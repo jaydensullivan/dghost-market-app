@@ -1368,8 +1368,9 @@ const statsDict = I18N[currentLang] || I18N.ru;
 const rating = skin.seller_rating_avg
 ? ` · ⭐ ${skin.seller_rating_avg} (${skin.seller_rating_count})` : '';
 // Строка продавца кликабельна — открывает его публичный профиль.
-sellerStatsBox.innerHTML = `<button type="button" class="seller-line" data-seller-profile="${skin.seller_id}">
-<span>${escapeHtml(statsDict.seller_line
+const sellerLine = skin.seller_verified ? statsDict.seller_line_verified : statsDict.seller_line;
+sellerStatsBox.innerHTML = `<button type="button" class="seller-line${skin.seller_verified ? ' verified' : ''}" data-seller-profile="${skin.seller_id}">
+<span>${escapeHtml(sellerLine
 .replace('{rating}', rating)
 .replace('{trades}', skin.seller_completed_trades)
 .replace('{disputes}', skin.seller_disputes ?? 0))}</span>
@@ -1415,11 +1416,12 @@ buyPrice.textContent = formatCoins(skin.price);
 const isOwn = currentUserId && skin.seller_id === currentUserId;
 
 const rows = [
-isOwn ? '' : buyDetailRow(dict.detail_seller, dict.value_anon),
 buyDetailRow(dict.detail_wear, skin.wear ? (wearMap[skin.wear] || skin.wear) : null),
 buyDetailRow(dict.detail_rarity, skin.rarity ? (rarityMap[skin.rarity] || skin.rarity) : null),
 buyDetailRow('StatTrak', skin.stattrak ? dict.value_yes : null),
 buyDetailRow('Float', (skin.float_value !== null && skin.float_value !== undefined) ? formatFloat(skin.float_value) : null),
+// Паттерн (paint seed): у Fade, Doppler, Case Hardened от него сильно зависит цена.
+buyDetailRow(dict.detail_pattern, (skin.pattern !== null && skin.pattern !== undefined && skin.pattern !== '') ? '#' + skin.pattern : null),
 buyDetailRow(dict.detail_price, formatCoins(skin.price), 'price'),
 ].join('');
 
@@ -1443,6 +1445,7 @@ buyRemoveBtn.style.display = (isOwn || isAdmin) ? '' : 'none';
 document.getElementById('buyWatchBtn').style.display = isOwn ? 'none' : '';
 document.getElementById('buyPaymentMethods').style.display = isOwn ? 'none' : 'flex';
 document.getElementById('buyOpenPayBtn').style.display = isOwn ? 'none' : '';
+document.getElementById('buyGuarantee').style.display = isOwn ? 'none' : '';
 document.getElementById('buyMainPrice').textContent = formatCoins(skin.price);
 closePaySheet();
 // С баланса платят только покупатели (не проверенные продавцы) и
