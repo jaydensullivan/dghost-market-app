@@ -9,6 +9,8 @@
 
 const I18N = {
 ru: {
+v3_exact: "✅ Этот предмет: {details}",
+v3_exact_stickers: "наклеек: {n}",
 mp_badge_cheaper: "−{p}% к рынку",
 mp_badge_pricier: "дороже рынка на {p}%",
 mp_badge_times: "дороже рынка в {x} раза",
@@ -1202,6 +1204,8 @@ steam_link_linking: 'Привязываю...',
 steam_link_linked_ok: 'Привязано ✓',
 },
 uz: {
+v3_exact: "✅ Aynan shu buyum: {details}",
+v3_exact_stickers: "stikerlar: {n}",
 mp_badge_cheaper: "bozordan −{p}%",
 mp_badge_pricier: "bozordan {p}% qimmat",
 mp_badge_times: "bozordan {x} baravar qimmat",
@@ -2395,6 +2399,8 @@ steam_link_linking: "Bog'lanmoqda...",
 steam_link_linked_ok: "Bog'landi ✓",
 },
 en: {
+v3_exact: "✅ This exact item: {details}",
+v3_exact_stickers: "stickers: {n}",
 mp_badge_cheaper: "−{p}% vs market",
 mp_badge_pricier: "{p}% above market",
 mp_badge_times: "{x}× the market price",

@@ -1862,6 +1862,20 @@ status.innerHTML = '';
 document.getElementById('viewer3dTitle').textContent = title || dict.v3_title;
 document.getElementById('viewer3dMode').textContent = (mode === 'light' ? dict.v3_mode_light : dict.v3_mode_full) + ' · v' + APP3D_VERSION;
 document.getElementById('viewer3dCloseBtn').setAttribute('aria-label', dict.btn_close || 'Close');
+// Совет Советника №5: покупатель хочет видеть именно этот предмет, а
+// не модель вообще. Износ (float), узор (паттерн) и наклейки 3D берёт
+// у конкретного лота — говорим об этом прямо.
+const exact = document.getElementById('viewer3dExact');
+if (exact){
+const parts = [];
+if (wearValue) parts.push('Float ' + Number(wearValue).toFixed(4));
+const seedNum = parsePaintSeed(seed);
+if (seedNum !== null) parts.push(dict.detail_pattern + ' #' + seedNum);
+const stickerCount = Array.isArray(stickers) ? stickers.filter(Boolean).length : 0;
+if (stickerCount) parts.push(dict.v3_exact_stickers.replace('{n}', stickerCount));
+exact.textContent = parts.length ? dict.v3_exact.replace('{details}', parts.join(' · ')) : '';
+exact.hidden = !parts.length;
+}
 setViewerFullscreen(false);
 showViewerHint();
 status.textContent = dict.v3_loading;
