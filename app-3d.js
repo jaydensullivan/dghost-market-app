@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 69;
+const APP3D_VERSION = 70;
 
 let threeLoading = null;
 
@@ -356,14 +356,10 @@ viewer3d = null;
 
 // Модель приходит произвольного размера и центра — приводим её к
 // единому масштабу, чтобы камера всегда стояла одинаково.
-function fitObjectToView(THREE, object, camera){
-// Считаем габариты ТОЛЬКО по мешам: в экспорте CS2 есть пустые
-// узлы и вспомогательные точки далеко от ствола, из-за них общий
-// бокс раздувается и модель получается крошечной в кадре.
+function meshBox(THREE, object){
 const box = new THREE.Box3();
 let hasMesh = false;
 object.updateMatrixWorld(true);
-
 object.traverse(node => {
 if (node.isMesh && node.geometry){
 node.geometry.computeBoundingBox();
@@ -371,8 +367,27 @@ box.expandByObject(node);
 hasMesh = true;
 }
 });
-
 if (!hasMesh) box.setFromObject(object);
+return box;
+}
+
+// Ножи в файлах CS2 стоят «на попа» — длинная сторона по Y, а стволы
+// лежат вдоль Z. Кладём нож так же, как ствол: при осмотре боком он
+// горизонтальный, рукоять слева, как в игре и на CSFloat.
+// (У стволов вертикаль никогда не самая длинная сторона.)
+function layModelFlat(THREE, object){
+const size = meshBox(THREE, object).getSize(new THREE.Vector3());
+if (size.y <= Math.max(size.x, size.z)) return;
+object.rotation.x += Math.PI / 2;
+object.updateMatrixWorld(true);
+}
+
+function fitObjectToView(THREE, object, camera){
+layModelFlat(THREE, object);
+// Считаем габариты ТОЛЬКО по мешам: в экспорте CS2 есть пустые
+// узлы и вспомогательные точки далеко от ствола, из-за них общий
+// бокс раздувается и модель получается крошечной в кадре.
+const box = meshBox(THREE, object);
 
 const size = box.getSize(new THREE.Vector3());
 const center = box.getCenter(new THREE.Vector3());
@@ -715,6 +730,11 @@ return skin.format === 'template' && [1, 2].indexOf(skin.params.paint_style) !==
 }
 
 const PATINA_PATTERN_GAMMA = 1.8;
+// Усиление тонировки патины (стиль 7). Клинки ножей светлее стволов, и с
+// общим 3.4 Blue Steel и Stained выходили серебристыми вместо воронёных:
+// по 96 ножам с патиной сходство 65.4 → 69.0 при 1.2 (Steam-картинки).
+const PATINA_K = 3.4;
+const PATINA_KNIFE_K = 1.2;
 function legacyPatinaStyle(skin){
 return (!skin.format || skin.format === 'legacy') && [7, 8].indexOf(skin.params.paint_style) !== -1;
 }
@@ -1034,6 +1054,7 @@ uColorBrightness: { value: skin.params.color_brightness || 1 },
 // Night Terror и Nebula Crusader — оранжевые, Magma — тёмная.
 uPatternGamma: { value: legacyPatinaStyle(skin) && !legacyPatinaBlend(skin) ? PATINA_PATTERN_GAMMA : (gunsmithTemplate(skin) ? GUNSMITH_TEMPLATE_GAMMA : 1) },
 uPatinaBlend: { value: legacyPatinaBlend(skin) ? 1 : 0 },
+uPatinaK: { value: isKnifeName(weapon ? weapon.name || '' : '') ? PATINA_KNIFE_K : PATINA_K },
 uMaskChannel: { value: channel },
 // Иризация (шаблоны soe/aq: Leafhopper, Marsh, Pink Pearl): оттенок
 // краски плывёт по радуге с углом взгляда. x — сила, y — масштаб,
@@ -1257,6 +1278,7 @@ uniform int uHasPearl;
 uniform float uIridPhase;
 uniform float uIridGain;
 uniform int uPatinaBlend;
+uniform float uPatinaK;
 uniform int uMaskChannel;
 uniform int uHasWeapon;
 uniform int uProjected;
@@ -1334,7 +1356,7 @@ colorWeight = mix(colorWeight, vec4(0.0, 0.0, 0.0, 1.0), zone.b);
 }
 #endif
 }
-if (uPatinaBlend == 1) pattern = pattern * uColors[0] * vec3(dot(base, vec3(0.299, 0.587, 0.114))) * 3.4;
+if (uPatinaBlend == 1) pattern = pattern * uColors[0] * vec3(dot(base, vec3(0.299, 0.587, 0.114))) * uPatinaK;
 else if (uPatternGamma != 1.0) pattern = pow(pattern, vec3(uPatternGamma));
 pattern *= uColorBrightness;
 
