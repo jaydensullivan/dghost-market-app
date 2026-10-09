@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 72;
+const APP3D_VERSION = 73;
 
 let threeLoading = null;
 
@@ -1084,6 +1084,13 @@ uniforms.uStkQ = { value: stk.Q };
 // оружие, а не по развёртке: развёртка разрезана на куски, и Fade по
 // ней ложился пятнами. Проекция — по двум самым длинным осям модели
 // (длина и высота), нормированным на её габариты.
+// У части ножей развёртка клинка идёт от острия к рукояти — у них маску
+// Fade зеркалим, чтобы, как в игре, у основания клинка был оранжевый, а
+// к острию — розовый и фиолетовый (сверено по CSFloat и Steam, 20 ножей).
+const KNIFE_FADE_MIRROR = new Set([
+'knife_css', 'knife_flip', 'knife_tactical', 'knife_kukri', 'knife_m9_bayonet',
+'knife_outdoor', 'knife_skeleton', 'knife_canis', 'knife_widowmaker', 'knife_ursus',
+]);
 // Fade (стиль 5) на ножах — по развёртке: она у клинков разложена так,
 // что градиент целиком ложится на клинок, а проекция по всей длине
 // растягивала его на рукоять и кольцо (на клинке — одна оранжевая часть).
@@ -1143,6 +1150,7 @@ node.geometry.setAttribute('uv2', node.geometry.attributes.uv);
 const toRoot = new THREE.Matrix4().multiplyMatrices(rootInverse, node.matrixWorld);
 const meshUniforms = {
 uProjected: { value: projected ? 1 : 0 },
+uFadeMirror: { value: knifeFade && KNIFE_FADE_MIRROR.has(weapon.name) ? 1 : 0 },
 uToRoot: { value: toRoot },
 uProjU: { value: projU },
 uProjV: { value: projV },
@@ -1287,6 +1295,7 @@ uniform float uPatinaK;
 uniform int uMaskChannel;
 uniform int uHasWeapon;
 uniform int uProjected;
+uniform int uFadeMirror;
 varying vec2 vSkinUv;
 varying vec2 vProjUv;`)
 .replace('#include <color_fragment>', `#include <color_fragment>
@@ -1321,7 +1330,9 @@ float rc = cos(uPatternRotation), rs = sin(uPatternRotation);
 vec2 puv = uProjected == 1 ? vProjUv : vSkinUv - 0.5;
 puv = vec2(rc * puv.x - rs * puv.y, rs * puv.x + rc * puv.y);
 vec2 patternUv = uProjected == 1 ? puv * uPatternScale + 0.5 : (puv + 0.5) * uPatternScale;
-vec4 patternTex = texture2D(uPattern, patternUv + uPatternOffset);
+vec2 texUv = patternUv + uPatternOffset;
+if (uFadeMirror == 1) texUv.x = 1.0 - texUv.x;
+vec4 patternTex = texture2D(uPattern, texUv);
 vec3 pattern = patternTex.rgb;
 // Закалка: альфа узора выбирает цвет палитры, альбедо его оттеняет.
 #ifdef DG_RAMP
