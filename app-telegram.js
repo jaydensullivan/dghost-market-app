@@ -157,3 +157,23 @@ subtree: true, attributes: true, attributeFilter: ['class', 'style'],
 });
 queueBackSync();
 }
+
+// ---------------- Запуск сразу на нужном экране ----------------
+// Кнопки бота «Мои сделки» / «Продать скин» открывают мини-апп с
+// ?open=deals|sell (web_app-кнопка), а ссылки t.me/<бот>/<app> — с
+// startapp=deals|sell. Чуть ждём, пока остальные модули отрисуют
+// стартовый экран, и переключаемся.
+(function openScreenFromLaunch(){
+let target = null;
+try { target = new URLSearchParams(location.search).get('open'); } catch(e) {}
+if (!target && tg && tg.initDataUnsafe && typeof tg.initDataUnsafe.start_param === 'string') target = tg.initDataUnsafe.start_param;
+if (target !== 'deals' && target !== 'sell') return;
+setTimeout(() => {
+if (target === 'deals'){
+switchTab('deals');
+} else {
+goToScreen('lots');
+setTimeout(() => { const btn = document.getElementById('addSkinBtn'); if (btn) btn.click(); }, 150);
+}
+}, 400);
+})();
