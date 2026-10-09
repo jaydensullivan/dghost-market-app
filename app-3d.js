@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 67;
+const APP3D_VERSION = 68;
 
 let threeLoading = null;
 
@@ -2100,11 +2100,11 @@ open3DViewer(url, null, skinDir || null, wear, weaponDir || null, maskChannel);
 // только у тех лотов, для которых всё это лежит в репозитории.
 let modelIndexLoading = null;
 
-// 3D-файлы раздаются с Cloudflare Pages (ветка 3d-assets, workflow
-// deploy-3d.yml): там нет лимита GitHub Pages в 1 ГБ. В main папки
-// models/ больше нет; запасной путь «с этого же сайта» оставлен для
+// 3D-файлы раздаёт Worker из закрытого бакета R2 (3d.dghostmarket.com,
+// отдаёт только нашим страницам); пока идёт переезд, запасной — старый
+// Cloudflare Pages. Последний запасной путь «с этого же сайта» — для
 // локальной проверки (положить models/ рядом с index.html).
-const MODELS_CDN = 'https://dghost-3d.pages.dev/';
+const MODELS_CDNS = ['https://3d.dghostmarket.com/', 'https://dghost-3d.pages.dev/'];
 let modelsBase = '';
 
 // «models/…» → полный адрес на выбранном хранилище; остальное как есть.
@@ -2124,7 +2124,7 @@ return r.json();
 
 function loadModelIndex(){
 if (!modelIndexLoading){
-modelIndexLoading = (MODELS_CDN ? fetchModelIndex(MODELS_CDN).catch(() => fetchModelIndex('')) : fetchModelIndex(''))
+modelIndexLoading = MODELS_CDNS.concat('').reduce((tried, base) => tried.catch(() => fetchModelIndex(base)), Promise.reject())
 .catch(() => ({}))
 .then(index => {
 // Ключи без учёта регистра — названия в базе и в игре иногда
