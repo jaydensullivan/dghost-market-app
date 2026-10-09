@@ -2660,10 +2660,19 @@ font-family:'Inter', sans-serif; font-size:12px; color:var(--muted);
 .d3-row b{ font-family:'JetBrains Mono', monospace; color:var(--silver); font-weight:600; text-align:right; word-break:break-word; }
 
 /* ---------- просмотрщик 3D ---------- */
-.viewer3d-sheet{ padding-top:14px; }
-.viewer3d-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
-.viewer3d-title{ font-family:'Inter', sans-serif; font-size:15px; font-weight:700; color:var(--silver); }
-.viewer3d-mode{ font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--muted); }
+.viewer3d-sheet{ padding:14px 16px 18px; display:flex; flex-direction:column; }
+.viewer3d-head{ display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.viewer3d-titles{ flex:1; min-width:0; }
+.viewer3d-title{ font-family:'Inter', sans-serif; font-size:15px; font-weight:700; color:var(--silver);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.viewer3d-mode{ font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--muted); margin-top:2px; }
+.viewer3d-icon{ flex:0 0 auto; width:36px; height:36px; padding:0; border-radius:10px; border:1px solid var(--red-dim);
+  background:var(--surface); color:var(--silver); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+.viewer3d-icon svg{ width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.viewer3d-icon:active{ background:rgba(123,44,255,0.25); }
+.viewer3d-icon .v3-ico-exit{ display:none; }
+.viewer3d-sheet.full .viewer3d-icon .v3-ico-enter{ display:none; }
+.viewer3d-sheet.full .viewer3d-icon .v3-ico-exit{ display:block; }
 .viewer3d-stage{
 position:relative;
 width:100%;
@@ -2678,13 +2687,36 @@ touch-action:none;
 /* Фон 3D: студия или фоны как в CS2 (картинки карт — с CDN 3D). */
 .viewer3d-stage[data-bg="inspect"]{ background:radial-gradient(ellipse at 50% 40%, #5a5f66 0%, #2b2e33 55%, #16181b 100%); }
 .viewer3d-stage[data-bg-image]{ background-size:cover; background-position:center; }
-.viewer3d-bgs{ display:flex; gap:6px; overflow-x:auto; margin-top:8px; padding-bottom:2px; scrollbar-width:none; }
+/* Фоны — один ряд под сценой; край затухает, чтобы было видно, что
+   ряд прокручивается, а не обрезан. */
+.viewer3d-bgs{ display:flex; gap:6px; overflow-x:auto; margin-top:10px; padding:0 18px 2px 0; scrollbar-width:none;
+  -webkit-mask-image:linear-gradient(90deg, #000 calc(100% - 28px), transparent);
+  mask-image:linear-gradient(90deg, #000 calc(100% - 28px), transparent); }
 .viewer3d-bgs::-webkit-scrollbar{ display:none; }
-.viewer3d-bg{ flex:0 0 auto; height:30px; padding:0 12px; border-radius:15px; border:1px solid var(--red-dim);
-  background:var(--surface); color:var(--silver); font-family:'Inter', sans-serif; font-size:12px; white-space:nowrap; cursor:pointer; }
+.viewer3d-bg{ flex:0 0 auto; height:32px; padding:0 14px; border-radius:16px; border:1px solid var(--red-dim);
+  background:var(--surface); color:var(--silver); font-family:'Inter', sans-serif; font-size:13px; white-space:nowrap; cursor:pointer; }
 .viewer3d-bg[aria-checked="true"]{ border-color:var(--red); color:#fff; background:rgba(123,44,255,0.25); }
+/* Вид («3D» / «В руках N») — сегменты поверх сцены сверху. */
+.viewer3d-views{ position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:3; display:flex; gap:2px;
+  padding:3px; border-radius:18px; background:rgba(8,7,13,0.55); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+  max-width:calc(100% - 20px); overflow-x:auto; scrollbar-width:none; }
+.viewer3d-views[hidden]{ display:none; }
+.viewer3d-views::-webkit-scrollbar{ display:none; }
+.viewer3d-views .viewer3d-bg{ height:28px; padding:0 12px; border:none; border-radius:14px; background:transparent; font-size:12px; }
+.viewer3d-views .viewer3d-bg[aria-checked="true"]{ background:rgba(123,44,255,0.55); }
+.viewer3d-hint{ position:absolute; left:10px; right:10px; bottom:12px; z-index:3; text-align:center; pointer-events:none;
+  font-family:'Inter', sans-serif; font-size:12px; color:rgba(255,255,255,0.75); text-shadow:0 1px 3px rgba(0,0,0,0.6);
+  transition:opacity .6s; }
+.viewer3d-hint.gone{ opacity:0; }
+/* Во весь экран: лист на всё окно, сцена забирает всё свободное место.
+   Отступы — под вырез экрана и кнопки Telegram в полноэкранном режиме. */
+.edit-overlay.v3-full{ align-items:stretch; z-index:1000 !important; }
+.viewer3d-sheet.full{ max-width:none; max-height:none; height:100%; height:100dvh; border-radius:0; border:none; overflow:hidden;
+  padding:calc(10px + var(--tg-safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px)) 12px
+          calc(12px + var(--tg-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px))); }
+.viewer3d-sheet.full .viewer3d-stage{ flex:1 1 auto; height:auto; min-height:0; }
 .viewer3d-status{
-position:absolute; left:0; right:0; bottom:10px; text-align:center;
+position:absolute; left:0; right:0; bottom:34px; z-index:2; text-align:center;
 font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted);
 pointer-events:none;
 }

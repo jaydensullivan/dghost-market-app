@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 66;
+const APP3D_VERSION = 67;
 
 let threeLoading = null;
 
@@ -1789,6 +1789,9 @@ const status = document.getElementById('viewer3dStatus');
 status.innerHTML = '';
 document.getElementById('viewer3dTitle').textContent = title || dict.v3_title;
 document.getElementById('viewer3dMode').textContent = (mode === 'light' ? dict.v3_mode_light : dict.v3_mode_full) + ' · v' + APP3D_VERSION;
+document.getElementById('viewer3dCloseBtn').setAttribute('aria-label', dict.btn_close || 'Close');
+setViewerFullscreen(false);
+showViewerHint();
 status.textContent = dict.v3_loading;
 let magicWarning = null;
 let texturesDropped = false;
@@ -1927,8 +1930,26 @@ canvas.addEventListener('mousedown', onStart);
 canvas.addEventListener('mousemove', onMove);
 canvas.addEventListener('mouseup', onEnd);
 
+// Размер сцены меняется (во весь экран, поворот телефона) — подгоняем
+// буфер холста и камеры, иначе картинка растянется.
+// Сцена стала уже исходной (во весь экран на телефоне) — отдаляем
+// камеру через zoom, чтобы ствол по ширине влезал так же, как раньше.
+const size = { w: canvas.clientWidth, h: canvas.clientHeight };
+const baseAspect = size.w / size.h;
+const syncSize = () => {
+const w = canvas.clientWidth, h = canvas.clientHeight;
+if (!w || !h || (w === size.w && h === size.h)) return;
+size.w = w; size.h = h;
+renderer.setSize(w, h, false);
+camera.aspect = w / h;
+camera.zoom = Math.min(1, camera.aspect / baseAspect);
+camera.updateProjectionMatrix();
+if (hands) fitHandsCamera(hands.camera);
+};
+
 const clock = { last: performance.now() };
 const animate = () => {
+syncSize();
 const now = performance.now();
 const dt = Math.min(0.1, (now - clock.last) / 1000);
 clock.last = now;
@@ -1950,6 +1971,15 @@ animate();
 
 // Ножи с комплектом анимаций (models/anim/<нож>/) — кнопки «В руках».
 const handsCache = {};
+// viewmodel_fov в CS2 — по горизонтали кадра 4:3; на узком экране
+// телефона расширяем вертикальный угол, чтобы руки и нож влезли.
+function fitHandsCamera(handsCamera){
+const aspect = canvas.clientWidth / canvas.clientHeight;
+const hfov = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(IN_HANDS_FOV) / 2) * 4 / 3);
+handsCamera.aspect = aspect;
+handsCamera.fov = Math.max(IN_HANDS_FOV, THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(hfov / 2) / aspect)));
+handsCamera.updateProjectionMatrix();
+}
 const setView = async (clipId) => {
 if (!clipId){
 if (hands){ scene.remove(hands.ih.root); hands = null; }
@@ -1974,12 +2004,7 @@ if (hands) scene.remove(hands.ih.root);
 const ih = handsCache[clipId];
 const handsCamera = new THREE.PerspectiveCamera(IN_HANDS_FOV, canvas.clientWidth / canvas.clientHeight, 0.01, 10);
 placeInHandsCamera(THREE, ih, handsCamera);
-// viewmodel_fov в CS2 — по горизонтали кадра 4:3; на узком экране
-// телефона расширяем вертикальный угол, чтобы руки и нож влезли.
-const aspect = canvas.clientWidth / canvas.clientHeight;
-const hfov = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(IN_HANDS_FOV) / 2) * 4 / 3);
-handsCamera.fov = Math.max(IN_HANDS_FOV, THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(hfov / 2) / aspect)));
-handsCamera.updateProjectionMatrix();
+fitHandsCamera(handsCamera);
 scene.add(ih.root);
 object.visible = false;
 hands = { ih, camera: handsCamera, t: 0 };
@@ -2005,8 +2030,53 @@ status.innerHTML = `${escapeHtml(err.message || dict.v3_failed)}<br><span style=
 }
 
 document.getElementById('viewer3dCloseBtn').addEventListener('click', () => {
+setViewerFullscreen(false);
 viewer3dOverlay.classList.remove('show');
 dispose3DViewer();
+});
+
+// Во весь экран: лист растягивается на всё окно (работает везде), а в
+// Telegram 8.0+ ещё и прячется шапка Telegram. Выходим из полноэкранного
+// режима Telegram, только если сами в него вошли.
+let viewerTgFullscreen = false;
+function setViewerFullscreen(on){
+const sheet = document.getElementById('viewer3dSheet');
+if (!sheet) return;
+const dict = I18N[currentLang] || I18N.ru;
+sheet.classList.toggle('full', on);
+viewer3dOverlay.classList.toggle('v3-full', on);
+const btn = document.getElementById('viewer3dFullBtn');
+if (btn) btn.setAttribute('aria-label', on ? (dict.v3_fullscreen_exit || 'Exit full screen') : (dict.v3_fullscreen || 'Full screen'));
+const tg = window.Telegram && window.Telegram.WebApp;
+try {
+if (on && tg && tg.requestFullscreen && tg.isVersionAtLeast && tg.isVersionAtLeast('8.0') && !tg.isFullscreen){
+tg.requestFullscreen();
+viewerTgFullscreen = true;
+} else if (!on && viewerTgFullscreen && tg && tg.exitFullscreen){
+tg.exitFullscreen();
+viewerTgFullscreen = false;
+}
+} catch (e) { viewerTgFullscreen = false; }
+}
+
+document.getElementById('viewer3dFullBtn').addEventListener('click', () => {
+setViewerFullscreen(!document.getElementById('viewer3dSheet').classList.contains('full'));
+});
+
+// Подсказка поверх сцены: исчезает через 4 с или с первым касанием.
+let viewerHintTimer = 0;
+function showViewerHint(){
+const hint = document.getElementById('viewer3dHint');
+if (!hint) return;
+hint.classList.remove('gone');
+clearTimeout(viewerHintTimer);
+viewerHintTimer = setTimeout(() => hint.classList.add('gone'), 4000);
+}
+['pointerdown', 'touchstart'].forEach(type => {
+document.getElementById('viewer3dCanvas').addEventListener(type, () => {
+const hint = document.getElementById('viewer3dHint');
+if (hint) hint.classList.add('gone');
+}, { passive: true });
 });
 
 const d3ViewBtn = document.getElementById('d3ViewBtn');
