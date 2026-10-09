@@ -1445,12 +1445,18 @@ document.getElementById('buyPaymentMethods').style.display = isOwn ? 'none' : 'f
 document.getElementById('buyOpenPayBtn').style.display = isOwn ? 'none' : '';
 document.getElementById('buyMainPrice').textContent = formatCoins(skin.price);
 closePaySheet();
-buyConfirmBalance.style.display = 'none'; // Оплата с баланса покупателем убрана полностью
+// С баланса платят только покупатели (не проверенные продавцы) и
+// только если хватает: пополнить баланс они не могут, там лежат их
+// возвраты и бонусы. Продавец деньги с продаж выводит.
+const canPayFromBalance = !isOwn && sellerKycStatus !== 'verified' && myAvailableBalance >= skin.price;
+buyConfirmBalance.style.display = canPayFromBalance ? '' : 'none';
+buyPrice.textContent = formatCoins(skin.price);
+document.getElementById('buyBalanceAvailable').textContent = formatCoins(myAvailableBalance);
 buyConfirmStars.style.display = (!isOwn && directStarsPurchaseEnabled) ? '' : 'none';
 buyConfirmCrypto.style.display = (!isOwn && directCryptoPurchaseEnabled) ? '' : 'none';
 buyConfirmP2P.style.display = (!isOwn && directP2pPurchaseEnabled) ? '' : 'none';
 document.getElementById('buyNoPaymentHint').style.display =
-(!isOwn && !directStarsPurchaseEnabled && !directCryptoPurchaseEnabled && !directP2pPurchaseEnabled) ? '' : 'none';
+(!isOwn && !canPayFromBalance && !directStarsPurchaseEnabled && !directCryptoPurchaseEnabled && !directP2pPurchaseEnabled) ? '' : 'none';
 buyEditPriceBtn.style.display = isOwn ? '' : 'none';
 document.getElementById('buyDiscountBtn').style.display = isOwn ? '' : 'none';
 buySavePriceBtn.style.display = 'none';
