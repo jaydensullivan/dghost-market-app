@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="stylesheet" href="app.css?v=46">
+<link rel="stylesheet" href="app.css?v=47">
 </head>
 <body data-tab="shop">
 
@@ -573,24 +573,25 @@
 
 <div class="category-chips" id="adminChips">
 <button type="button" class="category-chip active" data-admin-group="overview" data-i18n="admin_chip_overview">Обзор</button>
-<button type="button" class="category-chip" data-admin-group="auction" data-i18n="admin_chip_auction">Аукцион</button>
-<button type="button" class="category-chip" data-admin-group="giveaway" data-i18n="admin_chip_giveaway">Раздача</button>
-<button type="button" class="category-chip" data-admin-group="sets" data-i18n="admin_chip_sets">Сеты</button>
-<button type="button" class="category-chip" data-admin-group="deals" data-i18n="admin_chip_deals">Сделки</button>
-<button type="button" class="category-chip" data-admin-group="requests" data-i18n="admin_chip_requests">Заявки</button>
+<button type="button" class="category-chip" data-admin-group="requests"><span data-i18n="admin_chip_requests">Заявки</span><span class="admin-chip-badge" data-badge="requests" hidden></span></button>
+<button type="button" class="category-chip" data-admin-group="deals"><span data-i18n="admin_chip_deals">Сделки</span><span class="admin-chip-badge" data-badge="deals" hidden></span></button>
+<button type="button" class="category-chip" data-admin-group="showcase" data-i18n="admin_chip_showcase">Витрина</button>
+<button type="button" class="category-chip" data-admin-group="clients"><span data-i18n="admin_chip_clients">Клиенты</span><span class="admin-chip-badge" data-badge="clients" hidden></span></button>
 <button type="button" class="category-chip" data-admin-group="finance" data-i18n="admin_chip_finance">Финансы</button>
-<button type="button" class="category-chip" data-admin-group="people" data-i18n="admin_chip_people">Люди</button>
 <button type="button" class="category-chip" data-admin-group="settings" data-i18n="admin_chip_settings">Настройки</button>
+<button type="button" class="category-chip" data-admin-group="people" data-i18n="admin_chip_people">Люди</button>
 </div>
 
-<div class="profile-section admin-group" data-group="overview" id="adminStatusSection">
+<!-- ===== overview ===== -->
+
+<div class="profile-section admin-group" data-group="overview" id="adminStatusSection" data-view="overview">
 <div class="profile-section-title" data-i18n="admin_section_status">Сводка</div>
 <div id="adminStatusGrid" class="admin-status-grid">
 <div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div>
 </div>
 </div>
 
-<div class="profile-section admin-group" data-group="overview" id="adminStatsSection" style="margin-top:10px;">
+<div class="profile-section admin-group" data-group="overview" id="adminStatsSection" style="margin-top:10px;" data-view="overview">
 <div style="display:flex; justify-content:space-between; align-items:center;">
 <div class="profile-section-title" data-i18n="admin_section_stats">Статистика</div>
 <span class="admin-live-dot" title="live"></span>
@@ -600,39 +601,112 @@
 </div>
 </div>
 
-<div class="profile-section admin-group" data-group="overview" id="admin3dSection" style="margin-top:10px;">
-<div class="profile-section-title" data-i18n="d3_section">3D-рендер (тест)</div>
-<div class="shop-hint" data-i18n="d3_hint" style="margin-bottom:10px;"></div>
-<div id="d3CanvasWrap" class="d3-canvas-wrap"><canvas id="d3Canvas"></canvas></div>
-<div id="d3Table" class="d3-table"></div>
-<button type="button" id="d3RunBtn" class="steam-link-btn" style="margin-top:10px;" data-i18n="d3_run">Запустить тест</button>
-<div class="edit-field" style="margin-top:12px;">
-<label for="d3ModelUrl" data-i18n="v3_url_label">Путь к модели (.glb)</label>
-<input id="d3ModelUrl" type="text" value="models/ak47.glb" autocomplete="off">
-</div>
-<div class="edit-field" style="margin-top:8px;">
-<label for="d3SkinDir" data-i18n="v3_skin_dir">Папка раскраски (models/skins/…)</label>
-<input id="d3SkinDir" type="text" value="models/skins/cu_ak47_cobra" autocomplete="off">
-</div>
-<div class="edit-field" style="margin-top:8px;">
-<label for="d3WeaponDir" data-i18n="v3_weapon_dir">Папка ствола (models/weapons/…)</label>
-<input id="d3WeaponDir" type="text" value="models/weapons/ak47" autocomplete="off">
-</div>
-<div class="edit-field" style="margin-top:8px;">
-<label for="d3MaskChannel" data-i18n="v3_mask_channel">Канал маски покраски</label>
-<select id="d3MaskChannel" class="wl-select">
-<option value="none" selected>Без маски (красить всё)</option><option value="r">R</option><option value="g">G</option><option value="b">B</option><option value="debug">Показать маску</option>
-</select>
-</div>
-<div class="edit-field" style="margin-top:8px;">
-<label for="d3Float" data-i18n="v3_float">Float (0 — новый, 1 — убитый)</label>
-<input id="d3Float" type="number" min="0" max="1" step="0.01" value="0.15">
-</div>
-<button type="button" id="d3ViewBtn" class="steam-link-btn" style="margin-top:8px;" data-i18n="v3_open">Открыть просмотрщик</button>
-<div class="edit-status" id="d3Status"></div>
+<!-- ===== requests ===== -->
+
+<div class="profile-section admin-group" id="adminKycSection" data-group="requests" style="margin-top:10px; display:none;" data-view="requests">
+<div class="profile-section-title" data-i18n="admin_section_kyc">Заявки продавцов</div>
+<div class="shop-hint" style="margin-bottom:8px;" data-i18n="admin_kyc_hint">Сверь ФИО с документом и лицо на селфи с фото в документе. Фото открываются только здесь и в Telegram не пересылаются.</div>
+<div id="adminKycList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+<div id="adminKycRecent"></div>
 </div>
 
-<div class="profile-section admin-group" data-group="giveaway" id="adminGiveawaySection" style="display:none;">
+<div class="profile-section admin-group" id="adminTopupsSection" data-group="requests" style="margin-top:10px; display:none;" data-view="requests">
+<div class="profile-section-title" data-i18n="admin_section_topups">Заявки на пополнение</div>
+<div id="adminTopupsList"><div class="skins-empty" style="padding:16px 4px;" data-i18n="loading">Загрузка...</div></div>
+</div>
+
+<div class="profile-section admin-group" id="adminP2pSection" data-group="requests" style="margin-top:10px; display:none;" data-view="requests">
+<div class="profile-section-title" data-i18n="admin_section_p2p">Оплаты картой за лоты</div>
+<div id="adminP2pList"><div class="skins-empty" style="padding:16px 4px;" data-i18n="loading">Загрузка...</div></div>
+</div>
+
+<div class="profile-section admin-group" id="adminCryptoSection" data-group="requests" style="margin-top:10px; display:none;" data-view="requests">
+<div class="profile-section-title" data-i18n="admin_section_crypto">Крипта на ручной проверке</div>
+<div class="shop-hint" style="margin-bottom:8px;" data-i18n="admin_crypto_hint">Недоплата, переплата или блок AML у провайдера. Сверь поступление в кабинете 2328.io и реши здесь.</div>
+<div id="adminCryptoList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+</div>
+
+<div class="profile-section admin-group" id="adminWithdrawalsSection" data-group="requests" style="margin-top:10px; display:none;" data-view="requests">
+<div class="profile-section-title" data-i18n="admin_section_withdrawals">Заявки на вывод</div>
+<div id="adminWithdrawalsList"><div class="skins-empty" style="padding:16px 4px;" data-i18n="loading">Загрузка...</div></div>
+</div>
+
+<!-- ===== deals ===== -->
+
+<div class="profile-section admin-group" id="adminDisputesSection" data-group="deals" style="margin-top:10px; display:none;" data-view="deals">
+<div class="profile-section-title" data-i18n="admin_section_disputes">Споры</div>
+<div id="adminDisputesList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+</div>
+
+<div class="profile-section admin-group" id="adminDealsSection" data-group="deals" style="margin-top:10px; display:none;" data-view="deals">
+<div class="profile-section-title" data-i18n="admin_section_deals">Активные сделки</div>
+<div style="display:flex; gap:8px; margin-bottom:10px;">
+<button type="button" class="category-chip active" id="adminDealsGroupFlat" data-i18n="admin_deals_flat">Списком</button>
+<button type="button" class="category-chip" id="adminDealsGroupByUser" data-i18n="admin_deals_by_user">По клиентам</button>
+</div>
+<div id="adminDealsList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+</div>
+
+<div class="profile-section admin-group" id="adminHoldsSection" data-group="deals" style="margin-top:10px; display:none;" data-view="deals">
+<div class="profile-section-title" data-i18n="admin_section_holds">Активные холды</div>
+<div id="adminHoldsList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+</div>
+
+<!-- ===== showcase ===== -->
+
+<div class="profile-section admin-group" id="adminAuctionSection" data-group="auction" data-view="showcase">
+<div class="profile-section-title" data-i18n="admin_section_auction">Создать аукцион</div>
+<div class="shop-hint" style="margin-bottom:10px;" data-i18n="admin_pick_skin_hint">Выбери лот из списка ниже — после твоего запроса продавцу придёт вопрос, согласен ли он выставить его на торги.</div>
+<div id="adminSkinPicker" class="admin-skin-picker">
+<div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div>
+</div>
+<div id="adminSelectedSkin" class="admin-selected-skin" style="display:none;"></div>
+<div class="edit-field">
+<label for="aEmoji" data-i18n="admin_emoji_picker_label">Premium-эмодзи (необязательно)</label>
+<select id="aEmoji">
+<option value="" data-i18n="admin_emoji_none">Без эмодзи</option>
+</select>
+<div class="shop-hint" data-i18n="admin_emoji_hint">Список пополняется командой /emoji_id боту в личке — пришли premium-эмодзи, он появится тут сам, без копирования.</div>
+</div>
+<div class="edit-field">
+<label for="aStartPrice" data-i18n="admin_label_start_price">Стартовая цена, сум</label>
+<input id="aStartPrice" type="number" min="1" placeholder="1000">
+</div>
+<div class="edit-field">
+<label for="aStep" data-i18n="admin_label_step">Шаг ставки, сум</label>
+<input id="aStep" type="number" min="1" placeholder="100">
+</div>
+<div class="edit-field">
+<label for="aMinutes" data-i18n="admin_label_minutes">Сколько минут идёт аукцион</label>
+<input id="aMinutes" type="number" min="1" placeholder="10">
+</div>
+<div class="edit-field">
+<label for="aCustomPostText" data-i18n="admin_custom_post_label">Текст поста (обязательно)</label>
+<textarea id="aCustomPostText" class="admin-template-textarea" rows="5" placeholder="Напиши текст поста для канала — уйдёт как есть, без шаблона." required></textarea>
+<div class="admin-emoji-insert-row" id="aEmojiInsertRow"></div>
+</div>
+<button type="button" class="steam-link-btn secondary" id="aPreviewBtn" style="margin-bottom:8px;" data-i18n="admin_btn_preview">👁 Предпросмотр</button>
+<div class="admin-post-preview" id="aPreviewBox" style="display:none;"></div>
+<button type="button" id="adminCreateAuctionBtn" class="steam-link-btn" data-i18n="admin_btn_propose_auction">Отправить продавцу запрос</button>
+<div class="edit-status" id="adminAuctionStatus"></div>
+</div>
+
+<div class="profile-section admin-group" id="adminActiveAuctionsSection" data-group="auction" style="margin-top:10px;" data-view="showcase">
+<div class="profile-section-title" data-i18n="admin_section_active_auctions">Активные аукционы</div>
+<div id="adminActiveAuctionsList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+<div class="profile-section-title" style="margin-top:16px;" data-i18n="admin_section_pending_proposals">Ждут ответа продавца</div>
+<div id="adminPendingProposalsList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+</div>
+
+<div class="profile-section admin-group" id="adminAuctionHistorySection" data-group="auction" style="margin-top:10px;" data-view="showcase">
+<div class="admin-history-head">
+<div class="profile-section-title" data-i18n="admin_section_auction_history">История аукционов</div>
+<button type="button" class="admin-history-clear" data-clear-history="auction" data-i18n="admin_history_clear">🗑 Очистить</button>
+</div>
+<div id="adminAuctionHistoryList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+</div>
+
+<div class="profile-section admin-group" data-group="giveaway" id="adminGiveawaySection" style="display:none;" data-view="showcase">
 <div class="profile-section-title" data-i18n="admin_section_giveaway">Раздача</div>
 
 <!-- Идущий розыгрыш: итоги, участники с билетами. -->
@@ -688,7 +762,7 @@
 <div id="adminGiveawayHistoryList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
 </div>
 
-<div class="profile-section admin-group" id="adminSetsSection" data-group="sets" style="display:none;">
+<div class="profile-section admin-group" id="adminSetsSection" data-group="sets" style="display:none;" data-view="showcase">
 <div class="profile-section-title">Создать сет</div>
 
 <div class="edit-field">
@@ -722,68 +796,20 @@
 <div id="adminSetsList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
 </div>
 
-<div class="profile-section admin-group" id="adminAuctionSection" data-group="auction">
-<div class="profile-section-title" data-i18n="admin_section_auction">Создать аукцион</div>
-<div class="shop-hint" style="margin-bottom:10px;" data-i18n="admin_pick_skin_hint">Выбери лот из списка ниже — после твоего запроса продавцу придёт вопрос, согласен ли он выставить его на торги.</div>
-<div id="adminSkinPicker" class="admin-skin-picker">
-<div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div>
-</div>
-<div id="adminSelectedSkin" class="admin-selected-skin" style="display:none;"></div>
+<!-- ===== clients ===== -->
+
+<div class="profile-section admin-group" id="adminClientsSection" data-group="finance" style="margin-top:10px; display:none;" data-view="clients">
+<div class="profile-section-title" data-i18n="admin_client_history">История клиента</div>
+<div class="shop-hint" style="margin-bottom:8px;" data-i18n="admin_client_hint">Баланс и все движения денег пользователя по его Telegram ID.</div>
 <div class="edit-field">
-<label for="aEmoji" data-i18n="admin_emoji_picker_label">Premium-эмодзи (необязательно)</label>
-<select id="aEmoji">
-<option value="" data-i18n="admin_emoji_none">Без эмодзи</option>
-</select>
-<div class="shop-hint" data-i18n="admin_emoji_hint">Список пополняется командой /emoji_id боту в личке — пришли premium-эмодзи, он появится тут сам, без копирования.</div>
+<label for="adminClientHistoryId">Telegram user_id</label>
+<input id="adminClientHistoryId" type="number" placeholder="123456789">
 </div>
-<div class="edit-field">
-<label for="aStartPrice" data-i18n="admin_label_start_price">Стартовая цена, сум</label>
-<input id="aStartPrice" type="number" min="1" placeholder="1000">
-</div>
-<div class="edit-field">
-<label for="aStep" data-i18n="admin_label_step">Шаг ставки, сум</label>
-<input id="aStep" type="number" min="1" placeholder="100">
-</div>
-<div class="edit-field">
-<label for="aMinutes" data-i18n="admin_label_minutes">Сколько минут идёт аукцион</label>
-<input id="aMinutes" type="number" min="1" placeholder="10">
-</div>
-<div class="edit-field">
-<label for="aCustomPostText" data-i18n="admin_custom_post_label">Текст поста (обязательно)</label>
-<textarea id="aCustomPostText" class="admin-template-textarea" rows="5" placeholder="Напиши текст поста для канала — уйдёт как есть, без шаблона." required></textarea>
-<div class="admin-emoji-insert-row" id="aEmojiInsertRow"></div>
-</div>
-<button type="button" class="steam-link-btn secondary" id="aPreviewBtn" style="margin-bottom:8px;" data-i18n="admin_btn_preview">👁 Предпросмотр</button>
-<div class="admin-post-preview" id="aPreviewBox" style="display:none;"></div>
-<button type="button" id="adminCreateAuctionBtn" class="steam-link-btn" data-i18n="admin_btn_propose_auction">Отправить продавцу запрос</button>
-<div class="edit-status" id="adminAuctionStatus"></div>
+<button type="button" id="adminClientHistoryBtn" class="steam-link-btn secondary" data-i18n="admin_btn_show">Показать</button>
+<div id="adminClientHistoryResult" style="margin-top:10px;"></div>
 </div>
 
-<div class="profile-section admin-group" id="adminActiveAuctionsSection" data-group="auction" style="margin-top:10px;">
-<div class="profile-section-title" data-i18n="admin_section_active_auctions">Активные аукционы</div>
-<div id="adminActiveAuctionsList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
-<div class="profile-section-title" style="margin-top:16px;" data-i18n="admin_section_pending_proposals">Ждут ответа продавца</div>
-<div id="adminPendingProposalsList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
-</div>
-
-<div class="profile-section admin-group" id="adminAuctionHistorySection" data-group="auction" style="margin-top:10px;">
-<div class="admin-history-head">
-<div class="profile-section-title" data-i18n="admin_section_auction_history">История аукционов</div>
-<button type="button" class="admin-history-clear" data-clear-history="auction" data-i18n="admin_history_clear">🗑 Очистить</button>
-</div>
-<div id="adminAuctionHistoryList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
-</div>
-
-<div class="profile-section admin-group" id="adminDealsSection" data-group="deals" style="margin-top:10px; display:none;">
-<div class="profile-section-title" data-i18n="admin_section_deals">Активные сделки</div>
-<div style="display:flex; gap:8px; margin-bottom:10px;">
-<button type="button" class="category-chip active" id="adminDealsGroupFlat" data-i18n="admin_deals_flat">Списком</button>
-<button type="button" class="category-chip" id="adminDealsGroupByUser" data-i18n="admin_deals_by_user">По клиентам</button>
-</div>
-<div id="adminDealsList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
-</div>
-
-<div class="profile-section admin-group" id="adminBalanceSection" data-group="finance" style="margin-top:10px; display:none;">
+<div class="profile-section admin-group" id="adminBalanceSection" data-group="finance" style="margin-top:10px; display:none;" data-view="clients">
 <div class="profile-section-title" data-i18n="admin_section_balance">Начислить / списать баланс</div>
 <div class="edit-field">
 <label for="adminBalanceUserId" data-i18n="admin_label_balance_user_id">ID пользователя</label>
@@ -800,7 +826,45 @@
 <div class="edit-status" id="adminBalanceStatus"></div>
 </div>
 
-<div class="profile-section admin-group" id="adminReportSection" data-group="finance" style="margin-top:10px; display:none;">
+<div class="profile-section admin-group" id="adminFraudSection" data-group="clients" style="margin-top:10px; display:none;" data-view="clients">
+<div class="profile-section-title" data-i18n="admin_section_fraud">Антифрод: подозрительное</div>
+<div id="adminFraudList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+</div>
+
+<!-- ===== finance ===== -->
+
+<div class="profile-section admin-group" id="adminFinanceSummarySection" data-group="finance" style="margin-top:10px; display:none;" data-view="finance">
+<div class="profile-section-title" data-i18n="admin_topups_withdrawals_total">Пополнения и выводы (всего)</div>
+<div class="money-btn-row">
+<div class="admin-commission-box">
+<div class="admin-commission-label" data-i18n="admin_total_topped">Всего пополнено</div>
+<div class="admin-commission-value" id="adminTotalTopped">—</div>
+</div>
+<div class="admin-commission-box">
+<div class="admin-commission-label" data-i18n="admin_total_withdrawn">Всего выведено</div>
+<div class="admin-commission-value" id="adminTotalWithdrawn">—</div>
+</div>
+</div>
+
+<div class="profile-section-title" style="font-size:12px; margin-top:16px;" data-i18n="admin_top10_toppers">Топ-10 по пополнениям</div>
+<div id="adminTopTopupersList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+</div>
+
+<div class="profile-section admin-group" id="adminCommissionSection" data-group="finance" style="margin-top:10px; display:none; background-image:linear-gradient(180deg, rgba(10,7,16,0.7), rgba(10,7,16,0.94)), url('coins-scattered.png'); background-size:cover; background-position:center 15%;" data-view="finance">
+<div class="profile-section-title" data-i18n="admin_section_commission">Заработано на комиссиях</div>
+<div class="money-btn-row">
+<div class="admin-commission-box">
+<div class="admin-commission-label" data-i18n="admin_commission_sale">С продаж (0.5%)</div>
+<div class="admin-commission-value" id="adminCommissionSale">—</div>
+</div>
+<div class="admin-commission-box">
+<div class="admin-commission-label" data-i18n="admin_commission_withdraw">С выводов (2.5%)</div>
+<div class="admin-commission-value" id="adminCommissionWithdraw">—</div>
+</div>
+</div>
+</div>
+
+<div class="profile-section admin-group" id="adminReportSection" data-group="finance" style="margin-top:10px; display:none;" data-view="finance">
 <div class="profile-section-title" data-i18n="admin_section_report">📊 Отчёт в канал</div>
 <div class="shop-hint" style="margin-bottom:8px;" data-i18n="admin_report_hint">Сделки, комиссии, пополнения и выводы в Excel. Приходит каждый день в 00:05 (Ташкент) за прошлые сутки. Канал задаётся командой /reports_here в закрытом канале или группе; если канал не задан — файл придёт тебе в личку.</div>
 <div class="edit-row">
@@ -822,39 +886,9 @@
 <div class="edit-status" id="adminReportStatus"></div>
 </div>
 
-<div class="profile-section admin-group" id="adminHoldsSection" data-group="finance" style="margin-top:10px; display:none;">
-<div class="profile-section-title" data-i18n="admin_section_holds">Активные холды</div>
-<div id="adminHoldsList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
-</div>
+<!-- ===== settings ===== -->
 
-<div class="profile-section admin-group" id="adminApiUsageSection" data-group="settings" style="margin-top:10px; display:none;">
-<div class="profile-section-title" data-i18n="admin_section_api_usage">Остаток запросов Steamwebapi</div>
-<button type="button" id="adminApiUsageCheckBtn" class="steam-link-btn secondary" data-i18n="admin_btn_check">Проверить</button>
-<div id="adminApiUsageResult" class="shop-hint" style="margin-top:8px;"></div>
-</div>
-
-<div class="profile-section admin-group" id="adminKycSection" data-group="requests" style="margin-top:10px; display:none;">
-<div class="profile-section-title" data-i18n="admin_section_kyc">Заявки продавцов</div>
-<div class="shop-hint" style="margin-bottom:8px;" data-i18n="admin_kyc_hint">Сверь ФИО с документом и лицо на селфи с фото в документе. Фото открываются только здесь и в Telegram не пересылаются.</div>
-<div id="adminKycList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
-<div id="adminKycRecent"></div>
-</div>
-
-<div class="profile-section admin-group" id="adminTopupsSection" data-group="requests" style="margin-top:10px; display:none;">
-<div class="profile-section-title" data-i18n="admin_section_topups">Заявки на пополнение</div>
-<div id="adminTopupsList"><div class="skins-empty" style="padding:16px 4px;" data-i18n="loading">Загрузка...</div></div>
-</div>
-
-<div class="profile-section admin-group" id="adminP2pSection" data-group="requests" style="margin-top:10px; display:none;">
-<div class="profile-section-title" data-i18n="admin_section_p2p">Оплаты картой за лоты</div>
-<div id="adminP2pList"><div class="skins-empty" style="padding:16px 4px;" data-i18n="loading">Загрузка...</div></div>
-</div>
-<div class="profile-section admin-group" id="adminWithdrawalsSection" data-group="requests" style="margin-top:10px; display:none;">
-<div class="profile-section-title" data-i18n="admin_section_withdrawals">Заявки на вывод</div>
-<div id="adminWithdrawalsList"><div class="skins-empty" style="padding:16px 4px;" data-i18n="loading">Загрузка...</div></div>
-</div>
-
-<div class="profile-section admin-group" id="adminTopupDetailsSection" data-group="finance" style="margin-top:10px; display:none;">
+<div class="profile-section admin-group" id="adminTopupDetailsSection" data-group="settings" style="margin-top:10px; display:none;" data-view="settings">
 <div class="profile-section-title" data-i18n="admin_section_topup_details">Реквизиты для пополнения</div>
 <div class="edit-field">
 <label for="adminCardNumber" data-i18n="admin_label_card_number">Номер карты</label>
@@ -868,21 +902,7 @@
 <div class="edit-status" id="adminTopupDetailsStatus"></div>
 </div>
 
-<div class="profile-section admin-group" id="adminCommissionSection" data-group="finance" style="margin-top:10px; display:none; background-image:linear-gradient(180deg, rgba(10,7,16,0.7), rgba(10,7,16,0.94)), url('coins-scattered.png'); background-size:cover; background-position:center 15%;">
-<div class="profile-section-title" data-i18n="admin_section_commission">Заработано на комиссиях</div>
-<div class="money-btn-row">
-<div class="admin-commission-box">
-<div class="admin-commission-label" data-i18n="admin_commission_sale">С продаж (0.5%)</div>
-<div class="admin-commission-value" id="adminCommissionSale">—</div>
-</div>
-<div class="admin-commission-box">
-<div class="admin-commission-label" data-i18n="admin_commission_withdraw">С выводов (2.5%)</div>
-<div class="admin-commission-value" id="adminCommissionWithdraw">—</div>
-</div>
-</div>
-</div>
-
-<div class="profile-section admin-group" id="adminFeatureTogglesSection" data-group="finance" style="margin-top:10px; display:none;">
+<div class="profile-section admin-group" id="adminFeatureTogglesSection" data-group="settings" style="margin-top:10px; display:none;" data-view="settings">
 <div class="profile-section-title">Доступность функций</div>
 <div style="font-size:12px; color:var(--muted); margin-bottom:4px;" data-i18n="admin_label_topup">Пополнение</div>
 <div class="admin-perm-chips">
@@ -911,32 +931,7 @@
 <div class="shop-hint" style="margin-top:8px;" data-i18n="admin_direct_payment_hint">Покупатель всегда сам выбирает способ оплаты на карточке лота — Stars, крипта или П2П. Здесь включаются/выключаются конкретные варианты; оплаты с баланса у покупателя больше нет.</div>
 </div>
 
-<div class="profile-section admin-group" id="adminFinanceSummarySection" data-group="finance" style="margin-top:10px; display:none;">
-<div class="profile-section-title" data-i18n="admin_topups_withdrawals_total">Пополнения и выводы (всего)</div>
-<div class="money-btn-row">
-<div class="admin-commission-box">
-<div class="admin-commission-label" data-i18n="admin_total_topped">Всего пополнено</div>
-<div class="admin-commission-value" id="adminTotalTopped">—</div>
-</div>
-<div class="admin-commission-box">
-<div class="admin-commission-label" data-i18n="admin_total_withdrawn">Всего выведено</div>
-<div class="admin-commission-value" id="adminTotalWithdrawn">—</div>
-</div>
-</div>
-
-<div class="profile-section-title" style="font-size:12px; margin-top:16px;" data-i18n="admin_top10_toppers">Топ-10 по пополнениям</div>
-<div id="adminTopTopupersList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
-
-<div class="profile-section-title" style="font-size:12px; margin-top:16px;" data-i18n="admin_client_history">История клиента</div>
-<div class="edit-field">
-<label for="adminClientHistoryId">Telegram user_id</label>
-<input id="adminClientHistoryId" type="number" placeholder="123456789">
-</div>
-<button type="button" id="adminClientHistoryBtn" class="steam-link-btn secondary" data-i18n="admin_btn_show">Показать</button>
-<div id="adminClientHistoryResult" style="margin-top:10px;"></div>
-</div>
-
-<div class="profile-section admin-group" id="adminPromoSection" data-group="finance" style="margin-top:10px; display:none;">
+<div class="profile-section admin-group" id="adminPromoSection" data-group="settings" style="margin-top:10px; display:none;" data-view="settings">
 <div class="profile-section-title" data-i18n="admin_section_promo">Промо: продажи без комиссии</div>
 <div class="shop-hint" id="adminPromoStatus2" style="margin-bottom:10px;"></div>
 <div class="edit-field">
@@ -947,7 +942,7 @@
 <div class="edit-status" id="adminPromoStatus"></div>
 </div>
 
-<div class="profile-section admin-group" id="adminReferralSection" data-group="finance" style="margin-top:10px; display:none;">
+<div class="profile-section admin-group" id="adminReferralSection" data-group="settings" style="margin-top:10px; display:none;" data-view="settings">
 <div class="profile-section-title" data-i18n="admin_section_referral_bonus">Реферальный бонус</div>
 <div class="shop-hint" style="margin-bottom:10px;" data-i18n="admin_referral_info_text">Копится автоматически с каждой завершённой покупки приглашённого (после снятия холда), в реферальный кошелёк с потолком 200 000 сум на человека.</div>
 <div class="edit-field">
@@ -958,7 +953,41 @@
 <div class="edit-status" id="adminReferralPercentStatus"></div>
 </div>
 
-<div class="profile-section admin-group" id="adminPeopleSection" data-group="people" style="margin-top:10px; display:none;">
+<div class="profile-section admin-group" data-group="settings" id="admin3dSection" style="margin-top:10px; display:none;" data-view="settings">
+<div class="profile-section-title" data-i18n="d3_section">3D-рендер (тест)</div>
+<div class="shop-hint" data-i18n="d3_hint" style="margin-bottom:10px;"></div>
+<div id="d3CanvasWrap" class="d3-canvas-wrap"><canvas id="d3Canvas"></canvas></div>
+<div id="d3Table" class="d3-table"></div>
+<button type="button" id="d3RunBtn" class="steam-link-btn" style="margin-top:10px;" data-i18n="d3_run">Запустить тест</button>
+<div class="edit-field" style="margin-top:12px;">
+<label for="d3ModelUrl" data-i18n="v3_url_label">Путь к модели (.glb)</label>
+<input id="d3ModelUrl" type="text" value="models/ak47.glb" autocomplete="off">
+</div>
+<div class="edit-field" style="margin-top:8px;">
+<label for="d3SkinDir" data-i18n="v3_skin_dir">Папка раскраски (models/skins/…)</label>
+<input id="d3SkinDir" type="text" value="models/skins/cu_ak47_cobra" autocomplete="off">
+</div>
+<div class="edit-field" style="margin-top:8px;">
+<label for="d3WeaponDir" data-i18n="v3_weapon_dir">Папка ствола (models/weapons/…)</label>
+<input id="d3WeaponDir" type="text" value="models/weapons/ak47" autocomplete="off">
+</div>
+<div class="edit-field" style="margin-top:8px;">
+<label for="d3MaskChannel" data-i18n="v3_mask_channel">Канал маски покраски</label>
+<select id="d3MaskChannel" class="wl-select">
+<option value="none" selected>Без маски (красить всё)</option><option value="r">R</option><option value="g">G</option><option value="b">B</option><option value="debug">Показать маску</option>
+</select>
+</div>
+<div class="edit-field" style="margin-top:8px;">
+<label for="d3Float" data-i18n="v3_float">Float (0 — новый, 1 — убитый)</label>
+<input id="d3Float" type="number" min="0" max="1" step="0.01" value="0.15">
+</div>
+<button type="button" id="d3ViewBtn" class="steam-link-btn" style="margin-top:8px;" data-i18n="v3_open">Открыть просмотрщик</button>
+<div class="edit-status" id="d3Status"></div>
+</div>
+
+<!-- ===== people ===== -->
+
+<div class="profile-section admin-group" id="adminPeopleSection" data-group="people" style="margin-top:10px; display:none;" data-view="people">
 <div class="profile-section-title" data-i18n="admin_section_people">Админы и организаторы аукционов</div>
 <div id="adminPeopleList" style="margin-bottom:12px;"></div>
 <div class="edit-field">
@@ -1902,7 +1931,7 @@
 </div>
 
 <script src="app-core.js?v=10"></script>
-<script src="app-i18n.js?v=61"></script>
+<script src="app-i18n.js?v=62"></script>
 <script src="app-navigation.js?v=12"></script>
 <script src="app-shop.js?v=20"></script>
 <script src="app-legal.js?v=2"></script>
@@ -1915,7 +1944,7 @@
 <script src="app-history.js?v=6"></script>
 <script src="app-referral.js?v=5"></script>
 <script src="app-withdraw.js?v=19"></script>
-<script src="app-admin.js?v=16"></script>
+<script src="app-admin.js?v=17"></script>
 <script src="app-auctions.js?v=7"></script>
 <script src="app-reviews.js?v=3"></script>
 <script src="app-notifications.js?v=3"></script>

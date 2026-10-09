@@ -31,7 +31,8 @@ const ADMIN_ONLY_SECTIONS = new Set([
 'adminKycSection','adminTopupsSection','adminP2pSection','adminWithdrawalsSection','adminTopupDetailsSection',
 'adminCommissionSection','adminFinanceSummarySection','adminPromoSection','adminReferralSection',
 'adminPeopleSection','adminDealsSection','adminBalanceSection',
-'adminHoldsSection','adminReportSection','adminApiUsageSection',
+'adminHoldsSection','adminReportSection','adminCryptoSection','adminDisputesSection',
+'adminClientsSection','adminFraudSection',
 'adminStatusSection','adminGiveawaySection'
 ]);
 
@@ -45,10 +46,21 @@ if (!adminPermissions.length && isAuctioneer && !isAdmin) return chip === 'aucti
 return adminPermissions.includes(chip);
 }
 
+// Раздел админки (кнопка сверху) и права — разные вещи: блок лежит в
+// разделе data-view, а доступ к нему даёт право data-group (как на
+// сервере). Например, «Витрина» собирает аукционы, раздачу и сеты —
+// у каждого своё право; кнопка видна, если доступен хоть один блок.
+function sectionAllowed(el){
+return (!ADMIN_ONLY_SECTIONS.has(el.id) || isAdmin) && hasChipPermission(el.dataset.group);
+}
+
+function chipAllowed(view){
+return [...document.querySelectorAll('.admin-group')].some(el => (el.dataset.view || el.dataset.group) === view && sectionAllowed(el));
+}
+
 function applyChipVisibility(){
 document.querySelectorAll('#adminChips [data-admin-group]').forEach(chip => {
-const group = chip.dataset.adminGroup;
-chip.style.display = hasChipPermission(group) ? '' : 'none';
+chip.style.display = chipAllowed(chip.dataset.adminGroup) ? '' : 'none';
 });
 }
 
@@ -57,10 +69,8 @@ let currentAdminChip = 'overview';
 function applyAdminChipFilter(group){
 currentAdminChip = group;
 document.querySelectorAll('.admin-group').forEach(el => {
-const matchesGroup = el.dataset.group === group;
-const adminOk = !ADMIN_ONLY_SECTIONS.has(el.id) || isAdmin;
-const chipOk = hasChipPermission(el.dataset.group);
-el.style.display = (matchesGroup && adminOk && chipOk) ? '' : 'none';
+const matchesView = (el.dataset.view || el.dataset.group) === group;
+el.style.display = (matchesView && sectionAllowed(el)) ? '' : 'none';
 });
 }
 
@@ -70,6 +80,7 @@ if (!chip) return;
 document.querySelectorAll('#adminChips .category-chip').forEach(c => c.classList.remove('active'));
 chip.classList.add('active');
 applyAdminChipFilter(chip.dataset.adminGroup);
+loadAdminCounts();
 if (chip.dataset.adminGroup === 'overview' && isAdmin){
 startAdminStatsLive();
 } else {
@@ -247,7 +258,7 @@ if (auctionEl) auctionEl.innerHTML = renderHistoryList(auctionItems);
 function loadAdminPanel(){
 applyChipVisibility();
 
-if (!hasChipPermission(currentAdminChip)){
+if (!chipAllowed(currentAdminChip)){
 const firstAllowed = document.querySelector('#adminChips [data-admin-group]:not([style*="display: none"])');
 if (firstAllowed){
 document.querySelectorAll('#adminChips .category-chip').forEach(c => c.classList.remove('active'));
@@ -281,7 +292,11 @@ loadAdminSetsList();
 loadAdminKyc();
 loadAdminTopups();
 loadAdminP2pOrders();
+loadAdminCrypto();
 loadAdminWithdrawals();
+loadAdminDisputes();
+loadAdminFraud();
+loadAdminCounts();
 loadAdminSettings();
 loadAdminPeople();
 }
@@ -1021,50 +1036,6 @@ loadAdminHolds();
 document.getElementById('adminBalanceAddBtn').addEventListener('click', () => adminAdjustBalance('add'));
 document.getElementById('adminBalanceRemoveBtn').addEventListener('click', () => adminAdjustBalance('remove'));
 
-// ---------------- Steamwebapi: остаток запросов ----------------
-
-function prettyFieldLabel(key){
-// "requests_remaining" -> "Requests remaining" — читаемее сырого
-// названия поля, без привязки к конкретным именам от API
-// (документация Steamwebapi не даёт точной схемы ответа).
-return key.replace(/_/g, ' ').replace(/^./, c => c.toUpperCase());
-}
-
-// Эти поля в ответе Steamwebapi — просто текстовое описание того,
-// что означают остальные поля (документация внутри ответа), а не
-// сами данные — их незачем показывать пользователю.
-const API_USAGE_NOISE_KEYS = ['info', 'usage_details', 'usagedetails'];
-
-function apiUsageRowsHtml(obj){
-return Object.entries(obj)
-.filter(([key]) => !API_USAGE_NOISE_KEYS.includes(key.toLowerCase()))
-.map(([key, value]) => {
-if (value !== null && typeof value === 'object' && !Array.isArray(value)){
-return apiUsageRowsHtml(value);
-}
-let displayValue = value;
-if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(value)){
-// ISO-дата (например, конец подписки) — показываем читаемо
-const d = new Date(value);
-if (!isNaN(d)) displayValue = d.toLocaleDateString(currentLang === 'uz' ? 'uz-UZ' : (currentLang === 'en' ? 'en-US' : 'ru-RU'), { day: '2-digit', month: '2-digit', year: 'numeric' });
-}
-return `<div class="history-row" style="border-bottom:1px solid var(--red-dim);">
-<span class="history-row-note">${escapeHtml(prettyFieldLabel(key))}</span>
-<span class="history-row-amount" style="color:var(--silver);">${escapeHtml(String(displayValue))}</span>
-</div>`;
-}).join('');
-}
-
-document.getElementById('adminApiUsageCheckBtn').addEventListener('click', () => {
-const result = document.getElementById('adminApiUsageResult');
-result.innerHTML = (I18N[currentLang] || I18N.ru).loading;
-adminApiFetch('/api/admin/api_usage')
-.then(data => {
-result.innerHTML = apiUsageRowsHtml(data);
-})
-.catch(err => { result.textContent = friendlyErrorMessage(err); });
-});
-
 // ---------------- Заявки на пополнение ----------------
 
 function loadAdminTopups(){
@@ -1184,9 +1155,179 @@ const ask = (approve ? dict.admin_p2p_confirm_approve : dict.admin_p2p_confirm_r
 showConfirm(ask, () => {
 btn.disabled = true;
 adminApiFetch('/api/admin/p2p_orders/' + id + '/' + (approve ? 'approve' : 'reject'), { method: 'POST' })
-.then(data => { if (data && data.message) showToast(data.message); loadAdminP2pOrders(); })
+.then(data => { if (data && data.message) showToast(data.message); loadAdminP2pOrders(); loadAdminCounts(); })
 .catch(err => { btn.disabled = false; showErrorToast(err); loadAdminP2pOrders(); });
 });
+});
+
+// ---------------- Счётчики «ждёт решения» на кнопках разделов ----------------
+
+function loadAdminCounts(){
+adminApiFetch('/api/admin/pending_counts')
+.then(data => {
+document.querySelectorAll('#adminChips [data-badge]').forEach(badge => {
+const group = data[badge.dataset.badge] || {};
+const total = Object.values(group).reduce((a, b) => a + (Number(b) || 0), 0);
+badge.textContent = total > 99 ? '99+' : String(total);
+badge.hidden = !total;
+});
+})
+.catch(() => {});
+}
+
+function adminAgeLabel(iso){
+const dict = I18N[currentLang] || I18N.ru;
+const hours = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 3600000));
+return hours >= 48 ? dict.admin_age_days.replace('{n}', Math.floor(hours / 24)) : dict.admin_age_hours.replace('{n}', hours);
+}
+
+// ---------------- Крипта на ручной проверке ----------------
+// Провайдер (2328.io) прислал недоплату, переплату или AML-блок —
+// раньше это было только сообщением в чате без кнопок.
+
+function loadAdminCrypto(){
+const list = document.getElementById('adminCryptoList');
+const dict = I18N[currentLang] || I18N.ru;
+adminApiFetch('/api/admin/crypto_review')
+.then(data => {
+const items = data.items || [];
+if (!items.length){
+list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.admin_no_requests}</div>`;
+return;
+}
+list.innerHTML = items.map(c => {
+const key = c.kind + ':' + c.id;
+const what = c.kind === 'topup'
+? dict.admin_crypto_topup
+: dict.admin_crypto_lot.replace('{id}', c.skin_id) + (c.skin_title ? ' ' + c.skin_title : '');
+const reason = dict['admin_crypto_reason_' + c.review_reason] || c.review_reason || '';
+return `
+<div class="deal-card" style="flex-direction:column; align-items:stretch;">
+<div class="deal-info">
+<div class="deal-title">${escapeHtml(what)}</div>
+<div class="deal-meta">${escapeHtml(c.username || ('ID ' + c.user_id))} · ${formatCoins(c.amount)} · ${escapeHtml(adminAgeLabel(c.created_at))}</div>
+<div class="deal-meta">⚠️ ${escapeHtml(reason)} · ${escapeHtml(c.order_id)}</div>
+</div>
+<div class="edit-field" style="margin-top:8px;">
+<label>${dict.admin_crypto_credit_amount}</label>
+<input type="number" min="0" value="${Number(c.amount) || 0}" data-crypto-amount="${key}">
+</div>
+<div class="deal-actions" style="margin-top:6px; flex-wrap:wrap;">
+${c.kind === 'skin_order' ? `<button class="deal-action" data-crypto-action="purchase" data-crypto-key="${key}" type="button">${dict.admin_crypto_btn_purchase}</button>` : ''}
+<button class="deal-action${c.kind === 'skin_order' ? ' secondary' : ''}" data-crypto-action="credit" data-crypto-key="${key}" type="button">${dict.admin_crypto_btn_credit}</button>
+<button class="deal-action secondary" data-crypto-action="close" data-crypto-key="${key}" type="button">${dict.admin_crypto_btn_close}</button>
+</div>
+</div>`;
+}).join('');
+})
+.catch(() => { list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.load_failed}</div>`; });
+}
+
+document.getElementById('adminCryptoList').addEventListener('click', (e) => {
+const btn = e.target.closest('[data-crypto-action]');
+if (!btn) return;
+const dict = I18N[currentLang] || I18N.ru;
+const [kind, id] = btn.dataset.cryptoKey.split(':');
+const action = btn.dataset.cryptoAction;
+const amountInput = document.querySelector(`[data-crypto-amount="${btn.dataset.cryptoKey}"]`);
+const amount = amountInput ? Number(amountInput.value) || 0 : 0;
+const ask = dict['admin_crypto_confirm_' + action].replace('{sum}', formatCoins(amount));
+showConfirm(ask, () => {
+btn.disabled = true;
+adminApiFetch('/api/admin/crypto_review/' + kind + '/' + id + '/resolve', { method: 'POST', body: { action: action, amount: amount } })
+.then(data => { if (data && data.message) showToast(data.message); })
+.catch(err => showErrorToast(err))
+.finally(() => { loadAdminCrypto(); loadAdminCounts(); });
+});
+});
+
+// ---------------- Споры ----------------
+// Сделки, где покупатель открыл спор. Решение: вернуть деньги
+// покупателю, выплатить продавцу или отклонить спор (сделка идёт
+// дальше как обычно).
+
+function loadAdminDisputes(){
+const list = document.getElementById('adminDisputesList');
+const dict = I18N[currentLang] || I18N.ru;
+adminApiFetch('/api/admin/deals/disputes')
+.then(data => {
+const items = data.items || [];
+if (!items.length){
+list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.admin_no_disputes}</div>`;
+return;
+}
+list.innerHTML = items.map(d => {
+const evidence = (d.evidence || []).map(ev => `
+<div class="deal-meta">• ${escapeHtml(ev.role === 'seller' ? dict.admin_dispute_seller : dict.admin_dispute_buyer)}: ${escapeHtml(ev.reason || '—')}${ev.trade_id ? ' · Trade ID ' + escapeHtml(ev.trade_id) : ''}${ev.has_photo ? ' · 📷 ' + escapeHtml(dict.admin_dispute_photo_in_chat) : ''}</div>`).join('');
+return `
+<div class="deal-card" style="flex-direction:column; align-items:stretch;">
+<div class="deal-info">
+<div class="deal-title">#${d.id} · ${escapeHtml(d.title)}</div>
+<div class="deal-meta">${formatCoins(d.price)} · ${escapeHtml(d.seller_username || ('ID ' + d.seller_id))} → ${escapeHtml(d.buyer_username || ('ID ' + d.buyer_id))}</div>
+<div class="deal-meta">⚠️ ${escapeHtml(dict.admin_dispute_opened.replace('{age}', adminAgeLabel(d.disputed_at)))}${d.sent_at ? '' : ' · ' + escapeHtml(dict.admin_dispute_not_sent)}</div>
+${evidence}
+</div>
+<div class="deal-actions" style="margin-top:8px; flex-wrap:wrap;">
+<button class="deal-action" data-dispute-action="refund" data-dispute-id="${d.id}" type="button">${dict.admin_dispute_btn_refund}</button>
+<button class="deal-action secondary" data-dispute-action="finalize" data-dispute-id="${d.id}" type="button">${dict.admin_dispute_btn_finalize}</button>
+<button class="deal-action secondary" data-dispute-action="dismiss_dispute" data-dispute-id="${d.id}" type="button">${dict.admin_dispute_btn_dismiss}</button>
+</div>
+</div>`;
+}).join('');
+})
+.catch(() => { list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.load_failed}</div>`; });
+}
+
+document.getElementById('adminDisputesList').addEventListener('click', (e) => {
+const btn = e.target.closest('[data-dispute-action]');
+if (!btn) return;
+const dict = I18N[currentLang] || I18N.ru;
+const action = btn.dataset.disputeAction;
+showConfirm(dict['admin_dispute_confirm_' + action].replace('{id}', btn.dataset.disputeId), () => {
+btn.disabled = true;
+adminApiFetch('/api/admin/deals/' + btn.dataset.disputeId + '/' + action, { method: 'POST' })
+.then(() => showToast(dict.admin_done))
+.catch(err => showErrorToast(err))
+.finally(() => { loadAdminDisputes(); loadAdminDeals(); loadAdminCounts(); });
+});
+});
+
+// ---------------- Антифрод ----------------
+// Флаги, которые бот ставит сам (связанные аккаунты, сделка с собой,
+// рискованный вывод…). Раньше их было не видно вовсе.
+
+function loadAdminFraud(){
+const list = document.getElementById('adminFraudList');
+const dict = I18N[currentLang] || I18N.ru;
+adminApiFetch('/api/admin/fraud_flags')
+.then(data => {
+const items = (data.items || []).filter(f => !f.resolved_at);
+if (!items.length){
+list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.admin_no_fraud}</div>`;
+return;
+}
+list.innerHTML = items.map(f => `
+<div class="deal-card">
+<div class="deal-info">
+<div class="deal-title">${escapeHtml(dict['admin_fraud_' + f.flag_type] || f.flag_type)}</div>
+<div class="deal-meta">ID ${escapeHtml(String(f.user_id || '—'))}${f.related_user_id ? ' ↔ ID ' + escapeHtml(String(f.related_user_id)) : ''}${f.skin_id ? ' · ' + escapeHtml(dict.admin_p2p_lot.replace('{id}', f.skin_id)) : ''} · ${escapeHtml(adminAgeLabel(f.created_at))}</div>
+${f.details ? `<div class="deal-meta">${escapeHtml(f.details)}</div>` : ''}
+</div>
+<div class="deal-actions">
+<button class="deal-action secondary" data-fraud-resolve="${f.id}" type="button">${dict.admin_fraud_btn_resolve}</button>
+</div>
+</div>`).join('');
+})
+.catch(() => { list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.load_failed}</div>`; });
+}
+
+document.getElementById('adminFraudList').addEventListener('click', (e) => {
+const btn = e.target.closest('[data-fraud-resolve]');
+if (!btn) return;
+btn.disabled = true;
+adminApiFetch('/api/admin/fraud_flags/' + btn.dataset.fraudResolve + '/resolve', { method: 'POST' })
+.catch(err => showErrorToast(err))
+.finally(() => { loadAdminFraud(); loadAdminCounts(); });
 });
 
 // ---------------- Заявки на вывод ----------------

@@ -4219,3 +4219,19 @@ z-index:2;
 background:var(--surface);
 box-shadow:0 28px 0 var(--surface), 0 -14px 14px -2px var(--surface);
 }
+
+/* Счётчик «ждёт решения» на кнопке раздела админки */
+.admin-chip-badge{
+display:inline-block;
+min-width:18px;
+margin-left:6px;
+padding:0 5px;
+border-radius:9px;
+background:var(--red);
+color:#fff;
+font-size:11px;
+line-height:18px;
+text-align:center;
+font-weight:700;
+}
+.admin-chip-badge[hidden]{ display:none; }
