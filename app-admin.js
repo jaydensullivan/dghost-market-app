@@ -28,7 +28,7 @@ return r.json();
 }
 
 const ADMIN_ONLY_SECTIONS = new Set([
-'adminKycSection','adminTopupsSection','adminWithdrawalsSection','adminTopupDetailsSection',
+'adminKycSection','adminTopupsSection','adminP2pSection','adminWithdrawalsSection','adminTopupDetailsSection',
 'adminCommissionSection','adminFinanceSummarySection','adminPromoSection','adminReferralSection',
 'adminPeopleSection','adminDealsSection','adminBalanceSection',
 'adminHoldsSection','adminReportSection','adminApiUsageSection',
@@ -280,6 +280,7 @@ loadAdminSetSkinPicker();
 loadAdminSetsList();
 loadAdminKyc();
 loadAdminTopups();
+loadAdminP2pOrders();
 loadAdminWithdrawals();
 loadAdminSettings();
 loadAdminPeople();
@@ -1125,6 +1126,67 @@ overlay.classList.remove('show');
 loadAdminTopups();
 })
 .catch(err => { status.textContent = friendlyErrorMessage(err); });
+});
+
+// ---------------- Оплаты картой за лоты (П2П) ----------------
+// Покупатель оплатил лот переводом на карту и приложил чек. Раньше
+// решение было только кнопками под сообщением в чате — если его
+// пропустить, заявка висела неделями. Теперь они видны и здесь.
+
+function loadAdminP2pOrders(){
+const list = document.getElementById('adminP2pList');
+const dict = I18N[currentLang] || I18N.ru;
+adminApiFetch('/api/admin/p2p_orders')
+.then(data => {
+const items = data.items || [];
+if (!items.length){
+list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.admin_no_requests}</div>`;
+return;
+}
+list.innerHTML = items.map(o => {
+const hours = Math.max(0, Math.floor((Date.now() - new Date(o.created_at).getTime()) / 3600000));
+const receipt = o.has_receipt
+? `<div class="kyc-shots" style="grid-template-columns:1fr; max-width:220px; margin-top:6px;"><figure><img src="${escapeHtml(API_BASE + '/api/admin/p2p_orders/receipt?id=' + o.id + '&init_data=' + encodeURIComponent(tg.initData))}" data-p2p-zoom alt=""><figcaption>${dict.admin_p2p_receipt}</figcaption></figure></div>`
+: `<div class="deal-meta">⚠️ ${escapeHtml(dict.admin_p2p_no_receipt.replace('{id}', o.skin_id))}</div>`;
+const gone = o.skin_status && o.skin_status !== 'reserved' && o.skin_status !== 'available'
+? `<div class="deal-meta">⚠️ ${escapeHtml(dict.admin_p2p_skin_gone)}</div>` : '';
+return `
+<div class="deal-card" style="flex-direction:column; align-items:stretch;">
+<div class="deal-info">
+<div class="deal-title">#${o.id} · ${escapeHtml(dict.admin_p2p_lot.replace('{id}', o.skin_id))} ${escapeHtml(o.skin_title || '')}</div>
+<div class="deal-meta">${escapeHtml(o.buyer_username || ('ID ' + o.buyer_id))} · ${formatCoins(o.amount)} · ${escapeHtml(dict.admin_p2p_waiting.replace('{h}', hours))}</div>
+${gone}
+${receipt}
+</div>
+<div class="deal-actions" style="margin-top:8px;">
+<button class="deal-action" data-p2p-decide="approve" data-p2p-id="${o.id}" type="button">${dict.admin_btn_approve}</button>
+<button class="deal-action secondary" data-p2p-decide="reject" data-p2p-id="${o.id}" type="button">${dict.admin_btn_reject}</button>
+</div>
+</div>`;
+}).join('');
+})
+.catch(() => { list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.load_failed}</div>`; });
+}
+
+document.getElementById('adminP2pList').addEventListener('click', (e) => {
+const zoom = e.target.closest('[data-p2p-zoom]');
+if (zoom){
+document.getElementById('kycLightboxImg').src = zoom.src;
+document.getElementById('kycLightbox').hidden = false;
+return;
+}
+const btn = e.target.closest('[data-p2p-decide]');
+if (!btn) return;
+const dict = I18N[currentLang] || I18N.ru;
+const approve = btn.dataset.p2pDecide === 'approve';
+const id = btn.dataset.p2pId;
+const ask = (approve ? dict.admin_p2p_confirm_approve : dict.admin_p2p_confirm_reject).replace('{id}', id);
+showConfirm(ask, () => {
+btn.disabled = true;
+adminApiFetch('/api/admin/p2p_orders/' + id + '/' + (approve ? 'approve' : 'reject'), { method: 'POST' })
+.then(data => { if (data && data.message) showToast(data.message); loadAdminP2pOrders(); })
+.catch(err => { btn.disabled = false; showErrorToast(err); loadAdminP2pOrders(); });
+});
 });
 
 // ---------------- Заявки на вывод ----------------
