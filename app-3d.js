@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 75;
+const APP3D_VERSION = 76;
 
 let threeLoading = null;
 
@@ -372,10 +372,12 @@ return box;
 }
 
 // Ножи в файлах CS2 стоят «на попа» — длинная сторона по Y, а стволы
-// лежат вдоль Z. Кладём нож так же, как ствол: при осмотре боком он
-// горизонтальный, рукоять слева, как в игре и на CSFloat.
-// (У стволов вертикаль никогда не самая длинная сторона.)
+// лежат вдоль Z. В мини-аппе нож оставляем вертикальным — так он лучше
+// смотрится на телефоне. Горизонтально, рукоятью влево, как на CSFloat,
+// кладём только для сверки (tools/steam-compare ставит
+// window.DGHOST_KNIFE_FLAT). У стволов вертикаль не самая длинная сторона.
 function layModelFlat(THREE, object){
+if (!window.DGHOST_KNIFE_FLAT) return;
 const size = meshBox(THREE, object).getSize(new THREE.Vector3());
 if (size.y <= Math.max(size.x, size.z)) return;
 object.rotation.x += Math.PI / 2;
