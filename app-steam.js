@@ -18,7 +18,7 @@ const profileSteamStatus = document.getElementById('profileSteamStatus');
 const profileSteamLinked = document.getElementById('profileSteamLinked');
 const profileSteamUnlinked = document.getElementById('profileSteamUnlinked');
 
-const STEAM_ERROR_MESSAGES = {
+const STEAM_ERROR_MESSAGES_RU = {
 bad_trade_link: 'Не похоже на трейд-ссылку — проверь, что скопировал целиком.',
 trade_link_not_yours: 'Эта ссылка на обмен ведёт на другой аккаунт Steam. Привяжи ссылку того аккаунта, с которым вошёл через Steam.',
 not_linked: 'Сначала привяжи трейд-ссылку.',
@@ -29,8 +29,30 @@ rate_limited: 'Слишком много запросов, подожди нем
 not_configured: 'Инвентарь Steam ещё не настроен на сервере — сообщи админу.',
 };
 
+const STEAM_ERROR_MESSAGES_UZ = {
+bad_trade_link: "Treyd-havolaga o'xshamaydi — to'liq nusxalaganingizni tekshiring.",
+trade_link_not_yours: "Bu almashuv havolasi boshqa Steam akkauntiga olib boradi. Steam orqali kirgan akkauntingiz havolasini ulang.",
+not_linked: "Avval treyd-havolani ulang.",
+inventory_private: "Inventar yopiq. Steam maxfiylik sozlamalarida inventarni «Ochiq» qiling.",
+inventory_private_or_empty: "Inventar yopiq yoki bo'sh (yoki unda CS2 buyumlari yo'q).",
+steam_unavailable: "Inventar xizmati hozir javob bermayapti, birozdan keyin urinib ko'ring.",
+rate_limited: "So'rovlar juda ko'p, biroz kutib, qayta urinib ko'ring.",
+not_configured: "Steam inventari serverda hali sozlanmagan — adminga xabar bering.",
+};
+
+const STEAM_ERROR_MESSAGES_EN = {
+bad_trade_link: "That doesn't look like a trade URL — make sure you copied all of it.",
+trade_link_not_yours: 'This trade URL belongs to a different Steam account. Link the URL of the account you signed in with.',
+not_linked: 'Link your trade URL first.',
+inventory_private: 'Your inventory is private. Set it to "Public" in Steam privacy settings.',
+inventory_private_or_empty: 'Your inventory is private or empty (or has no CS2 items).',
+steam_unavailable: 'The inventory service is not responding right now, try again a bit later.',
+rate_limited: 'Too many requests, wait a little and try again.',
+not_configured: "Steam inventory isn't set up on the server yet — let the admin know.",
+};
+
 function steamErrorMessage(code){
-return STEAM_ERROR_MESSAGES[code] || errorMessage(code);
+return langMessage(STEAM_ERROR_MESSAGES_RU, STEAM_ERROR_MESSAGES_UZ, STEAM_ERROR_MESSAGES_EN, code) || errorMessage(code);
 }
 
 function updateProfileSteamBlock(){
