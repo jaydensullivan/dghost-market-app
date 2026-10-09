@@ -9,6 +9,8 @@
 
 const I18N = {
 ru: {
+web_login: 'Войти через Telegram',
+web_logout: 'Выйти из аккаунта на сайте',
 v3_exact: "✅ Этот предмет: {details}",
 v3_exact_stickers: "наклеек: {n}",
 mp_badge_cheaper: "−{p}% к рынку",
@@ -1204,6 +1206,8 @@ steam_link_linking: 'Привязываю...',
 steam_link_linked_ok: 'Привязано ✓',
 },
 uz: {
+web_login: 'Telegram orqali kirish',
+web_logout: 'Saytdagi akkauntdan chiqish',
 v3_exact: "✅ Aynan shu buyum: {details}",
 v3_exact_stickers: "stikerlar: {n}",
 mp_badge_cheaper: "bozordan −{p}%",
@@ -2399,6 +2403,8 @@ steam_link_linking: "Bog'lanmoqda...",
 steam_link_linked_ok: "Bog'landi ✓",
 },
 en: {
+web_login: 'Log in with Telegram',
+web_logout: 'Log out on this website',
 v3_exact: "✅ This exact item: {details}",
 v3_exact_stickers: "stickers: {n}",
 mp_badge_cheaper: "−{p}% vs market",
