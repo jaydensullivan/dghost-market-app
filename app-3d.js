@@ -23,7 +23,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 74;
+const APP3D_VERSION = 75;
 
 let threeLoading = null;
 
@@ -759,6 +759,14 @@ function legacyPatinaBlend(skin){
 return legacyPatinaMetal(skin) && Array.isArray(skin.params.colors) && skin.params.colors.length > 0;
 }
 // Патина и закалка старого формата — обработка металла: только по R маски.
+// Case Hardened (aq_oiled) в игре — закалённый металл: отражения
+// окрашены узором (золото и синева). Матовой краской с белыми бликами
+// клинок выходил почти белым. Рисуем металлом, как анодирование, узор
+// мягче и темнее — сверка со Steam по 23 скинам: 66.1 → 73.7.
+const CASE_HARDENED = { brightness: 0.6, gamma: 1.2 };
+function legacyCaseHardened(skin){
+return legacyPatinaStyle(skin) && skin.finish === 'aq_oiled';
+}
 function legacyPatinaMetal(skin){
 return legacyPatinaStyle(skin) && skin.params.paint_style === 7;
 }
@@ -1039,7 +1047,7 @@ uPatternRotation: { value: placement.rotation * Math.PI / 180 },
 uPatternOffset: { value: new THREE.Vector2(placement.offset[0], placement.offset[1]) },
 uWearScale: { value: skin.params.wear_scale || 1 },
 uGrungeScale: { value: skin.params.grunge_scale || 1 },
-uPaintMetalness: { value: paintMetalness(skin.params) },
+uPaintMetalness: { value: legacyCaseHardened(skin) ? ANODIZED.metalness : paintMetalness(skin.params) },
 // Своя карта металличности краски (Zeno — серый металлик).
 uSkinMetal: { value: skin.metalness || pattern },
 // Зоны покраски раскраски (paint by number): R/G/B — где лежат цвета
@@ -1055,18 +1063,18 @@ uHasColorMetal: { value: Array.isArray(skin.params.color_metalness) ? 1 : 0 },
 uHasColorRough: { value: Array.isArray(skin.params.color_roughness) ? 1 : 0 },
 uHasSkinMetal: { value: skin.metalness ? 1 : 0 },
 uPaintRoughness: { value: isKnifeName(weaponName) ? ANODIZED.knifeRoughness : ANODIZED.roughness },
-uHasPaintRoughness: { value: isAnodized(skin.params) ? 1 : 0 },
+uHasPaintRoughness: { value: isAnodized(skin.params) || legacyCaseHardened(skin) ? 1 : 0 },
 uUseColors: { value: skin.solid || skinUsesColorMask(skin.params) ? 1 : 0 },
 uColors: { value: skinColors(THREE, skin.params) },
 // Узор грузится как sRGB, а маске нужны исходные значения каналов.
 uMaskGamma: { value: THREE.SRGBColorSpace ? 1 / 2.2 : 1 },
 uSmokeK: { value: dopplerSmokeK(skin, weaponName) },
-uColorBrightness: { value: skin.params.color_brightness || 1 },
+uColorBrightness: { value: (skin.params.color_brightness || 1) * (legacyCaseHardened(skin) ? CASE_HARDENED.brightness : 1) },
 // Патина (7) и Gunsmith (8) старого формата выходили бледно-пастельными
 // (по сверке с CSFloat светлее игры на 30–50 по яркости). Степень 1.8
 // у узора возвращает и яркость, и оттенок: Decimator — тёмно-синий,
 // Night Terror и Nebula Crusader — оранжевые, Magma — тёмная.
-uPatternGamma: { value: legacyPatinaStyle(skin) && !legacyPatinaBlend(skin) ? PATINA_PATTERN_GAMMA : (gunsmithTemplate(skin) ? GUNSMITH_TEMPLATE_GAMMA : 1) },
+uPatternGamma: { value: legacyCaseHardened(skin) ? CASE_HARDENED.gamma : legacyPatinaStyle(skin) && !legacyPatinaBlend(skin) ? PATINA_PATTERN_GAMMA : (gunsmithTemplate(skin) ? GUNSMITH_TEMPLATE_GAMMA : 1) },
 uPatinaBlend: { value: legacyPatinaBlend(skin) ? 1 : 0 },
 uPatinaK: { value: isKnifeName(weapon ? weapon.name || '' : '') ? PATINA_KNIFE_K : PATINA_K },
 uMaskChannel: { value: channel },
@@ -1149,7 +1157,7 @@ material.roughnessMap = skin.rough;
 material.roughness = 1.0;
 } else if (weapon && weapon.rough) material.roughnessMap = weapon.rough;
 // Сила отражений — из набора света (в three r160 у сцены её ещё нет).
-material.envMapIntensity = (isAnodized(skin.params) ? ANODIZED.envIntensity : 1) * lightPreset().env;
+material.envMapIntensity = (isAnodized(skin.params) || legacyCaseHardened(skin) ? ANODIZED.envIntensity : 1) * lightPreset().env;
 
 // Рельеф и затенение из комплекта скина — новый формат отдаёт их
 // отдельными слоями, и с ними металл перестаёт быть плоским.
