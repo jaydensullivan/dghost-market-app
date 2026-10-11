@@ -362,7 +362,10 @@ let traderBadge = '';
 const marketPrice = Number(skin.market_price_uzs || skin.market_price) || 0;
 if (marketPrice > 0 && skin.price > 0){
 const pct = Math.round((skin.price / marketPrice - 1) * 100);
-if (Math.abs(pct) >= TRADER_BADGE_MIN_PCT){
+// «Дешевле рынка» — всем; «дороже рынка» — только продавцу на его лоте
+// (покупателей это отпугивает, а продавцу — подсказка снизить цену).
+const ownLot = currentUserId && skin.seller_id === currentUserId;
+if (pct <= -TRADER_BADGE_MIN_PCT || (ownLot && pct >= TRADER_BADGE_MIN_PCT)){
 const d = I18N[currentLang] || I18N.ru;
 traderBadge = `<div class="trader-badge ${pct < 0 ? 'below' : 'above'}">${(pct < 0 ? d.trader_below : d.trader_above).replace('{p}', Math.abs(pct))}</div>`;
 }
