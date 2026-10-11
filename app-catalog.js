@@ -209,6 +209,69 @@ const RARITY_BG = {
 'Extraordinary': 'bg-contraband.png',
 };
 
+// ---------- темы оформления и вид карточек ----------
+// Выбор хранится в localStorage (dg_theme / dg_card_view); если
+// хранилище недоступно — работаем с значениями по умолчанию.
+const THEMES = [
+{ id: 'midnight', dot: '#7B2CFF' },
+{ id: 'neon', dot: '#C77DFF' },
+{ id: 'emerald', dot: '#34D399' },
+{ id: 'sunset', dot: '#FB923C' },
+{ id: 'ice', dot: '#7DD3FC' },
+{ id: 'graphite', dot: '#D4D4D8' },
+];
+const DEFAULT_THEME = 'midnight';
+
+// Бейдж «Трейдер»: показываем, если цена лота отличается от рыночной
+// не меньше чем на столько процентов.
+const TRADER_BADGE_MIN_PCT = 3;
+
+function storageGet(key){
+try { return localStorage.getItem(key); } catch(e) { return null; }
+}
+function storageSet(key, val){
+try { localStorage.setItem(key, val); } catch(e) {}
+}
+
+let currentTheme = THEMES.some(t => t.id === storageGet('dg_theme')) ? storageGet('dg_theme') : DEFAULT_THEME;
+let currentCardView = storageGet('dg_card_view') === 'showcase' ? 'showcase' : 'normal';
+
+function applyTheme(id){
+if (!THEMES.some(t => t.id === id)) id = DEFAULT_THEME;
+currentTheme = id;
+document.documentElement.setAttribute('data-theme', id);
+storageSet('dg_theme', id);
+renderThemeSwitch();
+}
+
+function applyCardView(view){
+currentCardView = view === 'showcase' ? 'showcase' : 'normal';
+document.body.classList.toggle('card-showcase', currentCardView === 'showcase');
+storageSet('dg_card_view', currentCardView);
+document.querySelectorAll('[data-card-view]').forEach(b => {
+b.classList.toggle('active', b.dataset.cardView === currentCardView);
+});
+}
+
+function renderThemeSwitch(){
+const box = document.getElementById('themeSwitch');
+if (!box) return;
+const dict = I18N[currentLang] || I18N.ru;
+box.innerHTML = THEMES.map(t => `<button type="button" class="theme-btn${t.id === currentTheme ? ' active' : ''}" data-theme-id="${t.id}"><span class="theme-dot" style="background:${t.dot}"></span>${dict['theme_' + t.id] || t.id}</button>`).join('');
+}
+
+document.addEventListener('click', (e) => {
+const tb = e.target.closest ? e.target.closest('[data-theme-id]') : null;
+if (tb) { applyTheme(tb.dataset.themeId); return; }
+const vb = e.target.closest ? e.target.closest('[data-card-view]') : null;
+if (vb) {
+applyCardView(vb.dataset.cardView);
+}
+});
+
+applyTheme(currentTheme);
+applyCardView(currentCardView);
+
 function skinCardHtml(skin){
 const photo = skin.photo_url
 ? `<img class="skin-photo" src="${escapeHtml(skin.photo_url)}" alt="" onerror="showPlaceholderIcon(this)">`
@@ -267,6 +330,18 @@ const priceHtml = skin.original_price
 ? `<div class="skin-price"><span style="text-decoration:line-through; color:var(--muted); font-size:11px; margin-right:5px;">${formatCoins(skin.original_price)}</span>${formatCoins(skin.price)} <span style="color:#7ec98a; font-size:11px;">-${skin.discount_type === 'percent' ? skin.discount_value + '%' : formatCoins(skin.discount_value)}</span></div>`
 : `<div class="skin-price">${formatCoins(skin.price)}</div>`;
 
+// Бейдж «Трейдер»: только если рыночная цена уже пришла в данных лота
+// (market_price_uzs / market_price). Иначе бейдж не рисуется.
+let traderBadge = '';
+const marketPrice = Number(skin.market_price_uzs || skin.market_price) || 0;
+if (marketPrice > 0 && skin.price > 0){
+const pct = Math.round((skin.price / marketPrice - 1) * 100);
+if (Math.abs(pct) >= TRADER_BADGE_MIN_PCT){
+const d = I18N[currentLang] || I18N.ru;
+traderBadge = `<div class="trader-badge ${pct < 0 ? 'below' : 'above'}">${(pct < 0 ? d.trader_below : d.trader_above).replace('{p}', Math.abs(pct))}</div>`;
+}
+}
+
 return `
 <div class="skin-card ${rarityClass}" data-card="${skin.id}">
 <div class="skin-photo-wrap"${rarityBg}>
@@ -278,6 +353,7 @@ ${favBtn}
 ${weaponType}
 <div class="skin-title">${title}</div>
 ${priceHtml}
+${traderBadge}
 ${actionBtn}
 </div>`;
 }
