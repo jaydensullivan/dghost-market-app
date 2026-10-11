@@ -1688,10 +1688,12 @@ let shareSkin = null;
 let shareBusy = false;
 // Готовое сообщение для окна выбора чата: { preparedId, name }.
 let shareReady = null;
+// Куда отправляем готовый файл: 'chat' — друзьям, 'channel' — в канал (PRO).
+let shareTarget = 'chat';
 
 function setShareBusy(busy){
 shareBusy = busy;
-['shareLinkBtn', 'sharePhotoBtn', 'shareGifBtn', 'shareHandsBtn', 'shareSendBtn'].forEach(id => {
+['shareLinkBtn', 'sharePhotoBtn', 'shareGifBtn', 'shareHandsBtn', 'shareSendBtn', 'shareChannelBtn', 'shareProBtn'].forEach(id => {
 document.getElementById(id).disabled = busy;
 });
 }
@@ -1716,7 +1718,15 @@ if (ok && shareSkin === forSkin) handsBtn.style.display = '';
 }
 shareStatus.textContent = '';
 shareReady = null;
+shareTarget = 'chat';
 document.getElementById('shareSendBtn').style.display = 'none';
+// PRO: GIF и видео — с подпиской (замок на кнопках), «В канал» — только свой лот.
+const pro = typeof isProActive === 'function' && isProActive();
+['shareGifBtn', 'shareHandsBtn'].forEach(id => document.getElementById(id).classList.toggle('pro-locked', !pro));
+const channelBtn = document.getElementById('shareChannelBtn');
+channelBtn.classList.toggle('pro-locked', !pro);
+channelBtn.style.display = has3d && currentUserId && shareSkin.seller_id === currentUserId ? '' : 'none';
+document.getElementById('shareProBtn').style.display = 'none';
 setShareBusy(false);
 shareOverlay.classList.add('show');
 });
@@ -1759,6 +1769,10 @@ if (shareOverlay.classList.contains('show')) shareViaDm();
 function shareMedia(kind){
 if (!shareSkin || shareBusy) return;
 const dict = I18N[currentLang] || I18N.ru;
+if (kind !== 'photo' && !(typeof isProActive === 'function' && isProActive())){
+offerPro(shareStatus, document.getElementById('shareProBtn'));
+return;
+}
 const sendBtn = document.getElementById('shareSendBtn');
 sendBtn.style.display = 'none';
 shareReady = null;
@@ -1766,6 +1780,7 @@ setShareBusy(true);
 prepareShare3DLot(shareSkin, text => { shareStatus.textContent = text; }, kind)
 .then(ready => {
 shareReady = ready;
+if (shareTarget === 'channel') return postShareToChannel(shareSkin, ready.name);
 if (ready.preparedId && canShareMessage()){
 shareStatus.textContent = dict.share_ready;
 sendBtn.style.display = '';
@@ -1789,6 +1804,40 @@ if (sent) shareStatus.textContent = dict.share_gif_sent;
 shareViaDm();
 }
 });
+// «📢 В канал» (PRO): дальше выбирают формат — картинка, GIF или видео.
+document.getElementById('shareChannelBtn').addEventListener('click', () => {
+if (!shareSkin || shareBusy) return;
+const dict = I18N[currentLang] || I18N.ru;
+if (!(typeof isProActive === 'function' && isProActive())){
+offerPro(shareStatus, document.getElementById('shareProBtn'));
+return;
+}
+shareTarget = 'channel';
+document.getElementById('shareSendBtn').style.display = 'none';
+shareStatus.textContent = dict.pro_channel_pick;
+});
+
+function postShareToChannel(skin, name){
+const dict = I18N[currentLang] || I18N.ru;
+return fetch(API_BASE + '/api/pro/channel_post', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData, skin_id: skin.id, name }),
+})
+.then(async r => {
+const data = await r.json().catch(() => ({}));
+shareTarget = 'chat';
+if (r.ok){ shareStatus.textContent = dict.pro_channel_done; return; }
+shareStatus.textContent = data.error === 'post_limit'
+? dict.pro_channel_limit.replace('{n}', data.per_day || 3)
+: (data.error === 'pro_required' ? dict.pro_locked.replace('{price}', '') : errorMessage(data.error));
+});
+}
+
+document.getElementById('shareProBtn').addEventListener('click', () => {
+if (typeof buyPro === 'function') buyPro();
+});
+
 document.getElementById('sharePhotoBtn').addEventListener('click', () => shareMedia('photo'));
 document.getElementById('shareGifBtn').addEventListener('click', () => shareMedia('gif'));
 document.getElementById('shareHandsBtn').addEventListener('click', () => shareMedia('hands'));
