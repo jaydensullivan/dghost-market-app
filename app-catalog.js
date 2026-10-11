@@ -218,6 +218,9 @@ const THEMES = [
 { id: 'emerald', dot: '#34D399' },
 { id: 'sunset', dot: '#FB923C' },
 { id: 'ice', dot: '#7DD3FC' },
+{ id: 'gold', dot: '#FBBF24' },
+{ id: 'rose', dot: '#F472B6' },
+{ id: 'lime', dot: '#A3E635' },
 { id: 'graphite', dot: '#D4D4D8' },
 ];
 const DEFAULT_THEME = 'midnight';
