@@ -372,8 +372,9 @@ traderBadge = `<div class="trader-badge ${pct < 0 ? 'below' : 'above'}">${(pct <
 const floatLine = (skin.float_value !== null && skin.float_value !== undefined)
 ? `<div class="skin-float">${formatFloat(skin.float_value)}</div>`
 : '';
-const stickerStrip = stickersHtml(skin.stickers, 'mini')
-? `<div class="skin-stickers">${stickersHtml(skin.stickers, 'mini')}</div>`
+const stickersMini = stickersHtml(skin.stickers, 'mini');
+const stickerStrip = stickersMini
+? `<div class="skin-stickers">${stickersMini}</div>`
 : '';
 
 return `
