@@ -4430,4 +4430,16 @@ padding:2px 7px; border-radius:6px; font-size:11px; font-weight:700; line-height
 .pro-status{ font-size:12px; opacity:.75; margin-bottom:10px; }
 .pro-buy{ width:100%; justify-content:center; background:linear-gradient(90deg, var(--accent), var(--accent-2)); color:#fff; border:0; }
 .save.pro-locked::after{ content:" 🔒 PRO"; font-size:11px; opacity:.85; }
+.pro-channels{ margin-top:12px; padding-top:10px; border-top:1px solid rgba(168,85,247,.3); }
+.pro-channels-title{ font-weight:700; font-size:14px; margin-bottom:4px; }
+.pro-channels-hint{ white-space:pre-line; font-size:12px; opacity:.75; line-height:1.45; margin-bottom:8px; }
+.pro-channel-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 0; font-size:13px; border-bottom:1px solid rgba(255,255,255,.06); overflow-wrap:anywhere; }
+.pro-channel-row button{ background:none; border:0; color:var(--muted); font-size:16px; padding:4px 8px; cursor:pointer; }
+.pro-channels-empty{ font-size:12px; opacity:.6; padding:4px 0; }
+.pro-channels-add{ display:flex; gap:8px; margin-top:8px; }
+.pro-channels-add input{ flex:1; min-width:0; padding:10px 12px; border-radius:4px; border:1px solid var(--red-dim); background:rgba(255,255,255,0.03); color:var(--silver); font-size:14px; }
+.pro-channels-add input:focus{ outline:none; border-color:var(--red); }
+.pro-channels-add .pf-btn{ flex:none; }
+.pro-channels-status{ font-size:12px; margin-top:6px; min-height:1.2em; }
+.share-own-channels{ display:contents; }
 .save.pro-cta{ background:linear-gradient(90deg, var(--accent), var(--accent-2)); color:#fff; }
