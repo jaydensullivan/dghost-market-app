@@ -4342,6 +4342,61 @@ body.card-showcase .skin-card .skin-photo-wrap{
 background:radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--rar-c) 38%, transparent) 0%, transparent 70%);
 }
 
+/* ---------- шаблоны карточки лота: «Компакт» и «Крупная» ----------
+   Класс layout-compact / layout-large ставится на body из app-catalog.js;
+   без него каталог выглядит как раньше. Только переменные темы. */
+.layout-bar{ display:flex; align-items:center; justify-content:flex-end; gap:8px; margin:0 0 8px; }
+.layout-label{ font-family:'Inter',sans-serif; font-size:11px; color:var(--muted); }
+.layout-switch{ display:inline-flex; border:1px solid var(--red-dim); border-radius:10px; overflow:hidden; background:var(--surface); }
+.layout-btn{
+padding:6px 12px; border:0; background:transparent; color:var(--muted);
+font-family:'Inter',sans-serif; font-size:12px; font-weight:600; cursor:pointer;
+}
+.layout-btn + .layout-btn{ border-left:1px solid var(--red-dim); }
+.layout-btn.active{ background:var(--cta-gradient); color:#fff; }
+.skin-float, .skin-stickers{ display:none; }
+.skin-float{
+font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted);
+margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+
+/* Компакт: плотная сетка, мелкое превью, название + износ/float + цена */
+body.layout-compact #skinsList{ grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+body.layout-compact #skinsList .skin-card{ padding:5px; border-radius:9px; }
+body.layout-compact #skinsList .skin-photo-wrap{ aspect-ratio:1 / 1; margin-bottom:4px; border-radius:6px; }
+body.layout-compact #skinsList .skin-weapon-type,
+body.layout-compact #skinsList .trader-badge,
+body.layout-compact #skinsList .skin-cart-btn,
+body.layout-compact #skinsList .skin-badge.stattrak{ display:none; }
+body.layout-compact #skinsList .skin-badge{ font-size:8px; padding:1px 4px; top:3px; }
+body.layout-compact #skinsList .skin-badge.wear{ left:3px; }
+body.layout-compact #skinsList .skin-fav{ width:22px; height:22px; top:2px; right:2px; }
+body.layout-compact #skinsList .skin-fav svg{ width:13px; height:13px; }
+body.layout-compact #skinsList .skin-title{ font-size:11px; line-height:1.2; -webkit-line-clamp:1; }
+body.layout-compact #skinsList .skin-float{ display:block; }
+body.layout-compact #skinsList .skin-price{ font-size:11px; margin-top:3px; }
+body.layout-compact #skinsList .skin-price span{ display:none; }
+body.layout-compact #skinsList .skin-action-row{ margin-top:5px; }
+body.layout-compact #skinsList .skin-action,
+body.layout-compact #skinsList .skin-action-row .skin-action{ padding:6px 2px; font-size:9px; margin-top:0; border-radius:7px; }
+body.layout-compact #skinsList .skin-action.own{ margin-top:5px; }
+
+/* Крупная: одна колонка, большое превью, float и наклейки */
+body.layout-large #skinsList{ grid-template-columns:1fr; gap:14px; }
+body.layout-large #skinsList .skin-card{ padding:12px; border-radius:16px; }
+body.layout-large #skinsList .skin-photo-wrap{ aspect-ratio:16 / 10; margin-bottom:10px; border-radius:12px; }
+body.layout-large #skinsList .skin-badge{ font-size:11px; padding:3px 8px; top:8px; }
+body.layout-large #skinsList .skin-badge.wear{ left:8px; }
+body.layout-large #skinsList .skin-badge.wear ~ .skin-badge.stattrak{ top:36px; }
+body.layout-large #skinsList .skin-fav{ width:38px; height:38px; top:8px; right:8px; }
+body.layout-large #skinsList .skin-weapon-type{ font-size:11px; }
+body.layout-large #skinsList .skin-title{ font-size:17px; margin-top:3px; }
+body.layout-large #skinsList .skin-float{ display:block; font-size:12px; margin-top:4px; }
+body.layout-large #skinsList .skin-stickers{ display:block; }
+body.layout-large #skinsList .st-mini{ width:32px; height:24px; object-fit:contain; }
+body.layout-large #skinsList .skin-price{ font-size:20px; margin-top:8px; }
+body.layout-large #skinsList .skin-action-row .skin-action{ padding:13px 8px; font-size:13px; }
+
 /* ---------- бейдж «Трейдер»: цена лота относительно рынка ---------- */
 .trader-badge{
 display:inline-block; align-self:flex-start; margin:2px 0 0;

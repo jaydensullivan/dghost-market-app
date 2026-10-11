@@ -239,6 +239,23 @@ try { localStorage.setItem(key, val); } catch(e) {}
 let currentTheme = THEMES.some(t => t.id === storageGet('dg_theme')) ? storageGet('dg_theme') : DEFAULT_THEME;
 let currentCardView = storageGet('dg_card_view') === 'showcase' ? 'showcase' : 'normal';
 
+// Шаблон карточки лота в каталоге: '' (текущий вид), 'compact' или 'large'.
+// Хранится в localStorage (dg_card_layout); повторный тап по активной кнопке
+// возвращает обычный вид.
+const CARD_LAYOUTS = ['compact', 'large'];
+let currentCardLayout = CARD_LAYOUTS.includes(storageGet('dg_card_layout')) ? storageGet('dg_card_layout') : '';
+
+function applyCardLayout(layout){
+currentCardLayout = CARD_LAYOUTS.includes(layout) ? layout : '';
+CARD_LAYOUTS.forEach(l => document.body.classList.toggle('layout-' + l, currentCardLayout === l));
+storageSet('dg_card_layout', currentCardLayout);
+document.querySelectorAll('[data-card-layout]').forEach(b => {
+const on = b.dataset.cardLayout === currentCardLayout;
+b.classList.toggle('active', on);
+b.setAttribute('aria-pressed', on ? 'true' : 'false');
+});
+}
+
 function applyTheme(id){
 if (!THEMES.some(t => t.id === id)) id = DEFAULT_THEME;
 currentTheme = id;
@@ -266,6 +283,11 @@ box.innerHTML = THEMES.map(t => `<button type="button" class="theme-btn${t.id ==
 document.addEventListener('click', (e) => {
 const tb = e.target.closest ? e.target.closest('[data-theme-id]') : null;
 if (tb) { applyTheme(tb.dataset.themeId); return; }
+const lb = e.target.closest ? e.target.closest('[data-card-layout]') : null;
+if (lb) {
+applyCardLayout(lb.dataset.cardLayout === currentCardLayout ? '' : lb.dataset.cardLayout);
+return;
+}
 const vb = e.target.closest ? e.target.closest('[data-card-view]') : null;
 if (vb) {
 applyCardView(vb.dataset.cardView);
@@ -274,6 +296,7 @@ applyCardView(vb.dataset.cardView);
 
 applyTheme(currentTheme);
 applyCardView(currentCardView);
+applyCardLayout(currentCardLayout);
 
 function skinCardHtml(skin){
 const photo = skin.photo_url
@@ -345,6 +368,14 @@ traderBadge = `<div class="trader-badge ${pct < 0 ? 'below' : 'above'}">${(pct <
 }
 }
 
+// Float и наклейки видны только в шаблонах «Компакт»/«Крупная» (см. app.css).
+const floatLine = (skin.float_value !== null && skin.float_value !== undefined)
+? `<div class="skin-float">${formatFloat(skin.float_value)}</div>`
+: '';
+const stickerStrip = stickersHtml(skin.stickers, 'mini')
+? `<div class="skin-stickers">${stickersHtml(skin.stickers, 'mini')}</div>`
+: '';
+
 return `
 <div class="skin-card ${rarityClass}" data-card="${skin.id}">
 <div class="skin-photo-wrap"${rarityBg}>
@@ -355,6 +386,8 @@ ${favBtn}
 </div>
 ${weaponType}
 <div class="skin-title">${title}</div>
+${floatLine}
+${stickerStrip}
 ${priceHtml}
 ${traderBadge}
 ${actionBtn}
