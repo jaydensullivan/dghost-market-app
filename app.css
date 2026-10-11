@@ -32,6 +32,19 @@ body.theme-light{
 --silver:#241f2b;
 }
 
+/* ---------- цветовые темы (переключатель в профиле) ----------
+   «Полночь» — значения :root выше, без изменений. Остальные темы
+   переопределяют только ключевые переменные. Включаются атрибутом
+   data-theme на <html>. Светлая схема Telegram (body.theme-light)
+   по-прежнему главнее. --bg-hue крутит оттенок app-bg.jpg. */
+html[data-theme="neon"]{ --bg:#0A0418; --surface:#1A0B33; --accent:#7A1FE0; --accent-2:#C21FA8; --cta-gradient:linear-gradient(135deg,#7A1FE0,#C21FA8); --red:#C77DFF; --red-glow:#DDA5FF; --red-dim:#3a1466; --text:#F5F0FF; --muted:#B3A8CC; --bg-hue:12deg; }
+html[data-theme="emerald"]{ --bg:#04100B; --surface:#0D2218; --accent:#047857; --accent-2:#0B7A5E; --cta-gradient:linear-gradient(135deg,#047857,#0B7A5E); --red:#34D399; --red-glow:#6EE7B7; --red-dim:#14402d; --text:#EEF8F2; --muted:#9DB8A9; --bg-hue:150deg; }
+html[data-theme="sunset"]{ --bg:#140805; --surface:#2A140E; --accent:#C2410C; --accent-2:#BE123C; --cta-gradient:linear-gradient(135deg,#C2410C,#BE123C); --red:#FB923C; --red-glow:#FDBA74; --red-dim:#552516; --text:#FBF1EC; --muted:#C4A89C; --bg-hue:200deg; }
+html[data-theme="ice"]{ --bg:#050E18; --surface:#0E2033; --accent:#0369A1; --accent-2:#0E7490; --cta-gradient:linear-gradient(135deg,#0369A1,#0E7490); --red:#7DD3FC; --red-glow:#BAE6FD; --red-dim:#17405f; --text:#EEF6FC; --muted:#9CB4C8; --bg-hue:100deg; }
+html[data-theme="graphite"]{ --bg:#0C0C0E; --surface:#1B1C20; --accent:#52525B; --accent-2:#4B5563; --cta-gradient:linear-gradient(135deg,#52525B,#4B5563); --red:#D4D4D8; --red-glow:#E4E4E7; --red-dim:#34353b; --text:#F1F1F3; --muted:#A5A7AE; }
+html[data-theme]:not([data-theme="midnight"]):not([data-theme="graphite"]) .princess-bg{ filter:hue-rotate(var(--bg-hue,0deg)); }
+html[data-theme="graphite"] .princess-bg{ filter:grayscale(1); }
+
 *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
 html,body{
@@ -171,7 +184,7 @@ cursor:pointer;
 }
 
 .welcome-btn.primary{
-background:linear-gradient(135deg, #7B2CFF, #FF2BD6);
+background:var(--cta-gradient);
 color:#fff;
 }
 
@@ -344,7 +357,7 @@ transition:transform .15s ease, background .2s ease;
 
 .cta.live{
 border-color:var(--red);
-background:linear-gradient(135deg, #7B2CFF, #FF2BD6);
+background:var(--cta-gradient);
 }
 
 .edit-overlay{
@@ -450,7 +463,7 @@ color:var(--muted);
 
 .edit-actions .save{
 border-color:var(--red);
-background:linear-gradient(135deg, #7B2CFF, #FF2BD6);
+background:var(--cta-gradient);
 color:#fff;
 }
 
@@ -1393,7 +1406,7 @@ font-weight:600;
 padding:8px 14px;
 border-radius:20px;
 border:1px solid var(--red);
-background:linear-gradient(135deg, #7B2CFF, #FF2BD6);
+background:var(--cta-gradient);
 color:#fff;
 font-family:'JetBrains Mono', monospace;
 font-size:12px;
@@ -2564,7 +2577,7 @@ font-family:'Inter', sans-serif; font-size:11px; font-weight:600;
 .rd-up{ color:#4ad880; }
 .rd-conv{ margin-top:10px; }
 .rd-conv-bar{ height:6px; border-radius:3px; background:rgba(255,255,255,0.08); overflow:hidden; margin-bottom:4px; }
-.rd-conv-bar > div{ height:100%; background:linear-gradient(90deg, #7B2CFF, #FF2BD6); border-radius:3px; }
+.rd-conv-bar > div{ height:100%; background:linear-gradient(90deg, var(--accent), var(--accent-2)); border-radius:3px; }
 .rd-friend{ display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--red-dim); }
 .rd-friend:last-of-type{ border-bottom:none; }
 .rd-friend-dot{ width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.15); flex:none; }
@@ -4287,6 +4300,52 @@ font-size:14px; font-weight:700;
 }
 .dgw-btn-ghost{ background:transparent; border:1px solid rgba(255,255,255,.18); color:#e6def5; font-weight:600; }
 .dgw-btn-danger{ background:#c0264a; }
+
+/* ---------- переключатель тем и вида карточек (профиль) ---------- */
+.pf-theme .pf-lang-head + .theme-switch + .pf-lang-head{ margin-top:16px; }
+.theme-switch{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px; }
+.theme-btn{
+display:flex; align-items:center; gap:6px; justify-content:center;
+padding:9px 4px; border-radius:10px; border:1px solid var(--red-dim);
+background:transparent; color:var(--muted);
+font-family:'Inter',sans-serif; font-size:12px; font-weight:600; cursor:pointer;
+}
+.theme-btn.active{ border-color:var(--red); color:var(--silver); background:rgba(123,44,255,0.08); }
+.theme-dot{ width:12px; height:12px; border-radius:50%; flex:none; border:1px solid rgba(255,255,255,0.35); }
+.view-switch{ display:flex; gap:8px; margin-top:10px; }
+.view-btn{
+flex:1; padding:10px 4px; border-radius:10px; border:1px solid var(--red-dim);
+background:transparent; color:var(--muted);
+font-family:'Inter',sans-serif; font-size:12px; font-weight:600; cursor:pointer;
+}
+.view-btn.active{ border-color:var(--red); color:var(--silver); background:rgba(123,44,255,0.08); }
+
+/* ---------- карточка «Витрина»: рамка и свечение по редкости ---------- */
+.skin-card{ --rar-c:var(--red-dim); }
+.skin-card.rarity-consumer{ --rar-c:#aec2d1; }
+.skin-card.rarity-industrial{ --rar-c:#5f93c7; }
+.skin-card.rarity-milspec{ --rar-c:#5a6fd6; }
+.skin-card.rarity-restricted{ --rar-c:#8c5fd6; }
+.skin-card.rarity-classified{ --rar-c:#c15bc9; }
+.skin-card.rarity-covert{ --rar-c:#d85454; }
+.skin-card.rarity-contraband, .skin-card.rarity-extraordinary{ --rar-c:#dbb84f; }
+body.card-showcase .skin-card{
+border-color:var(--rar-c);
+border-top-width:1px;
+background:linear-gradient(180deg, color-mix(in srgb, var(--rar-c) 24%, var(--surface)) 0%, var(--surface) 62%);
+box-shadow:0 0 14px color-mix(in srgb, var(--rar-c) 45%, transparent), inset 0 0 18px color-mix(in srgb, var(--rar-c) 14%, transparent);
+}
+body.card-showcase .skin-card .skin-photo-wrap{
+background:radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--rar-c) 38%, transparent) 0%, transparent 70%);
+}
+
+/* ---------- бейдж «Трейдер»: цена лота относительно рынка ---------- */
+.trader-badge{
+display:inline-block; align-self:flex-start; margin:2px 0 0;
+padding:2px 7px; border-radius:6px; font-size:11px; font-weight:700; line-height:1.4;
+}
+.trader-badge.below{ background:rgba(34,160,90,0.18); color:#6fe0a0; border:1px solid rgba(34,160,90,0.45); }
+.trader-badge.above{ background:rgba(230,150,40,0.16); color:#f5b860; border:1px solid rgba(230,150,40,0.4); }
 
 /* ---------- подписка PRO (app-pro.js) ---------- */
 .pro-card{ border:1px solid rgba(168,85,247,.45); background:linear-gradient(135deg, rgba(123,44,255,.18), rgba(255,43,214,.08)); }
