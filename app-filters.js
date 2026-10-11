@@ -1480,25 +1480,46 @@ loadMarketPriceComparison(skin.id);
 renderSimilarSkins(skin);
 }
 
-// Мини-график по дневным снимкам цены (history: [{day, price_uzs}]).
-function marketSparklineHtml(history){
+// График по дневным снимкам цены (history: [{day, price_uzs}]): сверху —
+// изменение за период, на линии — пунктир «этот лот» (если цена лота не
+// слишком далеко от рынка) и точка «сегодня», снизу — даты и мин/макс.
+function marketSparklineHtml(history, lotPrice){
 if (!history || history.length < 2) return '';
-const prices = history.map(h => h.price_uzs);
-const min = Math.min(...prices);
-const max = Math.max(...prices);
-const range = max - min || 1;
-const w = 280, h = 44, pad = 3;
-const step = (w - pad * 2) / (prices.length - 1);
-const points = prices.map((p, i) => {
-const x = pad + i * step;
-const y = pad + (1 - (p - min) / range) * (h - pad * 2);
-return `${x.toFixed(1)},${y.toFixed(1)}`;
-}).join(' ');
 const dict = I18N[currentLang] || I18N.ru;
+const prices = history.map(h => h.price_uzs);
+let min = Math.min(...prices);
+let max = Math.max(...prices);
+const first = prices[0], last = prices[prices.length - 1];
+// Цену лота рисуем, только если она рядом с рынком — иначе график сплющится.
+const showLot = lotPrice > 0 && lotPrice >= min * 0.8 && lotPrice <= max * 1.2;
+const lo = showLot ? Math.min(min, lotPrice) : min;
+const hi = showLot ? Math.max(max, lotPrice) : max;
+const range = hi - lo || 1;
+const w = 300, h = 70, padX = 4, padY = 8;
+const step = (w - padX * 2) / (prices.length - 1);
+const yOf = p => padY + (1 - (p - lo) / range) * (h - padY * 2);
+const pts = prices.map((p, i) => [padX + i * step, yOf(p)]);
+const line = pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+const area = `${padX},${h} ${line} ${(padX + (prices.length - 1) * step).toFixed(1)},${h}`;
+const [lx, ly] = pts[pts.length - 1];
+const lotLine = showLot
+? `<line x1="0" x2="${w}" y1="${yOf(lotPrice).toFixed(1)}" y2="${yOf(lotPrice).toFixed(1)}" stroke="var(--silver)" stroke-width="1" stroke-dasharray="4 4" opacity=".7" vector-effect="non-scaling-stroke"/>`
+: '';
+const change = first ? Math.round((last - first) / first * 100) : 0;
+const changeText = change === 0 ? dict.mp_change_flat
+: (change > 0 ? '▲ +' : '▼ −') + Math.abs(change) + '% ' + dict.mp_change_period;
+const dayText = d => { const m = String(d || '').match(/^\d{4}-(\d{2})-(\d{2})/); return m ? `${m[2]}.${m[1]}` : ''; };
 return `<div class="mp-spark">
-<div class="mp-spark-title">${dict.mp_history}</div>
-<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline points="${points}" fill="none" stroke="var(--red)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>
-<div class="mp-spark-range"><span>${formatCoins(min)}</span><span>${formatCoins(max)}</span></div>
+<div class="mp-spark-head"><span class="mp-spark-title">${dict.mp_history}</span><span class="mp-spark-change ${change > 0 ? 'up' : (change < 0 ? 'down' : '')}">${changeText}</span></div>
+<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+<defs><linearGradient id="mpSparkFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--red)" stop-opacity=".28"/><stop offset="1" stop-color="var(--red)" stop-opacity="0"/></linearGradient></defs>
+<polygon points="${area}" fill="url(#mpSparkFill)"/>
+${lotLine}
+<polyline points="${line}" fill="none" stroke="var(--red)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+<circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="3.5" fill="var(--red)"/>
+</svg>
+<div class="mp-spark-dates"><span>${dayText(history[0].day)}</span><span>${dict.mp_today}: ${formatCoins(last)}</span></div>
+<div class="mp-spark-legend"><span>${dict.mp_min} ${formatCoins(min)}</span><span>${dict.mp_max} ${formatCoins(max)}</span>${showLot ? `<span class="mp-spark-lot">┄ ${dict.mp_this_lot}</span>` : ''}</div>
 </div>`;
 }
 
@@ -1520,7 +1541,7 @@ const usd = (isCsfloat && data.price_usd) ? `<span class="mp-usd">${dict.mp_from
 box.innerHTML = `
 <div class="mp-row"><span>${label} ${usd}</span><span>${formatCoins(data.market_price_uzs)}</span></div>
 <div class="mp-diff ${cheaper ? 'cheaper' : 'pricier'}">${diffLabel}</div>
-${marketSparklineHtml(data.history)}
+${marketSparklineHtml(data.history, pendingBuySkin && pendingBuySkin.price)}
 `;
 box.style.display = '';
 }
@@ -2554,61 +2575,58 @@ loadSkins();
 
 
 // ============================================================
-// «СЛЕДИТЬ» ИЗ КАРТОЧКИ ЛОТА — БЫСТРОЕ ДОБАВЛЕНИЕ В КАТАЛОГ ЖЕЛАНИЙ
+// ❤️ «СЛЕДИТЬ» — СРАЗУ В «ХОЧУ», БЕЗ ОКНА
 //
-// Название, износ и StatTrak берутся из лота — пользователю нужно
-// только (по желанию) указать цену. Повторное «Следить» по тому же
-// скину не создаёт дубль, а обновляет порог цены на сервере.
+// Нажатие на сердечко сразу добавляет скин в «Хочу»: название,
+// износ и StatTrak берутся из лота, порог цены не задаётся (его
+// можно поставить в разделе «Хочу»). Повторное нажатие на
+// заполненное сердечко — убирает из «Хочу».
 // ============================================================
 
-const watchOverlay = document.getElementById('watchOverlay');
-let watchSkin = null;
+let watchBusy = false;
+
+function watchKey(skin){
+return String((skin && skin.title) || '').trim().toLowerCase();
+}
 
 function openWatchSheet(skin){
 if (!tg || !tg.initData){
 showAlert(errorMessage('unauthorized'));
 return;
 }
+if (!skin || watchBusy) return;
 const dict = I18N[currentLang] || I18N.ru;
-watchSkin = skin;
-document.getElementById('watchSkinTitle').textContent = (skin.stattrak ? 'StatTrak™ ' : '') + skin.title;
-const wearRow = document.getElementById('watchWearRow');
-wearRow.style.display = skin.wear ? '' : 'none';
-document.getElementById('watchWearCheck').checked = !!skin.wear;
-document.getElementById('watchWearLabel').textContent = dict.watch_only_wear.replace('{wear}', skin.wear || '');
-document.getElementById('watchStCheck').checked = true;
-document.getElementById('watchStLabel').textContent = skin.stattrak ? dict.watch_only_st : dict.watch_no_st;
-const priceInput = document.getElementById('watchPriceInput');
-priceInput.value = '';
-// У предмета из инвентаря цены нет — тогда без подсказки.
-priceInput.placeholder = skin.price ? dict.watch_price_ph.replace('{price}', Math.round(skin.price * 0.9)) : '';
-document.getElementById('watchStatus').textContent = '';
-watchOverlay.classList.add('show');
+const key = watchKey(skin);
+const favs = (typeof favQueries !== 'undefined') ? favQueries : null;
+watchBusy = true;
+// Уже в «Хочу» — убираем.
+if (favs && favs.has(key)){
+const itemId = favs.get(key);
+fetch(API_BASE + '/api/wishlist/' + itemId + '/remove', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+})
+.then(r => {
+if (!r.ok) throw new Error(errorMessage('network'));
+favs.delete(key);
+applyFiltersAndRender();
+showToast(dict.watch_removed);
+if (typeof loadWishlist === 'function') loadWishlist();
+})
+.catch(err => showErrorToast(err))
+.finally(() => { watchBusy = false; });
+return;
 }
-
-document.getElementById('buyWatchBtn').addEventListener('click', () => {
-if (pendingBuySkin) openWatchSheet(pendingBuySkin);
-});
-
-document.getElementById('watchCancelBtn').addEventListener('click', () => {
-watchOverlay.classList.remove('show');
-});
-
-document.getElementById('watchSubmitBtn').addEventListener('click', () => {
-if (!watchSkin || !tg || !tg.initData) return;
-const dict = I18N[currentLang] || I18N.ru;
-const btn = document.getElementById('watchSubmitBtn');
-const status = document.getElementById('watchStatus');
-btn.disabled = true;
 fetch(API_BASE + '/api/wishlist', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({
 init_data: tg.initData,
-query: watchSkin.title,
-max_price: Number(document.getElementById('watchPriceInput').value) || null,
-wear: (watchSkin.wear && document.getElementById('watchWearCheck').checked) ? watchSkin.wear : null,
-stattrak: document.getElementById('watchStCheck').checked ? (watchSkin.stattrak ? 1 : 0) : '',
+query: skin.title,
+max_price: null,
+wear: skin.wear || null,
+stattrak: skin.stattrak ? 1 : 0,
 })
 })
 .then(async r => {
@@ -2616,16 +2634,16 @@ const data = await r.json().catch(() => ({}));
 if (!r.ok) throw new Error(data.error === 'too_many_items' ? dict.wishlist_too_many : errorMessage(data.error));
 return data;
 })
-.then(data => {
-watchOverlay.classList.remove('show');
-showToast(data.updated ? dict.watch_updated : dict.watch_ok, { type: 'success' });
+.then(() => {
+showToast(dict.watch_ok, { type: 'success' });
 if (typeof loadWishlist === 'function') loadWishlist();
-// ❤️ на карточке сразу становится заполненным.
-if (typeof favQueries !== 'undefined'){
-favQueries.add(String(watchSkin.title || '').trim().toLowerCase());
-applyFiltersAndRender();
-}
+// id новой записи нужен для снятия — берём из списка.
+if (typeof loadFavQueries === 'function') loadFavQueries();
 })
-.catch(err => { status.textContent = friendlyErrorMessage(err); })
-.finally(() => { btn.disabled = false; });
+.catch(err => showErrorToast(err))
+.finally(() => { watchBusy = false; });
+}
+
+document.getElementById('buyWatchBtn').addEventListener('click', () => {
+if (pendingBuySkin) openWatchSheet(pendingBuySkin);
 });
