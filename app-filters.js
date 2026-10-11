@@ -1721,11 +1721,13 @@ shareReady = null;
 shareTarget = 'chat';
 document.getElementById('shareSendBtn').style.display = 'none';
 // PRO: GIF и видео — с подпиской (замок на кнопках), «В канал» — только свой лот.
+// Чужим лотом делиться GIF/видео — бесплатно (реклама маркета); своим — с PRO.
 const pro = typeof isProActive === 'function' && isProActive();
-['shareGifBtn', 'shareHandsBtn'].forEach(id => document.getElementById(id).classList.toggle('pro-locked', !pro));
+const ownLot = !!(currentUserId && shareSkin.seller_id === currentUserId);
+['shareGifBtn', 'shareHandsBtn'].forEach(id => document.getElementById(id).classList.toggle('pro-locked', ownLot && !pro));
 const channelBtn = document.getElementById('shareChannelBtn');
 channelBtn.classList.toggle('pro-locked', !pro);
-channelBtn.style.display = has3d && currentUserId && shareSkin.seller_id === currentUserId ? '' : 'none';
+channelBtn.style.display = has3d && ownLot ? '' : 'none';
 document.getElementById('shareProBtn').style.display = 'none';
 setShareBusy(false);
 shareOverlay.classList.add('show');
@@ -1769,7 +1771,8 @@ if (shareOverlay.classList.contains('show')) shareViaDm();
 function shareMedia(kind){
 if (!shareSkin || shareBusy) return;
 const dict = I18N[currentLang] || I18N.ru;
-if (kind !== 'photo' && !(typeof isProActive === 'function' && isProActive())){
+const ownLot = !!(currentUserId && shareSkin.seller_id === currentUserId);
+if (kind !== 'photo' && ownLot && !(typeof isProActive === 'function' && isProActive())){
 offerPro(shareStatus, document.getElementById('shareProBtn'));
 return;
 }
