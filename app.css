@@ -4346,3 +4346,15 @@ padding:2px 7px; border-radius:6px; font-size:11px; font-weight:700; line-height
 }
 .trader-badge.below{ background:rgba(34,160,90,0.18); color:#6fe0a0; border:1px solid rgba(34,160,90,0.45); }
 .trader-badge.above{ background:rgba(230,150,40,0.16); color:#f5b860; border:1px solid rgba(230,150,40,0.4); }
+
+/* ---------- подписка PRO (app-pro.js) ---------- */
+.pro-card{ border:1px solid rgba(168,85,247,.45); background:linear-gradient(135deg, rgba(123,44,255,.18), rgba(255,43,214,.08)); }
+.pro-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; }
+.pro-title{ font-weight:800; font-size:15px; }
+.pro-badge{ font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px; background:#16a34a; color:#fff; }
+.pro-badge:empty{ display:none; }
+.pro-features{ white-space:pre-line; font-size:13px; line-height:1.5; opacity:.9; margin-bottom:8px; }
+.pro-status{ font-size:12px; opacity:.75; margin-bottom:10px; }
+.pro-buy{ width:100%; justify-content:center; background:linear-gradient(90deg, var(--accent), var(--accent-2)); color:#fff; border:0; }
+.save.pro-locked::after{ content:" 🔒 PRO"; font-size:11px; opacity:.85; }
+.save.pro-cta{ background:linear-gradient(90deg, var(--accent), var(--accent-2)); color:#fff; }
