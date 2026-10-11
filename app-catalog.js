@@ -100,9 +100,10 @@ applyFiltersAndRender();
 });
 
 // ---------- ❤️ «Следить» ----------
-// Сердечко на карточке открывает «Следить» (уведомление, когда такой
-// скин появится или подешевеет). Заполнено, если скин уже в списке.
-let favQueries = new Set();
+// Сердечко на карточке сразу добавляет скин в «Хочу» (уведомление,
+// когда такой скин появится или подешевеет) и убирает повторным
+// нажатием. Заполнено, если скин уже в списке. Название → id записи.
+let favQueries = new Map();
 
 function isFavSkin(skin){
 return favQueries.has(String(skin.title || '').trim().toLowerCase());
@@ -113,7 +114,7 @@ if (!tg || !tg.initData) return;
 fetch(API_BASE + '/api/wishlist?init_data=' + encodeURIComponent(tg.initData))
 .then(r => r.json())
 .then(data => {
-favQueries = new Set((data.items || []).map(it => String(it.query || '').trim().toLowerCase()));
+favQueries = new Map((data.items || []).map(it => [String(it.query || '').trim().toLowerCase(), it.id]));
 applyFiltersAndRender();
 })
 .catch(() => {});

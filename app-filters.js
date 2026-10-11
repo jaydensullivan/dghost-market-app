@@ -2575,61 +2575,58 @@ loadSkins();
 
 
 // ============================================================
-// «СЛЕДИТЬ» ИЗ КАРТОЧКИ ЛОТА — БЫСТРОЕ ДОБАВЛЕНИЕ В КАТАЛОГ ЖЕЛАНИЙ
+// ❤️ «СЛЕДИТЬ» — СРАЗУ В «ХОЧУ», БЕЗ ОКНА
 //
-// Название, износ и StatTrak берутся из лота — пользователю нужно
-// только (по желанию) указать цену. Повторное «Следить» по тому же
-// скину не создаёт дубль, а обновляет порог цены на сервере.
+// Нажатие на сердечко сразу добавляет скин в «Хочу»: название,
+// износ и StatTrak берутся из лота, порог цены не задаётся (его
+// можно поставить в разделе «Хочу»). Повторное нажатие на
+// заполненное сердечко — убирает из «Хочу».
 // ============================================================
 
-const watchOverlay = document.getElementById('watchOverlay');
-let watchSkin = null;
+let watchBusy = false;
+
+function watchKey(skin){
+return String((skin && skin.title) || '').trim().toLowerCase();
+}
 
 function openWatchSheet(skin){
 if (!tg || !tg.initData){
 showAlert(errorMessage('unauthorized'));
 return;
 }
+if (!skin || watchBusy) return;
 const dict = I18N[currentLang] || I18N.ru;
-watchSkin = skin;
-document.getElementById('watchSkinTitle').textContent = (skin.stattrak ? 'StatTrak™ ' : '') + skin.title;
-const wearRow = document.getElementById('watchWearRow');
-wearRow.style.display = skin.wear ? '' : 'none';
-document.getElementById('watchWearCheck').checked = !!skin.wear;
-document.getElementById('watchWearLabel').textContent = dict.watch_only_wear.replace('{wear}', skin.wear || '');
-document.getElementById('watchStCheck').checked = true;
-document.getElementById('watchStLabel').textContent = skin.stattrak ? dict.watch_only_st : dict.watch_no_st;
-const priceInput = document.getElementById('watchPriceInput');
-priceInput.value = '';
-// У предмета из инвентаря цены нет — тогда без подсказки.
-priceInput.placeholder = skin.price ? dict.watch_price_ph.replace('{price}', Math.round(skin.price * 0.9)) : '';
-document.getElementById('watchStatus').textContent = '';
-watchOverlay.classList.add('show');
+const key = watchKey(skin);
+const favs = (typeof favQueries !== 'undefined') ? favQueries : null;
+watchBusy = true;
+// Уже в «Хочу» — убираем.
+if (favs && favs.has(key)){
+const itemId = favs.get(key);
+fetch(API_BASE + '/api/wishlist/' + itemId + '/remove', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+})
+.then(r => {
+if (!r.ok) throw new Error(errorMessage('network'));
+favs.delete(key);
+applyFiltersAndRender();
+showToast(dict.watch_removed);
+if (typeof loadWishlist === 'function') loadWishlist();
+})
+.catch(err => showErrorToast(err))
+.finally(() => { watchBusy = false; });
+return;
 }
-
-document.getElementById('buyWatchBtn').addEventListener('click', () => {
-if (pendingBuySkin) openWatchSheet(pendingBuySkin);
-});
-
-document.getElementById('watchCancelBtn').addEventListener('click', () => {
-watchOverlay.classList.remove('show');
-});
-
-document.getElementById('watchSubmitBtn').addEventListener('click', () => {
-if (!watchSkin || !tg || !tg.initData) return;
-const dict = I18N[currentLang] || I18N.ru;
-const btn = document.getElementById('watchSubmitBtn');
-const status = document.getElementById('watchStatus');
-btn.disabled = true;
 fetch(API_BASE + '/api/wishlist', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({
 init_data: tg.initData,
-query: watchSkin.title,
-max_price: Number(document.getElementById('watchPriceInput').value) || null,
-wear: (watchSkin.wear && document.getElementById('watchWearCheck').checked) ? watchSkin.wear : null,
-stattrak: document.getElementById('watchStCheck').checked ? (watchSkin.stattrak ? 1 : 0) : '',
+query: skin.title,
+max_price: null,
+wear: skin.wear || null,
+stattrak: skin.stattrak ? 1 : 0,
 })
 })
 .then(async r => {
@@ -2637,16 +2634,16 @@ const data = await r.json().catch(() => ({}));
 if (!r.ok) throw new Error(data.error === 'too_many_items' ? dict.wishlist_too_many : errorMessage(data.error));
 return data;
 })
-.then(data => {
-watchOverlay.classList.remove('show');
-showToast(data.updated ? dict.watch_updated : dict.watch_ok, { type: 'success' });
+.then(() => {
+showToast(dict.watch_ok, { type: 'success' });
 if (typeof loadWishlist === 'function') loadWishlist();
-// ❤️ на карточке сразу становится заполненным.
-if (typeof favQueries !== 'undefined'){
-favQueries.add(String(watchSkin.title || '').trim().toLowerCase());
-applyFiltersAndRender();
-}
+// id новой записи нужен для снятия — берём из списка.
+if (typeof loadFavQueries === 'function') loadFavQueries();
 })
-.catch(err => { status.textContent = friendlyErrorMessage(err); })
-.finally(() => { btn.disabled = false; });
+.catch(err => showErrorToast(err))
+.finally(() => { watchBusy = false; });
+}
+
+document.getElementById('buyWatchBtn').addEventListener('click', () => {
+if (pendingBuySkin) openWatchSheet(pendingBuySkin);
 });

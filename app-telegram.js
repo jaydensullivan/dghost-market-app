@@ -72,7 +72,6 @@ notificationsOverlay: 'notificationsCloseBtn',
 disputeOverlay: 'disputeCancelBtn',
 sellerProfileOverlay: 'sellerProfileCloseBtn',
 reviewOverlay: 'reviewCancelBtn',
-watchOverlay: 'watchCancelBtn',
 viewer3dOverlay: 'viewer3dCloseBtn',
 legalOverlay: 'legalCloseBtn',
 };
