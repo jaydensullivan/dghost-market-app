@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=1"></script>
-<link rel="stylesheet" href="app.css?v=52">
+<link rel="stylesheet" href="app.css?v=53">
 </head>
 <body data-tab="shop">
 
@@ -389,6 +389,15 @@
 </details>
 
 <!-- ❤️ Хочу: слежу за скинами и заявки «Ищут» — отдельный экран -->
+<div class="pf-card pro-card" id="profileProCard" style="display:none;">
+<div class="pro-head"><span class="pro-title" data-i18n="pro_title">⭐ DGhost PRO</span><span class="pro-badge" id="proBadge"></span></div>
+<div class="pro-features" data-i18n="pro_features">🎞 GIF и 🎬 видео твоих лотов в 3D
+📢 Публикация своего лота в канал DGhostMarket
+🖼 Картинка — бесплатно для всех</div>
+<div class="pro-status" id="proStatusText"></div>
+<button type="button" class="pf-btn pro-buy" id="proBuyBtn"></button>
+</div>
+
 <div class="pf-card" id="profileWantsCard">
 <div class="pf-card-head">
 <div class="pf-ico gold"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.8 3.9 4.5 7.3 4.5c2 0 3.6 1.1 4.7 2.7 1.1-1.6 2.7-2.7 4.7-2.7 3.4 0 5.7 3.3 4.5 6.7-1.7 4.7-9.2 9.3-9.2 9.3z"/></svg></div>
@@ -1684,6 +1693,8 @@
 <button type="button" id="shareGifBtn" class="save" data-i18n="share_opt_gif">🎞 GIF</button>
 <button type="button" id="shareHandsBtn" class="save" style="display:none;" data-i18n="share_opt_hands">🖐 Видео в руках</button>
 <button type="button" id="shareSendBtn" class="save" style="display:none;" data-i18n="share_pick_chat">📤 Выбрать, кому отправить</button>
+<button type="button" id="shareChannelBtn" class="save" style="display:none;" data-i18n="pro_channel_btn">📢 В канал DGhostMarket</button>
+<button type="button" id="shareProBtn" class="save pro-cta" style="display:none;" data-i18n="pro_cta">⭐ Подключить PRO</button>
 </div>
 <div class="shop-hint" id="shareStatus" style="text-align:center; min-height:1.4em;"></div>
 </div>
@@ -1961,14 +1972,14 @@
 </div>
 
 <script src="app-core.js?v=10"></script>
-<script src="app-i18n.js?v=68"></script>
+<script src="app-i18n.js?v=69"></script>
 <script src="app-navigation.js?v=14"></script>
 <script src="app-shop.js?v=21"></script>
 <script src="app-legal.js?v=2"></script>
 <script src="app-deals.js?v=12"></script>
 <script src="app-catalog.js?v=10"></script>
 <script src="app-cart.js?v=5"></script>
-<script src="app-filters.js?v=26"></script>
+<script src="app-filters.js?v=27"></script>
 <script src="app-steam.js?v=7"></script>
 <script src="app-topup.js?v=4"></script>
 <script src="app-history.js?v=6"></script>
@@ -1982,5 +1993,6 @@
 <script src="app-telegram.js?v=11"></script>
 <script src="app-raffle.js?v=9"></script>
 <script src="app-home.js?v=6"></script>
+<script src="app-pro.js?v=1"></script>
 </body>
 </html>
