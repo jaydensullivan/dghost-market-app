@@ -1,0 +1,19 @@
+# Изменённые app-*.js / app.css должны получить новый ?v= в index.html —
+# иначе мини-апп у пользователей берёт старый файл из кэша.
+name: "Мини-апп: версии файлов"
+
+on:
+  pull_request:
+    paths: ["app*.js", "app.css", "index.html"]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: node tools/version-check.js "origin/${{ github.base_ref }}"

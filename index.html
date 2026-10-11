@@ -10,7 +10,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=1"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=55">
+<link rel="stylesheet" href="app.css?v=56">
 </head>
 <body data-tab="shop">
 
@@ -230,8 +230,8 @@
 </div>
 
 <div class="layout-bar">
-<span class="layout-label" data-i18n="layout_label">Шаблон лота</span>
-<div class="layout-switch" id="layoutSwitch" role="group">
+<span class="layout-label" id="layoutLabel" data-i18n="layout_label">Шаблон лота</span>
+<div class="layout-switch" id="layoutSwitch" role="group" aria-labelledby="layoutLabel">
 <button type="button" class="layout-btn" data-card-layout="compact" data-i18n="layout_compact">Компакт</button>
 <button type="button" class="layout-btn" data-card-layout="large" data-i18n="layout_large">Крупная</button>
 </div>
@@ -1991,12 +1991,12 @@
 </div>
 
 <script src="app-core.js?v=11"></script>
-<script src="app-i18n.js?v=73"></script>
+<script src="app-i18n.js?v=74"></script>
 <script src="app-navigation.js?v=14"></script>
 <script src="app-shop.js?v=21"></script>
 <script src="app-legal.js?v=2"></script>
 <script src="app-deals.js?v=12"></script>
-<script src="app-catalog.js?v=12"></script>
+<script src="app-catalog.js?v=13"></script>
 <script src="app-cart.js?v=5"></script>
 <script src="app-filters.js?v=28"></script>
 <script src="app-steam.js?v=7"></script>

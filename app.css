@@ -4378,7 +4378,7 @@ body.layout-compact #skinsList .skin-price{ font-size:11px; margin-top:3px; }
 body.layout-compact #skinsList .skin-price span{ display:none; }
 body.layout-compact #skinsList .skin-action-row{ margin-top:5px; }
 body.layout-compact #skinsList .skin-action,
-body.layout-compact #skinsList .skin-action-row .skin-action{ padding:6px 2px; font-size:9px; margin-top:0; border-radius:7px; }
+body.layout-compact #skinsList .skin-action-row .skin-action{ padding:7px 2px; font-size:11px; margin-top:0; border-radius:7px; }
 body.layout-compact #skinsList .skin-action.own{ margin-top:5px; }
 
 /* Крупная: одна колонка, большое превью, float и наклейки */
