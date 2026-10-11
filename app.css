@@ -1652,6 +1652,15 @@ font-size:14px;
 font-weight:700;
 color:var(--silver);
 }
+.cart-balance-hint{
+font-size:12px;
+color:var(--muted);
+margin:6px 2px 0;
+line-height:1.4;
+}
+.cart-balance-hint.cart-short{
+color:#f87171;
+}
 
 /* ---------- add-skin form extras ---------- */
 .edit-sheet{
