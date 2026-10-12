@@ -54,9 +54,11 @@ const badge = document.getElementById('proBadge');
 const status = document.getElementById('proStatusText');
 const btn = document.getElementById('proBuyBtn');
 if (proStatus.admin){
+// Админу покупать нечего, но окно тарифов он видит — как продавцы.
 badge.textContent = dict.pro_badge_on;
 status.textContent = dict.pro_status_admin;
-btn.style.display = 'none';
+btn.style.display = '';
+btn.textContent = dict.pro_btn_view;
 return;
 }
 btn.style.display = '';
