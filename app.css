@@ -1994,7 +1994,7 @@ font-family:'JetBrains Mono', monospace;
 font-size:10px;
 text-transform:uppercase;
 cursor:pointer;
-padding:6px 14px;
+padding:6px 10px;
 }
 
 .buy-action-btn svg{ color:var(--red); }
