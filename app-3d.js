@@ -1764,7 +1764,7 @@ return { w: c.width, h: c.height, d: ctx.getImageData(0, 0, c.width, c.height).d
 
 function composeGloveColor(p, imgs){
 const N = GLOVE_TEX;
-const opt = Object.assign({ tintLinear: false, ao: 0.3, detail: 0.7, gain: 1, patA: 'ignore', detailAbs: 0 }, window.DGHOST_GLOVE || {});
+const opt = Object.assign({ tintLinear: false, ao: 0.3, detail: 0.7, gain: 1, palMode: 0, detailAbs: 0 }, window.DGHOST_GLOVE || {});
 const lin = (x) => opt.tintLinear ? x :  x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
 const srgb = (x) => { x = Math.max(0, Math.min(1, x)); return 255 * (x <= 0.0031308 ? x * 12.92 : 1.055 * Math.pow(x, 1 / 2.4) - 0.055); };
 const tint = [null];
@@ -1814,14 +1814,25 @@ if (pat && ci === replace){
 const pu = ((u - 0.5) * cosR - (v - 0.5) * sinR) * pScale + pOff[0];
 const pv = ((u - 0.5) * sinR + (v - 0.5) * cosR) * pScale + (pOff[1] || 0);
 const q = sample(pat, pu, pv);
-const alpha = opt.patA === 'mul' ? pat.d[q + 3] / 255 : 1;
+if (opt.palMode === 1){
+// Номера с единицы: основа — цвет слота A (по силе канала A).
+const wa = pat.d[q + 3] / 255, ta = tint[Math.max(1, Math.min(8, pal[3]))];
+r += (ta[0] - r) * wa; g += (ta[1] - g) * wa; b += (ta[2] - b) * wa;
+for (const c of [0, 1, 2]){
+const w = pat.d[q + c] / 255;
+if (w <= 0) continue;
+const t = tint[Math.max(1, Math.min(8, pal[c]))];
+r += (t[0] - r) * w; g += (t[1] - g) * w; b += (t[2] - b) * w;
+}
+} else {
 for (const c of [0, 1, 2]){
 const slot = pal[c];
 if (!(slot >= 0 && slot < 8)) continue;
-const w = pat.d[q + c] / 255 * alpha;
+const w = pat.d[q + c] / 255;
 if (w <= 0) continue;
 const t = tint[slot + 1];
 r += (t[0] - r) * w; g += (t[1] - g) * w; b += (t[2] - b) * w;
+}
 }
 }
 const det = details[layer];
