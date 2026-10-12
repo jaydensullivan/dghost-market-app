@@ -2061,11 +2061,16 @@ animate();
 const handsCache = {};
 // viewmodel_fov в CS2 — по горизонтали кадра 4:3; на узком экране
 // телефона расширяем вертикальный угол, чтобы руки и нож влезли.
+// Но не шире IN_HANDS_VIEW_MAX_FOV: на телефоне угол доходил до ~116°,
+// оружие было мелким, а руки по краям вытягивались («рыбий глаз»).
+// Взгляд чуть ниже и левее — оружие и кисть в центре узкого кадра.
 function fitHandsCamera(handsCamera){
 const aspect = canvas.clientWidth / canvas.clientHeight;
 const hfov = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(IN_HANDS_FOV) / 2) * 4 / 3);
 handsCamera.aspect = aspect;
-handsCamera.fov = Math.max(IN_HANDS_FOV, THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(hfov / 2) / aspect)));
+handsCamera.fov = Math.min(IN_HANDS_VIEW_MAX_FOV,
+Math.max(IN_HANDS_FOV, THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(hfov / 2) / aspect))));
+handsCamera.lookAt(IN_HANDS_VIEW_LOOK[0], IN_HANDS_VIEW_LOOK[1], IN_HANDS_VIEW_LOOK[2]);
 handsCamera.updateProjectionMatrix();
 }
 const setView = async (clipId) => {
@@ -2699,6 +2704,9 @@ return ih;
 // в ~40 см перед ним), смотрит вперёд (+Z) и чуть вниз, угол обзора как у
 // оружия в CS2 (viewmodel_fov 68).
 const IN_HANDS_FOV = 68;
+// Просмотрщик (не видео «Поделиться»): потолок угла обзора и точка взгляда.
+const IN_HANDS_VIEW_MAX_FOV = 90;
+const IN_HANDS_VIEW_LOOK = [-0.04, -0.19, 1];
 function placeInHandsCamera(THREE, ih, camera){
 camera.fov = IN_HANDS_FOV;
 camera.near = 0.01;
