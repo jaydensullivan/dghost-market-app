@@ -2844,10 +2844,27 @@ modelIndexLoading = MODELS_CDNS.concat('').reduce((tried, base) => tried.catch((
 // расходятся заглавными буквами.
 const map = {};
 Object.keys(index || {}).forEach(name => { map[name.toLowerCase()] = index[name]; });
+// Перчатки и агенты (models/extra.json, строит build-extra.sh): модели
+// со своими текстурами. Нет файла — просто без них.
+return fetch(modelsBase + 'models/extra.json', { cache: 'no-cache' })
+.then(r => r.ok ? r.json() : {})
+.catch(() => ({}))
+.then(extra => {
+Object.keys(extra || {}).forEach(name => {
+const key = name.toLowerCase();
+if (!map[key]) map[key] = extra[name];
+});
 return map;
+});
 });
 }
 return modelIndexLoading;
+}
+
+// Раскраска перчаток — готовые текстуры (models/gloves/skins/<kit>/),
+// а не слои узора, как у оружия.
+function isGloveSkin(dir){
+return /(^|\/)models\/gloves\/skins\//.test(String(dir || ''));
 }
 
 // Номер раскраски → папка (models/paint_index.json, строит
@@ -2898,11 +2915,13 @@ Promise.all([loadModelIndex(), loadPaintIndex()]).then(([map, paintMap]) => {
 // Пока грузился индекс, могли открыть другой лот.
 if (buy3dSkin !== skin) return;
 const entry = modelEntryForSkin(map, paintMap, skin);
-if (!entry || !entry.model || !entry.skin) return;
+// Агенты — только модель (без раскраски), перчатки — готовые текстуры.
+if (!entry || !entry.model) return;
 buy3dEntry = entry;
 buy3dBtn.style.display = '';
-// AR — только на телефоне (на компьютере камеры для стола нет).
-if (buyArBtn && (('ontouchstart' in window) || navigator.maxTouchPoints > 0)) buyArBtn.style.display = '';
+// AR — только на телефоне (на компьютере камеры для стола нет) и только
+// для оружия с раскраской: стол собирает её на сервере.
+if (buyArBtn && entry.skin && !isGloveSkin(entry.skin) && (('ontouchstart' in window) || navigator.maxTouchPoints > 0)) buyArBtn.style.display = '';
 });
 }
 
