@@ -231,8 +231,10 @@ return limitText
 return null;
 }
 
+// Валюта — на языке интерфейса: «сум», «so'm», «UZS».
 function formatCoins(n){
-return Number(n || 0).toLocaleString('ru-RU') + ' сум';
+const dict = (typeof I18N !== 'undefined' && I18N[typeof currentLang !== 'undefined' ? currentLang : 'ru']) || null;
+return Number(n || 0).toLocaleString('ru-RU') + ' ' + ((dict && dict.currency_sum) || 'сум');
 }
 
 let hasSteamLink = false;
