@@ -1764,7 +1764,7 @@ return { w: c.width, h: c.height, d: ctx.getImageData(0, 0, c.width, c.height).d
 
 function composeGloveColor(p, imgs){
 const N = GLOVE_TEX;
-const opt = Object.assign({ tintLinear: false, ao: 0.3, detail: 0.7, gain: 1, palMode: 0, detailAbs: 0 }, window.DGHOST_GLOVE || {});
+const opt = Object.assign({ tintLinear: false, ao: 0.3, detail: 0.7, gain: 1, palMode: 2, detailAbs: 0 }, window.DGHOST_GLOVE || {});
 const lin = (x) => opt.tintLinear ? x :  x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
 const srgb = (x) => { x = Math.max(0, Math.min(1, x)); return 255 * (x <= 0.0031308 ? x * 12.92 : 1.055 * Math.pow(x, 1 / 2.4) - 0.055); };
 const tint = [null];
@@ -1787,9 +1787,10 @@ const pat = usePattern ? gloveImageData(imgs.pattern) : null;
 const pScale = Number(p.g_fPatternTexCoordScale) || 1;
 const pRot = (Number(p.g_fPatternTexCoordRotation) || 0) * Math.PI / 180;
 const pOff = vmatVec(p, 'g_fPatternTexCoordOffset', [0, 0]);
-// Палитра рисунка: номера цветов с нуля (0 → g_vColorTint1), 8 —
-// оставить цвет зоны. Каналы рисунка по порядку A, R, G, B ложатся
-// поверх цвета зоны со своей силой.
+// Палитра рисунка: 4 номера цвета (с единицы) для каналов рисунка A, R,
+// G, B по порядку; каждый канал ложится поверх цвета зоны со своей
+// силой. Так сверка со Steam лучше всего (77 из 100 против 67–75 у
+// других прочтений; palMode 0/1/3 — оставлены для проб).
 const pal = vmatVec(p, 'g_vPatternPaletteIndices', [8, 8, 8, 8]).map(n => Math.round(n));
 const replace = Math.round(Number(p.g_nPatternReplaceIndex) || 0);
 const cosR = Math.cos(pRot), sinR = Math.sin(pRot);
