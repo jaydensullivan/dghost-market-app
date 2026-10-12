@@ -240,9 +240,10 @@ try { localStorage.setItem(key, val); } catch(e) {}
 let currentTheme = THEMES.some(t => t.id === storageGet('dg_theme')) ? storageGet('dg_theme') : DEFAULT_THEME;
 let currentCardView = storageGet('dg_card_view') === 'showcase' ? 'showcase' : 'normal';
 
-// Шаблон карточки лота в каталоге: '' (текущий вид), 'compact' или 'large'.
-// Хранится в localStorage (dg_card_layout); повторный тап по активной кнопке
-// возвращает обычный вид.
+// Шаблон карточки лота в каталоге: '' (обычный вид), 'compact' или 'large'.
+// Выбор хранится в localStorage (dg_card_layout), класс layout-* ставится на
+// body, а активная кнопка получает aria-pressed. Повторный тап по активной
+// кнопке сбрасывает шаблон в обычный вид.
 const CARD_LAYOUTS = ['compact', 'large'];
 let currentCardLayout = CARD_LAYOUTS.includes(storageGet('dg_card_layout')) ? storageGet('dg_card_layout') : '';
 
