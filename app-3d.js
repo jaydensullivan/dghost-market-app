@@ -1764,7 +1764,7 @@ return { w: c.width, h: c.height, d: ctx.getImageData(0, 0, c.width, c.height).d
 
 function composeGloveColor(p, imgs){
 const N = GLOVE_TEX;
-const opt = Object.assign({ tintLinear: false, ao: 0.3, detail: 0.7, gain: 1, palMode: 2, detailAbs: 0 }, window.DGHOST_GLOVE || {});
+const opt = Object.assign({ tintLinear: false, ao: 0.3, detail: 0.7, gain: 1, palMode: 2, detailAbs: 0, layerMap: 0 }, window.DGHOST_GLOVE || {});
 const lin = (x) => opt.tintLinear ? x :  x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
 const srgb = (x) => { x = Math.max(0, Math.min(1, x)); return 255 * (x <= 0.0031308 ? x * 12.92 : 1.055 * Math.pow(x, 1 / 2.4) - 0.055); };
 const tint = [null];
@@ -1807,7 +1807,9 @@ const v = (y + 0.5) / N;
 for (let x = 0; x < N; x++){
 const u = (x + 0.5) / N;
 const k = (y * N + x) * 4;
-const layer = m[k] > 127 ? 1 : m[k + 1] > 127 ? 2 : m[k + 2] > 127 ? 3 : 4;
+const layer = opt.layerMap === 1
+? (m[k] > 127 ? 2 : m[k + 1] > 127 ? 3 : m[k + 2] > 127 ? 4 : 1)
+: (m[k] > 127 ? 1 : m[k + 1] > 127 ? 2 : m[k + 2] > 127 ? 3 : 4);
 mr[k + 1] = 210; mr[k + 3] = 255;
 const ci = Math.max(1, Math.min(8, Math.round((m[k + 3] - 18) / 29.7) + 1));
 let r = tint[ci][0], g = tint[ci][1], b = tint[ci][2];
