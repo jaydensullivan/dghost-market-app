@@ -10,7 +10,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=1"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=64">
+<link rel="stylesheet" href="app.css?v=65">
 </head>
 <body data-tab="shop">
 
@@ -1082,6 +1082,18 @@
 
 <div class="kyc-lightbox" id="kycLightbox" hidden><img id="kycLightboxImg" alt=""></div>
 
+<div class="edit-overlay" id="proPlansOverlay" style="z-index:900;">
+<div class="edit-sheet pro-plans-sheet">
+<h2 style="margin:0 0 6px;" data-i18n="pro_plans_title">⭐ Тарифы DGhost PRO</h2>
+<div class="shop-hint" id="proPlansHint"></div>
+<div class="pro-plans" id="proPlans"></div>
+<div class="pro-compare-title" data-i18n="pro_cmp_title">Сравнение тарифов</div>
+<div class="pro-compare-wrap"><table class="pro-compare" id="proCompare"></table></div>
+<div class="edit-status" id="proPlansStatus"></div>
+<button type="button" id="proPlansCloseBtn" style="width:100%; margin-top:6px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_close">Закрыть</button>
+</div>
+</div>
+
 <div class="edit-overlay" id="buyerVerifyOverlay">
 <div class="edit-sheet">
 <h2 style="margin:0 0 6px;" data-i18n="bv_title">🔐 Подтверди аккаунт</h2>
@@ -2007,14 +2019,14 @@
 </div>
 
 <script src="app-core.js?v=11"></script>
-<script src="app-i18n.js?v=85"></script>
+<script src="app-i18n.js?v=86"></script>
 <script src="app-navigation.js?v=14"></script>
 <script src="app-shop.js?v=21"></script>
 <script src="app-legal.js?v=2"></script>
 <script src="app-deals.js?v=12"></script>
 <script src="app-catalog.js?v=17"></script>
 <script src="app-cart.js?v=6"></script>
-<script src="app-filters.js?v=32"></script>
+<script src="app-filters.js?v=33"></script>
 <script src="app-steam.js?v=7"></script>
 <script src="app-topup.js?v=4"></script>
 <script src="app-history.js?v=6"></script>
@@ -2028,6 +2040,6 @@
 <script src="app-telegram.js?v=12"></script>
 <script src="app-raffle.js?v=10"></script>
 <script src="app-home.js?v=6"></script>
-<script src="app-pro.js?v=2"></script>
+<script src="app-pro.js?v=3"></script>
 </body>
 </html>

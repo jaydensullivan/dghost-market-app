@@ -1879,7 +1879,7 @@ shareStatus.textContent = errorMessage(data.error);
 }
 
 document.getElementById('shareProBtn').addEventListener('click', () => {
-if (typeof buyPro === 'function') buyPro();
+if (typeof openProPlans === 'function') openProPlans();
 });
 
 document.getElementById('sharePhotoBtn').addEventListener('click', () => shareMedia('photo'));
