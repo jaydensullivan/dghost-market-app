@@ -40,17 +40,26 @@ const list = document.getElementById('cartItemsList');
 const dict = I18N[currentLang] || I18N.ru;
 const items = cart.map(id => lastSkins.find(s => s.id === id)).filter(Boolean);
 
+const balanceEl = document.getElementById('cartBalanceHint');
 if (!items.length){
 list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.cart_empty}</div>`;
 document.getElementById('cartTotalAmount').textContent = formatCoins(0);
 document.getElementById('cartCheckoutBtn').disabled = true;
+balanceEl.textContent = '';
 return;
 }
 
 list.innerHTML = items.map(cartItemRowHtml).join('');
 const total = items.reduce((sum, s) => sum + s.price, 0);
 document.getElementById('cartTotalAmount').textContent = formatCoins(total);
-document.getElementById('cartCheckoutBtn').disabled = false;
+// Корзина платит с баланса: сразу видно, хватает ли денег.
+const balance = (typeof myAvailableBalance === 'number') ? myAvailableBalance : 0;
+const missing = total - balance;
+balanceEl.classList.toggle('cart-short', missing > 0);
+balanceEl.textContent = missing > 0
+? dict.cart_short.replace('{balance}', formatCoins(balance)).replace('{missing}', formatCoins(missing))
+: dict.cart_balance.replace('{balance}', formatCoins(balance));
+document.getElementById('cartCheckoutBtn').disabled = missing > 0;
 }
 
 document.getElementById('cartCloseBtn').addEventListener('click', () => {
@@ -88,12 +97,20 @@ body: JSON.stringify({ init_data: tg.initData, skin_ids: cart })
 .then(async r => {
 if (!r.ok){
 const data = await r.json().catch(() => ({}));
+const dict = I18N[currentLang] || I18N.ru;
+if (data.error === 'insufficient_funds' && data.missing){
+myAvailableBalance = Number(data.available) || 0;
+renderCartOverlay();
+throw new Error(dict.cart_short.replace('{balance}', formatCoins(data.available)).replace('{missing}', formatCoins(data.missing)));
+}
+if (data.error === 'cart_too_big') throw new Error(dict.cart_too_big.replace('{n}', data.max));
 throw new Error(errorMessage(data.error));
 }
 return r.json();
 })
 .then(data => {
 const dict = I18N[currentLang] || I18N.ru;
+if (typeof data.available === 'number') myAvailableBalance = data.available;
 const results = data.results || [];
 const failed = results.filter(r => !r.ok);
 const succeeded = results.filter(r => r.ok);
