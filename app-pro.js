@@ -134,19 +134,26 @@ ${action}
 const yes = '<span class="pro-yes">✓</span>';
 const no = '<span class="pro-no">—</span>';
 const num = v => (v ? String(v) : no);
+// Третий элемент — пояснение строки: открывается по ⓘ под самой строкой.
 const rows = [
-[dict.pro_cmp_photo, () => yes],
-[dict.pro_cmp_3d, () => yes],
-[dict.pro_cmp_gif, t => (t.id === 'free' ? no : yes)],
-[dict.pro_cmp_market, t => num(t.market_posts)],
-[dict.pro_cmp_channels, t => num(t.own_channels)],
-[dict.pro_cmp_own_posts, t => num(t.own_posts)],
-[dict.pro_cmp_share, t => String(t.share_per_hour)],
-[dict.pro_cmp_price.replace('{days}', days), t => (t.id === 'free' ? '0' : escapeHtml(formatCoins(t.price)))],
+[dict.pro_cmp_photo, () => yes, dict.pro_help_photo],
+[dict.pro_cmp_3d, () => yes, dict.pro_help_3d],
+[dict.pro_cmp_gif, t => (t.id === 'free' ? no : yes), dict.pro_help_gif],
+[dict.pro_cmp_market, t => num(t.market_posts), dict.pro_help_market],
+[dict.pro_cmp_channels, t => num(t.own_channels), dict.pro_help_channels],
+[dict.pro_cmp_own_posts, t => num(t.own_posts), dict.pro_help_own_posts],
+[dict.pro_cmp_share, t => String(t.share_per_hour), dict.pro_help_share],
+[dict.pro_cmp_price.replace('{days}', days), t => (t.id === 'free' ? '0' : escapeHtml(formatCoins(t.price))), dict.pro_help_price],
 ];
 document.getElementById('proCompare').innerHTML =
 `<thead><tr><th></th>${cols.map(t => `<th class="${t.id === current ? 'current' : ''}">${escapeHtml(proTierName(t.id))}</th>`).join('')}</tr></thead>`
-+ `<tbody>${rows.map(([label, cell]) => `<tr><td>${escapeHtml(label)}</td>${cols.map(t => `<td class="${t.id === current ? 'current' : ''}">${cell(t)}</td>`).join('')}</tr>`).join('')}</tbody>`;
++ `<tbody>${rows.map(([label, cell, help], i) =>
+`<tr${i === rows.length - 1 ? ' class="pro-cmp-total"' : ''}><td><button type="button" class="pro-cmp-label" data-pro-help="${i}" aria-expanded="false">${escapeHtml(label)} <span class="pro-cmp-i">ⓘ</span></button></td>${cols.map(t => `<td class="${t.id === current ? 'current' : ''}">${cell(t)}</td>`).join('')}</tr>`
++ `<tr class="pro-cmp-help" data-pro-help-row="${i}" hidden><td colspan="${cols.length + 1}">${escapeHtml(help || '')}</td></tr>`
+).join('')}</tbody>`;
+document.getElementById('proCompareHint').textContent = dict.pro_help_hint;
+document.getElementById('proHowTitle').textContent = dict.pro_how_title;
+document.getElementById('proHowText').textContent = dict.pro_how_text;
 }
 
 let proBuying = false;
@@ -207,6 +214,14 @@ if (btn) buyPro(btn.dataset.proTier);
 });
 document.getElementById('proPlansCloseBtn').addEventListener('click', closeProPlans);
 proPlansOverlay.addEventListener('click', (e) => { if (e.target === proPlansOverlay) closeProPlans(); });
+document.getElementById('proCompare').addEventListener('click', (e) => {
+const btn = e.target.closest('[data-pro-help]');
+if (!btn) return;
+const row = document.querySelector(`[data-pro-help-row="${btn.dataset.proHelp}"]`);
+if (!row) return;
+row.hidden = !row.hidden;
+btn.setAttribute('aria-expanded', String(!row.hidden));
+});
 }
 
 // Окно подтверждения: нативное в Telegram, своё — в браузере (app-web.js).

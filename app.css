@@ -4492,8 +4492,17 @@ padding:2px 7px; border-radius:6px; font-size:11px; font-weight:700; line-height
 .pro-compare th{ font-size:11px; font-weight:700; }
 .pro-compare td:first-child, .pro-compare th:first-child{ text-align:left; padding-left:10px; width:38%; }
 .pro-compare .current{ background:rgba(22,163,74,.12); }
-.pro-compare tr:last-child td{ border-bottom:0; font-weight:700; }
+.pro-compare tr:last-child td{ border-bottom:0; }
+.pro-compare tr.pro-cmp-total td{ font-weight:700; }
 .pro-yes{ color:#22c55e; font-weight:800; }
+.pro-compare-hint{ font-size:11px; opacity:.6; margin:-4px 0 6px; }
+.pro-cmp-label{ background:none; border:0; padding:0; color:inherit; font:inherit; text-align:left; cursor:pointer; }
+.pro-cmp-i{ color:var(--accent); font-size:12px; margin-left:2px; }
+.pro-cmp-label[aria-expanded="true"] .pro-cmp-i{ opacity:.5; }
+.pro-compare tr.pro-cmp-help td{ text-align:left; padding:8px 10px 10px; font-size:12px; line-height:1.45; background:rgba(168,85,247,.08); color:var(--silver); }
+.pro-how{ margin-top:14px; border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:10px 12px; }
+.pro-how summary{ font-weight:700; font-size:14px; cursor:pointer; }
+.pro-how-text{ white-space:pre-line; font-size:12.5px; line-height:1.5; margin-top:8px; opacity:.9; }
 .pro-no{ opacity:.4; }
 
 .save.pro-cta{ background:linear-gradient(90deg, var(--accent), var(--accent-2)); color:#fff; }
