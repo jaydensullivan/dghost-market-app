@@ -1670,7 +1670,16 @@ const test = window.DGHOST_LIGHT;
 return test && typeof test === 'object' ? Object.assign({}, base, test) : base;
 }
 
-function setupViewerScene(THREE, renderer, scene){
+// Экспозиция по типу предмета: на одинаковом свете ножи по сверке со
+// Steam выходили темнее (−7 по яркости, 406 ножей), стволы — светлее (+3).
+const ITEM_EXPOSURE = { knife: 1, gun: 1 };
+function itemExposure(weaponDir){
+const t = Object.assign({}, ITEM_EXPOSURE, window.DGHOST_TUNE || {});
+if (!weaponDir) return 1;
+return isKnifeName(weaponNameFromDir(weaponDir)) ? t.knife : t.gun;
+}
+
+function setupViewerScene(THREE, renderer, scene, weaponDir){
 const L = lightPreset();
 // В three r152+ цвета по умолчанию в линейном пространстве —
 // без этого металл выглядит блёклым. В r128 свойства нет, и
@@ -1679,7 +1688,7 @@ if (renderer.debug) renderer.debug.checkShaderErrors = true;
 if ('outputColorSpace' in renderer) renderer.outputColorSpace = THREE.SRGBColorSpace;
 const TONE = { aces: 'ACESFilmicToneMapping', agx: 'AgXToneMapping', reinhard: 'ReinhardToneMapping', linear: 'LinearToneMapping' };
 renderer.toneMapping = THREE[TONE[L.tone]] ?? THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = L.exposure;
+renderer.toneMappingExposure = L.exposure * itemExposure(weaponDir);
 
 // Нейтральный белый свет — чтобы металл читался как металл, а не
 // как розовая пластмасса. Боковые подсветки тоже нейтральные: даже
@@ -2741,7 +2750,7 @@ scene.add(object);
 const baseDistance = fitObjectToView(THREE, gltf.scene, camera);
 if (!skinDir) hideViewerPoster();
 
-setupViewerScene(THREE, renderer, scene);
+setupViewerScene(THREE, renderer, scene, weaponDir);
 
 // Раскраска лота, если она указана.
 // Наклейки лота: не загрузились — ствол всё равно покажем. Один атлас —
@@ -3406,7 +3415,7 @@ const swing = [];
 for (let i = 0; i < 16; i++) swing.push(side + 0.6 * Math.sin(i / 16 * Math.PI * 2));
 frameShareView(THREE, object, camera, still ? [side + tilt] : swing);
 }
-await setupViewerScene(THREE, renderer, scene);
+await setupViewerScene(THREE, renderer, scene, entry.weapon);
 
 const out = document.createElement('canvas');
 out.width = W;
@@ -3759,7 +3768,7 @@ try {
 renderer.setPixelRatio(1);
 renderer.setSize(W * ss, H * ss, false);
 renderer.setClearColor(0x000000, 0);
-await setupViewerScene(THREE, renderer, scene);
+await setupViewerScene(THREE, renderer, scene, entry.weapon);
 scene.add(ih.root);
 const camera = new THREE.PerspectiveCamera(IN_HANDS_FOV, W / H, 0.01, 10);
 placeInHandsCamera(THREE, ih, camera);
