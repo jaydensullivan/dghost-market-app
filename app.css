@@ -2701,6 +2701,8 @@ font-family:'Inter', sans-serif; font-size:12px; color:var(--muted);
   background:var(--surface); color:var(--silver); display:flex; align-items:center; justify-content:center; cursor:pointer; }
 .viewer3d-icon svg{ width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 .viewer3d-icon:active{ background:rgba(123,44,255,0.25); }
+.viewer3d-icon.active{ background:rgba(123,44,255,0.45); border-color:var(--red); }
+.viewer3d-icon[hidden]{ display:none; }
 .viewer3d-icon .v3-ico-exit{ display:none; }
 .viewer3d-sheet.full .viewer3d-icon .v3-ico-enter{ display:none; }
 .viewer3d-sheet.full .viewer3d-icon .v3-ico-exit{ display:block; }

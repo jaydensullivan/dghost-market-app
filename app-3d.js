@@ -360,6 +360,9 @@ let viewer3d = null; // { renderer, scene, camera, object, raf }
 function dispose3DViewer(){
 if (!viewer3d) return;
 cancelAnimationFrame(viewer3d.raf);
+if (viewer3d.stopTilt) viewer3d.stopTilt();
+Object.values(viewer3d.envCache || {}).forEach(p => p.then(t => t && t.dispose()));
+if (viewer3d.scene.userData.roomEnv) viewer3d.scene.userData.roomEnv.dispose();
 viewer3d.renderer.dispose();
 viewer3d.scene.traverse(node => {
 if (node.geometry) node.geometry.dispose();
@@ -1708,7 +1711,10 @@ if (!THREE.PMREMGenerator) return Promise.resolve();
 return dynamicImport(THREE_ADDONS + 'environments/RoomEnvironment.js')
 .then(mod => {
 const pmrem = new THREE.PMREMGenerator(renderer);
-scene.environment = pmrem.fromScene(new mod.RoomEnvironment(), 0.04).texture;
+scene.userData.roomEnv = pmrem.fromScene(new mod.RoomEnvironment(), 0.04).texture;
+pmrem.dispose();
+// Отражения карты (applyViewerEnvironment) могли успеть раньше.
+if (!scene.environment) scene.environment = scene.userData.roomEnv;
 })
 .catch(() => {});
 }
@@ -1797,6 +1803,41 @@ stage.style.background = VIEWER_BG_INSPECT;
 document.querySelectorAll('#viewer3dBgs .viewer3d-bg').forEach(btn => {
 btn.setAttribute('aria-checked', btn.dataset.bg === id ? 'true' : 'false');
 });
+applyViewerEnvironment(id);
+}
+
+// Отражения карты: на фоне карты CS2 металл (Doppler, Fade, хром)
+// отражает эту же карту — картинка фона становится окружением сцены.
+// На «Студии» и «CS2» — нейтральная комната, как было (по ней сверка
+// цветов со Steam). Текстуры окружения привязаны к рендереру — кэш
+// живёт в viewer3d и чистится вместе с ним.
+function applyViewerEnvironment(id){
+const v = viewer3d;
+if (!v || !window.THREE || !THREE.PMREMGenerator || !THREE.TextureLoader) return;
+v.envId = id;
+const map = (viewerBgList || []).find(b => b.id === id);
+if (!map){
+if (v.scene.userData.roomEnv) v.scene.environment = v.scene.userData.roomEnv;
+return;
+}
+v.envCache = v.envCache || {};
+if (!v.envCache[id]){
+v.envCache[id] = new Promise((resolve, reject) => {
+new THREE.TextureLoader().setCrossOrigin('anonymous')
+.load(modelsUrl('models/backgrounds/' + map.file), resolve, undefined, reject);
+}).then(tex => {
+tex.mapping = THREE.EquirectangularReflectionMapping;
+if ('colorSpace' in tex) tex.colorSpace = THREE.SRGBColorSpace;
+const pmrem = new THREE.PMREMGenerator(v.renderer);
+const env = pmrem.fromEquirectangular(tex).texture;
+tex.dispose();
+pmrem.dispose();
+return env;
+}).catch(err => { console.warn('3D: отражения карты не загрузились —', err); return null; });
+}
+v.envCache[id].then(env => {
+if (env && viewer3d === v && v.envId === id) v.scene.environment = env;
+});
 }
 
 function renderViewerBackgrounds(dict){
@@ -1808,7 +1849,9 @@ try { saved = localStorage.getItem(VIEWER_BG_KEY) || 'inspect'; } catch (e) {}
 const draw = (maps) => {
 const items = [{ id: 'studio', name: dict.v3_bg_studio || 'Studio' }, { id: 'inspect', name: dict.v3_bg_inspect || 'CS2' }]
 .concat(maps.map(m => ({ id: m.id, name: m.name || m.id })));
-if (!items.some(i => i.id === saved)) saved = 'inspect';
+// Карты приезжают позже встроенных фонов: выбранную карту не
+// затираем, пока список не загрузился (раньше выбор сбрасывался на CS2).
+const current = items.some(i => i.id === saved) ? saved : 'inspect';
 box.innerHTML = '';
 items.forEach(item => {
 const btn = document.createElement('button');
@@ -1823,7 +1866,7 @@ applyViewerBackground(item.id);
 });
 box.appendChild(btn);
 });
-applyViewerBackground(saved);
+applyViewerBackground(current);
 };
 draw(viewerBgList || []);
 if (!viewerBgList) loadViewerBackgrounds().then(maps => { if (maps.length) draw(maps); });
@@ -2072,6 +2115,69 @@ let dragging = false, lastX = 0, lastY = 0, pinchStart = 0;
 // Режим «В руках»: анимация осмотра вместо вращения модели.
 let hands = null;
 
+// Наклон телефона поворачивает скин (гироскоп). В Telegram 8.0+ — его
+// датчик (углы в радианах), иначе — deviceorientation браузера (в
+// градусах; на iOS нужно разрешение по нажатию). Нулевое положение —
+// как телефон держали в момент включения. Касание экрана выключает.
+const tilt = { on: false, base: null, b: 0, g: 0, rotX: 0, rotY: 0 };
+const tiltBtn = document.getElementById('viewer3dTiltBtn');
+const tgOrientation = () => (tg && tg.DeviceOrientation && typeof tg.isVersionAtLeast === 'function'
+&& tg.isVersionAtLeast('8.0')) ? tg.DeviceOrientation : null;
+const takeTilt = (beta, gamma) => {
+if (!tilt.on || beta == null || gamma == null) return;
+if (!tilt.base) tilt.base = { b: beta, g: gamma };
+tilt.b = beta - tilt.base.b;
+tilt.g = gamma - tilt.base.g;
+};
+const onTgOrientation = () => {
+const d = tgOrientation();
+if (d && d.isStarted) takeTilt(d.beta * 180 / Math.PI, d.gamma * 180 / Math.PI);
+};
+const onWinOrientation = (e) => takeTilt(e.beta, e.gamma);
+const stopTilt = () => {
+if (!tilt.on) return;
+tilt.on = false;
+const d = tgOrientation();
+if (d){ try { tg.offEvent('deviceOrientationChanged', onTgOrientation); d.stop(); } catch (e) {} }
+window.removeEventListener('deviceorientation', onWinOrientation);
+if (tiltBtn) tiltBtn.classList.remove('active');
+};
+const startTilt = async () => {
+const tiltDict = I18N[currentLang] || I18N.ru;
+const d = tgOrientation();
+try {
+if (d){
+tg.onEvent('deviceOrientationChanged', onTgOrientation);
+d.start({ refresh_rate: 40 });
+} else {
+if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function'){
+const answer = await DeviceOrientationEvent.requestPermission();
+if (answer !== 'granted') throw new Error('denied');
+}
+window.addEventListener('deviceorientation', onWinOrientation);
+}
+} catch (e) {
+status.textContent = tiltDict.v3_tilt_denied;
+setTimeout(() => { status.textContent = ''; }, 2500);
+return;
+}
+tilt.on = true;
+tilt.base = null;
+tilt.b = tilt.g = 0;
+tilt.rotX = object.rotation.x;
+tilt.rotY = object.rotation.y;
+autoRotate = false;
+if (tiltBtn) tiltBtn.classList.add('active');
+status.textContent = tiltDict.v3_tilt_on;
+setTimeout(() => { status.textContent = ''; }, 2500);
+};
+if (tiltBtn){
+const touch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+tiltBtn.hidden = !(touch && (tgOrientation() || typeof DeviceOrientationEvent !== 'undefined'));
+tiltBtn.classList.remove('active');
+tiltBtn.onclick = () => (tilt.on ? stopTilt() : startTilt());
+}
+
 const onStart = (e) => {
 if (hands) return;
 if (e.touches && e.touches.length === 2){
@@ -2083,6 +2189,7 @@ return;
 }
 dragging = true;
 autoRotate = false;
+stopTilt();
 const p = e.touches ? e.touches[0] : e;
 lastX = p.clientX;
 lastY = p.clientY;
@@ -2144,15 +2251,25 @@ hands.ih.setTime(hands.t);
 updateViewerBgParallax(Math.sin(now / 2600) * 0.4);
 renderer.render(scene, hands.camera);
 } else {
-if (autoRotate) object.rotation.y += 0.006;
+if (tilt.on){
+// Плавно к углу наклона: вбок до ±45°, вперёд-назад до ±35°.
+const deg = Math.PI / 180;
+const ty = tilt.rotY + Math.max(-45, Math.min(45, tilt.g)) * deg * 1.4;
+const tx = tilt.rotX + Math.max(-35, Math.min(35, tilt.b)) * deg * 0.9;
+object.rotation.y += (ty - object.rotation.y) * 0.15;
+object.rotation.x += (tx - object.rotation.x) * 0.15;
+} else if (autoRotate) object.rotation.y += 0.006;
 updateViewerBgParallax(object.rotation.y);
 renderer.render(scene, camera);
 }
 viewer3d.raf = requestAnimationFrame(animate);
 };
 
-viewer3d = { renderer, scene, camera, object, raf: 0 };
+viewer3d = { renderer, scene, camera, object, raf: 0, stopTilt };
 animate();
+// Отражения той карты, что сейчас выбрана фоном.
+const bgStage = document.querySelector('.viewer3d-stage');
+applyViewerEnvironment((bgStage && bgStage.getAttribute('data-bg-image')) || 'inspect');
 
 // Ножи с комплектом анимаций (models/anim/<нож>/) — кнопки «В руках».
 const handsCache = {};
