@@ -1847,6 +1847,13 @@ margin-bottom:8px;
 }
 #quickSellOverlay .inv-item-wearbar{ max-width:260px; margin:0 auto 2px; }
 #quickSellOverlay .inv-item-floatrow{ max-width:260px; margin:0 auto 10px; font-size:12px; }
+.qs-price-chips{ display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; margin:8px 0 2px; }
+.qs-price-chips[hidden]{ display:none; }
+.qs-chip{ display:flex; flex-direction:column; align-items:center; gap:2px; padding:8px 4px; border-radius:10px; border:1px solid var(--red-dim); background:rgba(255,255,255,.03); color:var(--silver); cursor:pointer; min-width:0; }
+.qs-chip b{ font-size:13px; }
+.qs-chip span{ font-size:11px; opacity:.8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+.qs-chip.on{ border-color:var(--accent); background:rgba(168,85,247,.18); }
+
 .qs-advanced-link{
 display:block;
 width:100%;
