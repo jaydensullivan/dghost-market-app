@@ -1719,6 +1719,256 @@ if (!scene.environment) scene.environment = scene.userData.roomEnv;
 .catch(() => {});
 }
 
+// ---------- перчатки ----------
+// Раскраска перчаток в игре — шейдер csgo_customglove: маска слоёв
+// (R/G/B — ткань, резина, кожа…, остальное — 4-й слой; A — номер цвета
+// палитры 1–8 ступенями по ~30), цвета g_vColorTint1–8, текстуры
+// деталей каждого слоя, рисунок (F_PATTERN) поверх цвета
+// g_nPatternReplaceIndex с палитрой g_vPatternPaletteIndices. Сборка
+// кладёт материал и текстуры в models/gloves/skins/<kit>/; здесь они
+// сводятся в одну текстуру цвета (на процессоре, один раз).
+const GLOVE_TEX = 1024;
+// Поворот левой и правой перчатки вокруг вертикали (рад).
+const GLOVE_ROT = [Math.PI / 2, -Math.PI / 2];
+
+function parseVmat(text){
+const p = {};
+String(text || '').replace(/"([^"]+)"\s+"([^"]*)"/g, (m, k, v) => { if (!(k in p)) p[k] = v; return m; });
+return p;
+}
+
+function vmatVec(p, key, def){
+const m = String(p[key] || '').match(/-?\d+(\.\d+)?(e-?\d+)?/gi);
+return m ? m.map(Number) : def;
+}
+
+function loadGloveImage(url){
+return fetch(url).then(r => {
+if (!r.ok) throw new Error(url + ' ' + r.status);
+return r.blob();
+}).then(blob => new Promise((resolve, reject) => {
+const img = new Image();
+img.onload = () => { URL.revokeObjectURL(img.src); resolve(img); };
+img.onerror = () => reject(new Error('картинка ' + url));
+img.src = URL.createObjectURL(blob);
+}));
+}
+
+function gloveImageData(img, w, h){
+const c = document.createElement('canvas');
+c.width = w || img.naturalWidth; c.height = h || img.naturalHeight;
+const ctx = c.getContext('2d');
+ctx.drawImage(img, 0, 0, c.width, c.height);
+return { w: c.width, h: c.height, d: ctx.getImageData(0, 0, c.width, c.height).data };
+}
+
+function composeGloveColor(p, imgs){
+const N = GLOVE_TEX;
+const opt = Object.assign({ tintLinear: false, ao: 0.3, detail: 0.7, gain: 1, patA: 'ignore', detailAbs: 0 }, window.DGHOST_GLOVE || {});
+const lin = (x) => opt.tintLinear ? x :  x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
+const srgb = (x) => { x = Math.max(0, Math.min(1, x)); return 255 * (x <= 0.0031308 ? x * 12.92 : 1.055 * Math.pow(x, 1 / 2.4) - 0.055); };
+const tint = [null];
+for (let i = 1; i <= 8; i++) tint.push(vmatVec(p, 'g_vColorTint' + i, [0.5, 0.5, 0.5]).slice(0, 3).map(lin));
+const mask = gloveImageData(imgs.layermask, N, N);
+const surface = imgs.surface ? gloveImageData(imgs.surface, N, N) : null;
+const details = [null];
+for (let i = 1; i <= 4; i++){
+const img = imgs['detail' + i];
+if (!img){ details.push(null); continue; }
+const d = gloveImageData(img);
+let sum = 0;
+for (let k = 0; k < d.d.length; k += 4) sum += d.d[k];
+details.push({ d, mean: Math.max(1, sum / (d.d.length / 4)), scale: Number(p['g_fDetailScale' + i]) || 1,
+metal: /metal/i.test(p['layer_name_' + i] || '') || Number(p['g_fDetailMetalness' + i]) > 0.5,
+roughGain: Number(p['g_fDetailRoughnessBrightness' + i]) || 1 });
+}
+const usePattern = p.F_PATTERN === '1' && imgs.pattern;
+const pat = usePattern ? gloveImageData(imgs.pattern) : null;
+const pScale = Number(p.g_fPatternTexCoordScale) || 1;
+const pRot = (Number(p.g_fPatternTexCoordRotation) || 0) * Math.PI / 180;
+const pOff = vmatVec(p, 'g_fPatternTexCoordOffset', [0, 0]);
+// Палитра рисунка: номера цветов с нуля (0 → g_vColorTint1), 8 —
+// оставить цвет зоны. Каналы рисунка по порядку A, R, G, B ложатся
+// поверх цвета зоны со своей силой.
+const pal = vmatVec(p, 'g_vPatternPaletteIndices', [8, 8, 8, 8]).map(n => Math.round(n));
+const replace = Math.round(Number(p.g_nPatternReplaceIndex) || 0);
+const cosR = Math.cos(pRot), sinR = Math.sin(pRot);
+const sample = (img, u, v) => {
+u -= Math.floor(u); v -= Math.floor(v);
+const x = Math.min(img.w - 1, (u * img.w) | 0), y = Math.min(img.h - 1, (v * img.h) | 0);
+return (y * img.w + x) * 4;
+};
+const out = new ImageData(N, N);
+const mrData = new ImageData(N, N);
+const o = out.data, m = mask.d, mr = mrData.data;
+for (let y = 0; y < N; y++){
+const v = (y + 0.5) / N;
+for (let x = 0; x < N; x++){
+const u = (x + 0.5) / N;
+const k = (y * N + x) * 4;
+const layer = m[k] > 127 ? 1 : m[k + 1] > 127 ? 2 : m[k + 2] > 127 ? 3 : 4;
+mr[k + 1] = 210; mr[k + 3] = 255;
+const ci = Math.max(1, Math.min(8, Math.round((m[k + 3] - 18) / 29.7) + 1));
+let r = tint[ci][0], g = tint[ci][1], b = tint[ci][2];
+if (pat && ci === replace){
+const pu = ((u - 0.5) * cosR - (v - 0.5) * sinR) * pScale + pOff[0];
+const pv = ((u - 0.5) * sinR + (v - 0.5) * cosR) * pScale + (pOff[1] || 0);
+const q = sample(pat, pu, pv);
+const alpha = opt.patA === 'mul' ? pat.d[q + 3] / 255 : 1;
+for (const c of [0, 1, 2]){
+const slot = pal[c];
+if (!(slot >= 0 && slot < 8)) continue;
+const w = pat.d[q + c] / 255 * alpha;
+if (w <= 0) continue;
+const t = tint[slot + 1];
+r += (t[0] - r) * w; g += (t[1] - g) * w; b += (t[2] - b) * w;
+}
+}
+const det = details[layer];
+if (det){
+const q = sample(det.d, u * det.scale, v * det.scale);
+const f = opt.detailAbs ? det.d.d[q] / 255 * opt.detailAbs : 1 + (det.d.d[q] / det.mean - 1) * opt.detail;
+r *= f; g *= f; b *= f;
+// Шероховатость — канал G детали слоя, металл — слои metal*.
+const rk = (y * N + x) * 4;
+mr[rk + 1] = det.d.d[q + 1] * (det.roughGain || 1);
+mr[rk + 2] = det.metal ? 255 : 0;
+mr[rk + 3] = 255;
+}
+if (surface){
+const ao = surface.d[k] / 255;
+const f = 1 - opt.ao + opt.ao * ao;
+r *= f; g *= f; b *= f;
+}
+r *= opt.gain; g *= opt.gain; b *= opt.gain;
+o[k] = srgb(r); o[k + 1] = srgb(g); o[k + 2] = srgb(b); o[k + 3] = 255;
+}
+}
+const c = document.createElement('canvas');
+c.width = N; c.height = N;
+c.getContext('2d').putImageData(out, 0, 0);
+const cm = document.createElement('canvas');
+cm.width = N; cm.height = N;
+cm.getContext('2d').putImageData(mrData, 0, 0);
+return { color: c, mr: cm };
+}
+
+// Перчатки на витрине — как на картинке Steam: пара без рук (в модели
+// есть ещё «руки от первого лица» с голой кожей — их прячем).
+// В экспорте перчаток и агентов у мешей общий буфер вершин: в нём есть
+// чужие, не используемые этим мешем вершины — рамка кадра считалась по
+// ним, и модель выходила крошечной. Оставляем только свои вершины.
+function compactModelGeometry(object){
+object.traverse(node => {
+if (!node.isMesh || !node.geometry || !node.geometry.index || node.isSkinnedMesh) return;
+const old = node.geometry;
+node.geometry = old.toNonIndexed();
+old.dispose();
+});
+}
+
+function prepareGloveModel(THREE, object){
+// Убираем совсем, а не прячем: рамка кадра считается по всем узлам.
+const drop = [];
+object.traverse(node => {
+if (!node.isMesh) return;
+const name = String(node.name || '').toLowerCase();
+const mat = String(node.material && node.material.name || '').toLowerCase();
+if (name.indexOf('viewmodel') !== -1 || mat.indexOf('bare_arm') !== -1) drop.push(node);
+});
+drop.forEach(node => node.parent && node.parent.remove(node));
+compactModelGeometry(object);
+// В модели перчатки висят на своих местах на теле — ставим пару рядом.
+if (!THREE || !THREE.Box3) return;
+object.updateMatrixWorld(true);
+const gloves = [];
+object.traverse(node => { if (node.isMesh) gloves.push(node); });
+if (gloves.length !== 2) return;
+const boxes = gloves.map(n => new THREE.Box3().setFromObject(n));
+const centers = boxes.map(b => b.getCenter(new THREE.Vector3()));
+const sizes = boxes.map(b => b.getSize(new THREE.Vector3()));
+const order = centers[0].x <= centers[1].x ? [0, 1] : [1, 0];
+const mid = centers[0].clone().add(centers[1]).multiplyScalar(0.5);
+const gap = 0.04 * Math.max(sizes[0].y, sizes[1].y);
+const targets = {};
+targets[order[0]] = new THREE.Vector3(mid.x - sizes[order[0]].x / 2 - gap, mid.y, mid.z);
+targets[order[1]] = new THREE.Vector3(mid.x + sizes[order[1]].x / 2 + gap, mid.y, mid.z);
+gloves.forEach((node, i) => {
+const parent = node.parent;
+const from = parent.worldToLocal(centers[i].clone());
+const to = parent.worldToLocal(targets[i].clone());
+node.position.add(to.sub(from));
+});
+// Лежат плашмя пальцами к камере — поднимаем пару лицом к зрителю.
+const size = new THREE.Box3().setFromObject(object).getSize(new THREE.Vector3());
+if (size.z > size.y && object.children[0]) object.children[0].rotation.x += window.DGHOST_GLOVE_TURN != null ? window.DGHOST_GLOVE_TURN : -Math.PI / 2;
+object.updateMatrixWorld(true);
+// Каждую перчатку — тыльной стороной к зрителю, как на картинке Steam.
+const turn = window.DGHOST_GLOVE_ROT || GLOVE_ROT;
+[order[0], order[1]].forEach((i, side) => {
+const angle = turn[side] || 0;
+if (!angle || !object.attach) return;
+const center = new THREE.Box3().setFromObject(gloves[i]).getCenter(new THREE.Vector3());
+// Ось — внутри самой модели: рамку кадра потом считают по ней.
+const root = object.children[0] || object;
+const pivot = new THREE.Group();
+pivot.position.copy(root.worldToLocal(center.clone()));
+root.add(pivot);
+object.updateMatrixWorld(true);
+pivot.attach(gloves[i]);
+pivot.rotation.y = angle;
+});
+object.updateMatrixWorld(true);
+}
+
+function applyGloveSkin(THREE, object, dir){
+const base = modelsUrl(dir).replace(/\/+$/, '') + '/';
+return fetch(base + 'material.vmat').then(r => {
+if (!r.ok) throw new Error('нет material.vmat в ' + base);
+return r.text();
+}).then(text => {
+const p = parseVmat(text);
+const names = ['layermask', 'surface', 'pattern', 'detail1', 'detail2', 'detail3', 'detail4'];
+return Promise.all(names.map(n => loadGloveImage(base + n + '.webp').catch(() => null)))
+.then(list => {
+const imgs = {};
+names.forEach((n, i) => { imgs[n] = list[i]; });
+if (!imgs.layermask) throw new Error('нет маски слоёв');
+const maps = composeGloveColor(p, imgs);
+// Развёртка левой перчатки выходит за 0..1 — текстура повторяется.
+const tex = new THREE.CanvasTexture(maps.color);
+const mrTex = new THREE.CanvasTexture(maps.mr);
+[tex, mrTex].forEach(t => {
+t.flipY = false;
+t.wrapS = t.wrapT = THREE.RepeatWrapping;
+t.anisotropy = 4;
+});
+if ('colorSpace' in tex) tex.colorSpace = THREE.SRGBColorSpace;
+else if ('encoding' in tex) tex.encoding = THREE.sRGBEncoding;
+const useMr = !(window.DGHOST_GLOVE && window.DGHOST_GLOVE.mr === false);
+object.traverse(node => {
+if (!node.isMesh || !node.material) return;
+const mat = node.material;
+if (String(mat.name || '').toLowerCase().indexOf('glove') === -1) return;
+mat.map = tex;
+mat.color && mat.color.set(0xffffff);
+if (useMr){
+mat.metalnessMap = mrTex;
+mat.roughnessMap = mrTex;
+mat.metalness = 1;
+mat.roughness = 1;
+} else {
+mat.metalness = 0;
+mat.metalnessMap = null;
+mat.roughness = 0.85;
+}
+mat.needsUpdate = true;
+});
+return tex;
+});
+});
+}
+
 // ---------- фон 3D ----------
 // Встроенные фоны и фоны карт CS2 (как в главном меню игры, где идёт
 // осмотр). Картинки карт сборка кладёт на CDN 3D: models/backgrounds/
@@ -2457,6 +2707,8 @@ const camera = new THREE.PerspectiveCamera(40, canvas.clientWidth / canvas.clien
 // вращался вокруг начала координат файла и уезжал из кадра.
 const object = new THREE.Group();
 object.add(gltf.scene);
+if (/(^|\/)models\/gloves\//.test(String(modelUrl || ''))) prepareGloveModel(THREE, object);
+else if (/(^|\/)models\/agents\//.test(String(modelUrl || ''))) compactModelGeometry(object);
 // Без раскраски (или пока она грузится) — старый корпус, как в игре
 // у стандартного оружия.
 selectModelBody(object, false);
@@ -2470,7 +2722,17 @@ setupViewerScene(THREE, renderer, scene);
 // Наклейки лота: не загрузились — ствол всё равно покажем. Один атлас —
 // и для обычного вида, и для «в руках».
 const stickerAtlasReady = loadStickerAtlas(THREE, stickers).catch(() => null);
-if (skinDir){
+if (skinDir && isGloveSkin(skinDir)){
+applyGloveSkin(THREE, object, skinDir).then(() => {
+if (stale()) return;
+hideViewerPoster();
+status.textContent = dict.v3_skin_on;
+setTimeout(() => { status.textContent = ''; }, 3000);
+}).catch(err => {
+console.warn('3D: раскраска перчаток не применилась —', err);
+if (!stale()){ status.textContent = dict.v3_skin_failed; hideViewerPoster(); }
+});
+} else if (skinDir){
 Promise.all([
 loadSkinWithWeapon(THREE, skinDir, weaponDir),
 stickerAtlasReady,
@@ -3077,11 +3339,14 @@ const response = await fetch(modelsUrl(entry.model));
 if (!response.ok) throw new Error('model ' + response.status);
 const buffer = await response.arrayBuffer();
 const gltf = await parseGlb(buffer).catch(() => parseGlb(stripTexturesFromGlb(buffer)));
-const [[skin, weapon], stickerAtlas] = await Promise.all([
+// Перчатки — готовые текстуры, агенты — без раскраски.
+const glove = isGloveSkin(entry.skin);
+const painted = !!entry.skin && !glove;
+const [[skin, weapon], stickerAtlas] = painted ? await Promise.all([
 loadSkinWithWeapon(THREE, entry.skin, entry.weapon),
 loadStickerAtlas(THREE, stickers).catch(() => null),
-]);
-if (!skin.pattern && !skin.solid) throw new Error('не загрузился узор');
+]) : [[null, null], null];
+if (painted && !skin.pattern && !skin.solid) throw new Error('не загрузился узор');
 
 const glCanvas = document.createElement('canvas');
 glCanvas.width = W * ss;
@@ -3096,16 +3361,20 @@ renderer.setClearColor(0x000000, 0);
 const camera = new THREE.PerspectiveCamera(40, W / H, 0.05, 100);
 const object = new THREE.Group();
 object.add(gltf.scene);
+if (/(^|\/)models\/gloves\//.test(String(entry.model || ''))) prepareGloveModel(THREE, object);
+else if (/(^|\/)models\/agents\//.test(String(entry.model || ''))) compactModelGeometry(object);
 // Без раскраски (или пока она грузится) — старый корпус, как в игре
 // у стандартного оружия.
 selectModelBody(object, false);
 scene.add(object);
 fitObjectToView(THREE, gltf.scene, camera);
-applySkinToModel(THREE, object, skin, wear, weapon, 'none', seed, stickerAtlas);
+if (glove) await applyGloveSkin(THREE, object, entry.skin);
+else if (painted) applySkinToModel(THREE, object, skin, wear, weapon, 'none', seed, stickerAtlas);
 // С наклейками — вид с той стороны, где они наклеены (дулом влево, как
 // при осмотре в игре); без них — как раньше.
-const side = stickerAtlas ? -Math.PI / 2 : Math.PI / 2;
-const tilt = stickerAtlas ? -0.3 : 0.3;
+// Перчатки уже стоят тыльной стороной к камере (prepareGloveModel).
+const side = glove ? 0 : stickerAtlas ? -Math.PI / 2 : Math.PI / 2;
+const tilt = glove ? 0.25 : stickerAtlas ? -0.3 : 0.3;
 // Кадр — по всем углам покачивания (у картинки — по её одному ракурсу).
 if (still !== 'transparent'){
 const swing = [];
