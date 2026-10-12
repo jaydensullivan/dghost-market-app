@@ -1721,7 +1721,7 @@ if (!scene.environment) scene.environment = scene.userData.roomEnv;
 
 // ---------- перчатки ----------
 // Раскраска перчаток в игре — шейдер csgo_customglove: маска слоёв
-// (R/G/B — ткань, резина, кожа…, остальное — 4-й слой; A — номер цвета
+// (пусто — 1-й слой материала, R/G/B — 2–4-й; A — номер цвета
 // палитры 1–8 ступенями по ~30), цвета g_vColorTint1–8, текстуры
 // деталей каждого слоя, рисунок (F_PATTERN) поверх цвета
 // g_nPatternReplaceIndex с палитрой g_vPatternPaletteIndices. Сборка
@@ -1764,7 +1764,7 @@ return { w: c.width, h: c.height, d: ctx.getImageData(0, 0, c.width, c.height).d
 
 function composeGloveColor(p, imgs){
 const N = GLOVE_TEX;
-const opt = Object.assign({ tintLinear: false, ao: 0.3, detail: 0.7, gain: 1, palMode: 2, detailAbs: 0, layerMap: 0 }, window.DGHOST_GLOVE || {});
+const opt = Object.assign({ tintLinear: false, ao: 0.3, detail: 0.7, gain: 1, palMode: 2, detailAbs: 0, layerMap: 1 }, window.DGHOST_GLOVE || {});
 const lin = (x) => opt.tintLinear ? x :  x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
 const srgb = (x) => { x = Math.max(0, Math.min(1, x)); return 255 * (x <= 0.0031308 ? x * 12.92 : 1.055 * Math.pow(x, 1 / 2.4) - 0.055); };
 const tint = [null];
