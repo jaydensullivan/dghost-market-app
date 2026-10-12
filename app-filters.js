@@ -1663,15 +1663,18 @@ const boxes = ['sMarketPricePreview', 'qsMarketPricePreview']
 
 if (!data || !data.available){
 boxes.forEach(box => { box.style.display = 'none'; });
+if (typeof renderQuickSellPriceChips === 'function') renderQuickSellPriceChips(0);
 return;
 }
+const dict = I18N[currentLang] || I18N.ru;
 let extra = '';
 if (typeof data.diff_percent === 'number'){
 const cheaper = data.diff_percent >= 0;
-extra = `<div class="mp-diff ${cheaper ? 'cheaper' : 'pricier'}">${cheaper ? 'Дешевле рынка' : '⚠️ Дороже рынка'} на ${Math.abs(data.diff_percent)}%</div>`;
+extra = `<div class="mp-diff ${cheaper ? 'cheaper' : 'pricier'}">${(cheaper ? dict.mp_preview_cheaper : dict.mp_preview_pricier).replace('{p}', Math.abs(data.diff_percent))}</div>`;
 }
-const html = `<div class="mp-row"><span>Ориентир по рынку</span><span>${formatCoins(data.market_price_uzs)}</span></div>${extra}`;
+const html = `<div class="mp-row"><span>${dict.mp_preview_ref}</span><span>${formatCoins(data.market_price_uzs)}</span></div>${extra}`;
 boxes.forEach(box => { box.innerHTML = html; box.style.display = ''; });
+if (typeof renderQuickSellPriceChips === 'function') renderQuickSellPriceChips(data.market_price_uzs);
 }
 
 function refreshSellMarketPreview(){

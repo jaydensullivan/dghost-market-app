@@ -666,7 +666,9 @@ qsFloatRow.style.display = 'none';
 
 qsPrice.value = '';
 qsStatus.textContent = '';
+qsAutoPriced = false;
 document.getElementById('qsMarketPricePreview').style.display = 'none';
+renderQuickSellPriceChips(0);
 
 quickSellOverlay.classList.add('show');
 }
@@ -685,9 +687,60 @@ closeQuickSell();
 document.getElementById('quickSellCloseBtn').addEventListener('click', stopQuickSell);
 document.getElementById('quickSellCancel').addEventListener('click', stopQuickSell);
 
+// Подсказки цены: «−3% · −5% · по рынку» от ориентира рынка. Как только
+// ориентир пришёл, а цены ещё нет — сразу ставим «рынок −3%»: так лот
+// заметно дешевле рынка и уходит быстрее, а продавцу остаётся нажать
+// «Выставить» (или поправить цену).
+const QS_PRICE_STEPS = [3, 5, 0];
+let qsAutoPriced = false;
+
+function qsRoundPrice(value){
+const step = value >= 1000000 ? 10000 : value >= 100000 ? 1000 : 100;
+return Math.max(step, Math.floor(value / step) * step);
+}
+
+function setQuickSellPrice(price){
+qsPrice.value = String(price);
+sPrice.value = qsPrice.value;
+scheduleSellMarketPreview();
+}
+
+function renderQuickSellPriceChips(market){
+const box = document.getElementById('qsPriceChips');
+if (!box) return;
+const dict = I18N[currentLang] || I18N.ru;
+if (!market || !quickSellOverlay.classList.contains('show')){
+box.innerHTML = '';
+box.hidden = true;
+return;
+}
+const current = Number(qsPrice.value) || 0;
+box.innerHTML = QS_PRICE_STEPS.map(p => {
+const price = qsRoundPrice(market * (1 - p / 100));
+const label = p ? `−${p}%` : dict.qs_chip_market;
+return `<button type="button" class="qs-chip${current === price ? ' on' : ''}" data-qs-price="${price}"><b>${escapeHtml(label)}</b><span>${escapeHtml(formatCoins(price))}</span></button>`;
+}).join('');
+box.hidden = false;
+if (!qsPrice.value && !qsAutoPriced){
+qsAutoPriced = true;
+setQuickSellPrice(qsRoundPrice(market * (1 - QS_PRICE_STEPS[0] / 100)));
+qsStatus.textContent = dict.qs_prefilled;
+}
+}
+
+document.getElementById('qsPriceChips').addEventListener('click', (e) => {
+const chip = e.target.closest('[data-qs-price]');
+if (!chip) return;
+haptic('light');
+qsStatus.textContent = '';
+setQuickSellPrice(Number(chip.dataset.qsPrice));
+});
+
 // Цена вводится в компактном окне, но публикует её та же самая
 // функция publishSkin, что читает sPrice — держим их синхронно.
 qsPrice.addEventListener('input', () => {
+qsAutoPriced = true;
+qsStatus.textContent = '';
 sPrice.value = qsPrice.value;
 scheduleSellMarketPreview();
 });
