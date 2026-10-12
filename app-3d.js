@@ -1807,10 +1807,41 @@ applyViewerEnvironment(id);
 }
 
 // Отражения карты: на фоне карты CS2 металл (Doppler, Fade, хром)
-// отражает эту же карту — картинка фона становится окружением сцены.
-// На «Студии» и «CS2» — нейтральная комната, как было (по ней сверка
-// цветов со Steam). Текстуры окружения привязаны к рендереру — кэш
-// живёт в viewer3d и чистится вместе с ним.
+// отражает эту же карту. Освещает скин по-прежнему нейтральная комната
+// (по ней сверка цветов со Steam) — карта лишь полупрозрачной сферой
+// поверх неё: чистая картинка карты вместо комнаты высветляла и
+// перекрашивала скины (Gamma Doppler на Nuke — бледно-голубой).
+// Текстуры окружения привязаны к рендереру — кэш живёт в viewer3d и
+// чистится вместе с ним.
+const MAP_ENV = { mix: 0.4, light: 0.04, sat: 0.5 };
+// Картинка карты → холст для отражений: средняя яркость приводится к
+// MAP_ENV.light (линейная), цвета приглушаются до MAP_ENV.sat — карта
+// видна в металле, но не красит и не высветляет скин.
+function mapEnvCanvas(img, cfg){
+const w = 512, h = 256;
+const c = document.createElement('canvas');
+c.width = w; c.height = h;
+const ctx = c.getContext('2d');
+ctx.drawImage(img, 0, 0, w, h);
+const data = ctx.getImageData(0, 0, w, h);
+const px = data.data;
+const lin = (x) => { x /= 255; return x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); };
+const srgb = (x) => { x = Math.max(0, Math.min(1, x)); return 255 * (x <= 0.0031308 ? x * 12.92 : 1.055 * Math.pow(x, 1 / 2.4) - 0.055); };
+const table = new Float32Array(256);
+for (let i = 0; i < 256; i++) table[i] = lin(i);
+let sum = 0;
+for (let i = 0; i < px.length; i += 4) sum += 0.2126 * table[px[i]] + 0.7152 * table[px[i + 1]] + 0.0722 * table[px[i + 2]];
+const gain = cfg.light / Math.max(1e-4, sum / (w * h));
+for (let i = 0; i < px.length; i += 4){
+const r = table[px[i]], g = table[px[i + 1]], b = table[px[i + 2]];
+const y = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+px[i] = srgb((y + (r - y) * cfg.sat) * gain);
+px[i + 1] = srgb((y + (g - y) * cfg.sat) * gain);
+px[i + 2] = srgb((y + (b - y) * cfg.sat) * gain);
+}
+ctx.putImageData(data, 0, 0);
+return c;
+}
 function applyViewerEnvironment(id){
 const v = viewer3d;
 if (!v || !window.THREE || !THREE.PMREMGenerator || !THREE.TextureLoader) return;
@@ -1822,16 +1853,29 @@ return;
 }
 v.envCache = v.envCache || {};
 if (!v.envCache[id]){
-v.envCache[id] = new Promise((resolve, reject) => {
+const cfg = Object.assign({}, MAP_ENV, window.DGHOST_MAP_ENV || {});
+v.envCache[id] = Promise.all([
+new Promise((resolve, reject) => {
 new THREE.TextureLoader().setCrossOrigin('anonymous')
 .load(modelsUrl('models/backgrounds/' + map.file), resolve, undefined, reject);
-}).then(tex => {
-tex.mapping = THREE.EquirectangularReflectionMapping;
+}),
+dynamicImport(THREE_ADDONS + 'environments/RoomEnvironment.js'),
+]).then(([img, mod]) => {
+const tex = new THREE.CanvasTexture(mapEnvCanvas(img.image, cfg));
 if ('colorSpace' in tex) tex.colorSpace = THREE.SRGBColorSpace;
+img.dispose();
+const room = new mod.RoomEnvironment();
+const sphere = new THREE.Mesh(new THREE.SphereGeometry(4, 48, 24),
+new THREE.MeshBasicMaterial({ map: tex, side: THREE.BackSide, transparent: true, opacity: cfg.mix, depthWrite: false }));
+room.add(sphere);
 const pmrem = new THREE.PMREMGenerator(v.renderer);
-const env = pmrem.fromEquirectangular(tex).texture;
-tex.dispose();
+const env = pmrem.fromScene(room, 0.04).texture;
 pmrem.dispose();
+room.traverse(node => {
+if (node.geometry) node.geometry.dispose();
+if (node.material) node.material.dispose();
+});
+tex.dispose();
 return env;
 }).catch(err => { console.warn('3D: отражения карты не загрузились —', err); return null; });
 }
