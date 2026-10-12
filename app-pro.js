@@ -19,6 +19,28 @@ const d = new Date(iso);
 return d.toLocaleDateString(currentLang === 'en' ? 'en-GB' : 'ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
+// Тарифы (как у API-сервисов): Free / Старт / PRO / Бизнес — отличаются
+// лимитами; список, цены и лимиты присылает бот (/api/pro → tiers).
+const PRO_TIER_IDS = ['start', 'pro', 'business'];
+
+function proTiers(){
+return (proStatus && Array.isArray(proStatus.tiers)) ? proStatus.tiers : [];
+}
+
+function proTier(id){
+return proTiers().find(t => t.id === id) || null;
+}
+
+function proTierName(id){
+const dict = I18N[currentLang] || I18N.ru;
+return dict['pro_tier_' + (id || 'free')] || id;
+}
+
+function proMinPrice(){
+const prices = proTiers().map(t => t.price);
+return prices.length ? Math.min.apply(null, prices) : (proStatus ? proStatus.price : 0);
+}
+
 function renderProCard(){
 const card = document.getElementById('profileProCard');
 if (!card) return;
@@ -31,7 +53,6 @@ card.style.display = '';
 const badge = document.getElementById('proBadge');
 const status = document.getElementById('proStatusText');
 const btn = document.getElementById('proBuyBtn');
-const price = formatCoins(proStatus.price);
 if (proStatus.admin){
 badge.textContent = dict.pro_badge_on;
 status.textContent = dict.pro_status_admin;
@@ -40,13 +61,13 @@ return;
 }
 btn.style.display = '';
 if (proStatus.active){
-badge.textContent = dict.pro_badge_on;
-status.textContent = dict.pro_status_until.replace('{date}', proDateText(proStatus.expires_at));
-btn.textContent = dict.pro_btn_extend.replace('{price}', price).replace('{days}', proStatus.days);
+badge.textContent = proTierName(proStatus.tier || 'pro');
+status.textContent = dict.pro_status_until.replace('{name}', proTierName(proStatus.tier || 'pro')).replace('{date}', proDateText(proStatus.expires_at));
+btn.textContent = dict.pro_btn_extend;
 } else {
 badge.textContent = '';
-status.textContent = dict.pro_status_off.replace('{price}', price).replace('{days}', proStatus.days);
-btn.textContent = dict.pro_btn_buy.replace('{price}', price).replace('{days}', proStatus.days);
+status.textContent = dict.pro_status_off.replace('{price}', formatCoins(proMinPrice())).replace('{days}', proStatus.days);
+btn.textContent = dict.pro_btn_buy.replace('{price}', formatCoins(proMinPrice()));
 }
 }
 
@@ -58,43 +79,134 @@ return fetch(API_BASE + '/api/pro?init_data=' + encodeURIComponent(tg.initData))
 if (data && !data.error){
 proStatus = data;
 renderProCard();
+if (proPlansOverlay && proPlansOverlay.classList.contains('show')) renderProPlans();
 }
 return proStatus;
 })
 .catch(() => null);
 }
 
+// ---------- Окно «Тарифы»: карточки + таблица сравнения ----------
+const proPlansOverlay = document.getElementById('proPlansOverlay');
+
+function openProPlans(){
+if (!proPlansOverlay) return;
+document.getElementById('proPlansStatus').textContent = '';
+renderProPlans();
+proPlansOverlay.classList.add('show');
+// Свежие цены и срок — вдруг тариф сменили с другого устройства.
+loadProStatus();
+}
+
+function closeProPlans(){
+if (proPlansOverlay) proPlansOverlay.classList.remove('show');
+}
+
+function renderProPlans(){
+if (!proStatus) return;
+const dict = I18N[currentLang] || I18N.ru;
+const days = proStatus.days;
+const current = proStatus.active ? (proStatus.tier || 'pro') : 'free';
+document.getElementById('proPlansHint').textContent = dict.pro_plans_hint.replace('{days}', days);
+const cols = [{ id: 'free', price: 0, share_per_hour: proStatus.free_share_per_hour || 30, market_posts: 0, own_channels: 0, own_posts: 0 }]
+.concat(PRO_TIER_IDS.map(proTier).filter(Boolean));
+
+document.getElementById('proPlans').innerHTML = cols.map(t => {
+const isCurrent = t.id === current;
+const price = t.id === 'free' ? dict.pro_free_price : formatCoins(t.price);
+let action = '';
+if (t.id !== 'free' && !proStatus.admin){
+const label = isCurrent ? dict.pro_extend : (proStatus.active ? dict.pro_switch : dict.pro_pick);
+action = `<button type="button" class="pf-btn pro-plan-btn" data-pro-tier="${t.id}">${escapeHtml(label)}</button>`;
+}
+const flag = isCurrent ? `<span class="pro-plan-flag current">${escapeHtml(dict.pro_current)}</span>`
+: (t.popular ? `<span class="pro-plan-flag">${escapeHtml(dict.pro_popular)}</span>` : '');
+return `<div class="pro-plan${t.popular ? ' popular' : ''}${isCurrent ? ' current' : ''}">
+${flag}
+<div class="pro-plan-name">${escapeHtml(proTierName(t.id))}</div>
+<div class="pro-plan-price">${escapeHtml(price)}</div>
+<div class="pro-plan-per">${t.id === 'free' ? '&nbsp;' : escapeHtml(dict.pro_per_days.replace('{days}', days))}</div>
+<div class="pro-plan-tag">${escapeHtml(dict['pro_tag_' + t.id] || '')}</div>
+${action}
+</div>`;
+}).join('');
+
+const yes = '<span class="pro-yes">✓</span>';
+const no = '<span class="pro-no">—</span>';
+const num = v => (v ? String(v) : no);
+const rows = [
+[dict.pro_cmp_photo, () => yes],
+[dict.pro_cmp_3d, () => yes],
+[dict.pro_cmp_gif, t => (t.id === 'free' ? no : yes)],
+[dict.pro_cmp_market, t => num(t.market_posts)],
+[dict.pro_cmp_channels, t => num(t.own_channels)],
+[dict.pro_cmp_own_posts, t => num(t.own_posts)],
+[dict.pro_cmp_share, t => String(t.share_per_hour)],
+[dict.pro_cmp_price.replace('{days}', days), t => (t.id === 'free' ? '0' : escapeHtml(formatCoins(t.price)))],
+];
+document.getElementById('proCompare').innerHTML =
+`<thead><tr><th></th>${cols.map(t => `<th class="${t.id === current ? 'current' : ''}">${escapeHtml(proTierName(t.id))}</th>`).join('')}</tr></thead>`
++ `<tbody>${rows.map(([label, cell]) => `<tr><td>${escapeHtml(label)}</td>${cols.map(t => `<td class="${t.id === current ? 'current' : ''}">${cell(t)}</td>`).join('')}</tr>`).join('')}</tbody>`;
+}
+
 let proBuying = false;
 
-function buyPro(){
+function buyPro(tierId){
 if (proBuying || !proStatus) return;
 const dict = I18N[currentLang] || I18N.ru;
-const price = formatCoins(proStatus.price);
-const ask = dict.pro_confirm.replace('{price}', price).replace('{days}', proStatus.days);
+const tier = proTier(tierId || 'pro');
+const price = formatCoins(tier ? tier.price : proStatus.price);
+const name = proTierName(tierId || 'pro');
+const days = proStatus.days;
+let ask = dict.pro_confirm.replace('{name}', name).replace('{price}', price).replace('{days}', days);
+const oldId = proStatus.tier || 'pro';
+const oldTier = proTier(oldId);
+if (proStatus.active && tier && oldId !== tier.id && proStatus.expires_at && oldTier){
+// Тот же пересчёт, что делает бот: остаток × старая цена / новая цена.
+const left = Math.max(0, new Date(proStatus.expires_at) - Date.now());
+const conv = oldTier.price > 0 && tier.price > 0 ? left * oldTier.price / tier.price : left;
+const until = new Date(Date.now() + conv + days * 86400000).toISOString();
+ask = dict.pro_confirm_switch.replace('{name}', name).replace('{price}', price)
+.replace('{old}', proTierName(oldId)).replace('{date}', proDateText(until));
+}
 showConfirmDialog(ask, () => {
 proBuying = true;
+const plansStatus = document.getElementById('proPlansStatus');
 fetch(API_BASE + '/api/pro/buy', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ init_data: tg.initData }),
+body: JSON.stringify({ init_data: tg.initData, tier: tierId || 'pro' }),
 })
 .then(async r => {
 const data = await r.json().catch(() => ({}));
 if (!r.ok){
-showAlert(data.error === 'insufficient_funds'
+const msg = data.error === 'insufficient_funds'
 ? dict.pro_no_money.replace('{price}', price)
-: errorMessage(data.error));
+: errorMessage(data.error);
+if (plansStatus) plansStatus.textContent = msg;
+showAlert(msg);
 return;
 }
 proStatus = data;
 renderProCard();
+renderProPlans();
 renderProChannels();
+loadProChannels();
 if (typeof loadMe === 'function') loadMe();
-showAlert(dict.pro_ok.replace('{date}', proDateText(data.expires_at)));
+showAlert(dict.pro_ok.replace('{name}', name).replace('{date}', proDateText(data.expires_at)));
 })
 .catch(() => showAlert(errorMessage('network')))
 .finally(() => { proBuying = false; });
 });
+}
+
+if (proPlansOverlay){
+document.getElementById('proPlans').addEventListener('click', (e) => {
+const btn = e.target.closest('[data-pro-tier]');
+if (btn) buyPro(btn.dataset.proTier);
+});
+document.getElementById('proPlansCloseBtn').addEventListener('click', closeProPlans);
+proPlansOverlay.addEventListener('click', (e) => { if (e.target === proPlansOverlay) closeProPlans(); });
 }
 
 // Окно подтверждения: нативное в Telegram, своё — в браузере (app-web.js).
@@ -111,12 +223,12 @@ if (window.confirm(message)) onOk();
 // Предложение PRO из окна «Поделиться» (замок на GIF / видео / канале).
 function offerPro(statusEl, buttonEl){
 const dict = I18N[currentLang] || I18N.ru;
-const price = proStatus ? formatCoins(proStatus.price) : '';
+const price = proStatus ? formatCoins(proMinPrice()) : '';
 if (statusEl) statusEl.textContent = dict.pro_locked.replace('{price}', price);
 if (buttonEl) buttonEl.style.display = '';
 }
 
-document.getElementById('proBuyBtn').addEventListener('click', buyPro);
+document.getElementById('proBuyBtn').addEventListener('click', openProPlans);
 
 // ------------------------------------------------------------
 // PRO: СВОИ КАНАЛЫ ПРОДАВЦА
@@ -209,7 +321,7 @@ status.textContent = '...';
 postProChannels({ channel: value })
 .then(() => { input.value = ''; status.textContent = dict.pro_ch_added; })
 .catch(data => {
-status.textContent = data && data.error === 'pro_required' ? dict.pro_locked.replace('{price}', '') : proChannelError(data);
+status.textContent = data && data.error === 'pro_required' ? dict.pro_locked.replace('{price}', formatCoins(proMinPrice())) : proChannelError(data);
 })
 .finally(() => { btn.disabled = false; });
 });

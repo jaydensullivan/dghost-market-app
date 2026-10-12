@@ -4471,4 +4471,29 @@ padding:2px 7px; border-radius:6px; font-size:11px; font-weight:700; line-height
 .pro-channels-add .pf-btn{ flex:none; }
 .pro-channels-status{ font-size:12px; margin-top:6px; min-height:1.2em; }
 .share-own-channels{ display:contents; }
+/* Тарифы PRO: карточки 2×2 и таблица сравнения */
+.pro-plans-sheet{ max-height:92vh; overflow-y:auto; }
+.pro-plans{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:12px 0 16px; }
+.pro-plan{ position:relative; display:flex; flex-direction:column; gap:2px; padding:14px 10px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.03); min-width:0; }
+.pro-plan.popular{ border-color:rgba(168,85,247,.7); background:linear-gradient(160deg, rgba(123,44,255,.22), rgba(255,43,214,.08)); }
+.pro-plan.current{ border-color:#16a34a; }
+.pro-plan-flag{ position:absolute; top:-9px; left:10px; font-size:10px; font-weight:700; padding:2px 8px; border-radius:999px; background:linear-gradient(90deg, var(--accent), var(--accent-2)); color:#fff; white-space:nowrap; }
+.pro-plan-flag.current{ background:#16a34a; }
+.pro-plan-name{ font-weight:800; font-size:15px; }
+.pro-plan-price{ font-weight:800; font-size:17px; color:var(--silver); }
+.pro-plan-per{ font-size:11px; opacity:.65; }
+.pro-plan-tag{ font-size:12px; opacity:.85; line-height:1.35; margin:4px 0 8px; flex:1; }
+.pro-plan-btn{ width:100%; justify-content:center; padding:8px 6px; font-size:13px; }
+.pro-plan.popular .pro-plan-btn{ background:linear-gradient(90deg, var(--accent), var(--accent-2)); color:#fff; border:0; }
+.pro-compare-title{ font-weight:700; font-size:14px; margin:4px 0 8px; }
+.pro-compare-wrap{ overflow-x:auto; border:1px solid rgba(255,255,255,.08); border-radius:10px; }
+.pro-compare{ width:100%; border-collapse:collapse; font-size:12px; }
+.pro-compare th, .pro-compare td{ padding:8px 4px; text-align:center; border-bottom:1px solid rgba(255,255,255,.06); }
+.pro-compare th{ font-size:11px; font-weight:700; }
+.pro-compare td:first-child, .pro-compare th:first-child{ text-align:left; padding-left:10px; width:38%; }
+.pro-compare .current{ background:rgba(22,163,74,.12); }
+.pro-compare tr:last-child td{ border-bottom:0; font-weight:700; }
+.pro-yes{ color:#22c55e; font-weight:800; }
+.pro-no{ opacity:.4; }
+
 .save.pro-cta{ background:linear-gradient(90deg, var(--accent), var(--accent-2)); color:#fff; }
