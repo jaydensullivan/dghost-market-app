@@ -1982,6 +1982,285 @@ show(lot);
 box.hidden = false;
 }
 
+// ---------- AR: «Поставить на стол» ----------
+// Раскраска собирается шейдером на лету, а AR-просмотрщики телефона
+// (Quick Look на iPhone, Scene Viewer на Android) понимают только обычные
+// модели с картинками. Поэтому «запекаем»: рисуем каждую деталь в её
+// развёртке и забираем цвет, металличность и шероховатость в картинки,
+// собираем из них .glb (Android) и .usdz (iPhone) в настоящем размере и
+// отдаём боту — он даёт страницу, которая открывается в браузере телефона
+// (внутри Telegram камера для AR недоступна).
+const AR_BAKE_SIZE = 1024;
+// Длина оружия в метрах: AR ставит модель в натуральную величину.
+const AR_LENGTHS = {
+knife: 0.25, knife_karambit: 0.2, knife_push: 0.17, knife_butterfly: 0.23,
+glock: 0.2, hkp2000: 0.2, usp_silencer: 0.31, p250: 0.18, fiveseven: 0.21,
+tec9: 0.3, cz75a: 0.21, elite: 0.21, deagle: 0.27, revolver: 0.32, taser: 0.2,
+mac10: 0.3, mp9: 0.3, mp7: 0.42, mp5sd: 0.73, ump45: 0.69, p90: 0.5, bizon: 0.67,
+nova: 1.0, xm1014: 1.01, sawedoff: 0.63, mag7: 0.6,
+ak47: 0.88, m4a1: 0.84, m4a1_silencer: 1.0, famas: 0.76, galilar: 0.98, aug: 0.8, sg556: 0.93,
+awp: 1.18, ssg08: 1.09, scar20: 1.05, g3sg1: 1.03, m249: 1.04, negev: 1.0,
+};
+const AR_PER_LOT_MAX_MB = 18;
+let arExportersLoading = null;
+
+function arSupported(){
+// Экспорт есть только в современной three.js; на компьютере AR не нужен.
+const touch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+return touch && !!window.THREE && Number(window.THREE.REVISION) >= 150;
+}
+
+function loadArExporters(){
+if (!arExportersLoading){
+arExportersLoading = Promise.all([
+dynamicImport(THREE_ADDONS + 'exporters/GLTFExporter.js'),
+dynamicImport(THREE_ADDONS + 'exporters/USDZExporter.js'),
+]).then(([g, u]) => ({ GLTFExporter: g.GLTFExporter, USDZExporter: u.USDZExporter }))
+.catch(err => { arExportersLoading = null; throw err; });
+}
+return arExportersLoading;
+}
+
+function arModelLength(modelUrl){
+const name = String(modelUrl || '').split('/').pop().replace(/\.glb.*$/, '');
+if (AR_LENGTHS[name]) return AR_LENGTHS[name];
+return /^knife|bayonet/.test(name) ? AR_LENGTHS.knife : 0.7;
+}
+
+// Пустые пиксели вокруг деталей развёртки заполняем соседними цветами,
+// иначе на швах модели проступят чёрные линии.
+function arDilate(px, size, passes){
+const filled = new Uint8Array(size * size);
+for (let i = 0; i < size * size; i++) filled[i] = px[i * 4 + 3] > 0 ? 1 : 0;
+for (let pass = 0; pass < passes; pass++){
+const add = [];
+for (let y = 0; y < size; y++){
+for (let x = 0; x < size; x++){
+const i = y * size + x;
+if (filled[i]) continue;
+let r = 0, g = 0, b = 0, n = 0;
+for (let dy = -1; dy <= 1; dy++){
+const yy = y + dy;
+if (yy < 0 || yy >= size) continue;
+for (let dx = -1; dx <= 1; dx++){
+const xx = x + dx;
+if (xx < 0 || xx >= size) continue;
+const j = yy * size + xx;
+if (!filled[j]) continue;
+r += px[j * 4]; g += px[j * 4 + 1]; b += px[j * 4 + 2]; n++;
+}
+}
+if (n) add.push(i, r / n, g / n, b / n);
+}
+}
+if (!add.length) break;
+for (let k = 0; k < add.length; k += 4){
+const i = add[k];
+px[i * 4] = add[k + 1]; px[i * 4 + 1] = add[k + 2]; px[i * 4 + 2] = add[k + 3]; px[i * 4 + 3] = 255;
+filled[i] = 1;
+}
+}
+}
+
+function arPixelsToCanvas(px, size){
+const canvas = document.createElement('canvas');
+canvas.width = canvas.height = size;
+const ctx = canvas.getContext('2d');
+const img = ctx.createImageData(size, size);
+for (let i = 0; i < size * size * 4; i += 4){
+img.data[i] = px[i]; img.data[i + 1] = px[i + 1]; img.data[i + 2] = px[i + 2]; img.data[i + 3] = 255;
+}
+ctx.putImageData(img, 0, 0);
+return canvas;
+}
+
+// Рисует деталь в её развёртке тем же шейдером раскраски, но вместо
+// освещённой картинки выводит: pass 'color' — цвет краски (sRGB),
+// pass 'mr' — шероховатость (G) и металличность (B), как в glTF.
+function arBakeMesh(THREE, renderer, mesh, pass, size){
+const material = mesh.material;
+const origCompile = material.onBeforeCompile;
+const origKey = material.customProgramCacheKey;
+const origSide = material.side;
+const out = pass === 'color'
+? `vec3 dgC = clamp(diffuseColor.rgb, 0.0, 1.0);
+gl_FragColor = vec4(mix(dgC * 12.92, 1.055 * pow(dgC, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), dgC)), 1.0);`
+: 'gl_FragColor = vec4(1.0, clamp(roughnessFactor, 0.04, 1.0), clamp(metalnessFactor, 0.0, 1.0), 1.0);';
+material.onBeforeCompile = (shader, r) => {
+origCompile.call(material, shader, r);
+shader.vertexShader = shader.vertexShader.replace(/}\s*$/, 'gl_Position = vec4(uv * 2.0 - 1.0, 0.0, 1.0);\n}');
+shader.fragmentShader = shader.fragmentShader.replace(/}\s*$/, out + '\n}');
+};
+material.customProgramCacheKey = () => origKey.call(material) + ':ar-' + pass;
+material.side = THREE.DoubleSide;
+material.needsUpdate = true;
+
+const target = new THREE.WebGLRenderTarget(size, size);
+const scene = new THREE.Scene();
+const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+// Деталь рисуем в отдельной сцене: те же геометрия и материал.
+const proxy = new THREE.Mesh(mesh.geometry, material);
+proxy.matrixAutoUpdate = false;
+proxy.matrix.copy(mesh.matrixWorld);
+proxy.matrixWorld.copy(mesh.matrixWorld);
+proxy.frustumCulled = false;
+scene.add(proxy);
+const prevTarget = renderer.getRenderTarget();
+const prevClear = renderer.getClearColor(new THREE.Color());
+const prevAlpha = renderer.getClearAlpha();
+const px = new Uint8Array(size * size * 4);
+try {
+renderer.setRenderTarget(target);
+renderer.setClearColor(0x000000, 0);
+renderer.clear();
+renderer.render(scene, camera);
+renderer.readRenderTargetPixels(target, 0, 0, size, size, px);
+} finally {
+renderer.setRenderTarget(prevTarget);
+renderer.setClearColor(prevClear, prevAlpha);
+target.dispose();
+material.onBeforeCompile = origCompile;
+material.customProgramCacheKey = origKey;
+material.side = origSide;
+material.needsUpdate = true;
+}
+arDilate(px, size, 8);
+return arPixelsToCanvas(px, size);
+}
+
+function arTexture(THREE, canvas, srgb){
+const tex = new THREE.CanvasTexture(canvas);
+tex.flipY = false;
+tex.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+tex.userData.mimeType = 'image/jpeg';
+return tex;
+}
+
+// Собирает сцену для AR: детали без шейдера, с запечёнными картинками,
+// оружие лежит плашмя (самая короткая сторона — вверх) в настоящую длину.
+function arBuildScene(THREE, renderer, object, modelUrl){
+const meshes = [];
+// В режиме «В руках» сам ствол спрятан — его детали всё равно берём.
+// Поворот, который задал пользователь, снимаем: плашмя кладём по
+// габаритам модели в её исходном положении.
+const wasVisible = object.visible;
+const wasRotation = object.rotation.clone();
+object.visible = true;
+object.rotation.set(0, 0, 0);
+object.updateMatrixWorld(true);
+object.traverseVisible(node => {
+if (node.isMesh && node.geometry && node.geometry.attributes.uv && node.material && node.material.onBeforeCompile) meshes.push(node);
+});
+const restore = () => { object.visible = wasVisible; object.rotation.copy(wasRotation); object.updateMatrixWorld(true); };
+if (!meshes.length){ restore(); throw new Error('no_meshes'); }
+const triangles = m => (m.geometry.index ? m.geometry.index.count : m.geometry.attributes.position.count) / 3;
+const biggest = Math.max(...meshes.map(triangles));
+const group = new THREE.Group();
+try {
+meshes.forEach(mesh => {
+// Мелкие детали (заглушки под наклейки) — картинкой поменьше.
+const size = triangles(mesh) < biggest * 0.2 ? AR_BAKE_SIZE / 4 : AR_BAKE_SIZE;
+const color = arBakeMesh(THREE, renderer, mesh, 'color', size);
+const mr = arBakeMesh(THREE, renderer, mesh, 'mr', size);
+const mrTex = arTexture(THREE, mr, false);
+const material = new THREE.MeshStandardMaterial({
+map: arTexture(THREE, color, true),
+roughnessMap: mrTex, metalnessMap: mrTex, roughness: 1, metalness: 1,
+side: THREE.DoubleSide,
+});
+const src = mesh.material.normalMap;
+if (src && src.image && src.image.width){
+// Рельеф скина: копия до 1024 px — те же развёртка и ориентация.
+const k = Math.min(1, AR_BAKE_SIZE / Math.max(src.image.width, src.image.height));
+const canvas = document.createElement('canvas');
+canvas.width = Math.round(src.image.width * k);
+canvas.height = Math.round(src.image.height * k);
+canvas.getContext('2d').drawImage(src.image, 0, 0, canvas.width, canvas.height);
+material.normalMap = arTexture(THREE, canvas, false);
+material.normalMap.flipY = src.flipY;
+material.normalScale.copy(mesh.material.normalScale);
+}
+const geometry = new THREE.BufferGeometry();
+['position', 'normal', 'uv'].forEach(name => {
+if (mesh.geometry.attributes[name]) geometry.setAttribute(name, mesh.geometry.attributes[name].clone());
+});
+if (mesh.geometry.index) geometry.setIndex(mesh.geometry.index.clone());
+geometry.applyMatrix4(mesh.matrixWorld);
+group.add(new THREE.Mesh(geometry, material));
+});
+} finally {
+restore();
+}
+
+// Плашмя: самую короткую ось габаритов — вверх (Y).
+let box = new THREE.Box3().setFromObject(group);
+let size = box.getSize(new THREE.Vector3());
+const thin = ['x', 'y', 'z'].sort((a, b) => size[a] - size[b])[0];
+if (thin === 'x') group.rotation.z = Math.PI / 2;
+else if (thin === 'z') group.rotation.x = -Math.PI / 2;
+group.updateMatrixWorld(true);
+box = new THREE.Box3().setFromObject(group);
+size = box.getSize(new THREE.Vector3());
+const scale = arModelLength(modelUrl) / (Math.max(size.x, size.y, size.z) || 1);
+const root = new THREE.Group();
+root.add(group);
+group.scale.setScalar(scale);
+group.position.set(-(box.min.x + box.max.x) / 2 * scale, -box.min.y * scale, -(box.min.z + box.max.z) / 2 * scale);
+const scene = new THREE.Scene();
+scene.add(root);
+scene.updateMatrixWorld(true);
+return scene;
+}
+
+async function arExport(THREE, scene){
+const { GLTFExporter, USDZExporter } = await loadArExporters();
+const glb = await new Promise((resolve, reject) => {
+new GLTFExporter().parse(scene, resolve, reject, { binary: true });
+});
+const usdz = await new USDZExporter().parse(scene, { quickLookCompatible: true });
+return { glb: new Uint8Array(glb), usdz };
+}
+
+function arDisposeScene(scene){
+scene.traverse(node => {
+if (node.geometry) node.geometry.dispose();
+if (node.material){
+['map', 'roughnessMap', 'normalMap'].forEach(k => { if (node.material[k]) node.material[k].dispose(); });
+node.material.dispose();
+}
+});
+}
+
+// Запечь, выгрузить боту и открыть страницу AR в браузере телефона.
+async function openViewerAr(onStatus){
+if (!viewer3d || !viewer3d.ar) throw new Error('not_ready');
+const THREE = window.THREE;
+const dict = I18N[currentLang] || I18N.ru;
+onStatus(dict.v3_ar_baking);
+// Дать статусу отрисоваться до тяжёлой работы.
+await new Promise(r => setTimeout(r, 30));
+const scene = arBuildScene(THREE, viewer3d.renderer, viewer3d.object, viewer3d.ar.modelUrl);
+let files;
+try {
+files = await arExport(THREE, scene);
+} finally {
+arDisposeScene(scene);
+}
+if ((files.glb.byteLength + files.usdz.byteLength) / 1048576 > AR_PER_LOT_MAX_MB) throw new Error('too_big');
+onStatus(dict.v3_ar_uploading);
+const form = new FormData();
+form.append('init_data', tg.initData || '');
+form.append('title', viewer3d.ar.title || '');
+form.append('lang', currentLang || 'ru');
+form.append('glb', new Blob([files.glb], { type: 'model/gltf-binary' }), 'model.glb');
+form.append('usdz', new Blob([files.usdz], { type: 'model/vnd.usdz+zip' }), 'model.usdz');
+const response = await fetch(API_BASE + '/api/ar/prepare', { method: 'POST', body: form });
+const data = await response.json().catch(() => ({}));
+if (!response.ok || !data.page_url) throw new Error(data.error || ('HTTP ' + response.status));
+if (tg && typeof tg.openLink === 'function') tg.openLink(data.page_url);
+else window.open(data.page_url, '_blank');
+}
+
 function open3DViewer(modelUrl, title, skinDir, wearValue, weaponDir, maskChannel, seed, stickers, posterUrl){
 const loadId = ++viewer3dLoadId;
 // Фото лота сразу, пока качается и собирается 3D (на мобильном
@@ -2013,6 +2292,8 @@ exact.hidden = !parts.length;
 }
 setViewerFullscreen(false);
 showViewerHint();
+const arBtn = document.getElementById('viewer3dArBtn');
+if (arBtn){ arBtn.hidden = true; arBtn.disabled = false; }
 status.textContent = dict.v3_loading;
 let magicWarning = null;
 let texturesDropped = false;
@@ -2101,6 +2382,28 @@ if (!skin.pattern && !skin.solid) throw new Error('не загрузился у�
 applySkinToModel(THREE, object, skin, wearValue, weapon, maskChannel, seed, atlas);
 hideViewerPoster();
 setupWearSlider(wearValue, () => [object, hands && hands.ih.knifeGroup]);
+// AR — только с раскраской: без неё на столе стоял бы серый ствол.
+if (viewer3d && viewer3d.object === object && arBtn && arSupported()){
+viewer3d.ar = { modelUrl, title };
+arBtn.hidden = false;
+arBtn.onclick = async () => {
+const arDict = I18N[currentLang] || I18N.ru;
+if (arBtn.disabled) return;
+arBtn.disabled = true;
+try {
+await openViewerAr(text => { status.textContent = text; });
+status.textContent = arDict.v3_ar_opened;
+setTimeout(() => { status.textContent = ''; }, 5000);
+} catch (err) {
+console.warn('3D: AR не вышел —', err);
+const code = err && err.message;
+status.textContent = code === 'ar_hourly_limit' ? arDict.v3_ar_limit : arDict.v3_ar_failed;
+setTimeout(() => { status.textContent = ''; }, 4000);
+} finally {
+arBtn.disabled = false;
+}
+};
+}
 status.textContent = `${dict.v3_skin_on} · float ${formatFloat(wearValue || 0)}`;
 setTimeout(() => { status.textContent = ''; }, 3000);
 })
