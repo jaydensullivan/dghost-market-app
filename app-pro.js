@@ -136,6 +136,7 @@ const no = '<span class="pro-no">—</span>';
 const num = v => (v ? String(v) : no);
 // Третий элемент — пояснение строки: открывается по ⓘ под самой строкой.
 const rows = [
+[dict.pro_cmp_buy, () => yes, dict.pro_help_buy],
 [dict.pro_cmp_photo, () => yes, dict.pro_help_photo],
 [dict.pro_cmp_3d, () => yes, dict.pro_help_3d],
 [dict.pro_cmp_gif, t => (t.id === 'free' ? no : yes), dict.pro_help_gif],
