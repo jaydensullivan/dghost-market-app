@@ -1769,7 +1769,9 @@ if (e.target === shareOverlay) closeShareSheet();
 function shareErrorText(err){
 const dict = I18N[currentLang] || I18N.ru;
 console.warn('Поделиться:', err);
-return String(err && err.message || '') === 'too_often' ? dict.share_too_often : dict.share_failed;
+const code = String(err && err.message || '');
+if (code === 'share_hourly_limit') return dict.share_hourly_limit;
+return code === 'too_often' ? dict.share_too_often : dict.share_failed;
 }
 
 // Окно выбора чата не открылось — шлём в личку, оттуда перешлют.
