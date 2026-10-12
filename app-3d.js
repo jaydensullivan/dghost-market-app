@@ -1814,7 +1814,18 @@ if (pat && ci === replace){
 const pu = ((u - 0.5) * cosR - (v - 0.5) * sinR) * pScale + pOff[0];
 const pv = ((u - 0.5) * sinR + (v - 0.5) * cosR) * pScale + (pOff[1] || 0);
 const q = sample(pat, pu, pv);
-if (opt.palMode === 1){
+if (opt.palMode === 2 || opt.palMode === 3){
+// Слоты палитры по каналам A, R, G, B; 2 — номера с единицы, 3 — с нуля.
+const shift = opt.palMode === 3 ? 1 : 0;
+[3, 0, 1, 2].forEach((c, slotIdx) => {
+const n = pal[slotIdx] + shift;
+if (!(n >= 1 && n <= 8)) return;
+const w = pat.d[q + c] / 255;
+if (w <= 0) return;
+const t = tint[n];
+r += (t[0] - r) * w; g += (t[1] - g) * w; b += (t[2] - b) * w;
+});
+} else if (opt.palMode === 1){
 // Номера с единицы: основа — цвет слота A (по силе канала A).
 const wa = pat.d[q + 3] / 255, ta = tint[Math.max(1, Math.min(8, pal[3]))];
 r += (ta[0] - r) * wa; g += (ta[1] - g) * wa; b += (ta[2] - b) * wa;
