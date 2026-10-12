@@ -89,6 +89,8 @@ card_view_showcase: 'Витрина',
 layout_compact: 'Компакт',
 layout_large: 'Крупная',
 layout_label: 'Шаблон лота',
+layout_compact_hint: 'Компактный вид: 3 колонки',
+layout_large_hint: 'Крупный вид: одна колонка',
 theme_midnight: 'Полночь',
 theme_neon: 'Неон-фиолет',
 theme_emerald: 'Изумруд',
@@ -1347,6 +1349,8 @@ card_view_showcase: 'Vitrina',
 layout_compact: 'Ixcham',
 layout_large: 'Katta',
 layout_label: 'Lot ko\'rinishi',
+layout_compact_hint: 'Ixcham ko\'rinish: 3 ustun',
+layout_large_hint: 'Katta ko\'rinish: bitta ustun',
 theme_midnight: 'Yarim tun',
 theme_neon: 'Neon-binafsha',
 theme_emerald: 'Zumrad',
@@ -2605,6 +2609,8 @@ card_view_showcase: 'Showcase',
 layout_compact: 'Compact',
 layout_large: 'Large',
 layout_label: 'Lot layout',
+layout_compact_hint: 'Compact view: 3 columns',
+layout_large_hint: 'Large view: one column',
 theme_midnight: 'Midnight',
 theme_neon: 'Neon Violet',
 theme_emerald: 'Emerald',
@@ -3822,6 +3828,13 @@ if (dict[key]) el.textContent = dict[key];
 document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
 const key = el.getAttribute('data-i18n-placeholder');
 if (dict[key]) el.setAttribute('placeholder', dict[key]);
+});
+
+['title', 'aria-label'].forEach(attr => {
+document.querySelectorAll('[data-i18n-' + attr + ']').forEach(el => {
+const key = el.getAttribute('data-i18n-' + attr);
+if (dict[key]) el.setAttribute(attr, dict[key]);
+});
 });
 
 document.getElementById('langBtnRu').classList.toggle('active', currentLang === 'ru');
