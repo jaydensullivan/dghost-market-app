@@ -86,9 +86,27 @@ return loadThreeLegacy();
 return threeLoading;
 }
 
+// Декодер сжатой геометрии (EXT_meshopt_compression): модели на CDN
+// сжимаются при выкладке — в 2–3 раза меньше трафика. Не загрузился —
+// не страшно: несжатые модели открываются и без него.
+const THREE_LEGACY_MESHOPT = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/meshopt_decoder.js';
+let meshoptDecoder = null;
+let meshoptLoading = null;
+function loadMeshoptDecoder(){
+if (meshoptLoading) return meshoptLoading;
+const modern = window.THREE && Number(window.THREE.REVISION) >= 150;
+meshoptLoading = (modern
+? dynamicImport(THREE_ADDONS + 'libs/meshopt_decoder.module.js').then(m => m.MeshoptDecoder)
+: loadScript(THREE_LEGACY_MESHOPT).then(() => window.MeshoptDecoder))
+.then(dec => (dec && dec.ready ? dec.ready.then(() => dec) : dec))
+.then(dec => { meshoptDecoder = dec || null; return meshoptDecoder; })
+.catch(err => { console.warn('3D: декодер сжатых моделей не загрузился —', err); return null; });
+return meshoptLoading;
+}
+
 // Загрузчик .glb теперь приезжает вместе с библиотекой.
 function loadGltfLoader(){
-return load3DLibrary().then(() => {
+return load3DLibrary().then(() => loadMeshoptDecoder()).then(() => {
 if (!window.THREE){
 throw new Error('three.js не загрузилась');
 }
@@ -326,7 +344,9 @@ return new Promise((resolve, reject) => {
 const native = window.createImageBitmap;
 window.createImageBitmap = undefined;
 const restore = () => { if (native) window.createImageBitmap = native; };
-new THREE.GLTFLoader().parse(
+const loader = new THREE.GLTFLoader();
+if (meshoptDecoder && loader.setMeshoptDecoder) loader.setMeshoptDecoder(meshoptDecoder);
+loader.parse(
 buffer, '',
 (gltf) => { restore(); resolve(gltf); },
 (e) => { restore(); reject(e); }
@@ -1143,9 +1163,10 @@ const projLen = Math.max(boxSize.getComponent(axes[0]), 1e-6);
 // город оказывался на рамке, а не по нижнему краю затвора.
 const projCenter = box.getCenter(new THREE.Vector3());
 
+// Ползунок износа в просмотрщике меняет его на лету (общий uniform всех частей).
+object.userData.dgWear = uniforms.uWearAmount;
 object.traverse(node => {
 if (!node.isMesh) return;
-
 const material = new THREE.MeshStandardMaterial({
 color: 0xffffff,
 metalness: 0.7,
@@ -1851,8 +1872,79 @@ box.hidden = false;
 // и не рисует свою модель под чужим названием (Deagle под «AWP …»).
 let viewer3dLoadId = 0;
 
-function open3DViewer(modelUrl, title, skinDir, wearValue, weaponDir, maskChannel, seed, stickers){
+// ---------- Фото лота, пока грузится 3D ----------
+function showViewerPoster(url){
+const img = document.getElementById('viewer3dPoster');
+if (!img) return;
+img.classList.remove('gone');
+if (!url){ img.hidden = true; img.removeAttribute('src'); return; }
+img.onerror = () => { img.hidden = true; };
+img.src = url;
+img.hidden = false;
+}
+
+function hideViewerPoster(){
+const img = document.getElementById('viewer3dPoster');
+if (img && !img.hidden) img.classList.add('gone');
+}
+
+// ---------- Ползунок износа ----------
+// Тот же скин от «прямо с завода» до «закалённого в боях»: меняем
+// uniform износа на лету, метка — float этого лота. Границы зон — как
+// в CS2.
+const WEAR_ZONES = [
+{ id: 'FN', max: 0.07 }, { id: 'MW', max: 0.15 }, { id: 'FT', max: 0.38 },
+{ id: 'WW', max: 0.45 }, { id: 'BS', max: 1 },
+];
+let viewer3dWearPreview = null;
+
+function wearZone(value){
+return (WEAR_ZONES.find(z => value < z.max) || WEAR_ZONES[WEAR_ZONES.length - 1]).id;
+}
+
+function hideWearSlider(){
+viewer3dWearPreview = null;
+const box = document.getElementById('viewer3dWear');
+if (box) box.hidden = true;
+}
+
+function setupWearSlider(lotWear, targets){
+const box = document.getElementById('viewer3dWear');
+if (!box) return;
+const dict = I18N[currentLang] || I18N.ru;
+const range = document.getElementById('v3wRange');
+const value = document.getElementById('v3wValue');
+const reset = document.getElementById('v3wReset');
+const marker = document.getElementById('v3wLot');
+const lot = Math.max(0, Math.min(1, Number(lotWear) || 0));
+document.getElementById('v3wLabel').textContent = dict.v3_wear_label;
+reset.textContent = dict.v3_wear_reset;
+marker.style.left = (lot * 100) + '%';
+marker.title = dict.v3_wear_lot.replace('{f}', formatFloat(lot));
+const show = (v) => {
+const zone = wearZone(v);
+const isLot = Math.abs(v - lot) < 0.0005;
+value.textContent = `${isLot ? formatFloat(lot) : v.toFixed(3)} · ${zone}` + (isLot ? ' · ' + dict.v3_wear_this : '');
+reset.hidden = Math.abs(v - lot) < 0.0005;
+};
+const apply = (v) => {
+viewer3dWearPreview = Math.abs(v - lot) < 0.0005 ? null : v;
+targets().forEach(obj => { if (obj && obj.userData.dgWear) obj.userData.dgWear.value = v; });
+show(v);
+};
+range.value = String(Math.round(lot * 1000));
+range.oninput = () => apply(Number(range.value) / 1000);
+reset.onclick = () => { range.value = String(Math.round(lot * 1000)); apply(lot); };
+show(lot);
+box.hidden = false;
+}
+
+function open3DViewer(modelUrl, title, skinDir, wearValue, weaponDir, maskChannel, seed, stickers, posterUrl){
 const loadId = ++viewer3dLoadId;
+// Фото лота сразу, пока качается и собирается 3D (на мобильном
+// интернете это секунды); гаснет, когда раскраска легла.
+showViewerPoster(posterUrl);
+hideWearSlider();
 const stale = () => loadId !== viewer3dLoadId;
 const dict = I18N[currentLang] || I18N.ru;
 renderViewerBackgrounds(dict);
@@ -1890,7 +1982,9 @@ loadGltfLoader()
 .catch(() => { throw new Error(dict.v3_err_lib); })
 // Индекс заодно выбирает, откуда брать файлы (Cloudflare или сайт).
 .then(() => loadModelIndex())
-.then(() => fetch(modelsUrl(modelUrl), { cache: 'no-store' }).catch(() => { throw new Error(dict.v3_err_net); }))
+// Кэш браузера: CDN отдаёт модели с max-age=3600 и ETag — повторное
+// открытие лота не качает 1–3 МБ заново (раньше стоял no-store).
+.then(() => fetch(modelsUrl(modelUrl)).catch(() => { throw new Error(dict.v3_err_net); }))
 .then(async response => {
 if (response.status === 404) throw new Error(dict.v3_err_404);
 if (!response.ok) throw new Error(dict.v3_err_net + ' (HTTP ' + response.status + ')');
@@ -1945,6 +2039,7 @@ object.add(gltf.scene);
 selectModelBody(object, false);
 scene.add(object);
 const baseDistance = fitObjectToView(THREE, gltf.scene, camera);
+if (!skinDir) hideViewerPoster();
 
 setupViewerScene(THREE, renderer, scene);
 
@@ -1961,12 +2056,14 @@ stickerAtlasReady,
 if (stale()) return;
 if (!skin.pattern && !skin.solid) throw new Error('не загрузился узор');
 applySkinToModel(THREE, object, skin, wearValue, weapon, maskChannel, seed, atlas);
+hideViewerPoster();
+setupWearSlider(wearValue, () => [object, hands && hands.ih.knifeGroup]);
 status.textContent = `${dict.v3_skin_on} · float ${formatFloat(wearValue || 0)}`;
 setTimeout(() => { status.textContent = ''; }, 3000);
 })
 .catch(err => {
 console.warn('3D: раскраска не применилась —', err);
-if (!stale()) status.textContent = dict.v3_skin_failed;
+if (!stale()){ status.textContent = dict.v3_skin_failed; hideViewerPoster(); }
 });
 }
 
@@ -2088,7 +2185,7 @@ if (!handsCache[clipId]){
 const ih = await loadInHandsScene(THREE, animDir, clipId);
 if (skinDir){
 const [[skin, weapon], atlas] = await Promise.all([loadSkinWithWeapon(THREE, skinDir, weaponDir), stickerAtlasReady]);
-applySkinToModel(THREE, ih.knifeGroup, skin, wearValue, weapon, maskChannel, seed, atlas);
+applySkinToModel(THREE, ih.knifeGroup, skin, viewer3dWearPreview ?? wearValue, weapon, maskChannel, seed, atlas);
 }
 handsCache[clipId] = ih;
 }
@@ -2117,6 +2214,7 @@ setTimeout(() => { status.textContent = ''; }, 2500);
 })
 .catch(err => {
 if (stale()) return;
+hideViewerPoster();
 // Путь показываем рядом с причиной — чаще всего ошибка именно в нём.
 status.innerHTML = `${escapeHtml(err.message || dict.v3_failed)}<br><span style="opacity:.7;">${escapeHtml(modelUrl)}</span>`
 + (err.detail ? `<br><span class="v3-detail">${escapeHtml(err.detail)}</span>` : '');
@@ -2128,6 +2226,8 @@ viewer3dLoadId++;
 setViewerFullscreen(false);
 viewer3dOverlay.classList.remove('show');
 dispose3DViewer();
+hideViewerPoster();
+hideWearSlider();
 });
 
 // Во весь экран: лист растягивается на всё окно (работает везде), а в
@@ -2288,7 +2388,7 @@ buy3dBtn.addEventListener('click', () => {
 if (!buy3dEntry || !buy3dSkin) return;
 const skin = buy3dSkin;
 const title = skin.stattrak ? 'StatTrak™ ' + skin.title : skin.title;
-open3DViewer(buy3dEntry.model, title, buy3dEntry.skin, Number(skin.float_value) || 0, buy3dEntry.weapon || null, 'none', skin.pattern, skin.stickers);
+open3DViewer(buy3dEntry.model, title, buy3dEntry.skin, Number(skin.float_value) || 0, buy3dEntry.weapon || null, 'none', skin.pattern, skin.stickers, skin.photo_url);
 });
 }
 

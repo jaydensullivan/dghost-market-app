@@ -2715,6 +2715,33 @@ overflow:hidden;
 touch-action:none;
 }
 .viewer3d-stage canvas{ width:100%; height:100%; display:block; }
+/* Фото лота поверх сцены, пока грузится 3D; гаснет, когда легла раскраска. */
+.viewer3d-poster{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; padding:8%; z-index:1;
+  pointer-events:none; transition:opacity .5s; filter:drop-shadow(0 8px 18px rgba(0,0,0,.45)); }
+.viewer3d-poster.gone{ opacity:0; }
+/* Ползунок износа: зоны FN…BS как в CS2, метка — float этого лота. */
+.viewer3d-wear{ margin-top:10px; }
+.viewer3d-wear[hidden]{ display:none; }
+.v3w-head{ display:flex; align-items:center; gap:8px; font-family:'Inter', sans-serif; font-size:12px; margin-bottom:6px; }
+.v3w-label{ color:var(--muted); }
+.v3w-value{ flex:1; min-width:0; color:var(--silver); font-family:'JetBrains Mono', monospace; font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.v3w-reset{ flex:0 0 auto; height:24px; padding:0 10px; border-radius:12px; border:1px solid var(--red-dim); background:var(--surface); color:var(--silver); font-size:11px; cursor:pointer; }
+.v3w-reset[hidden]{ display:none; }
+.v3w-track{ position:relative; height:30px; }
+.v3w-zones{ position:absolute; left:0; right:0; top:9px; height:12px; display:flex; border-radius:6px; overflow:hidden; }
+.v3w-zones span{ display:flex; align-items:center; justify-content:center; font-family:'JetBrains Mono', monospace; font-size:8px; color:rgba(255,255,255,.85); overflow:hidden; }
+.v3w-zones span:nth-child(1){ background:#2e7d4f; }
+.v3w-zones span:nth-child(2){ background:#5c8a3a; }
+.v3w-zones span:nth-child(3){ background:#9a7b2e; }
+.v3w-zones span:nth-child(4){ background:#a2552c; }
+.v3w-zones span:nth-child(5){ background:#7f2f2f; }
+.v3w-lot{ position:absolute; top:3px; width:2px; height:24px; margin-left:-1px; background:#fff; border-radius:1px; box-shadow:0 0 0 1px rgba(0,0,0,.5); pointer-events:none; }
+#v3wRange{ position:absolute; left:0; right:0; top:0; width:100%; height:30px; margin:0; background:transparent; -webkit-appearance:none; appearance:none; cursor:pointer; }
+#v3wRange::-webkit-slider-runnable-track{ height:30px; background:transparent; }
+#v3wRange::-moz-range-track{ height:30px; background:transparent; }
+#v3wRange::-webkit-slider-thumb{ -webkit-appearance:none; width:18px; height:26px; margin-top:2px; border-radius:6px; background:var(--red); border:2px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,.5); }
+#v3wRange::-moz-range-thumb{ width:14px; height:22px; border-radius:6px; background:var(--red); border:2px solid #fff; }
+#v3wRange:focus-visible{ outline:2px solid var(--red); outline-offset:2px; }
 /* Фон 3D: студия или фоны как в CS2 (картинки карт — с CDN 3D). */
 .viewer3d-stage[data-bg="inspect"]{ background:radial-gradient(ellipse at 50% 40%, #5a5f66 0%, #2b2e33 55%, #16181b 100%); }
 .viewer3d-stage[data-bg-image]{ background-size:cover; background-position:center; }
