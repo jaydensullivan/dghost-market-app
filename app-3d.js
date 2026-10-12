@@ -2232,14 +2232,13 @@ node.material.dispose();
 }
 
 // Запечь, выгрузить боту и открыть страницу AR в браузере телефона.
-async function openViewerAr(onStatus){
-if (!viewer3d || !viewer3d.ar) throw new Error('not_ready');
-const THREE = window.THREE;
+// Запечь, выгрузить боту и открыть страницу AR в браузере телефона.
+async function arPrepareAndOpen(THREE, renderer, object, modelUrl, title, onStatus){
 const dict = I18N[currentLang] || I18N.ru;
 onStatus(dict.v3_ar_baking);
 // Дать статусу отрисоваться до тяжёлой работы.
 await new Promise(r => setTimeout(r, 30));
-const scene = arBuildScene(THREE, viewer3d.renderer, viewer3d.object, viewer3d.ar.modelUrl);
+const scene = arBuildScene(THREE, renderer, object, modelUrl);
 let files;
 try {
 files = await arExport(THREE, scene);
@@ -2250,15 +2249,71 @@ if ((files.glb.byteLength + files.usdz.byteLength) / 1048576 > AR_PER_LOT_MAX_MB
 onStatus(dict.v3_ar_uploading);
 const form = new FormData();
 form.append('init_data', tg.initData || '');
-form.append('title', viewer3d.ar.title || '');
+form.append('title', title || '');
 form.append('lang', currentLang || 'ru');
 form.append('glb', new Blob([files.glb], { type: 'model/gltf-binary' }), 'model.glb');
 form.append('usdz', new Blob([files.usdz], { type: 'model/vnd.usdz+zip' }), 'model.usdz');
 const response = await fetch(API_BASE + '/api/ar/prepare', { method: 'POST', body: form });
 const data = await response.json().catch(() => ({}));
 if (!response.ok || !data.page_url) throw new Error(data.error || ('HTTP ' + response.status));
-if (tg && typeof tg.openLink === 'function') tg.openLink(data.page_url);
-else window.open(data.page_url, '_blank');
+arOpenPage(data.page_url);
+return data.page_url;
+}
+
+function arOpenPage(url){
+if (tg && typeof tg.openLink === 'function') tg.openLink(url);
+else window.open(url, '_blank');
+}
+
+async function openViewerAr(onStatus){
+if (!viewer3d || !viewer3d.ar) throw new Error('not_ready');
+await arPrepareAndOpen(window.THREE, viewer3d.renderer, viewer3d.object, viewer3d.ar.modelUrl, viewer3d.ar.title, onStatus);
+}
+
+// «На столе» прямо из карточки лота: та же модель и раскраска, что в
+// 3D-просмотре, но собираются без показа. Готовая страница живёт у бота
+// сутки — повторное нажатие на тот же лот открывает её сразу.
+const AR_PAGE_REUSE_MS = 20 * 3600 * 1000;
+const arLotPages = {};
+async function arPrepareForLot(entry, wear, title, seed, stickers, onStatus){
+const key = [entry.model, entry.skin, wear, seed, JSON.stringify(stickers || null), currentLang].join('|');
+const cached = arLotPages[key];
+if (cached && Date.now() - cached.at < AR_PAGE_REUSE_MS){
+arOpenPage(cached.url);
+return;
+}
+const dict = I18N[currentLang] || I18N.ru;
+onStatus(dict.v3_ar_baking);
+await loadGltfLoader();
+if (!arSupported()) throw new Error('unsupported');
+await loadModelIndex();
+const response = await fetch(modelsUrl(entry.model));
+if (!response.ok) throw new Error('model ' + response.status);
+const buffer = await response.arrayBuffer();
+const gltf = await parseGlb(buffer).catch(() => parseGlb(stripTexturesFromGlb(buffer)));
+const [[skin, weapon], stickerAtlas] = await Promise.all([
+loadSkinWithWeapon(THREE, entry.skin, entry.weapon),
+loadStickerAtlas(THREE, stickers).catch(() => null),
+]);
+if (!skin.pattern && !skin.solid) throw new Error('no_pattern');
+// Рисуем только в текстуры развёртки — холсту хватает пары пикселей.
+const canvas = document.createElement('canvas');
+canvas.width = canvas.height = 2;
+const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+const object = new THREE.Group();
+object.add(gltf.scene);
+selectModelBody(object, false);
+try {
+applySkinToModel(THREE, object, skin, wear, weapon, 'none', seed, stickerAtlas);
+const url = await arPrepareAndOpen(THREE, renderer, object, entry.model, title, onStatus);
+arLotPages[key] = { url, at: Date.now() };
+} finally {
+object.traverse(node => {
+if (node.geometry) node.geometry.dispose();
+if (node.material) node.material.dispose();
+});
+renderer.dispose();
+}
 }
 
 function open3DViewer(modelUrl, title, skinDir, wearValue, weaponDir, maskChannel, seed, stickers, posterUrl){
@@ -2785,12 +2840,14 @@ return String(title || '')
 }
 
 const buy3dBtn = document.getElementById('buy3dBtn');
+const buyArBtn = document.getElementById('buyArBtn');
 let buy3dEntry = null;
 let buy3dSkin = null;
 
 function update3DButton(skin){
 if (!buy3dBtn) return;
 buy3dBtn.style.display = 'none';
+if (buyArBtn) buyArBtn.style.display = 'none';
 buy3dEntry = null;
 buy3dSkin = skin;
 Promise.all([loadModelIndex(), loadPaintIndex()]).then(([map, paintMap]) => {
@@ -2800,6 +2857,8 @@ const entry = modelEntryForSkin(map, paintMap, skin);
 if (!entry || !entry.model || !entry.skin) return;
 buy3dEntry = entry;
 buy3dBtn.style.display = '';
+// AR — только на телефоне (на компьютере камеры для стола нет).
+if (buyArBtn && (('ontouchstart' in window) || navigator.maxTouchPoints > 0)) buyArBtn.style.display = '';
 });
 }
 
@@ -2809,6 +2868,30 @@ if (!buy3dEntry || !buy3dSkin) return;
 const skin = buy3dSkin;
 const title = skin.stattrak ? 'StatTrak™ ' + skin.title : skin.title;
 open3DViewer(buy3dEntry.model, title, buy3dEntry.skin, Number(skin.float_value) || 0, buy3dEntry.weapon || null, 'none', skin.pattern, skin.stickers, skin.photo_url);
+});
+}
+
+if (buyArBtn){
+const label = buyArBtn.querySelector('span');
+buyArBtn.addEventListener('click', async () => {
+if (!buy3dEntry || !buy3dSkin || buyArBtn.disabled) return;
+const skin = buy3dSkin;
+const dict = I18N[currentLang] || I18N.ru;
+const title = skin.stattrak ? 'StatTrak™ ' + skin.title : skin.title;
+let lastSaid = '';
+const say = (text) => { if (text !== lastSaid) showToast(text); lastSaid = text; };
+buyArBtn.disabled = true;
+if (label) label.textContent = '…';
+try {
+await arPrepareForLot(buy3dEntry, Number(skin.float_value) || 0, title, skin.pattern, skin.stickers, say);
+} catch (err) {
+console.warn('3D: AR из лота не вышел —', err);
+const code = err && err.message;
+showToast(code === 'ar_hourly_limit' ? dict.v3_ar_limit : (code === 'unsupported' ? dict.v3_ar_unsupported : dict.v3_ar_failed), { type: 'error' });
+} finally {
+buyArBtn.disabled = false;
+if (label) label.textContent = dict.btn_ar;
+}
 });
 }
 
