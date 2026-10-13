@@ -290,6 +290,7 @@ renderInvPicked();
 
 function renderInvPicked(){
 const dict = I18N[currentLang] || I18N.ru;
+if (!sellAllRunning) document.getElementById('invSellAllBtn').textContent = dict.inv_sell_all.replace('{p}', SELL_ALL_DISCOUNT);
 const box = document.getElementById('invPicked');
 box.style.display = invPicked.length && !inventoryPickHandler ? '' : 'none';
 document.getElementById('invPickedCount').textContent = dict.inv_of.replace('{n}', invPicked.length).replace('{max}', INV_PICK_MAX);
@@ -537,6 +538,124 @@ const multi = sellQueueTotal > 1;
 queueEl.style.display = multi ? '' : 'none';
 queueEl.textContent = dict.qs_queue.replace('{n}', sellQueueTotal - sellQueue.length).replace('{total}', sellQueueTotal);
 document.getElementById('quickSellSkip').style.display = sellQueue.length ? '' : 'none';
+}
+
+// ---------- «Все по рынку −3%»: выставить выбранные разом ----------
+// Для каждого предмета: инспект (float, паттерн, наклейки), ориентир
+// рынка, цена = рынок −3% (как подсказка в окне «Выставить лот») и
+// публикация. Предметы без износа или без цены рынка пропускаем —
+// их можно выставить по одному через «Продолжить».
+
+const SELL_ALL_DISCOUNT = 3;
+let sellAllRunning = false;
+
+document.getElementById('invSellAllBtn').addEventListener('click', () => {
+if (!invPicked.length || sellAllRunning) return;
+const dict = I18N[currentLang] || I18N.ru;
+const items = invPicked.filter(it => it.tradable !== false);
+showConfirm(dict.inv_sell_all_q.replace('{n}', items.length).replace('{p}', SELL_ALL_DISCOUNT), () => {
+if (!sellerOfferAccepted){
+openSellerOffer(() => sellAllAtMarket(items));
+return;
+}
+sellAllAtMarket(items);
+});
+});
+
+async function sellAllInspect(item){
+if (!item.inspect_link) return null;
+try {
+const r = await fetch(API_BASE + '/api/steam/inspect'
++ '?init_data=' + encodeURIComponent(tg.initData)
++ '&inspect_link=' + encodeURIComponent(item.inspect_link)
++ '&_t=' + Date.now(), { cache: 'no-store' });
+const data = r.ok ? await r.json() : null;
+return data && data.ok ? data : null;
+} catch (e){
+return null;
+}
+}
+
+async function sellAllMarketPrice(item, stattrak){
+const params = new URLSearchParams({ title: item.title, wear: item.wear });
+if (stattrak) params.set('stattrak', '1');
+try {
+const r = await fetch(API_BASE + '/api/market_price_preview?' + params.toString());
+const data = await r.json();
+return data && data.available && data.market_price_uzs > 0 ? data.market_price_uzs : 0;
+} catch (e){
+return 0;
+}
+}
+
+async function sellAllAtMarket(items){
+const dict = I18N[currentLang] || I18N.ru;
+const btn = document.getElementById('invSellAllBtn');
+sellAllRunning = true;
+btn.disabled = true;
+let listed = 0, skipped = 0, failed = 0;
+try {
+for (let i = 0; i < items.length; i++){
+const item = items[i];
+btn.textContent = dict.inv_sell_all_progress.replace('{n}', i + 1).replace('{total}', items.length);
+if (!item.title || !item.wear || !item.photo_url || !item.asset_id){
+skipped++;
+continue;
+}
+const info = await sellAllInspect(item);
+const stattrak = !!(item.stattrak || (info && info.stattrak));
+const market = await sellAllMarketPrice(item, stattrak);
+if (!market){
+skipped++;
+continue;
+}
+const pick = (a, b) => (a !== null && a !== undefined && a !== '') ? a : (b !== undefined ? b : null);
+const r = await fetch(API_BASE + '/api/skins', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+init_data: tg.initData,
+title: item.title,
+description: '',
+price: qsRoundPrice(market * (1 - SELL_ALL_DISCOUNT / 100)),
+photo_url: item.photo_url,
+weapon_type: item.weapon_type || '',
+wear: item.wear,
+rarity: item.rarity || (info && info.rarity) || '',
+float_value: pick(item.float_value, info && info.float_value),
+pattern: pick(item.pattern, info && info.pattern),
+stattrak: stattrak,
+has_stickers: !!(info && info.has_stickers),
+asset_id: item.asset_id,
+inspect_link: item.inspect_link || null,
+})
+}).catch(() => null);
+if (r && r.ok){
+listed++;
+invPicked = invPicked.filter(p => invKey(p) !== invKey(item));
+continue;
+}
+const data = r ? await r.json().catch(() => ({})) : {};
+if (data.error === 'seller_offer_required'){
+// Оферту ещё не приняли — после принятия продолжаем с этого же предмета.
+sellerOfferAccepted = false;
+const rest = items.slice(i);
+openSellerOffer(() => sellAllAtMarket(rest));
+break;
+}
+failed++;
+}
+} finally {
+sellAllRunning = false;
+btn.disabled = false;
+btn.textContent = dict.inv_sell_all.replace('{p}', SELL_ALL_DISCOUNT);
+renderInventory();
+}
+if (listed) loadSkins();
+showAlert(dict.inv_sell_all_done
+.replace('{ok}', listed)
+.replace('{skip}', skipped + failed));
+if (listed && !invPicked.length) inventoryOverlay.classList.remove('show');
 }
 
 // Вызывается из publishSkin после успешной публикации из окна «Выставить лот».

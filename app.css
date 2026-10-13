@@ -3662,6 +3662,7 @@ cursor:pointer;
 /* панель выбранных */
 .inv-picked{
 display:flex;
+flex-wrap:wrap;
 align-items:center;
 gap:10px;
 padding:10px;
@@ -3670,7 +3671,7 @@ border-radius:14px;
 border:1px solid var(--red-dim);
 background:rgba(23,16,34,0.96);
 }
-.inv-picked-thumbs{ display:flex; gap:6px; overflow-x:auto; flex:1 1 auto; min-width:0; scrollbar-width:none; }
+.inv-picked-thumbs{ display:flex; gap:6px; overflow-x:auto; flex:1 1 0; min-width:0; scrollbar-width:none; }
 .inv-picked-thumbs::-webkit-scrollbar{ display:none; }
 .inv-thumb{
 position:relative;
@@ -3711,6 +3712,18 @@ font-weight:700;
 white-space:nowrap;
 cursor:pointer;
 }
+.inv-sell-all{
+flex:1 1 100%;
+padding:11px 14px;
+border:1px solid var(--red-dim);
+border-radius:11px;
+background:rgba(123,44,255,0.14);
+color:var(--silver);
+font-size:13px;
+font-weight:700;
+cursor:pointer;
+}
+.inv-sell-all:disabled{ opacity:0.7; cursor:default; }
 .inv-close{
 width:100%;
 padding:13px;
