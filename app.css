@@ -1431,6 +1431,21 @@ grid-template-columns:1fr 1fr;
 gap:10px;
 }
 
+.skins-empty-seek{
+display:block;
+margin:14px auto 0;
+max-width:300px;
+padding:11px 16px;
+border:none;
+border-radius:12px;
+background:var(--cta-gradient);
+color:#fff;
+font-family:'Inter', sans-serif;
+font-size:13px;
+font-weight:700;
+line-height:1.35;
+cursor:pointer;
+}
 .skins-empty{
 grid-column:1 / -1;
 text-align:center;
