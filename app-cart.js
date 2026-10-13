@@ -13,8 +13,55 @@ applyFiltersAndRender();
 updateCartFab();
 }
 
+// Корзина хранится и на сервере: переживает закрытие мини-аппа, а бот
+// через сутки напоминает о брошенной корзине. Пока сохранённую корзину
+// не восстановили — не сохраняем (пустая затёрла бы её).
+let cartRestoreStarted = false;
+let cartRestored = false;
+let cartSaveTimer = null;
+
+function saveCart(){
+if (!cartRestored || !tg || !tg.initData) return;
+clearTimeout(cartSaveTimer);
+cartSaveTimer = setTimeout(() => {
+fetch(API_BASE + '/api/cart', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData, skin_ids: cart })
+}).catch(() => {});
+}, 800);
+}
+
+// Вызывается после первой загрузки каталога (renderSkins).
+function restoreCart(){
+if (cartRestoreStarted) return;
+cartRestoreStarted = true;
+if (!tg || !tg.initData){
+cartRestored = true;
+return;
+}
+let openCart = false;
+try { openCart = new URLSearchParams(location.search).get('open') === 'cart'; } catch (e) {}
+if (tg.initDataUnsafe && tg.initDataUnsafe.start_param === 'cart') openCart = true;
+fetch(API_BASE + '/api/cart?init_data=' + encodeURIComponent(tg.initData) + '&_t=' + Date.now(), { cache: 'no-store' })
+.then(r => r.ok ? r.json() : null)
+.then(data => {
+((data && data.skin_ids) || []).forEach(id => {
+if (!cart.includes(id) && lastSkins.some(s => s.id === id)) cart.push(id);
+});
+})
+.catch(() => {})
+.finally(() => {
+cartRestored = true;
+updateCartFab();
+applyFiltersAndRender();
+if (openCart && cart.length) document.getElementById('navCartBtn').click();
+});
+}
+
 // Корзина — значок в шапке со счётчиком; пустая корзина не занимает место.
 function updateCartFab(){
+saveCart();
 const badge = document.getElementById('navCartBadge');
 badge.textContent = String(cart.length);
 badge.style.display = cart.length ? '' : 'none';

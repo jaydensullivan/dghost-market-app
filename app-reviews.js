@@ -58,6 +58,7 @@ return `<div class="sp-head">
 <div class="sp-cell"><div class="sp-val">${formatTransferTime(p.median_transfer_hours)}</div><div class="sp-sub">${dict.sp_transfer}</div></div>
 <div class="sp-cell"><div class="sp-val">${p.disputes}</div><div class="sp-sub">${dict.sp_disputes}</div></div>
 </div>
+<button type="button" class="sp-follow" id="spFollowBtn" data-follow-seller="${p.seller_id}" hidden></button>
 ${lotsHtml}
 <div class="similar-title" style="margin-top:16px;">${dict.sp_reviews}${p.rating_count ? ` · ${p.rating_count}` : ''}</div>
 ${reviewsHtml}`;
@@ -74,7 +75,10 @@ fetch(API_BASE + '/api/sellers/' + sellerId + '/profile')
 if (!r.ok) throw new Error('HTTP ' + r.status);
 return r.json();
 })
-.then(p => { sellerProfileBody.innerHTML = sellerProfileHtml(p); })
+.then(p => {
+sellerProfileBody.innerHTML = sellerProfileHtml(p);
+loadSellerFollow(p.seller_id);
+})
 .catch(() => {
 renderErrorState(sellerProfileBody, (I18N[currentLang] || I18N.ru).load_failed, () => openSellerProfile(sellerId));
 });
@@ -85,6 +89,48 @@ const btn = e.target.closest('[data-seller-profile]');
 if (btn) openSellerProfile(Number(btn.dataset.sellerProfile));
 // Лот из профиля продавца открывается поверх — профиль закрываем.
 if (e.target.closest('#sellerProfileOverlay [data-similar-id]')) sellerProfileOverlay.classList.remove('show');
+});
+
+// ---------- «Следить за продавцом» ----------
+// Подписчикам бот присылает новые лоты продавца (одним сообщением на пачку).
+
+function renderSellerFollow(following){
+const btn = document.getElementById('spFollowBtn');
+if (!btn) return;
+const dict = I18N[currentLang] || I18N.ru;
+btn.hidden = false;
+btn.dataset.following = following ? '1' : '';
+btn.classList.toggle('on', !!following);
+btn.textContent = following ? dict.sp_following : dict.sp_follow;
+}
+
+function loadSellerFollow(sellerId){
+if (!tg || !tg.initData || !sellerId || sellerId === currentUserId) return;
+fetch(API_BASE + '/api/sellers/' + sellerId + '/follow?init_data=' + encodeURIComponent(tg.initData) + '&_t=' + Date.now(), { cache: 'no-store' })
+.then(r => r.ok ? r.json() : null)
+.then(data => { if (data) renderSellerFollow(data.following); })
+.catch(() => {});
+}
+
+sellerProfileBody.addEventListener('click', (e) => {
+const btn = e.target.closest('#spFollowBtn');
+if (!btn || btn.disabled) return;
+const follow = !btn.dataset.following;
+btn.disabled = true;
+haptic('light');
+fetch(API_BASE + '/api/sellers/' + btn.dataset.followSeller + '/follow', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData, follow })
+})
+.then(async r => {
+const data = await r.json().catch(() => ({}));
+if (!r.ok) throw new Error(errorMessage(data.error));
+renderSellerFollow(data.following);
+if (data.following) showToast((I18N[currentLang] || I18N.ru).sp_follow_ok);
+})
+.catch(err => showToast(friendlyErrorMessage(err)))
+.finally(() => { btn.disabled = false; });
 });
 
 document.getElementById('sellerProfileCloseBtn').addEventListener('click', () => {
