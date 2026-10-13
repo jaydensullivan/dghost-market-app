@@ -871,6 +871,13 @@ return out;
 // со Steam по 60 Doppler/Gamma Doppler/Marble Fade: 71.1 → 73.2 (на
 // анодированном огнестреле 0.45 хуже — там остаётся 0.3).
 const ANODIZED = { metalness: 1, roughness: 0.3, knifeRoughness: 0.45, envIntensity: 5 };
+// Металл ножей (подбор по сверке со Steam, см. tools/steam-compare):
+// env — множитель отражений окружения у всех частей ножа, anoEnv и
+// anoRough — отражения и шероховатость анодированной краски на ноже.
+const KNIFE_METAL = { env: 1, anoEnv: ANODIZED.envIntensity, anoRough: ANODIZED.knifeRoughness };
+function knifeMetal(){
+return Object.assign({}, KNIFE_METAL, window.DGHOST_TUNE || {});
+}
 function isAnodized(params){
 return [3, 4, 5].indexOf(params.paint_style) !== -1;
 }
@@ -1087,7 +1094,7 @@ uColorRough: { value: colorVec4(THREE, skin.params.color_roughness) },
 uHasColorMetal: { value: Array.isArray(skin.params.color_metalness) ? 1 : 0 },
 uHasColorRough: { value: Array.isArray(skin.params.color_roughness) ? 1 : 0 },
 uHasSkinMetal: { value: skin.metalness ? 1 : 0 },
-uPaintRoughness: { value: isKnifeName(weaponName) ? ANODIZED.knifeRoughness : ANODIZED.roughness },
+uPaintRoughness: { value: isKnifeName(weaponName) ? knifeMetal().anoRough : ANODIZED.roughness },
 uHasPaintRoughness: { value: isAnodized(skin.params) || legacyCaseHardened(skin) ? 1 : 0 },
 uUseColors: { value: skin.solid || skinUsesColorMask(skin.params) ? 1 : 0 },
 uColors: { value: skinColors(THREE, skin.params) },
@@ -1183,7 +1190,10 @@ material.roughnessMap = skin.rough;
 material.roughness = 1.0;
 } else if (weapon && weapon.rough) material.roughnessMap = weapon.rough;
 // Сила отражений — из набора света (в three r160 у сцены её ещё нет).
-material.envMapIntensity = (isAnodized(skin.params) || legacyCaseHardened(skin) ? ANODIZED.envIntensity : 1) * lightPreset().env;
+const knife = isKnifeName(weapon ? weapon.name || '' : '');
+const metalTune = knifeMetal();
+const anoEnv = knife ? metalTune.anoEnv : ANODIZED.envIntensity;
+material.envMapIntensity = (isAnodized(skin.params) || legacyCaseHardened(skin) ? anoEnv : 1) * lightPreset().env * (knife ? metalTune.env : 1);
 
 // Рельеф и затенение из комплекта скина — новый формат отдаёт их
 // отдельными слоями, и с ними металл перестаёт быть плоским.
