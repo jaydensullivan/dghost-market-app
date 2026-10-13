@@ -1671,8 +1671,10 @@ return test && typeof test === 'object' ? Object.assign({}, base, test) : base;
 }
 
 // Экспозиция по типу предмета: на одинаковом свете ножи по сверке со
-// Steam выходили темнее (−7 по яркости, 406 ножей), стволы — светлее (+3).
-const ITEM_EXPOSURE = { knife: 1, gun: 1 };
+// Steam выходили темнее (−7 по яркости, 406 ножей). Подбор по 68 ножам:
+// 1 → 75.8, 1.25 → 76.6, 1.5 → 76.3, 1.8 → 74.0; стволам поправка не
+// помогла (0.92: 78.0 → 77.9).
+const ITEM_EXPOSURE = { knife: 1.3, gun: 1 };
 function itemExposure(weaponDir){
 const t = Object.assign({}, ITEM_EXPOSURE, window.DGHOST_TUNE || {});
 if (!weaponDir) return 1;
