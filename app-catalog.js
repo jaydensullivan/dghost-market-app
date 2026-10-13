@@ -442,6 +442,10 @@ if (tg && tg.initDataUnsafe && typeof tg.initDataUnsafe.start_param === 'string'
 // skin_<id> или skin_<id>_r<пригласивший> (ссылка из «Поделиться» с GIF).
 deepLinkSkinId = (tg.initDataUnsafe.start_param.match(/^skin_(\d+)/) || [])[1] || null;
 }
+// ?open=skin_<id> — web_app-кнопка бота (подписка на продавца).
+if (!deepLinkSkinId){
+try { deepLinkSkinId = (String(new URLSearchParams(location.search).get('open') || '').match(/^skin_(\d+)$/) || [])[1] || null; } catch (e) {}
+}
 
 let deepLinkAuctionId = null;
 if (tg && tg.initDataUnsafe && typeof tg.initDataUnsafe.start_param === 'string' && tg.initDataUnsafe.start_param.startsWith('auction_')){
@@ -518,6 +522,7 @@ skinsList.innerHTML = filtered.map(skinCardHtml).join('');
 function renderSkins(list){
 lastSkins = list || [];
 applyFiltersAndRender();
+if (typeof restoreCart === 'function') restoreCart();
 if (typeof renderMyLots === 'function') renderMyLots();
 if (typeof renderPromo === 'function') renderPromo();
 if (deepLinkSkinId){

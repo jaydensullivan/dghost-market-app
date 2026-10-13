@@ -2475,6 +2475,20 @@ background:rgba(168,85,247,0.12); border:1px solid var(--red-dim);
 }
 .sp-name{ font-family:'Inter', sans-serif; font-size:16px; font-weight:700; color:var(--silver); }
 .sp-sub{ font-family:'Inter', sans-serif; font-size:11px; color:var(--muted); }
+.sp-follow{
+width:100%;
+margin:12px 0 0;
+padding:11px 14px;
+border-radius:11px;
+border:none;
+background:var(--cta-gradient);
+color:#fff;
+font-size:13px;
+font-weight:700;
+cursor:pointer;
+}
+.sp-follow.on{ background:rgba(123,44,255,0.14); border:1px solid var(--red-dim); color:var(--silver); }
+.sp-follow:disabled{ opacity:0.7; }
 .sp-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 .sp-cell{ padding:10px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid var(--red-dim); }
 .sp-val{ font-family:'JetBrains Mono', monospace; font-size:16px; font-weight:700; color:var(--silver); margin-bottom:2px; }
