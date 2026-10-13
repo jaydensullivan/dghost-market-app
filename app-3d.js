@@ -1889,6 +1889,114 @@ cm.getContext('2d').putImageData(mrData, 0, 0);
 return { color: c, mr: cm };
 }
 
+// Перчатки 2025 года (volatile_02): тот же шейдер csgo_customglove, но
+// другая схема. Карта материалов (TextureLayerId: пусто — слой 1, R/G/B —
+// 2–4) выбирает ткань или кожу; у каждого слоя своя тайловая текстура
+// поверхности (TextureSurfaceN, масштаб g_vUvScaleN), окрашенная в
+// g_vSurfaceColorTintN. Карта тонировки (TextureTintId, канал R ступенями
+// по ~30) даёт номер 1–8: цвет g_vIdNColor ложится поверх с силой из его
+// альфы. Сверху — рисунок (TexturePattern, по альфе), затенение —
+// TextureObjectProperties.
+function composeVolatileGlove(p, imgs){
+const N = GLOVE_TEX;
+const opt = Object.assign({ detail: 0.6, ao: 0.5, idMode: 0, bright: 1, gain: 1, tintLin: 0, patGain: 1 }, window.DGHOST_VGLOVE || {});
+const lin = (x) => x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
+const srgb = (x) => { x = Math.max(0, Math.min(1, x)); return 255 * (x <= 0.0031308 ? x * 12.92 : 1.055 * Math.pow(x, 1 / 2.4) - 0.055); };
+const layerId = imgs.layerid ? gloveImageData(imgs.layerid, N, N) : null;
+const tintId = imgs.tintid ? gloveImageData(imgs.tintid, N, N) : null;
+const props = imgs.objectproperties ? gloveImageData(imgs.objectproperties, N, N) : null;
+const pat = p.F_PATTERN === '1' && imgs.pattern ? gloveImageData(imgs.pattern, N, N) : null;
+const idColor = [null];
+for (let i = 1; i <= 8; i++){
+const v = vmatVec(p, 'g_vId' + i + 'Color', [1, 1, 1, 0]);
+idColor.push([lin(v[0]), lin(v[1]), lin(v[2]), v[3] || 0]);
+}
+const layers = [null];
+for (let i = 1; i <= 4; i++){
+const tv = vmatVec(p, 'g_vSurfaceColorTint' + i, [1, 1, 1, 0]);
+const tint = tv.slice(0, 3).map(x => opt.tintLin ? x : lin(x));
+// Альфа тонировки 1 — перекрасить ткань в этот цвет (узор текстуры
+// остаётся светотенью), 0 — умножить родной цвет текстуры на него.
+const colorize = (tv[3] || 0) >= 0.5;
+const bright = Number(p['g_fSurfaceColorBrightness' + i]);
+const img = imgs['surface' + i];
+let d = null, mean = 1;
+if (img){
+d = gloveImageData(img);
+let sum = 0;
+for (let k = 0; k < d.d.length; k += 4) sum += lin((d.d[k] + d.d[k + 1] + d.d[k + 2]) / 765);
+mean = Math.max(1e-3, sum / (d.d.length / 4));
+}
+layers.push({ d, mean, tint, colorize, bright: isFinite(bright) ? bright : 1,
+scale: vmatVec(p, 'g_vUvScale' + i, [1, 1]),
+rough: /plastic|glossy/i.test(p['layer_name_' + i] || '') ? 90 : 200 });
+}
+const sample = (img, u, v) => {
+u -= Math.floor(u); v -= Math.floor(v);
+const x = Math.min(img.w - 1, (u * img.w) | 0), y = Math.min(img.h - 1, (v * img.h) | 0);
+return (y * img.w + x) * 4;
+};
+const out = new ImageData(N, N);
+const mrData = new ImageData(N, N);
+const o = out.data, mr = mrData.data;
+for (let y = 0; y < N; y++){
+const v = (y + 0.5) / N;
+for (let x = 0; x < N; x++){
+const u = (x + 0.5) / N;
+const k = (y * N + x) * 4;
+let li = 1;
+if (layerId){
+const m = layerId.d;
+li = m[k] > 127 ? 2 : m[k + 1] > 127 ? 3 : m[k + 2] > 127 ? 4 : 1;
+}
+const L = layers[li];
+let r = L.tint[0], g = L.tint[1], b = L.tint[2];
+if (opt.bright) { r *= L.bright; g *= L.bright; b *= L.bright; }
+if (L.d){
+const q = sample(L.d, u * L.scale[0], v * (L.scale[1] || L.scale[0]));
+if (L.colorize){
+const t = lin((L.d.d[q] + L.d.d[q + 1] + L.d.d[q + 2]) / 765);
+const f = 1 + (t / L.mean - 1) * opt.detail;
+r *= f; g *= f; b *= f;
+} else {
+r *= lin(L.d.d[q] / 255); g *= lin(L.d.d[q + 1] / 255); b *= lin(L.d.d[q + 2] / 255);
+}
+}
+if (tintId){
+const id = Math.max(1, Math.min(8, Math.round((tintId.d[k] - 16) / 30) + 1));
+const c = idColor[id];
+if (c[3] > 0){
+if (opt.idMode === 1){ r += (r * c[0] - r) * c[3]; g += (g * c[1] - g) * c[3]; b += (b * c[2] - b) * c[3]; }
+else { r += (c[0] - r) * c[3]; g += (c[1] - g) * c[3]; b += (c[2] - b) * c[3]; }
+}
+}
+if (pat){
+const a = pat.d[k + 3] / 255;
+if (a > 0){
+r += (lin(pat.d[k] / 255) * opt.patGain - r) * a;
+g += (lin(pat.d[k + 1] / 255) * opt.patGain - g) * a;
+b += (lin(pat.d[k + 2] / 255) * opt.patGain - b) * a;
+}
+}
+if (props){
+const ao = props.d[k] / 255;
+const f = 1 - opt.ao + opt.ao * ao;
+r *= f; g *= f; b *= f;
+}
+r *= opt.gain; g *= opt.gain; b *= opt.gain;
+o[k] = srgb(r); o[k + 1] = srgb(g); o[k + 2] = srgb(b); o[k + 3] = 255;
+mr[k + 1] = L.rough; mr[k + 2] = 0; mr[k + 3] = 255;
+}
+}
+const c = document.createElement('canvas');
+c.width = N; c.height = N;
+c.getContext('2d').putImageData(out, 0, 0);
+const cm = document.createElement('canvas');
+cm.width = N; cm.height = N;
+cm.getContext('2d').putImageData(mrData, 0, 0);
+return { color: c, mr: cm };
+}
+
 // Перчатки на витрине — как на картинке Steam: пара без рук (в модели
 // есть ещё «руки от первого лица» с голой кожей — их прячем).
 // В экспорте перчаток и агентов у мешей общий буфер вершин: в нём есть
@@ -1948,6 +2056,54 @@ material.needsUpdate = true;
 return Promise.all(jobs);
 }
 
+function robustMeshBox(THREE, node){
+const pos = node.geometry && node.geometry.attributes.position;
+if (!pos || pos.count < 50) return new THREE.Box3().setFromObject(node);
+node.updateMatrixWorld(true);
+const v = new THREE.Vector3();
+const xs = [], ys = [], zs = [];
+const step = Math.max(1, Math.floor(pos.count / 4000));
+for (let i = 0; i < pos.count; i += step){
+v.fromBufferAttribute(pos, i).applyMatrix4(node.matrixWorld);
+xs.push(v.x); ys.push(v.y); zs.push(v.z);
+}
+const q = (arr, t) => { arr.sort((a, b) => a - b); return arr[Math.min(arr.length - 1, Math.floor(t * arr.length))]; };
+return new THREE.Box3(
+new THREE.Vector3(q(xs, 0.02), q(ys, 0.02), q(zs, 0.02)),
+new THREE.Vector3(q(xs, 0.98), q(ys, 0.98), q(zs, 0.98)));
+}
+
+// Треугольники далеко от основной части меша (обрывки чужой перчатки
+// в экспорте Specialist) — убираем: по ним считается рамка кадра.
+function dropStrayTriangles(THREE, node){
+const g = node.geometry;
+if (!g || g.index || !g.attributes.position || !THREE.BufferAttribute) return;
+const box = robustMeshBox(THREE, node);
+const size = box.getSize(new THREE.Vector3());
+box.expandByVector(size.multiplyScalar(0.15));
+const inv = new THREE.Matrix4().copy(node.matrixWorld).invert();
+const local = box.clone().applyMatrix4(inv);
+const pos = g.attributes.position;
+const keep = [];
+const c = new THREE.Vector3(), v = new THREE.Vector3();
+for (let t = 0; t + 2 < pos.count; t += 3){
+c.set(0, 0, 0);
+for (let j = 0; j < 3; j++) c.add(v.fromBufferAttribute(pos, t + j));
+if (local.containsPoint(c.multiplyScalar(1 / 3))) keep.push(t);
+}
+if (keep.length * 3 === pos.count || !keep.length) return;
+const out = new THREE.BufferGeometry();
+Object.keys(g.attributes).forEach(name => {
+const a = g.attributes[name];
+const arr = new a.array.constructor(keep.length * 3 * a.itemSize);
+keep.forEach((t, i) => { arr.set(a.array.subarray(t * a.itemSize, (t + 3) * a.itemSize), i * 3 * a.itemSize); });
+out.setAttribute(name, new THREE.BufferAttribute(arr, a.itemSize, a.normalized));
+});
+g.groups.length && out.addGroup(0, keep.length * 3, 0);
+node.geometry = out;
+g.dispose();
+}
+
 function prepareGloveModel(THREE, object){
 // Убираем совсем, а не прячем: рамка кадра считается по всем узлам.
 const drop = [];
@@ -1965,7 +2121,11 @@ object.updateMatrixWorld(true);
 const gloves = [];
 object.traverse(node => { if (node.isMesh) gloves.push(node); });
 if (gloves.length !== 2) return;
-const boxes = gloves.map(n => new THREE.Box3().setFromObject(n));
+// Рамка перчатки — по 2–98% вершин: у Specialist в меше одной перчатки
+// есть несколько треугольников у другой, и по полной рамке пара
+// разъезжалась на всю ширину кадра (модели выходили крошечными).
+gloves.forEach(n => dropStrayTriangles(THREE, n));
+const boxes = gloves.map(n => robustMeshBox(THREE, n));
 const centers = boxes.map(b => b.getCenter(new THREE.Vector3()));
 const sizes = boxes.map(b => b.getSize(new THREE.Vector3()));
 const order = centers[0].x <= centers[1].x ? [0, 1] : [1, 0];
@@ -2009,13 +2169,17 @@ if (!r.ok) throw new Error('нет material.vmat в ' + base);
 return r.text();
 }).then(text => {
 const p = parseVmat(text);
-const names = ['layermask', 'surface', 'pattern', 'detail1', 'detail2', 'detail3', 'detail4'];
+const volatile = !!p.TextureTintId;
+const names = volatile
+? ['layerid', 'tintid', 'pattern', 'objectproperties', 'surface1', 'surface2', 'surface3', 'surface4']
+: ['layermask', 'surface', 'pattern', 'detail1', 'detail2', 'detail3', 'detail4'];
 return Promise.all(names.map(n => loadGloveImage(base + n + '.webp').catch(() => null)))
 .then(list => {
 const imgs = {};
 names.forEach((n, i) => { imgs[n] = list[i]; });
-if (!imgs.layermask) throw new Error('нет маски слоёв');
-const maps = composeGloveColor(p, imgs);
+if (!volatile && !imgs.layermask) throw new Error('нет маски слоёв');
+if (volatile && !imgs.tintid) throw new Error('нет карты тонировки');
+const maps = volatile ? composeVolatileGlove(p, imgs) : composeGloveColor(p, imgs);
 // Развёртка левой перчатки выходит за 0..1 — текстура повторяется.
 const tex = new THREE.CanvasTexture(maps.color);
 const mrTex = new THREE.CanvasTexture(maps.mr);
