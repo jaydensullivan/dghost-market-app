@@ -3360,6 +3360,9 @@ return fetch(modelsBase + 'models/extra.json', { cache: 'no-cache' })
 .then(extra => {
 Object.keys(extra || {}).forEach(name => {
 const key = name.toLowerCase();
+// Сувенирные наборы: символика турнира в игре — наклейками поверх
+// ящика, их мы не рисуем — без них это просто синяя коробка. Остаётся фото.
+if (/(^|\/)models\/cases\/crate_[^/]*_promo_/.test(String(extra[name] && extra[name].model || ''))) return;
 if (!map[key]) map[key] = extra[name];
 });
 return map;
