@@ -1913,6 +1913,51 @@ old.dispose();
 });
 }
 
+// Эмблема кейса: в игре — слой g_tDecal поверх цвета по второй
+// развёртке; сборка (tools/case_decals.py) вшивает его в модель и пишет
+// номер текстуры в extras.dgDecal материала. Накладываем поверх цвета.
+function applyCaseDecals(THREE, gltf, object){
+const jobs = [];
+// Эмблемой к зрителю: при обычном ракурсе просмотрщика (поворот на 90°)
+// к камере смотрит сторона −X модели — разворачиваем ящик так, чтобы туда
+// смотрела средняя нормаль главной декали (материал *_decal).
+if (THREE.Vector3 && THREE.Matrix3){
+gltf.scene.updateMatrixWorld(true);
+const sum = new THREE.Vector3();
+const n = new THREE.Vector3();
+const nm = new THREE.Matrix3();
+gltf.scene.traverse(node => {
+if (!node.isMesh || !node.material || !/_decal$/i.test(node.material.name || '')) return;
+const normals = node.geometry && node.geometry.attributes.normal;
+if (!normals) return;
+nm.getNormalMatrix(node.matrixWorld);
+for (let i = 0; i < normals.count; i++) sum.add(n.fromBufferAttribute(normals, i).applyMatrix3(nm));
+});
+if (Math.hypot(sum.x, sum.z) > 1e-6) gltf.scene.rotation.y += Math.atan2(sum.z, sum.x) + Math.PI;
+}
+object.traverse(node => {
+if (!node.isMesh || !node.material || !node.geometry) return;
+const idx = node.material.userData && node.material.userData.dgDecal;
+const uv = node.geometry.attributes.uv1 || node.geometry.attributes.uv2;
+if (idx == null || !uv || !gltf.parser) return;
+jobs.push(gltf.parser.getDependency('texture', idx).then(tex => {
+if (THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
+node.geometry.setAttribute('dgDecalUv', uv);
+const material = node.material;
+material.onBeforeCompile = shader => {
+shader.uniforms.dgDecalMap = { value: tex };
+shader.vertexShader = 'attribute vec2 dgDecalUv;\nvarying vec2 vDgDecalUv;\n' + shader.vertexShader
+.replace('#include <uv_vertex>', '#include <uv_vertex>\nvDgDecalUv = dgDecalUv;');
+shader.fragmentShader = 'uniform sampler2D dgDecalMap;\nvarying vec2 vDgDecalUv;\n' + shader.fragmentShader
+.replace('#include <map_fragment>', '#include <map_fragment>\nvec4 dgDecal = texture2D(dgDecalMap, vDgDecalUv);\ndiffuseColor.rgb = mix(diffuseColor.rgb, dgDecal.rgb, dgDecal.a);');
+};
+material.customProgramCacheKey = () => 'dg-case-decal';
+material.needsUpdate = true;
+}).catch(() => {}));
+});
+return Promise.all(jobs);
+}
+
 function prepareGloveModel(THREE, object){
 // Убираем совсем, а не прячем: рамка кадра считается по всем узлам.
 const drop = [];
@@ -2754,7 +2799,8 @@ const camera = new THREE.PerspectiveCamera(40, canvas.clientWidth / canvas.clien
 const object = new THREE.Group();
 object.add(gltf.scene);
 if (/(^|\/)models\/gloves\//.test(String(modelUrl || ''))) prepareGloveModel(THREE, object);
-else if (/(^|\/)models\/agents\//.test(String(modelUrl || ''))) compactModelGeometry(object);
+else if (/(^|\/)models\/(agents|cases)\//.test(String(modelUrl || ''))) compactModelGeometry(object);
+if (/(^|\/)models\/cases\//.test(String(modelUrl || ''))) applyCaseDecals(THREE, gltf, object);
 // Без раскраски (или пока она грузится) — старый корпус, как в игре
 // у стандартного оружия.
 selectModelBody(object, false);
@@ -3408,7 +3454,8 @@ const camera = new THREE.PerspectiveCamera(40, W / H, 0.05, 100);
 const object = new THREE.Group();
 object.add(gltf.scene);
 if (/(^|\/)models\/gloves\//.test(String(entry.model || ''))) prepareGloveModel(THREE, object);
-else if (/(^|\/)models\/agents\//.test(String(entry.model || ''))) compactModelGeometry(object);
+else if (/(^|\/)models\/(agents|cases)\//.test(String(entry.model || ''))) compactModelGeometry(object);
+if (/(^|\/)models\/cases\//.test(String(entry.model || ''))) await applyCaseDecals(THREE, gltf, object);
 // Без раскраски (или пока она грузится) — старый корпус, как в игре
 // у стандартного оружия.
 selectModelBody(object, false);
