@@ -1771,8 +1771,7 @@ adminApiFetch('/api/admin/kyc/decide', { method: 'POST', body: { id: Number(btn.
 .then(loadAdminKyc)
 .catch(err => { btn.disabled = false; showErrorToast(err); });
 };
-if (tg && tg.showConfirm) tg.showConfirm(ask, ok => { if (ok) go(); });
-else if (confirm(ask)) go();
+showConfirm(ask, go);
 });
 
 document.getElementById('kycLightbox').addEventListener('click', () => {

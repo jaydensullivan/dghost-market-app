@@ -54,10 +54,10 @@ topupCopyBtn.innerHTML = originalHtml;
 
 if (navigator.clipboard && navigator.clipboard.writeText){
 navigator.clipboard.writeText(topupCardNumber).then(done).catch(() => {
-if (tg && tg.showAlert) tg.showAlert(topupCardNumber);
+showAlert(topupCardNumber);
 });
-} else if (tg && tg.showAlert){
-tg.showAlert(topupCardNumber);
+} else {
+showAlert(topupCardNumber);
 }
 }
 

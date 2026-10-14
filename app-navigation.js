@@ -60,9 +60,61 @@ let isAuctioneer = false;
 let currentUserId = null;
 let currentTab = 'shop';
 
+// Окна Telegram (showAlert / showConfirm / showPopup) есть только с
+// версии 6.2, и вызов падает, если окно уже открыто. Тогда кнопка
+// «ничего не делала» — сообщение просто не появлялось. Поэтому всё
+// идёт через showPopupSafe: окно Telegram, а если его нет или оно
+// упало — своё окно в мини-аппе (те же стили, что в веб-версии).
+function tgPopupSupported(){
+if (!tg || !tg.showPopup) return false;
+if (window.DG_WEB) return true;
+try { return !tg.isVersionAtLeast || tg.isVersionAtLeast('6.2'); } catch (e) { return false; }
+}
+
+function inAppPopup(opts, cb){
+const dict = (typeof I18N !== 'undefined' && (I18N[typeof currentLang !== 'undefined' ? currentLang : 'ru'] || I18N.ru)) || {};
+const wrap = document.createElement('div');
+wrap.className = 'dgw-modal';
+const box = document.createElement('div');
+box.className = 'dgw-modal-box';
+if (opts.title){
+const h = document.createElement('div');
+h.className = 'dgw-modal-title';
+h.textContent = opts.title;
+box.appendChild(h);
+}
+const p = document.createElement('div');
+p.className = 'dgw-modal-text';
+p.textContent = opts.message || '';
+box.appendChild(p);
+const row = document.createElement('div');
+row.className = 'dgw-modal-btns';
+const buttons = (opts.buttons && opts.buttons.length) ? opts.buttons : [{ id: 'ok', type: 'ok' }];
+buttons.forEach(b => {
+const btn = document.createElement('button');
+btn.type = 'button';
+btn.className = 'dgw-btn' + (b.type === 'cancel' || b.type === 'close' ? ' dgw-btn-ghost' : '') + (b.type === 'destructive' ? ' dgw-btn-danger' : '');
+btn.textContent = b.text || (b.type === 'cancel' || b.type === 'close' ? (dict.btn_cancel || 'Отмена') : 'OK');
+btn.addEventListener('click', () => {
+wrap.remove();
+if (cb) cb(b.id || '');
+});
+row.appendChild(btn);
+});
+box.appendChild(row);
+wrap.appendChild(box);
+document.body.appendChild(wrap);
+}
+
+function showPopupSafe(opts, cb){
+if (tgPopupSupported()){
+try { tg.showPopup(opts, cb); return; } catch (e) {}
+}
+inAppPopup(opts, cb);
+}
+
 function showAlert(message){
-if (tg && tg.showAlert){ tg.showAlert(message); }
-else { alert(message); }
+showPopupSafe({ message: String(message == null ? '' : message).slice(0, 4000) });
 }
 
 // Скелетоны загрузки — заглушки той же формы, что и настоящие
@@ -194,8 +246,8 @@ return err.message || 'Что-то пошло не так, попробуй ещ
 }
 
 function showConfirm(message, onOk){
-if (tg && tg.showConfirm){ tg.showConfirm(message, ok => { if (ok) onOk(); }); }
-else if (confirm(message)) { onOk(); }
+showPopupSafe({ message: String(message || ''), buttons: [{ id: 'ok', type: 'ok' }, { id: 'cancel', type: 'cancel' }] },
+id => { if (id === 'ok') onOk(); });
 }
 
 function switchTab(name){

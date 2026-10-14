@@ -149,10 +149,10 @@ referralCopyBtn.innerHTML = originalHtml;
 
 if (navigator.clipboard && navigator.clipboard.writeText){
 navigator.clipboard.writeText(referralLinkRaw).then(done).catch(() => {
-if (tg && tg.showAlert) tg.showAlert(referralLinkRaw);
+showAlert(referralLinkRaw);
 });
-} else if (tg && tg.showAlert){
-tg.showAlert(referralLinkRaw);
+} else {
+showAlert(referralLinkRaw);
 }
 }
 
