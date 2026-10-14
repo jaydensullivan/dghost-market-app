@@ -157,6 +157,41 @@ subtree: true, attributes: true, attributeFilter: ['class', 'style'],
 queueBackSync();
 }
 
+// ---------------- Переход с сайта ----------------
+// Ссылки с dghostmarket.com несут ?src=site_<страница>. Шлём метку боту
+// (/api/visit) для «Аналитика»: сколько пришло с сайта и что сделали
+// дальше. visitor — случайный id браузера; когда человек вошёл, шлём
+// ещё раз с init_data — переход привязывается к аккаунту.
+(function trackSiteVisit(){
+let src = null, target = null;
+try {
+const p = new URLSearchParams(location.search);
+src = p.get('src'); target = p.get('open');
+} catch(e) {}
+const store = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch(e) {} };
+const load = k => { try { return localStorage.getItem(k); } catch(e) { return null; } };
+let saved = null;
+try { saved = JSON.parse(load('dg_src') || 'null'); } catch(e) {}
+if (src && /^site_[a-z0-9_]{1,30}$/.test(src)){
+saved = { src: src, target: target || '', at: Date.now(), linked: false };
+} else if (!saved || Date.now() - saved.at > 30 * 864e5 || saved.linked || !(tg && tg.initData)){
+return;
+}
+let vid = load('dg_vid');
+if (!vid || !/^[A-Za-z0-9_-]{8,40}$/.test(vid)){
+vid = Array.from({ length: 16 }, () => 'abcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random() * 36)]).join('');
+store('dg_vid', vid);
+}
+const initData = (tg && tg.initData) || '';
+if (initData) saved.linked = true;
+store('dg_src', JSON.stringify(saved));
+fetch(API_BASE + '/api/visit', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ visitor: vid, src: saved.src, target: saved.target, init_data: initData }),
+}).catch(() => {});
+})();
+
 // ---------------- Запуск сразу на нужном экране ----------------
 // Кнопки бота «Мои сделки» / «Продать скин» открывают мини-апп с
 // ?open=deals|sell (web_app-кнопка), а ссылки t.me/<бот>/<app> — с
