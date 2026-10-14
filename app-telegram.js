@@ -166,10 +166,19 @@ queueBackSync();
 let target = null;
 try { target = new URLSearchParams(location.search).get('open'); } catch(e) {}
 if (!target && tg && tg.initDataUnsafe && typeof tg.initDataUnsafe.start_param === 'string') target = tg.initDataUnsafe.start_param;
-if (target !== 'deals' && target !== 'sell') return;
+if (target !== 'deals' && target !== 'sell' && target !== 'wants') return;
 setTimeout(() => {
 if (target === 'deals'){
 switchTab('deals');
+} else if (target === 'wants'){
+// С сайта (страница цены скина): «Сообщить, когда появится» —
+// «Хочу» с уже вписанным названием (?open=wants&q=…).
+goToScreen('buyRequests');
+if (typeof setWantsTab === 'function') setWantsTab('watch');
+let q = '';
+try { q = new URLSearchParams(location.search).get('q') || ''; } catch(e) {}
+const input = document.getElementById('wishlistQueryInput');
+if (input && q) input.value = q.slice(0, 120);
 } else {
 goToScreen('lots');
 setTimeout(() => { const btn = document.getElementById('addSkinBtn'); if (btn) btn.click(); }, 150);
