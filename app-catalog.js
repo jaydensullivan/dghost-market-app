@@ -511,8 +511,14 @@ filtered.sort((a, b) => b.id - a.id);
 
 if (!filtered.length){
 const dict = I18N[currentLang] || I18N.ru;
+// Искали конкретный скин и не нашли — сразу предлагаем заявку «Ищу»:
+// продавцы её видят, а бот подсказывает тем, у кого он лежит в Steam.
+const query = (document.getElementById('skinSearch') || {}).value || '';
+const seek = query.trim().length >= 3 && lastSkins.length
+? `<button type="button" class="skins-empty-seek" data-seek-query="${escapeHtml(query.trim())}">${escapeHtml(dict.shop_empty_seek)}</button>`
+: '';
 skinsList.innerHTML = `<div class="skins-empty">${!lastSkins.length ? dict.shop_empty_all
-: currentShopTab === 'discounts' ? dict.shop_empty_discounts : dict.shop_empty_filtered}</div>`;
+: currentShopTab === 'discounts' ? dict.shop_empty_discounts : dict.shop_empty_filtered}${seek}</div>`;
 return;
 }
 

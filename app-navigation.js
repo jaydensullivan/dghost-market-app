@@ -249,6 +249,7 @@ headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({ init_data: tg.initData, code: code })
 })
 .then(r => { if (!r.ok) throw new Error('bad_code'); return r.json(); })
+.then(() => ensureAdminScript())
 .then(() => loadAdminPanel())
 .catch(() => {
 showAlert('Неверный код.');
@@ -256,7 +257,7 @@ switchTab('shop');
 });
 });
 } else {
-loadAdminPanel();
+ensureAdminScript().then(() => loadAdminPanel()).catch(() => showAlert(errorMessage('network')));
 }
 } else if (name === 'auctions'){
 loadAuctionsList();
@@ -342,6 +343,23 @@ function displayScreen(name){
 switchTab(name === 'welcome' ? 'shop' : name);
 }
 
+// Код админки грузим, только когда он нужен: открыли раздел или стало
+// известно, что пользователь — админ/аукционист (тогда заранее, в фоне).
+let adminScriptLoading = null;
+function ensureAdminScript(){
+if (typeof loadAdminPanel === 'function') return Promise.resolve();
+if (!adminScriptLoading){
+adminScriptLoading = new Promise((resolve, reject) => {
+const s = document.createElement('script');
+s.src = window.DG_ADMIN_SRC || 'app-admin.js';
+s.onload = () => resolve();
+s.onerror = () => { adminScriptLoading = null; reject(new Error('admin script')); };
+document.body.appendChild(s);
+});
+}
+return adminScriptLoading;
+}
+
 function goToScreen(name){
 displayScreen(name);
 }
@@ -362,6 +380,16 @@ const btn = e.target.closest('[data-wants-tab]');
 if (btn) setWantsTab(btn.dataset.wantsTab);
 });
 document.getElementById('openWantsBtn').addEventListener('click', () => goToScreen('buyRequests'));
+// Из пустого поиска в каталоге: «Ищу» с уже вписанным названием.
+document.addEventListener('click', (e) => {
+const btn = e.target.closest('[data-seek-query]');
+if (!btn) return;
+goToScreen('buyRequests');
+setWantsTab('seek');
+const input = document.getElementById('brTitleInput');
+input.value = btn.dataset.seekQuery;
+setTimeout(() => input.focus(), 100);
+});
 
 // Аватар Telegram-пользователя в нижней навигации, если доступен
 if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.photo_url){

@@ -355,6 +355,7 @@ adminPermissions = data.admin_permissions || [];
 isAuctioneer = !!data.is_auctioneer;
 // Admin — в меню аватара; в нижней навигации только пять вкладок.
 document.getElementById('headerMenuAdmin').style.display = (isAdmin || isAuctioneer) ? '' : 'none';
+if (isAdmin || isAuctioneer) ensureAdminScript().catch(() => {});
 if (typeof applyChipVisibility === 'function') applyChipVisibility();
 currentUserId = data.user_id;
 hasSteamLink = !!data.has_steam_link;
@@ -444,6 +445,7 @@ isOwner = !!data.is_owner;
 adminPermissions = data.admin_permissions || [];
 isAuctioneer = !!data.is_auctioneer;
 document.getElementById('headerMenuAdmin').style.display = (isAdmin || isAuctioneer) ? '' : 'none';
+if (isAdmin || isAuctioneer) ensureAdminScript().catch(() => {});
 if (typeof applyChipVisibility === 'function') applyChipVisibility();
 currentUserId = data.user_id;
 hasSteamLink = !!data.has_steam_link;
