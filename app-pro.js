@@ -229,13 +229,7 @@ btn.setAttribute('aria-expanded', String(!row.hidden));
 
 // Окно подтверждения: нативное в Telegram, своё — в браузере (app-web.js).
 function showConfirmDialog(message, onOk){
-if (tg && tg.showConfirm){
-try {
-tg.showConfirm(message, ok => { if (ok) onOk(); });
-return;
-} catch (e) {}
-}
-if (window.confirm(message)) onOk();
+showConfirm(message, onOk);
 }
 
 // Предложение PRO из окна «Поделиться» (замок на GIF / видео / канале).

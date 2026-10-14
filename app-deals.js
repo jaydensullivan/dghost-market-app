@@ -786,8 +786,7 @@ return;
 const doneBtn = e.target.closest('[data-request-done]');
 if (doneBtn){
 const skinId = Number(doneBtn.dataset.requestDone);
-if (tg && tg.showPopup){
-tg.showPopup({
+showPopupSafe({
 message: dict.req_preselected_q,
 buttons: [
 { id: 'yes', type: 'default', text: dict.req_yes },
@@ -798,9 +797,6 @@ buttons: [
 if (id === 'yes') postTradeRequested(skinId, true);
 else if (id === 'no') postTradeRequested(skinId, false);
 });
-} else {
-postTradeRequested(skinId, null);
-}
 return;
 }
 
