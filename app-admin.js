@@ -1405,12 +1405,7 @@ loadAdminFinanceSummary();
 
 [
 ['toggleTopupCard', 'topup_card'],
-['toggleTopupCrypto', 'topup_crypto'],
-['toggleTopupStars', 'topup_stars'],
 ['toggleWithdrawCard', 'withdraw_card'],
-['toggleWithdrawCrypto', 'withdraw_crypto'],
-['toggleDirectStarsPurchase', 'direct_stars_purchase'],
-['toggleDirectCryptoPurchase', 'direct_crypto_purchase'],
 ['toggleDirectP2pPurchase', 'direct_p2p_purchase'],
 ].forEach(([elId, feature]) => {
 document.getElementById(elId).addEventListener('change', (e) => {

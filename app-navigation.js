@@ -13,8 +13,8 @@ let isOwner = false;
 let cryptoTopupAvailable = false;
 let cryptoPayoutAvailable = false;
 let topupCardEnabled = true;
-let topupCryptoEnabled = true;
-let topupStarsEnabled = true;
+let topupCryptoEnabled = false;
+let topupStarsEnabled = false;
 let coinsPerStar = 200;
 let directStarsPurchaseEnabled = false;
 let directCryptoPurchaseEnabled = false;
@@ -52,7 +52,7 @@ progressEl.style.display = 'none';
 }
 let p2pCardDetails = '';
 let withdrawCardEnabled = true;
-let withdrawCryptoEnabled = true;
+let withdrawCryptoEnabled = false;
 let adminPermissions = [];
 
 let adminStatsLiveTimer = null;
