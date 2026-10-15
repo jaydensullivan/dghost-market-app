@@ -1398,6 +1398,12 @@ document.getElementById('toggleWithdrawCrypto').checked = data.withdraw_crypto_e
 document.getElementById('toggleDirectStarsPurchase').checked = data.direct_stars_purchase_enabled === true;
 document.getElementById('toggleDirectCryptoPurchase').checked = data.direct_crypto_purchase_enabled === true;
 document.getElementById('toggleDirectP2pPurchase').checked = data.direct_p2p_purchase_enabled === true;
+// Эквайринг банка: переключатель работает, только когда ключи заданы в Railway.
+const octoToggle = document.getElementById('toggleOcto');
+octoToggle.checked = data.octo_enabled !== false;
+octoToggle.disabled = !data.octo_configured;
+document.getElementById('adminOctoState').textContent = (I18N[currentLang] || I18N.ru)[
+!data.octo_configured ? 'admin_octo_no_keys' : (data.octo_test ? 'admin_octo_test' : 'admin_octo_live')];
 document.getElementById('adminStarsRate').value = data.coins_per_star || 200;
 })
 .catch(() => {});
@@ -1407,6 +1413,7 @@ loadAdminFinanceSummary();
 ['toggleTopupCard', 'topup_card'],
 ['toggleWithdrawCard', 'withdraw_card'],
 ['toggleDirectP2pPurchase', 'direct_p2p_purchase'],
+['toggleOcto', 'octo'],
 ].forEach(([elId, feature]) => {
 document.getElementById(elId).addEventListener('change', (e) => {
 const checkbox = e.target;

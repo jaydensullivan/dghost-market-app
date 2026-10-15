@@ -19,6 +19,8 @@ let coinsPerStar = 200;
 let directStarsPurchaseEnabled = false;
 let directCryptoPurchaseEnabled = false;
 let directP2pPurchaseEnabled = false;
+// Оплата картой на странице банка (эквайринг; бот: payment_methods, kind hosted).
+let hostedPayMethods = [];
 let sellerKycStatus = 'none';
 // Сколько можно потратить с баланса (balance − held) — для кнопки «С баланса».
 let myAvailableBalance = 0;
