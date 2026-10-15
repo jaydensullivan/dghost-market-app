@@ -2203,7 +2203,9 @@ const p = parseVmat(text);
 const volatile = !!p.TextureTintId;
 const names = volatile
 ? ['layerid', 'tintid', 'pattern', 'objectproperties', 'surface1', 'surface2', 'surface3', 'surface4']
-: ['layermask', 'surface', 'pattern', 'detail1', 'detail2', 'detail3', 'detail4', 'grunge1', 'grunge2', 'grunge3', 'grunge4'];
+: ['layermask', 'surface', 'pattern', 'detail1', 'detail2', 'detail3', 'detail4']
+// Текстуры грязи нужны только скотчу (см. composeGloveColor).
+.concat(/ducttape/i.test(text) ? ['grunge1', 'grunge2', 'grunge3', 'grunge4'] : []);
 return Promise.all(names.map(n => loadGloveImage(base + n + '.webp').catch(() => null)))
 .then(list => {
 const imgs = {};
@@ -3287,8 +3289,7 @@ status.textContent = dict.v3_hands_failed;
 markViewerView('3d');
 }
 };
-const gloveMatch = String(modelUrl).match(/(?:^|\/)models\/gloves\/(glove_[a-z0-9_]+)\.glb$/i);
-const gloveRig = gloveMatch ? 'models/gloves/rig/' + gloveMatch[1].toLowerCase() + '.glb' : null;
+const gloveRig = gloveRigOf({ model: modelUrl });
 const knifeName = gloveRig ? GLOVE_HANDS_PACK
 : ((String(modelUrl).match(/([a-z0-9_]+)\.glb$/i) || [])[1] || '').toLowerCase();
 renderViewerViews(dict, knifeName, setView, gloveRig);
@@ -4032,7 +4033,15 @@ camera.lookAt(0, -0.12, 1);
 const SHARE_HANDS = { clip: 'lookat01', background: 'de_mirage.webp' };
 const handsPackCache = {};
 
+// Перчатки лота: модель с костями (models/gloves/rig/) — для их осмотра.
+function gloveRigOf(entry){
+const m = String(entry && entry.model || '').match(/(?:^|\/)models\/gloves\/(glove_[a-z0-9_]+)\.glb$/i);
+return m ? 'models/gloves/rig/' + m[1].toLowerCase() + '.glb' : null;
+}
+
 function handsAnimDir(entry){
+// У перчаток — их собственный осмотр (models/anim/gloves/).
+if (gloveRigOf(entry)) return 'models/anim/' + GLOVE_HANDS_PACK + '/';
 const name = ((String(entry && entry.model || '').match(/([a-z0-9_]+)\.glb$/i) || [])[1] || '').toLowerCase();
 // Комплект «в руках» бывает и у ножей, и у огнестрела (models/anim/<модель>/);
 // нет комплекта — index.json не найдётся, и режим просто не появится.
@@ -4043,15 +4052,18 @@ return name ? 'models/anim/' + name + '/' : null;
 function hasHandsPack(entry){
 const dir = handsAnimDir(entry);
 if (!dir) return Promise.resolve(false);
-if (!(dir in handsPackCache)){
-handsPackCache[dir] = loadModelIndex()
-.then(() => fetch(modelsUrl(dir + 'index.json')))
-.then(r => r.ok ? r.json() : null)
-.then(index => !!(index && index.arms && index.knife && Array.isArray(index.clips)
+const rig = gloveRigOf(entry);
+const key = dir + (rig || '');
+if (!(key in handsPackCache)){
+handsPackCache[key] = loadModelIndex()
+.then(() => rig ? fetch(modelsUrl(rig), { method: 'HEAD' }).then(r => r.ok) : true)
+.then(ok => ok ? fetch(modelsUrl(dir + 'index.json')) : null)
+.then(r => r && r.ok ? r.json() : null)
+.then(index => !!(index && index.arms && (index.knife || rig) && Array.isArray(index.clips)
 && index.clips.some(c => /^lookat/.test(c.id))))
 .catch(() => false);
 }
-return handsPackCache[dir];
+return handsPackCache[key];
 }
 
 function canShareInHands(skin){
@@ -4092,13 +4104,15 @@ await loadModelIndex();
 const dir = handsAnimDir(entry);
 if (!dir) throw new Error('no_hands');
 const { width: W, height: H, supersample: ss } = SHARE_VIDEO;
+// Перчатки: руки с перчатками лота (раскраску кладёт loadInHandsScene).
+const gloveRig = gloveRigOf(entry);
 const [ih, [skin, weapon], bg, stickerAtlas] = await Promise.all([
-loadInHandsScene(THREE, dir, SHARE_HANDS.clip),
-loadSkinWithWeapon(THREE, entry.skin, entry.weapon),
+loadInHandsScene(THREE, dir, SHARE_HANDS.clip, gloveRig ? { gloveRig, gloveSkin: entry.skin } : null),
+gloveRig ? [null, null] : loadSkinWithWeapon(THREE, entry.skin, entry.weapon),
 loadShareBackground(W, H),
-loadStickerAtlas(THREE, stickers).catch(() => null),
+gloveRig ? null : loadStickerAtlas(THREE, stickers).catch(() => null),
 ]);
-applySkinToModel(THREE, ih.knifeGroup, skin, wear, weapon, 'none', seed, stickerAtlas);
+if (!gloveRig) applySkinToModel(THREE, ih.knifeGroup, skin, wear, weapon, 'none', seed, stickerAtlas);
 
 const glCanvas = document.createElement('canvas');
 glCanvas.width = W * ss;
@@ -4109,7 +4123,7 @@ try {
 renderer.setPixelRatio(1);
 renderer.setSize(W * ss, H * ss, false);
 renderer.setClearColor(0x000000, 0);
-await setupViewerScene(THREE, renderer, scene, entry.weapon);
+await setupViewerScene(THREE, renderer, scene, gloveRig ? null : entry.weapon);
 scene.add(ih.root);
 const camera = new THREE.PerspectiveCamera(IN_HANDS_FOV, W / H, 0.01, 10);
 placeInHandsCamera(THREE, ih, camera);
