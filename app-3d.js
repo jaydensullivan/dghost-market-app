@@ -4077,6 +4077,34 @@ if (t) mesh.material = new THREE.MeshStandardMaterial({ map: t, roughness: 0.75,
 });
 }
 
+// Кости скручивания предплечья (arm_lower_*_TWIST, _TWIST1) в клипах CS2
+// не анимированы — в игре их поворачивает движок вслед за кистью. Без
+// этого кисть крутилась, а кожа и манжета перчатки у запястья — нет:
+// запястье перекручивалось «фантиком», пальцы и большой палец выглядели
+// вывернутыми. Каждый кадр раскладываем поворот кисти вокруг оси
+// предплечья (X кости) на эти кости: ближней к запястью — 2/3, другой — 1/3.
+const twists = ['L', 'R'].map(side => {
+const hand = root.getObjectByName('hand_' + side);
+const near = root.getObjectByName('arm_lower_' + side + '_TWIST1');
+const far = root.getObjectByName('arm_lower_' + side + '_TWIST');
+if (!hand || (!near && !far)) return null;
+return { hand, rest: hand.quaternion.clone().invert(),
+bones: [[near, 2 / 3], [far, 1 / 3]].filter(b => b[0]).map(([bone, k]) => ({ bone, k, rest: bone.quaternion.clone() })) };
+}).filter(Boolean);
+const twistDelta = new THREE.Quaternion(), twistPart = new THREE.Quaternion(), twistOne = new THREE.Quaternion();
+const applyTwists = () => {
+twists.forEach(tw => {
+// Поворот кисти от её исходной позы — в системе предплечья; его доля
+// вокруг оси X (swing-twist).
+twistDelta.copy(tw.hand.quaternion).multiply(tw.rest);
+twistPart.set(twistDelta.x, 0, 0, twistDelta.w);
+if (twistPart.lengthSq() < 1e-8) return;
+twistPart.normalize();
+tw.bones.forEach(b => {
+b.bone.quaternion.copy(twistOne.identity().slerp(twistPart, b.k)).multiply(b.rest);
+});
+});
+};
 const mixer = new THREE.AnimationMixer(root);
 const action = mixer.clipAction(clip.animations[0]);
 action.play();
@@ -4087,6 +4115,7 @@ const tmpA = new THREE.Matrix4(), tmpB = new THREE.Matrix4();
 const ih = { root, knifeGroup, mixer, action, duration: clip.animations[0].duration, clips: index.clips, gripMode: 'wpnfix' };
 ih.setTime = (t) => {
 mixer.setTime(t);
+applyTwists();
 if (!knifeSkel) return;
 knifeSkel.position.set(0, 0, 0); knifeSkel.quaternion.identity(); knifeSkel.scale.set(1, 1, 1);
 root.updateMatrixWorld(true);
