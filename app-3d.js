@@ -1775,7 +1775,7 @@ return { w: c.width, h: c.height, d: ctx.getImageData(0, 0, c.width, c.height).d
 
 function composeGloveColor(p, imgs){
 const N = GLOVE_TEX;
-const opt = Object.assign({ tintLinear: false, ao: 0.3, detail: 0.7, gain: 1, palMode: 2, detailAbs: 0, layerMap: 1, metalRough: 0.45, metalDetail: 2.2, metalGain: 1.5, tapeAo: 0.8, tapeGrime: 0.75, tapeGrimeFrom: 0.6, tapeGrimeColor: [0.95, 0.83, 0.66], tapeGain: 2.1, tapeTint: [0.9, 1.0, 1.03], tapeRough: 0.3 }, window.DGHOST_GLOVE || {});
+const opt = Object.assign({ tintLinear: false, ao: 0.3, detail: 0.7, gain: 1, palMode: 2, detailAbs: 0, layerMap: 1, metalRough: 0.45, metalDetail: 2.2, metalGain: 1.5, tapeAo: 0.8, tapeGrime: 0.75, tapeGrimeFrom: 0.6, tapeGrimeColor: [0.95, 0.83, 0.66], tapeGain: 2.1, tapeTint: [0.9, 1.0, 1.03], tapeRough: 0.3, patRough: 0.5 }, window.DGHOST_GLOVE || {});
 const lin = (x) => opt.tintLinear ? x :  x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
 const srgb = (x) => { x = Math.max(0, Math.min(1, x)); return 255 * (x <= 0.0031308 ? x * 12.92 : 1.055 * Math.pow(x, 1 / 2.4) - 0.055); };
 const tint = [null];
@@ -1815,6 +1815,9 @@ const pOff = vmatVec(p, 'g_fPatternTexCoordOffset', [0, 0]);
 const pal = vmatVec(p, 'g_vPatternPaletteIndices', [8, 8, 8, 8]).map(n => Math.round(n));
 const replace = Math.round(Number(p.g_nPatternReplaceIndex) || 0);
 const cosR = Math.cos(pRot), sinR = Math.sin(pRot);
+const patColorMode = Math.round(Number(p.g_nPatternMode) || 0) === 2;
+const patMetal = Math.max(0, Math.min(1, Number(p.g_fPatternMetalness) || 0));
+const patRough = Number(p.g_fPatternRoughnessBrightness) || 0.8;
 const sample = (img, u, v) => {
 u -= Math.floor(u); v -= Math.floor(v);
 const x = Math.min(img.w - 1, (u * img.w) | 0), y = Math.min(img.h - 1, (v * img.h) | 0);
@@ -1834,11 +1837,17 @@ const layer = opt.layerMap === 1
 mr[k + 1] = 210; mr[k + 3] = 255;
 const ci = Math.max(1, Math.min(8, Math.round((m[k + 3] - 18) / 29.7) + 1));
 let r = tint[ci][0], g = tint[ci][1], b = tint[ci][2];
+let patPixel = false;
 if (pat && ci === replace){
 const pu = ((u - 0.5) * cosR - (v - 0.5) * sinR) * pScale + pOff[0];
 const pv = ((u - 0.5) * sinR + (v - 0.5) * cosR) * pScale + (pOff[1] || 0);
 const q = sample(pat, pu, pv);
-if (opt.palMode === 2 || opt.palMode === 3){
+if (patColorMode){
+// g_nPatternMode 2 (Marble Fade, Fade, Hydra Case Hardened): рисунок —
+// готовая цветная картинка, а не маска палитры; зона — металл.
+r = lin(pat.d[q] / 255); g = lin(pat.d[q + 1] / 255); b = lin(pat.d[q + 2] / 255);
+patPixel = true;
+} else if (opt.palMode === 2 || opt.palMode === 3){
 // Слоты палитры по каналам A, R, G, B; 2 — номера с единицы, 3 — с нуля.
 const shift = opt.palMode === 3 ? 1 : 0;
 [3, 0, 1, 2].forEach((c, slotIdx) => {
@@ -1881,13 +1890,19 @@ const semi = det.metal > 0 && det.metal < 1;
 const dStr = semi ? opt.detail * opt.metalDetail : opt.detail;
 const f = opt.detailAbs ? det.d.d[q] / 255 * opt.detailAbs : 1 + (det.d.d[q] / det.mean - 1) * dStr;
 r *= f; g *= f; b *= f;
-if (semi){ r *= opt.metalGain; g *= opt.metalGain; b *= opt.metalGain; }
+if (semi && !patPixel){ r *= opt.metalGain; g *= opt.metalGain; b *= opt.metalGain; }
 // Шероховатость — канал G детали слоя, металл — слои metal*.
 const rk = (y * N + x) * 4;
 const rough = det.d.d[q + 1] * (det.roughGain || 1) * (det.tape ? opt.tapeRough : semi ? opt.metalRough : 1);
 mr[rk + 1] = opt.roughInvert ? 255 - rough : rough;
 mr[rk + 2] = 255 * det.metal;
 mr[rk + 3] = 255;
+}
+if (patPixel){
+// Металл рисунка (g_fPatternMetalness) с гладкостью g_fPatternRoughnessBrightness.
+mr[k + 1] = 255 * patRough * opt.patRough;
+mr[k + 2] = 255 * patMetal;
+mr[k + 3] = 255;
 }
 const tapeDet = det && det.tape ? det : null;
 if (surface){
@@ -3949,10 +3964,10 @@ const hand = root.getObjectByName('hand_R');
 const tex = index.textures || {};
 const loadTex = (file) => file ? loadSkinTexture(THREE, base + file, true) : Promise.resolve(null);
 const [skinTex, gloveTex] = await Promise.all([loadTex(tex.skin), loadTex(tex.glove)]);
-if (rig){
+{
 // Свет просмотрщика стоит перед предметом (+Z) — в виде от первого лица
-// это за руками, и перчатки выходили тёмными силуэтами. Светим сверху
-// из-за камеры, как солнце на карте.
+// это за руками: руки, перчатки и нож выходили тёмными силуэтами.
+// Светим сверху из-за камеры, как солнце на карте.
 const L = lightPreset();
 const lamp = new THREE.DirectionalLight(0xffffff, L.key * (Number((window.DGHOST_GLOVE || {}).handsLamp) || 1));
 lamp.position.set(0.3, 1, -0.5);
@@ -3961,6 +3976,8 @@ const fill = new THREE.DirectionalLight(0xffffff, L.front * 0.6);
 fill.position.set(-0.4, 0, -0.6);
 fill.target.position.set(0, -0.15, 0.5);
 root.add(lamp, lamp.target, fill, fill.target);
+}
+if (rig){
 // Рука — текстура кожи, перчатки — раскраска лота (applyGloveSkin берёт
 // материалы с «glove» в имени).
 armMeshes.forEach(mesh => {
