@@ -735,6 +735,8 @@ knife_widowmaker: 0.36, knife_skeleton: 0.36, knife_kukri: 0.36,
 // g_bIgnoreWeaponSizeScale = true — масштаб ствола к ним не применяем
 // (иначе полосы MP7 Amberline растягивались на весь ствол).
 const GUN_FADE_SCALE = 1.3;
+const PATINA_TILED = /^aq_(oiled|forced|blued|brass|copper|obsidian|steel|damascus)/;
+const WEAPON_SPECIFIC_FINISH = /(?:^|_)(ak47|m4a4|m4a1s?|awp|glock(?:_?18)?|p250|p90|ump(?:45)?|tec9|ssg08|mac(?:_?10)|usp|deagle|deserteagle|desert_eagle|famas|galil(?:ar)?|sg553|sg556|aug|mp7|mp9|mp5|bizon|nova|xm1014|mag7|sawedoff|negev|m249|cz75a?|five_?seven|57|p2000|hkp2000|dualberettas|elites?|revolver|r8|scar20|scar|g3sg1|zeus)(?=$|_|lam|\d)/;
 function isGunFade(skin){
 return (!skin.format || skin.format === 'legacy') && skin.params.paint_style === 5 && /fade/i.test(String(skin.finish || skin.params.finish || ''));
 }
@@ -753,6 +755,16 @@ if (isKnifeName(weaponName)) return 1;
 // (uClampPattern) даёт, как в Steam, фиолетовый у приклада и розовый с
 // оранжевым к дулу.
 if (isGunFade(skin)) return GUN_FADE_SCALE;
+// Рисунок под конкретный ствол (в имени — ствол: hy_ak47lam, am_dragon_glock,
+// sp_splash_p250…) нарисован по его развёртке: UVScale брал только угол
+// текстуры — Laminate выходил коричневым, у Dragon Tattoo, Wingshot, Grand
+// Prix не было рисунка. Так же патина под ствол (Fowl Play, Bunsen
+// Burner, Teclu Burner…). Общие узоры патины (закалка, воронение, медь,
+// дамаск…) тайлятся — им UVScale нужен. Спрей под ствол (P250 Splash, Galil
+// CAUTION!) — тоже 1; аэрография (5) откалибрована отдельно.
+if (params.paint_style !== 5
+&& (WEAPON_SPECIFIC_FINISH.test(String(skin.finish || ''))
+|| (params.paint_style === 7 && !PATINA_TILED.test(String(skin.finish || ''))))) return 1;
 return WEAPON_UV_SCALE[weaponName] || 1;
 }
 
@@ -765,6 +777,10 @@ return skin.format === 'template' && [1, 2].indexOf(skin.params.paint_style) !==
 }
 
 const PATINA_PATTERN_GAMMA = 1.8;
+// Gunsmith старого формата (стиль 8: Iron Clad, Winterized, Fubar,
+// Vendetta, Pipe Down…): рисунок — сам цвет ствола; со степенью 1.8 он
+// уходил почти в чёрный (по CSFloat темнее на 15–27, по Steam — тоже).
+const GUNSMITH_LEGACY_GAMMA = 1.2;
 // Усиление тонировки патины (стиль 7). Клинки ножей светлее стволов, и с
 // общим 3.4 Blue Steel и Stained выходили серебристыми вместо воронёных:
 // по 96 ножам с патиной сходство 65.4 → 69.0 при 1.2 (Steam-картинки).
@@ -1112,7 +1128,7 @@ uColorBrightness: { value: (skin.params.color_brightness || 1) * (legacyCaseHard
 // (по сверке с CSFloat светлее игры на 30–50 по яркости). Степень 1.8
 // у узора возвращает и яркость, и оттенок: Decimator — тёмно-синий,
 // Night Terror и Nebula Crusader — оранжевые, Magma — тёмная.
-uPatternGamma: { value: legacyCaseHardened(skin) ? CASE_HARDENED.gamma : legacyPatinaStyle(skin) && !legacyPatinaBlend(skin) ? PATINA_PATTERN_GAMMA : (gunsmithTemplate(skin) ? GUNSMITH_TEMPLATE_GAMMA : 1) },
+uPatternGamma: { value: legacyCaseHardened(skin) ? CASE_HARDENED.gamma : legacyPatinaStyle(skin) && !legacyPatinaBlend(skin) ? (skin.params.paint_style === 8 ? GUNSMITH_LEGACY_GAMMA : PATINA_PATTERN_GAMMA) : (gunsmithTemplate(skin) ? GUNSMITH_TEMPLATE_GAMMA : 1) },
 uPatinaBlend: { value: legacyPatinaBlend(skin) ? 1 : 0 },
 uPatinaK: { value: isKnifeName(weapon ? weapon.name || '' : '') ? PATINA_KNIFE_K : PATINA_K },
 uMaskChannel: { value: channel },
