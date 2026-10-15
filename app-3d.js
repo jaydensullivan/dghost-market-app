@@ -1775,7 +1775,7 @@ return { w: c.width, h: c.height, d: ctx.getImageData(0, 0, c.width, c.height).d
 
 function composeGloveColor(p, imgs){
 const N = GLOVE_TEX;
-const opt = Object.assign({ tintLinear: false, ao: 0.3, detail: 0.7, gain: 1, palMode: 2, detailAbs: 0, layerMap: 1, metalRough: 0.45, metalDetail: 2.2, metalGain: 1.5 }, window.DGHOST_GLOVE || {});
+const opt = Object.assign({ tintLinear: false, ao: 0.3, detail: 0.7, gain: 1, palMode: 2, detailAbs: 0, layerMap: 1, metalRough: 0.45, metalDetail: 2.2, metalGain: 1.5, tapeAo: 0.8, tapeGrime: 0.75, tapeGrimeFrom: 0.6, tapeGrimeColor: [0.95, 0.83, 0.66], tapeGain: 2.1, tapeTint: [0.9, 1.0, 1.03], tapeRough: 0.3 }, window.DGHOST_GLOVE || {});
 const lin = (x) => opt.tintLinear ? x :  x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
 const srgb = (x) => { x = Math.max(0, Math.min(1, x)); return 255 * (x <= 0.0031308 ? x * 12.92 : 1.055 * Math.pow(x, 1 / 2.4) - 0.055); };
 const tint = [null];
@@ -1793,12 +1793,18 @@ for (let k = 0; k < d.d.length; k += 4) sum += d.d[k];
 // слои metal* — полностью металл.
 const metalness = /metal/i.test(p['layer_name_' + i] || '') ? 1
 : Math.max(0, Math.min(1, Number(p['g_fDetailMetalness' + i]) || 0));
-details.push({ d, mean: Math.max(1, sum / (d.d.length / 4)), scale: Number(p['g_fDetailScale' + i]) || 1,
+// Скотч (слой gloves/textiles/ducttape): в игре между витками тёмные
+// щели, по ленте — бурые пятна грязи (альфа текстуры грязи слоя) и
+// холодный серебристый отлив. Только для него — остальные слои как были.
+const tape = /ducttape/i.test(p['layer_name_' + i] || '');
+const grunge = tape && imgs['grunge' + i] ? gloveImageData(imgs['grunge' + i]) : null;
+details.push({ d, tape, grunge, mean: Math.max(1, sum / (d.d.length / 4)), scale: Number(p['g_fDetailScale' + i]) || 1,
 metal: opt.metalFrac === false ? (metalness > 0.5 ? 1 : 0) : metalness,
 roughGain: Number(p['g_fDetailRoughnessBrightness' + i]) || 1 });
 }
 const usePattern = p.F_PATTERN === '1' && imgs.pattern;
 const pat = usePattern ? gloveImageData(imgs.pattern) : null;
+const gScale = Number(p.g_fGrungeTexCoordScale) || 1;
 const pScale = Number(p.g_fPatternTexCoordScale) || 1;
 const pRot = (Number(p.g_fPatternTexCoordRotation) || 0) * Math.PI / 180;
 const pOff = vmatVec(p, 'g_fPatternTexCoordOffset', [0, 0]);
@@ -1878,15 +1884,28 @@ r *= f; g *= f; b *= f;
 if (semi){ r *= opt.metalGain; g *= opt.metalGain; b *= opt.metalGain; }
 // Шероховатость — канал G детали слоя, металл — слои metal*.
 const rk = (y * N + x) * 4;
-const rough = det.d.d[q + 1] * (det.roughGain || 1) * (semi ? opt.metalRough : 1);
+const rough = det.d.d[q + 1] * (det.roughGain || 1) * (det.tape ? opt.tapeRough : semi ? opt.metalRough : 1);
 mr[rk + 1] = opt.roughInvert ? 255 - rough : rough;
 mr[rk + 2] = 255 * det.metal;
 mr[rk + 3] = 255;
 }
+const tapeDet = det && det.tape ? det : null;
 if (surface){
 const ao = surface.d[k] / 255;
-const f = 1 - opt.ao + opt.ao * ao;
+const aoStr = tapeDet ? opt.tapeAo : opt.ao;
+const f = 1 - aoStr + aoStr * ao;
 r *= f; g *= f; b *= f;
+}
+if (tapeDet){
+r *= opt.tapeGain * opt.tapeTint[0]; g *= opt.tapeGain * opt.tapeTint[1]; b *= opt.tapeGain * opt.tapeTint[2];
+if (tapeDet.grunge){
+// Пятна: альфа текстуры грязи выше порога; цвет — тёплый бурый.
+const a = tapeDet.grunge.d[sample(tapeDet.grunge, u * gScale, v * gScale) + 3] / 255;
+const w = Math.max(0, Math.min(1, (a - opt.tapeGrimeFrom) / 0.35)) * opt.tapeGrime;
+const lum = 0.3 * r + 0.55 * g + 0.15 * b;
+const gc = opt.tapeGrimeColor;
+r += (lum * gc[0] - r) * w; g += (lum * gc[1] - g) * w; b += (lum * gc[2] - b) * w;
+}
 }
 r *= opt.gain; g *= opt.gain; b *= opt.gain;
 o[k] = srgb(r); o[k + 1] = srgb(g); o[k + 2] = srgb(b); o[k + 3] = 255;
@@ -2184,7 +2203,7 @@ const p = parseVmat(text);
 const volatile = !!p.TextureTintId;
 const names = volatile
 ? ['layerid', 'tintid', 'pattern', 'objectproperties', 'surface1', 'surface2', 'surface3', 'surface4']
-: ['layermask', 'surface', 'pattern', 'detail1', 'detail2', 'detail3', 'detail4'];
+: ['layermask', 'surface', 'pattern', 'detail1', 'detail2', 'detail3', 'detail4', 'grunge1', 'grunge2', 'grunge3', 'grunge4'];
 return Promise.all(names.map(n => loadGloveImage(base + n + '.webp').catch(() => null)))
 .then(list => {
 const imgs = {};
@@ -2193,12 +2212,15 @@ names.forEach((n, i) => { imgs[n] = list[i]; });
 // и 3), а сборка сохраняла её только под последним номером. Слою без
 // своей картинки отдаём картинку слоя с тем же файлом в материале.
 if (!volatile){
+for (const kind of ['Detail', 'Grunge']){
+const key = kind.toLowerCase();
 for (let i = 1; i <= 4; i++){
-if (imgs['detail' + i] || !p['g_tDetail' + i]) continue;
+if (imgs[key + i] || !p['g_t' + kind + i]) continue;
 for (let j = 1; j <= 4; j++){
-if (j !== i && imgs['detail' + j] && p['g_tDetail' + j] === p['g_tDetail' + i]){
-imgs['detail' + i] = imgs['detail' + j];
+if (j !== i && imgs[key + j] && p['g_t' + kind + j] === p['g_t' + kind + i]){
+imgs[key + i] = imgs[key + j];
 break;
+}
 }
 }
 }
@@ -3868,10 +3890,10 @@ function isRigGloveMesh(mesh){
 return !!mesh.userData.rigGlove;
 }
 
-// Перчатки «в руках» показываем на руках с Desert Eagle: в его осмотре
-// обе кисти крупно в кадре и пистолет с текстурой (у ножа кисти мелкие,
-// у винтовок оружие закрывает перчатки).
-const GLOVE_HANDS_PACK = 'deagle';
+// Перчатки «в руках» — как в CS2: у перчаток своего осмотра нет, их
+// смотрят осмотром ножа. Бабочка: в её осмотрах обе кисти в кадре и
+// вариантов три.
+const GLOVE_HANDS_PACK = 'knife_butterfly';
 
 async function loadInHandsScene(THREE, animDir, clipId, opts){
 if (!IN_HANDS_AXIS_FIX) IN_HANDS_AXIS_FIX = new THREE.Quaternion(-0.5, -0.5, -0.5, 0.5).invert();
@@ -3927,6 +3949,17 @@ const tex = index.textures || {};
 const loadTex = (file) => file ? loadSkinTexture(THREE, base + file, true) : Promise.resolve(null);
 const [skinTex, gloveTex] = await Promise.all([loadTex(tex.skin), loadTex(tex.glove)]);
 if (rig){
+// Свет просмотрщика стоит перед предметом (+Z) — в виде от первого лица
+// это за руками, и перчатки выходили тёмными силуэтами. Светим сверху
+// из-за камеры, как солнце на карте.
+const L = lightPreset();
+const lamp = new THREE.DirectionalLight(0xffffff, L.key * (Number((window.DGHOST_GLOVE || {}).handsLamp) || 1));
+lamp.position.set(0.3, 1, -0.5);
+lamp.target.position.set(0, -0.15, 0.5);
+const fill = new THREE.DirectionalLight(0xffffff, L.front * 0.6);
+fill.position.set(-0.4, 0, -0.6);
+fill.target.position.set(0, -0.15, 0.5);
+root.add(lamp, lamp.target, fill, fill.target);
 // Рука — текстура кожи, перчатки — раскраска лота (applyGloveSkin берёт
 // материалы с «glove» в имени).
 armMeshes.forEach(mesh => {
