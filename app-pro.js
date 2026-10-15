@@ -21,7 +21,7 @@ return d.toLocaleDateString(currentLang === 'en' ? 'en-GB' : 'ru-RU', { day: '2-
 
 // Тарифы (как у API-сервисов): Free / Старт / PRO / Бизнес — отличаются
 // лимитами; список, цены и лимиты присылает бот (/api/pro → tiers).
-const PRO_TIER_IDS = ['start', 'pro', 'business'];
+const PRO_TIER_IDS = ['start', 'pro', 'business', 'garant'];
 
 function proTiers(){
 return (proStatus && Array.isArray(proStatus.tiers)) ? proStatus.tiers : [];
@@ -110,7 +110,7 @@ const dict = I18N[currentLang] || I18N.ru;
 const days = proStatus.days;
 const current = proStatus.active ? (proStatus.tier || 'pro') : 'free';
 document.getElementById('proPlansHint').textContent = dict.pro_plans_hint.replace('{days}', days);
-const cols = [{ id: 'free', price: 0, share_per_hour: proStatus.free_share_per_hour || 30, market_posts: 0, own_channels: 0, own_posts: 0 }]
+const cols = [{ id: 'free', price: 0, share_per_hour: proStatus.free_share_per_hour || 30, market_posts: 0, own_channels: 0, own_posts: 0, own_auctions: 0, own_raffles: 0 }]
 .concat(PRO_TIER_IDS.map(proTier).filter(Boolean));
 
 document.getElementById('proPlans').innerHTML = cols.map(t => {
@@ -120,6 +120,17 @@ let action = '';
 if (t.id !== 'free' && !proStatus.admin){
 const label = isCurrent ? dict.pro_extend : (proStatus.active ? dict.pro_switch : dict.pro_pick);
 action = `<button type="button" class="pf-btn pro-plan-btn" data-pro-tier="${t.id}">${escapeHtml(label)}</button>`;
+// «Гарант» — сначала заявка: проверка продавца + одобрение админа.
+const g = proStatus.garant || {};
+if (t.approval && !isCurrent && g.status !== 'approved'){
+if (g.status === 'pending'){
+action = `<button type="button" class="pf-btn pro-plan-btn" disabled>${escapeHtml(dict.pro_garant_pending)}</button>`;
+} else if (!g.verified_seller){
+action = `<button type="button" class="pf-btn pro-plan-btn" disabled>${escapeHtml(dict.pro_garant_need_kyc)}</button>`;
+} else {
+action = `<button type="button" class="pf-btn pro-plan-btn" data-garant-apply="1">${escapeHtml(dict.pro_garant_apply)}</button>`;
+}
+}
 }
 const flag = isCurrent ? `<span class="pro-plan-flag current">${escapeHtml(dict.pro_current)}</span>`
 : (t.popular ? `<span class="pro-plan-flag">${escapeHtml(dict.pro_popular)}</span>` : '');
@@ -145,6 +156,8 @@ const rows = [
 [dict.pro_cmp_market, t => num(t.market_posts), dict.pro_help_market],
 [dict.pro_cmp_channels, t => num(t.own_channels), dict.pro_help_channels],
 [dict.pro_cmp_own_posts, t => num(t.own_posts), dict.pro_help_own_posts],
+[dict.pro_cmp_auctions, t => num(t.own_auctions), dict.pro_help_auctions],
+[dict.pro_cmp_raffles, t => num(t.own_raffles), dict.pro_help_raffles],
 [dict.pro_cmp_share, t => String(t.share_per_hour), dict.pro_help_share],
 [dict.pro_cmp_price.replace('{days}', days), t => (t.id === 'free' ? '0' : escapeHtml(formatCoins(t.price))), dict.pro_help_price],
 ];
@@ -212,6 +225,10 @@ showAlert(dict.pro_ok.replace('{name}', name).replace('{date}', proDateText(data
 
 if (proPlansOverlay){
 document.getElementById('proPlans').addEventListener('click', (e) => {
+if (e.target.closest('[data-garant-apply]')){
+applyGarant();
+return;
+}
 const btn = e.target.closest('[data-pro-tier]');
 if (btn) buyPro(btn.dataset.proTier);
 });
@@ -387,3 +404,246 @@ loadProStatus().then(() => {
 renderProChannels();
 loadProChannels();
 });
+
+// ------------------------------------------------------------
+// ТАРИФ «ГАРАНТ»: АУКЦИОНЫ И РОЗЫГРЫШИ В СВОЁМ КАНАЛЕ
+//
+// Заявка на тариф (кнопка в окне тарифов), окно запуска события из
+// «Поделиться» своего лота и список своих событий в карточке PRO.
+// ------------------------------------------------------------
+
+function garantInfo(){
+return (proStatus && proStatus.garant) || {};
+}
+
+function isGarantActive(){
+return !!(proStatus && (proStatus.tier === 'garant' || proStatus.admin));
+}
+
+function applyGarant(){
+const dict = I18N[currentLang] || I18N.ru;
+const status = document.getElementById('proPlansStatus');
+fetch(API_BASE + '/api/pro/garant_request', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData }),
+})
+.then(async r => {
+const data = await r.json().catch(() => ({}));
+if (!r.ok) throw data;
+if (proStatus){
+proStatus.garant = Object.assign({}, proStatus.garant, { status: data.status });
+}
+renderProPlans();
+status.textContent = dict.pro_garant_applied;
+})
+.catch(data => { status.textContent = errorMessage(data && data.error); });
+}
+
+// Окно «Поделиться» своего лота: «🔨 Аукцион в канал», «🎁 Розыгрыш в канал».
+function renderShareEvents(show){
+const box = document.getElementById('shareEventBtns');
+if (!box) return;
+const dict = I18N[currentLang] || I18N.ru;
+if (!show || !proStatus){
+box.innerHTML = '';
+return;
+}
+const locked = isGarantActive() ? '' : ' pro-locked';
+box.innerHTML = `<button type="button" class="save${locked}" data-share-event="auction">${escapeHtml(dict.ev_auction_btn)}</button>`
++ `<button type="button" class="save${locked}" data-share-event="raffle">${escapeHtml(dict.ev_raffle_btn)}</button>`;
+}
+
+const proEventOverlay = document.getElementById('proEventOverlay');
+let proEventKind = 'auction';
+let proEventSkin = null;
+
+function proDurationLabel(minutes){
+const dict = I18N[currentLang] || I18N.ru;
+const h = minutes / 60;
+return h >= 24 && h % 24 === 0 ? dict.ev_days.replace('{n}', h / 24) : dict.ev_hours.replace('{n}', h);
+}
+
+function openProEvent(kind, skin){
+const dict = I18N[currentLang] || I18N.ru;
+const g = garantInfo();
+proEventKind = kind;
+proEventSkin = skin;
+document.getElementById('proEventTitle').textContent = kind === 'auction' ? dict.ev_title_auction : dict.ev_title_raffle;
+document.getElementById('proEventLot').textContent = (skin.stattrak ? 'StatTrak™ ' : '') + skin.title + (skin.wear ? ' · ' + skin.wear : '');
+document.getElementById('proEventChannel').innerHTML = proChannels.map(c =>
+`<option value="${c.id}">${escapeHtml(proChannelName(c))}</option>`).join('');
+const options = kind === 'auction'
+? (g.auction_minutes || [60, 180, 360, 720, 1440, 2880])
+: (g.raffle_hours || [6, 12, 24, 48, 72, 168]).map(h => h * 60);
+document.getElementById('proEventDuration').innerHTML = options.map(m =>
+`<option value="${m}">${escapeHtml(proDurationLabel(m))}</option>`).join('');
+document.getElementById('proEventDuration').value = String(kind === 'auction' ? 1440 : 1440);
+document.getElementById('proEventAuctionFields').hidden = kind !== 'auction';
+const start = Math.max(1000, Math.round((skin.price || 0) * 0.7 / 1000) * 1000);
+document.getElementById('proEventStart').value = start;
+document.getElementById('proEventStep').value = Math.max(1000, Math.round(start * 0.05 / 1000) * 1000);
+document.getElementById('proEventHint').textContent = kind === 'auction' ? dict.ev_auction_hint : dict.ev_raffle_hint;
+const left = kind === 'auction' ? g.auctions_left : g.raffles_left;
+document.getElementById('proEventLeft').textContent = proStatus.admin ? '' : dict.ev_left.replace('{n}', left || 0);
+document.getElementById('proEventSubmit').textContent = kind === 'auction' ? dict.ev_submit_auction : dict.ev_submit_raffle;
+document.getElementById('proEventSubmit').disabled = !proChannels.length;
+document.getElementById('proEventStatus').textContent = proChannels.length ? '' : dict.ev_no_channels;
+proEventOverlay.classList.add('show');
+}
+
+function closeProEvent(){
+proEventOverlay.classList.remove('show');
+}
+
+document.getElementById('shareEventBtns').addEventListener('click', (e) => {
+const btn = e.target.closest('[data-share-event]');
+if (!btn || !shareSkin) return;
+const dict = I18N[currentLang] || I18N.ru;
+if (!isGarantActive()){
+shareStatus.textContent = dict.pro_garant_locked;
+document.getElementById('shareProBtn').style.display = '';
+return;
+}
+openProEvent(btn.dataset.shareEvent, shareSkin);
+});
+
+document.getElementById('proEventCloseBtn').addEventListener('click', closeProEvent);
+proEventOverlay.addEventListener('click', (e) => { if (e.target === proEventOverlay) closeProEvent(); });
+
+function proEventError(data){
+const dict = I18N[currentLang] || I18N.ru;
+if (data && data.error === 'event_limit') return dict.ev_limit.replace('{n}', data.limit || 0);
+if (data && /^channel_/.test(data.error || '')) return proChannelError(data);
+return errorMessage(data && data.error);
+}
+
+document.getElementById('proEventSubmit').addEventListener('click', () => {
+if (!proEventSkin || !tg || !tg.initData) return;
+const dict = I18N[currentLang] || I18N.ru;
+const btn = document.getElementById('proEventSubmit');
+const status = document.getElementById('proEventStatus');
+const channelId = Number(document.getElementById('proEventChannel').value);
+const minutes = Number(document.getElementById('proEventDuration').value);
+const payload = { init_data: tg.initData, skin_id: proEventSkin.id, channel_id: channelId };
+let url = '/api/pro/raffle';
+if (proEventKind === 'auction'){
+url = '/api/pro/auction';
+payload.start_price = Number(document.getElementById('proEventStart').value);
+payload.step = Number(document.getElementById('proEventStep').value);
+payload.minutes = minutes;
+} else {
+payload.hours = Math.round(minutes / 60);
+}
+btn.disabled = true;
+status.textContent = '...';
+fetch(API_BASE + url, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify(payload),
+})
+.then(async r => {
+const data = await r.json().catch(() => ({}));
+if (!r.ok) throw data;
+if (proStatus && data.garant) proStatus.garant = data.garant;
+const ch = proOwnChannel(channelId);
+const msg = (proEventKind === 'auction' ? dict.ev_done_auction : dict.ev_done_raffle).replace('{name}', ch ? proChannelName(ch) : '');
+closeProEvent();
+if (typeof shareOverlay !== 'undefined') shareOverlay.classList.remove('show');
+showAlert(msg);
+loadProEvents();
+if (typeof loadSkins === 'function') loadSkins();
+})
+.catch(data => { status.textContent = proEventError(data); })
+.finally(() => { btn.disabled = false; });
+});
+
+// Карточка PRO: свои аукционы и розыгрыши.
+let proEvents = [];
+
+function renderProEvents(){
+const box = document.getElementById('proEvents');
+if (!box) return;
+const dict = I18N[currentLang] || I18N.ru;
+const g = garantInfo();
+box.hidden = !(isGarantActive() || proEvents.length);
+if (box.hidden) return;
+document.getElementById('proEventsLeft').textContent = proStatus && proStatus.admin ? ''
+: dict.ev_left_both.replace('{a}', g.auctions_left || 0).replace('{r}', g.raffles_left || 0);
+const list = document.getElementById('proEventsList');
+if (!proEvents.length){
+list.innerHTML = `<div class="pro-channels-empty">${escapeHtml(dict.ev_empty)}</div>`;
+return;
+}
+list.innerHTML = proEvents.map(ev => {
+let info = '';
+let cancel = '';
+if (ev.kind === 'auction'){
+info = dict.ev_status_bids.replace('{n}', ev.bids).replace('{price}', formatCoins(ev.price)) + ' · ' + dict.ev_until.replace('{date}', proDateTimeText(ev.ends_at));
+if (!ev.bids) cancel = `<button type="button" data-pro-ev-cancel="auction:${ev.id}">${escapeHtml(dict.ev_cancel)}</button>`;
+} else if (ev.status === 'active'){
+info = dict.ev_status_entries.replace('{n}', ev.entries) + ' · ' + dict.ev_until.replace('{date}', proDateTimeText(ev.ends_at));
+if (!ev.entries) cancel = `<button type="button" data-pro-ev-cancel="raffle:${ev.id}">${escapeHtml(dict.ev_cancel)}</button>`;
+} else if (ev.status === 'drawn'){
+info = dict.ev_raffle_won.replace('{name}', ev.winner || '');
+} else if (ev.status === 'empty'){
+info = dict.ev_raffle_empty;
+} else {
+info = dict.ev_raffle_cancelled;
+}
+const icon = ev.kind === 'auction' ? '🔨' : '🎁';
+return `<div class="pro-channel-row"><span>${icon} ${escapeHtml(ev.title || '')}<br><small>${escapeHtml(info)}</small></span>${cancel}</div>`;
+}).join('');
+}
+
+function proDateTimeText(iso){
+if (!iso) return '';
+const d = new Date(iso);
+return d.toLocaleString(currentLang === 'en' ? 'en-GB' : 'ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
+function loadProEvents(){
+if (!tg || !tg.initData) return;
+fetch(API_BASE + '/api/pro/events?init_data=' + encodeURIComponent(tg.initData))
+.then(r => r.ok ? r.json() : null)
+.then(data => {
+if (!data) return;
+proEvents = Array.isArray(data.items) ? data.items : [];
+if (proStatus && data.garant) proStatus.garant = data.garant;
+renderProEvents();
+})
+.catch(() => {});
+}
+
+document.getElementById('proEventsList').addEventListener('click', (e) => {
+const btn = e.target.closest('[data-pro-ev-cancel]');
+if (!btn) return;
+const dict = I18N[currentLang] || I18N.ru;
+const [kind, id] = btn.dataset.proEvCancel.split(':');
+showConfirmDialog(dict.ev_cancel_confirm, () => {
+btn.disabled = true;
+fetch(API_BASE + '/api/pro/events/cancel', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData, kind, id: Number(id) }),
+})
+.then(async r => {
+const data = await r.json().catch(() => ({}));
+if (!r.ok) throw data;
+loadProEvents();
+if (typeof loadSkins === 'function') loadSkins();
+})
+.catch(data => {
+document.getElementById('proEventsStatus').textContent = errorMessage(data && data.error);
+btn.disabled = false;
+});
+});
+});
+
+const proEventsBaseApply = applyTranslations;
+applyTranslations = function(){
+proEventsBaseApply.apply(this, arguments);
+renderProEvents();
+};
+
+loadProStatus().then(loadProEvents);

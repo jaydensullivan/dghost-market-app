@@ -54,6 +54,14 @@ let pendingBuySkin = null;
 const WEAR_LABELS = { FN: 'FN', MW: 'MW', FT: 'FT', WW: 'WW', BS: 'BS' };
 
 const ERROR_MESSAGES_RU = {
+garant_required: "Нужен тариф «Гарант».",
+garant_not_approved: "Сначала подай заявку на «Гарант» — её одобрит администрация.",
+seller_verification_required: "Сначала пройди проверку продавца.",
+event_limit: "Лимит тарифа на этот месяц исчерпан.",
+has_bids: "Ставки уже есть — аукцион не отменить.",
+has_entries: "Участники уже есть — розыгрыш не отменить.",
+bid_banned: "Ставки закрыты: дважды выигранный аукцион не был оплачен. Напиши в поддержку.",
+post_failed: "Не удалось опубликовать пост в канале. Проверь, что бот — админ канала.",
 trade_link_required: 'Чтобы покупать, привяжи ссылку на обмен Steam — продавцу нужно куда отправить предмет.',
 sender_insufficient_funds: 'У отправителя не хватает денег на доплату — предложение больше неактуально.',
 partner_not_sent: 'Партнёр ещё не отметил, что отправил предмет. Подтверждать получение рано.',
@@ -108,6 +116,14 @@ not_running: 'Раздача сейчас не запущена.',
 };
 
 const ERROR_MESSAGES_UZ = {
+garant_required: "«Kafil» tarifi kerak.",
+garant_not_approved: "Avval «Kafil»ga ariza bering — ma'muriyat ma'qullaydi.",
+seller_verification_required: "Avval sotuvchi tekshiruvidan o'ting.",
+event_limit: "Bu oy uchun tarif limiti tugadi.",
+has_bids: "Stavkalar bor — auksionni bekor qilib bo'lmaydi.",
+has_entries: "Ishtirokchilar bor — konkursni bekor qilib bo'lmaydi.",
+bid_banned: "Stavkalar yopilgan: ikki marta yutilgan auksion to'lanmagan. Yordamga yozing.",
+post_failed: "Kanalga post joylab bo'lmadi. Bot kanal admini ekanini tekshiring.",
 trade_link_required: 'Xarid qilish uchun Steam almashuv havolasini ulang — sotuvchi buyumni qayerga yuborishini bilishi kerak.',
 sender_insufficient_funds: "Yuboruvchida qo'shimcha to'lov uchun mablag' yetarli emas — taklif endi dolzarb emas.",
 partner_not_sent: "Hamkor hali buyumni yuborganini belgilamagan. Qabul qilishni tasdiqlashga hali erta.",
@@ -162,6 +178,14 @@ not_running: "Tanlov hozir boshlanmagan.",
 };
 
 const ERROR_MESSAGES_EN = {
+garant_required: "The Guarantor plan is required.",
+garant_not_approved: "Apply for the Guarantor plan first — the team will approve it.",
+seller_verification_required: "Complete seller verification first.",
+event_limit: "This month's plan limit is used up.",
+has_bids: "There are bids already — the auction can't be cancelled.",
+has_entries: "There are entries already — the giveaway can't be cancelled.",
+bid_banned: "Bidding is closed: two won auctions were not paid. Contact support.",
+post_failed: "Couldn't post to the channel. Make sure the bot is a channel admin.",
 trade_link_required: 'To buy, link your Steam trade URL — the seller needs somewhere to send the item.',
 sender_insufficient_funds: "The sender doesn't have enough funds for the top-up — the offer is no longer valid.",
 partner_not_sent: "Your partner hasn't marked the item as sent yet. It's too early to confirm receipt.",
