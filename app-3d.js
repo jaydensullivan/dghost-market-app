@@ -734,6 +734,11 @@ knife_widowmaker: 0.36, knife_skeleton: 0.36, knife_kukri: 0.36,
 // У нового формата (шаблоны и vcompmat) в рецепте почти всегда
 // g_bIgnoreWeaponSizeScale = true — масштаб ствола к ним не применяем
 // (иначе полосы MP7 Amberline растягивались на весь ствол).
+const GUN_FADE_SCALE = 1.3;
+function isGunFade(skin){
+return (!skin.format || skin.format === 'legacy') && skin.params.paint_style === 5 && /fade/i.test(String(skin.finish || skin.params.finish || ''));
+}
+
 function weaponPatternScale(skin, weaponName){
 const params = skin.params;
 if (skin.format === 'template' || skin.format === 'vcompmat') return 1;
@@ -743,6 +748,11 @@ if ([1, 2, 4, 5, 7].indexOf(params.paint_style) === -1) return 1;
 // пятном. Без него — как в игре (сверка со Steam по 60 Doppler/Gamma
 // Doppler/Marble Fade: 69.4 → 71.1; на остальных ножах без изменений).
 if (isKnifeName(weaponName)) return 1;
+// Fade на стволах (проекция сбоку): с UVScale ствола градиент сжимался
+// в одно розовое пятно (MP7 — 0.45). Масштаб 1.3 с обрезкой по краю
+// (uClampPattern) даёт, как в Steam, фиолетовый у приклада и розовый с
+// оранжевым к дулу.
+if (isGunFade(skin)) return GUN_FADE_SCALE;
 return WEAPON_UV_SCALE[weaponName] || 1;
 }
 
@@ -969,6 +979,9 @@ function selectModelBody(object, useHd){
 let hasHd = false, hasLegacy = false;
 object.traverse(node => {
 const name = String(node.name || '').toLowerCase();
+// Кобура (у Dual Berettas — eholster) — для вида от третьего лица: в
+// просмотрщике висела огромным белым блоком рядом с пистолетами.
+if (name.indexOf('holster') !== -1) node.visible = false;
 if (name.indexOf('body_hd') !== -1) hasHd = true;
 if (name.indexOf('body_legacy') !== -1) hasLegacy = true;
 });
@@ -1131,13 +1144,16 @@ uniforms.uStkQ = { value: stk.Q };
 // оружие, а не по развёртке: развёртка разрезана на куски, и Fade по
 // ней ложился пятнами. Проекция — по двум самым длинным осям модели
 // (длина и высота), нормированным на её габариты.
-// У части ножей развёртка клинка идёт от острия к рукояти — у них маску
-// Fade зеркалим, чтобы, как в игре, у основания клинка был оранжевый, а
-// к острию — розовый и фиолетовый (сверено по CSFloat и Steam, 20 ножей).
-const KNIFE_FADE_MIRROR = new Set([
-'knife_css', 'knife_flip', 'knife_tactical', 'knife_kukri', 'knife_m9_bayonet',
-'knife_outdoor', 'knife_skeleton', 'knife_canis', 'knife_widowmaker', 'knife_ursus',
-]);
+// Развёртки клинков у ножей разложены по-разному, а узор Fade ещё и
+// повёрнут на 55–65°: чтобы, как в игре, у основания клинка был
+// оранжевый, а к острию — розовый и фиолетовый, у части ножей маску
+// зеркалим (1), отражаем по вертикали развёртки (2) или и то и другое (3).
+// Подобрано по всем 20 ножам, 8 из них — по скриншотам CSFloat.
+const KNIFE_FADE_MODE = {
+knife_flip: 1, knife_kukri: 1, knife_tactical: 1, knife_ursus: 1, knife_widowmaker: 1, knife_falchion: 1,
+knife_cord: 2, knife_css: 2, knife_m9_bayonet: 2, knife_outdoor: 2, knife_skeleton: 2, knife_stiletto: 2,
+knife_canis: 3,
+};
 // Fade (стиль 5) на ножах — по развёртке: она у клинков разложена так,
 // что градиент целиком ложится на клинок, а проекция по всей длине
 // растягивала его на рукоять и кольцо (на клинке — одна оранжевая часть).
@@ -1198,7 +1214,8 @@ node.geometry.setAttribute('uv2', node.geometry.attributes.uv);
 const toRoot = new THREE.Matrix4().multiplyMatrices(rootInverse, node.matrixWorld);
 const meshUniforms = {
 uProjected: { value: projected ? 1 : 0 },
-uFadeMirror: { value: knifeFade && KNIFE_FADE_MIRROR.has(weapon.name) ? 1 : 0 },
+uClampPattern: { value: projected && isGunFade(skin) ? 1 : 0 },
+uFadeMirror: { value: knifeFade ? (KNIFE_FADE_MODE[weapon.name] || 0) : 0 },
 uToRoot: { value: toRoot },
 uProjU: { value: projU },
 uProjV: { value: projV },
@@ -1344,6 +1361,7 @@ uniform float uPatinaK;
 uniform int uMaskChannel;
 uniform int uHasWeapon;
 uniform int uProjected;
+uniform int uClampPattern;
 uniform int uFadeMirror;
 varying vec2 vSkinUv;
 varying vec2 vProjUv;`)
@@ -1377,10 +1395,12 @@ float rc = cos(uPatternRotation), rs = sin(uPatternRotation);
 // Проекция (vProjUv) уже отсчитана от центра модели и масштабируется
 // вокруг него; развёртка — от угла, как раньше.
 vec2 puv = uProjected == 1 ? vProjUv : vSkinUv - 0.5;
+if (uFadeMirror >= 2) puv.y = -puv.y;
 puv = vec2(rc * puv.x - rs * puv.y, rs * puv.x + rc * puv.y);
 vec2 patternUv = uProjected == 1 ? puv * uPatternScale + 0.5 : (puv + 0.5) * uPatternScale;
 vec2 texUv = patternUv + uPatternOffset;
-if (uFadeMirror == 1) texUv.x = 1.0 - texUv.x;
+if (uFadeMirror == 1 || uFadeMirror == 3) texUv.x = 1.0 - texUv.x;
+if (uClampPattern == 1) texUv = clamp(texUv, 0.002, 0.998);
 vec4 patternTex = texture2D(uPattern, texUv);
 vec3 pattern = patternTex.rgb;
 // Закалка: альфа узора выбирает цвет палитры, альбедо его оттеняет.
