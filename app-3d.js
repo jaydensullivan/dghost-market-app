@@ -734,6 +734,13 @@ knife_widowmaker: 0.36, knife_skeleton: 0.36, knife_kukri: 0.36,
 // У нового формата (шаблоны и vcompmat) в рецепте почти всегда
 // g_bIgnoreWeaponSizeScale = true — масштаб ствола к ним не применяем
 // (иначе полосы MP7 Amberline растягивались на весь ствол).
+const GUN_FADE_SCALE = 1.3;
+const PATINA_TILED = /^aq_(oiled|forced|blued|brass|copper|obsidian|steel|damascus)/;
+const WEAPON_SPECIFIC_FINISH = /(?:^|_)(ak47|m4a4|m4a1s?|awp|glock(?:_?18)?|p250|p90|ump(?:45)?|tec9|ssg08|mac(?:_?10)|usp|deagle|deserteagle|desert_eagle|famas|galil(?:ar)?|sg553|sg556|aug|mp7|mp9|mp5|bizon|nova|xm1014|mag7|sawedoff|negev|m249|cz75a?|five_?seven|57|p2000|hkp2000|dualberettas|elites?|revolver|r8|scar20|scar|g3sg1|zeus)(?=$|_|lam|\d)/;
+function isGunFade(skin){
+return (!skin.format || skin.format === 'legacy') && skin.params.paint_style === 5 && /fade/i.test(String(skin.finish || skin.params.finish || ''));
+}
+
 function weaponPatternScale(skin, weaponName){
 const params = skin.params;
 if (skin.format === 'template' || skin.format === 'vcompmat') return 1;
@@ -743,6 +750,21 @@ if ([1, 2, 4, 5, 7].indexOf(params.paint_style) === -1) return 1;
 // пятном. Без него — как в игре (сверка со Steam по 60 Doppler/Gamma
 // Doppler/Marble Fade: 69.4 → 71.1; на остальных ножах без изменений).
 if (isKnifeName(weaponName)) return 1;
+// Fade на стволах (проекция сбоку): с UVScale ствола градиент сжимался
+// в одно розовое пятно (MP7 — 0.45). Масштаб 1.3 с обрезкой по краю
+// (uClampPattern) даёт, как в Steam, фиолетовый у приклада и розовый с
+// оранжевым к дулу.
+if (isGunFade(skin)) return GUN_FADE_SCALE;
+// Рисунок под конкретный ствол (в имени — ствол: hy_ak47lam, am_dragon_glock,
+// sp_splash_p250…) нарисован по его развёртке: UVScale брал только угол
+// текстуры — Laminate выходил коричневым, у Dragon Tattoo, Wingshot, Grand
+// Prix не было рисунка. Так же патина под ствол (Fowl Play, Bunsen
+// Burner, Teclu Burner…). Общие узоры патины (закалка, воронение, медь,
+// дамаск…) тайлятся — им UVScale нужен. Спрей под ствол (P250 Splash, Galil
+// CAUTION!) — тоже 1; аэрография (5) откалибрована отдельно.
+if (params.paint_style !== 5
+&& (WEAPON_SPECIFIC_FINISH.test(String(skin.finish || ''))
+|| (params.paint_style === 7 && !PATINA_TILED.test(String(skin.finish || ''))))) return 1;
 return WEAPON_UV_SCALE[weaponName] || 1;
 }
 
@@ -755,6 +777,10 @@ return skin.format === 'template' && [1, 2].indexOf(skin.params.paint_style) !==
 }
 
 const PATINA_PATTERN_GAMMA = 1.8;
+// Gunsmith старого формата (стиль 8: Empress, Fubar, Vendetta…): рисунок —
+// сам цвет ствола. Со степенью 1.8 группа выходила темнее CSFloat в
+// среднем на 6 (246 образцов), с 1.2 — светлее Steam на 13 (23 скина).
+const GUNSMITH_LEGACY_GAMMA = 1.55;
 // Усиление тонировки патины (стиль 7). Клинки ножей светлее стволов, и с
 // общим 3.4 Blue Steel и Stained выходили серебристыми вместо воронёных:
 // по 96 ножам с патиной сходство 65.4 → 69.0 при 1.2 (Steam-картинки).
@@ -965,10 +991,58 @@ return placement;
 // формата (Zeno, AWP Printstream, Amberline…). Показывать оба сразу
 // нельзя: новая раскраска ложилась на старый корпус с чужой развёрткой
 // и выходила почти белой. Если в модели один корпус — не трогаем.
+// Оторванная деталь в модели: у R8 Revolver в корпусе лежит патрон далеко
+// за стволом — в просмотрщике висел отдельным предметом. Если маленькая
+// часть треугольников (до 12%) отделена от остальных разрывом больше 12%
+// длины модели вдоль её длинной оси, её не рисуем.
+function dropStrayParts(geometry){
+if (!geometry || geometry.userData.dgStray) return;
+geometry.userData.dgStray = true;
+const pos = geometry.attributes && geometry.attributes.position;
+const index = geometry.index;
+if (!pos || !index || index.count < 300) return;
+geometry.computeBoundingBox();
+const bb = geometry.boundingBox;
+const ext = [bb.max.x - bb.min.x, bb.max.y - bb.min.y, bb.max.z - bb.min.z];
+const axis = ext.indexOf(Math.max(...ext));
+const len = ext[axis] || 1;
+const tris = index.count / 3;
+const lo = new Float32Array(tris), hi = new Float32Array(tris);
+const idx = index.array;
+for (let t = 0; t < tris; t++){
+const a = pos.getComponent(idx[3 * t], axis), b = pos.getComponent(idx[3 * t + 1], axis), c = pos.getComponent(idx[3 * t + 2], axis);
+lo[t] = Math.min(a, b, c); hi[t] = Math.max(a, b, c);
+}
+// Разрыв — место, которое не перекрывает ни один треугольник (длинные
+// треугольники ствола AWP «разрыва» не дают).
+const order = Array.from({ length: tris }, (_, i) => i).sort((p, q) => lo[p] - lo[q]);
+let reach = hi[order[0]], gap = 0, at = -1, cut = 0;
+for (let i = 1; i < tris; i++){
+const g = lo[order[i]] - reach;
+if (g > gap){ gap = g; at = i; cut = reach + g / 2; }
+reach = Math.max(reach, hi[order[i]]);
+}
+if (at < 0 || gap < 0.12 * len) return;
+const low = at, high = tris - at;
+if (Math.min(low, high) > 0.12 * tris) return;
+const keepLow = low > high;
+const kept = [];
+for (let t = 0; t < tris; t++){
+if ((hi[t] < cut) === keepLow) kept.push(idx[3 * t], idx[3 * t + 1], idx[3 * t + 2]);
+}
+geometry.setIndex(kept);
+geometry.computeBoundingBox();
+geometry.computeBoundingSphere();
+}
+
 function selectModelBody(object, useHd){
 let hasHd = false, hasLegacy = false;
 object.traverse(node => {
 const name = String(node.name || '').toLowerCase();
+if (node.isMesh && /body_(hd|legacy)/.test(name)) dropStrayParts(node.geometry);
+// Кобура (у Dual Berettas — eholster) — для вида от третьего лица: в
+// просмотрщике висела огромным белым блоком рядом с пистолетами.
+if (name.indexOf('holster') !== -1) node.visible = false;
 if (name.indexOf('body_hd') !== -1) hasHd = true;
 if (name.indexOf('body_legacy') !== -1) hasLegacy = true;
 });
@@ -1099,7 +1173,7 @@ uColorBrightness: { value: (skin.params.color_brightness || 1) * (legacyCaseHard
 // (по сверке с CSFloat светлее игры на 30–50 по яркости). Степень 1.8
 // у узора возвращает и яркость, и оттенок: Decimator — тёмно-синий,
 // Night Terror и Nebula Crusader — оранжевые, Magma — тёмная.
-uPatternGamma: { value: legacyCaseHardened(skin) ? CASE_HARDENED.gamma : legacyPatinaStyle(skin) && !legacyPatinaBlend(skin) ? PATINA_PATTERN_GAMMA : (gunsmithTemplate(skin) ? GUNSMITH_TEMPLATE_GAMMA : 1) },
+uPatternGamma: { value: legacyCaseHardened(skin) ? CASE_HARDENED.gamma : legacyPatinaStyle(skin) && !legacyPatinaBlend(skin) ? (skin.params.paint_style === 8 ? GUNSMITH_LEGACY_GAMMA : PATINA_PATTERN_GAMMA) : (gunsmithTemplate(skin) ? GUNSMITH_TEMPLATE_GAMMA : 1) },
 uPatinaBlend: { value: legacyPatinaBlend(skin) ? 1 : 0 },
 uPatinaK: { value: isKnifeName(weapon ? weapon.name || '' : '') ? PATINA_KNIFE_K : PATINA_K },
 uMaskChannel: { value: channel },
@@ -1131,13 +1205,16 @@ uniforms.uStkQ = { value: stk.Q };
 // оружие, а не по развёртке: развёртка разрезана на куски, и Fade по
 // ней ложился пятнами. Проекция — по двум самым длинным осям модели
 // (длина и высота), нормированным на её габариты.
-// У части ножей развёртка клинка идёт от острия к рукояти — у них маску
-// Fade зеркалим, чтобы, как в игре, у основания клинка был оранжевый, а
-// к острию — розовый и фиолетовый (сверено по CSFloat и Steam, 20 ножей).
-const KNIFE_FADE_MIRROR = new Set([
-'knife_css', 'knife_flip', 'knife_tactical', 'knife_kukri', 'knife_m9_bayonet',
-'knife_outdoor', 'knife_skeleton', 'knife_canis', 'knife_widowmaker', 'knife_ursus',
-]);
+// Развёртки клинков у ножей разложены по-разному, а узор Fade ещё и
+// повёрнут на 55–65°: чтобы, как в игре, у основания клинка был
+// оранжевый, а к острию — розовый и фиолетовый, у части ножей маску
+// зеркалим (1), отражаем по вертикали развёртки (2) или и то и другое (3).
+// Подобрано по всем 20 ножам, 8 из них — по скриншотам CSFloat.
+const KNIFE_FADE_MODE = {
+knife_flip: 1, knife_kukri: 1, knife_tactical: 1, knife_ursus: 1, knife_widowmaker: 1, knife_falchion: 1,
+knife_cord: 2, knife_css: 2, knife_m9_bayonet: 2, knife_outdoor: 2, knife_skeleton: 2, knife_stiletto: 2,
+knife_canis: 3,
+};
 // Fade (стиль 5) на ножах — по развёртке: она у клинков разложена так,
 // что градиент целиком ложится на клинок, а проекция по всей длине
 // растягивала его на рукоять и кольцо (на клинке — одна оранжевая часть).
@@ -1198,7 +1275,8 @@ node.geometry.setAttribute('uv2', node.geometry.attributes.uv);
 const toRoot = new THREE.Matrix4().multiplyMatrices(rootInverse, node.matrixWorld);
 const meshUniforms = {
 uProjected: { value: projected ? 1 : 0 },
-uFadeMirror: { value: knifeFade && KNIFE_FADE_MIRROR.has(weapon.name) ? 1 : 0 },
+uClampPattern: { value: projected && isGunFade(skin) ? 1 : 0 },
+uFadeMirror: { value: knifeFade ? (KNIFE_FADE_MODE[weapon.name] || 0) : 0 },
 uToRoot: { value: toRoot },
 uProjU: { value: projU },
 uProjV: { value: projV },
@@ -1344,6 +1422,7 @@ uniform float uPatinaK;
 uniform int uMaskChannel;
 uniform int uHasWeapon;
 uniform int uProjected;
+uniform int uClampPattern;
 uniform int uFadeMirror;
 varying vec2 vSkinUv;
 varying vec2 vProjUv;`)
@@ -1377,10 +1456,12 @@ float rc = cos(uPatternRotation), rs = sin(uPatternRotation);
 // Проекция (vProjUv) уже отсчитана от центра модели и масштабируется
 // вокруг него; развёртка — от угла, как раньше.
 vec2 puv = uProjected == 1 ? vProjUv : vSkinUv - 0.5;
+if (uFadeMirror >= 2) puv.y = -puv.y;
 puv = vec2(rc * puv.x - rs * puv.y, rs * puv.x + rc * puv.y);
 vec2 patternUv = uProjected == 1 ? puv * uPatternScale + 0.5 : (puv + 0.5) * uPatternScale;
 vec2 texUv = patternUv + uPatternOffset;
-if (uFadeMirror == 1) texUv.x = 1.0 - texUv.x;
+if (uFadeMirror == 1 || uFadeMirror == 3) texUv.x = 1.0 - texUv.x;
+if (uClampPattern == 1) texUv = clamp(texUv, 0.002, 0.998);
 vec4 patternTex = texture2D(uPattern, texUv);
 vec3 pattern = patternTex.rgb;
 // Закалка: альфа узора выбирает цвет палитры, альбедо его оттеняет.
@@ -1775,7 +1856,7 @@ return { w: c.width, h: c.height, d: ctx.getImageData(0, 0, c.width, c.height).d
 
 function composeGloveColor(p, imgs){
 const N = GLOVE_TEX;
-const opt = Object.assign({ tintLinear: false, ao: 0.3, detail: 0.7, gain: 1, palMode: 2, detailAbs: 0, layerMap: 1, metalRough: 0.45, metalDetail: 2.2, metalGain: 1.5, tapeAo: 0.8, tapeGrime: 0.75, tapeGrimeFrom: 0.6, tapeGrimeColor: [0.95, 0.83, 0.66], tapeGain: 2.1, tapeTint: [0.9, 1.0, 1.03], tapeRough: 0.3 }, window.DGHOST_GLOVE || {});
+const opt = Object.assign({ tintLinear: false, ao: 0.3, detail: 0.7, gain: 1, palMode: 2, detailAbs: 0, layerMap: 1, metalRough: 0.45, metalDetail: 2.2, metalGain: 1.5, tapeAo: 0.8, tapeGrime: 0.75, tapeGrimeFrom: 0.6, tapeGrimeColor: [0.95, 0.83, 0.66], tapeGain: 2.1, tapeTint: [0.9, 1.0, 1.03], tapeRough: 0.3, patRough: 0.5 }, window.DGHOST_GLOVE || {});
 const lin = (x) => opt.tintLinear ? x :  x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
 const srgb = (x) => { x = Math.max(0, Math.min(1, x)); return 255 * (x <= 0.0031308 ? x * 12.92 : 1.055 * Math.pow(x, 1 / 2.4) - 0.055); };
 const tint = [null];
@@ -1815,6 +1896,9 @@ const pOff = vmatVec(p, 'g_fPatternTexCoordOffset', [0, 0]);
 const pal = vmatVec(p, 'g_vPatternPaletteIndices', [8, 8, 8, 8]).map(n => Math.round(n));
 const replace = Math.round(Number(p.g_nPatternReplaceIndex) || 0);
 const cosR = Math.cos(pRot), sinR = Math.sin(pRot);
+const patColorMode = Math.round(Number(p.g_nPatternMode) || 0) === 2;
+const patMetal = Math.max(0, Math.min(1, Number(p.g_fPatternMetalness) || 0));
+const patRough = Number(p.g_fPatternRoughnessBrightness) || 0.8;
 const sample = (img, u, v) => {
 u -= Math.floor(u); v -= Math.floor(v);
 const x = Math.min(img.w - 1, (u * img.w) | 0), y = Math.min(img.h - 1, (v * img.h) | 0);
@@ -1834,11 +1918,17 @@ const layer = opt.layerMap === 1
 mr[k + 1] = 210; mr[k + 3] = 255;
 const ci = Math.max(1, Math.min(8, Math.round((m[k + 3] - 18) / 29.7) + 1));
 let r = tint[ci][0], g = tint[ci][1], b = tint[ci][2];
+let patPixel = false;
 if (pat && ci === replace){
 const pu = ((u - 0.5) * cosR - (v - 0.5) * sinR) * pScale + pOff[0];
 const pv = ((u - 0.5) * sinR + (v - 0.5) * cosR) * pScale + (pOff[1] || 0);
 const q = sample(pat, pu, pv);
-if (opt.palMode === 2 || opt.palMode === 3){
+if (patColorMode){
+// g_nPatternMode 2 (Marble Fade, Fade, Hydra Case Hardened): рисунок —
+// готовая цветная картинка, а не маска палитры; зона — металл.
+r = lin(pat.d[q] / 255); g = lin(pat.d[q + 1] / 255); b = lin(pat.d[q + 2] / 255);
+patPixel = true;
+} else if (opt.palMode === 2 || opt.palMode === 3){
 // Слоты палитры по каналам A, R, G, B; 2 — номера с единицы, 3 — с нуля.
 const shift = opt.palMode === 3 ? 1 : 0;
 [3, 0, 1, 2].forEach((c, slotIdx) => {
@@ -1881,13 +1971,19 @@ const semi = det.metal > 0 && det.metal < 1;
 const dStr = semi ? opt.detail * opt.metalDetail : opt.detail;
 const f = opt.detailAbs ? det.d.d[q] / 255 * opt.detailAbs : 1 + (det.d.d[q] / det.mean - 1) * dStr;
 r *= f; g *= f; b *= f;
-if (semi){ r *= opt.metalGain; g *= opt.metalGain; b *= opt.metalGain; }
+if (semi && !patPixel){ r *= opt.metalGain; g *= opt.metalGain; b *= opt.metalGain; }
 // Шероховатость — канал G детали слоя, металл — слои metal*.
 const rk = (y * N + x) * 4;
 const rough = det.d.d[q + 1] * (det.roughGain || 1) * (det.tape ? opt.tapeRough : semi ? opt.metalRough : 1);
 mr[rk + 1] = opt.roughInvert ? 255 - rough : rough;
 mr[rk + 2] = 255 * det.metal;
 mr[rk + 3] = 255;
+}
+if (patPixel){
+// Металл рисунка (g_fPatternMetalness) с гладкостью g_fPatternRoughnessBrightness.
+mr[k + 1] = 255 * patRough * opt.patRough;
+mr[k + 2] = 255 * patMetal;
+mr[k + 3] = 255;
 }
 const tapeDet = det && det.tape ? det : null;
 if (surface){
@@ -3949,10 +4045,10 @@ const hand = root.getObjectByName('hand_R');
 const tex = index.textures || {};
 const loadTex = (file) => file ? loadSkinTexture(THREE, base + file, true) : Promise.resolve(null);
 const [skinTex, gloveTex] = await Promise.all([loadTex(tex.skin), loadTex(tex.glove)]);
-if (rig){
+{
 // Свет просмотрщика стоит перед предметом (+Z) — в виде от первого лица
-// это за руками, и перчатки выходили тёмными силуэтами. Светим сверху
-// из-за камеры, как солнце на карте.
+// это за руками: руки, перчатки и нож выходили тёмными силуэтами.
+// Светим сверху из-за камеры, как солнце на карте.
 const L = lightPreset();
 const lamp = new THREE.DirectionalLight(0xffffff, L.key * (Number((window.DGHOST_GLOVE || {}).handsLamp) || 1));
 lamp.position.set(0.3, 1, -0.5);
@@ -3961,6 +4057,8 @@ const fill = new THREE.DirectionalLight(0xffffff, L.front * 0.6);
 fill.position.set(-0.4, 0, -0.6);
 fill.target.position.set(0, -0.15, 0.5);
 root.add(lamp, lamp.target, fill, fill.target);
+}
+if (rig){
 // Рука — текстура кожи, перчатки — раскраска лота (applyGloveSkin берёт
 // материалы с «glove» в имени).
 armMeshes.forEach(mesh => {
@@ -3979,6 +4077,34 @@ if (t) mesh.material = new THREE.MeshStandardMaterial({ map: t, roughness: 0.75,
 });
 }
 
+// Кости скручивания предплечья (arm_lower_*_TWIST, _TWIST1) в клипах CS2
+// не анимированы — в игре их поворачивает движок вслед за кистью. Без
+// этого кисть крутилась, а кожа и манжета перчатки у запястья — нет:
+// запястье перекручивалось «фантиком», пальцы и большой палец выглядели
+// вывернутыми. Каждый кадр раскладываем поворот кисти вокруг оси
+// предплечья (X кости) на эти кости: ближней к запястью — 2/3, другой — 1/3.
+const twists = ['L', 'R'].map(side => {
+const hand = root.getObjectByName('hand_' + side);
+const near = root.getObjectByName('arm_lower_' + side + '_TWIST1');
+const far = root.getObjectByName('arm_lower_' + side + '_TWIST');
+if (!hand || (!near && !far)) return null;
+return { hand, rest: hand.quaternion.clone().invert(),
+bones: [[near, 2 / 3], [far, 1 / 3]].filter(b => b[0]).map(([bone, k]) => ({ bone, k, rest: bone.quaternion.clone() })) };
+}).filter(Boolean);
+const twistDelta = new THREE.Quaternion(), twistPart = new THREE.Quaternion(), twistOne = new THREE.Quaternion();
+const applyTwists = () => {
+twists.forEach(tw => {
+// Поворот кисти от её исходной позы — в системе предплечья; его доля
+// вокруг оси X (swing-twist).
+twistDelta.copy(tw.hand.quaternion).multiply(tw.rest);
+twistPart.set(twistDelta.x, 0, 0, twistDelta.w);
+if (twistPart.lengthSq() < 1e-8) return;
+twistPart.normalize();
+tw.bones.forEach(b => {
+b.bone.quaternion.copy(twistOne.identity().slerp(twistPart, b.k)).multiply(b.rest);
+});
+});
+};
 const mixer = new THREE.AnimationMixer(root);
 const action = mixer.clipAction(clip.animations[0]);
 action.play();
@@ -3989,6 +4115,7 @@ const tmpA = new THREE.Matrix4(), tmpB = new THREE.Matrix4();
 const ih = { root, knifeGroup, mixer, action, duration: clip.animations[0].duration, clips: index.clips, gripMode: 'wpnfix' };
 ih.setTime = (t) => {
 mixer.setTime(t);
+applyTwists();
 if (!knifeSkel) return;
 knifeSkel.position.set(0, 0, 0); knifeSkel.quaternion.identity(); knifeSkel.scale.set(1, 1, 1);
 root.updateMatrixWorld(true);
