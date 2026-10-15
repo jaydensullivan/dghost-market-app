@@ -3890,17 +3890,17 @@ function isRigGloveMesh(mesh){
 return !!mesh.userData.rigGlove;
 }
 
-// Перчатки «в руках» — как в CS2: у перчаток своего осмотра нет, их
-// смотрят осмотром ножа. Бабочка: в её осмотрах обе кисти в кадре и
-// вариантов три.
-const GLOVE_HANDS_PACK = 'knife_butterfly';
+// Перчатки «в руках» — как в CS2: свой осмотр перчаток («пьедестал»:
+// обе руки подняты к камере, без оружия) — models/anim/gloves/.
+const GLOVE_HANDS_PACK = 'gloves';
 
 async function loadInHandsScene(THREE, animDir, clipId, opts){
 if (!IN_HANDS_AXIS_FIX) IN_HANDS_AXIS_FIX = new THREE.Quaternion(-0.5, -0.5, -0.5, 0.5).invert();
 await loadGltfLoader();
 const base = modelsUrl(animDir).replace(/\/+$/, '') + '/';
 const index = await fetch(base + 'index.json').then(r => r.ok ? r.json() : null);
-if (!index || !index.arms || !index.knife || !index.clips || !index.clips.length) throw new Error('нет комплекта анимаций');
+// У комплекта перчаток (models/anim/gloves/) ножа нет — только руки.
+if (!index || !index.arms || !(index.knife || (opts && opts.gloveRig)) || !index.clips || !index.clips.length) throw new Error('нет комплекта анимаций');
 const clipInfo = index.clips.find(c => c.id === clipId) || index.clips.find(c => /^lookat/.test(c.id)) || index.clips[0];
 const glb = (file) => fetch(base + file).then(r => {
 if (!r.ok) throw new Error(file + ' ' + r.status);
@@ -3908,7 +3908,7 @@ return r.arrayBuffer();
 }).then(parseGlb);
 const gloveRig = opts && opts.gloveRig;
 const [arms, knife, clip, rig] = await Promise.all([
-glb(index.arms), glb(index.knife), glb(clipInfo.file),
+glb(index.arms), index.knife ? glb(index.knife) : Promise.resolve(null), glb(clipInfo.file),
 gloveRig ? fetch(modelsUrl(gloveRig)).then(r => {
 if (!r.ok) throw new Error(gloveRig + ' ' + r.status);
 return r.arrayBuffer();
@@ -3929,13 +3929,13 @@ armMeshes.forEach(m => root.add(m));
 const knifeGroup = new THREE.Group();
 // Кобура (у Dual Berettas — eholster) — для вида от третьего лица; в руках
 // она висела огромной фигурой у камеры.
-rebindToSkeleton(THREE, knife.scene, knifeSkel || root).forEach(m => { if (!/holster/i.test(m.name)) knifeGroup.add(m); });
+if (knife) rebindToSkeleton(THREE, knife.scene, knifeSkel || root).forEach(m => { if (!/holster/i.test(m.name)) knifeGroup.add(m); });
 root.add(knifeGroup);
 
 // Точка хвата ножа (ag1_hand_r) — её нет в клипе, достраиваем под
 // weapon_offset; каждый кадр ставим скелет ножа так, чтобы она совпала
 // с кистью правой руки.
-const grip = knife.scene.getObjectByName('ag1_hand_r');
+const grip = knife ? knife.scene.getObjectByName('ag1_hand_r') : null;
 const gripBone = grip ? (() => {
 const b = new THREE.Object3D();
 b.position.copy(grip.position); b.quaternion.copy(grip.quaternion);
