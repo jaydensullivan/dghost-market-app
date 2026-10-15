@@ -745,6 +745,13 @@ const span = r => Array.isArray(r) && r.length === 2 ? Math.abs(Number(r[1]) - N
 return !!roll && Math.max(span(roll.offset_x), span(roll.offset_y)) >= 1;
 }
 
+// Фиолетовая заглушка второго цвета в шаблонах (0.28, 0.24, 0.55) — рецепт
+// её не переопределил, в игре этот цвет не виден.
+function templatePlaceholderColor(params){
+const c = Array.isArray(params.colors) ? params.colors[1] : null;
+return !!c && Math.abs(c[0] - 0.28) < 0.01 && Math.abs(c[1] - 0.24) < 0.01 && Math.abs(c[2] - 0.55) < 0.01;
+}
+
 function isGunFade(skin){
 return (!skin.format || skin.format === 'legacy') && skin.params.paint_style === 5 && /fade/i.test(String(skin.finish || skin.params.finish || ''));
 }
@@ -786,8 +793,8 @@ return skin.format === 'template' && [1, 2].indexOf(skin.params.paint_style) !==
 
 const PATINA_PATTERN_GAMMA = 1.8;
 // Gunsmith старого формата (стиль 8: Empress, Fubar, Vendetta…): рисунок —
-// сам цвет ствола. Со степенью 1.8 группа выходила темнее CSFloat в
-// среднем на 6 (246 образцов), с 1.2 — светлее Steam на 13 (23 скина).
+// сам цвет ствола. Сверка со Steam по 163 скинам: 1.2 → 73.5, 1.55 →
+// 77.3, 1.8 → 75.8, 2.0 → 74.2.
 const GUNSMITH_LEGACY_GAMMA = 1.55;
 // Усиление тонировки патины (стиль 7). Клинки ножей светлее стволов, и с
 // общим 3.4 Blue Steel и Stained выходили серебристыми вместо воронёных:
@@ -1152,7 +1159,11 @@ uPaintMask: { value: weapon ? weapon.masks : null },
 // Свои маски зон скина — только для раскладки цветов и зоны оверлея;
 // где краска лежит вообще (клинок ножа, металл), решает маска ствола.
 uZones: { value: skin.zones || (weapon && weapon.masks) || pattern },
-uHasZones: { value: skin.zones || (weapon && weapon.masks) ? 1 : 0 },
+// Шаблонный скин без узора и без своих зон (сборка их не нашла — SSG 08
+// и Galil Grey Smoke, UMP Green Swirl): по маске ствола весь ствол
+// красился вторым цветом рецепта — фиолетовой заглушкой. Такому — один
+// основной цвет.
+uHasZones: { value: skin.zones || (weapon && weapon.masks && !(skin.format === 'template' && !skin.pattern && templatePlaceholderColor(skin.params))) ? 1 : 0 },
 uAo: { value: weapon ? weapon.ao : null },
 uWearAmount: { value: Math.max(0, Math.min(1, wear || 0)) },
 uPatternScale: { value: (skin.params.pattern_scale || 1) * weaponPatternScale(skin, weaponName) * templateScaleTest(skin) },
