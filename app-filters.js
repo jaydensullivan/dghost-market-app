@@ -1755,6 +1755,8 @@ channelBtn.classList.toggle('pro-locked', !pro);
 channelBtn.style.display = has3d && ownLot ? '' : 'none';
 // Свои каналы продавца (PRO) — по кнопке на канал (app-pro.js).
 if (typeof renderShareOwnChannels === 'function') renderShareOwnChannels(has3d && ownLot, pro);
+// «Гарант»: аукцион / розыгрыш своего лота в своём канале (app-pro.js).
+if (typeof renderShareEvents === 'function') renderShareEvents(ownLot && (shareSkin.status || 'available') === 'available');
 document.getElementById('shareProBtn').style.display = 'none';
 setShareBusy(false);
 shareOverlay.classList.add('show');
