@@ -991,10 +991,55 @@ return placement;
 // формата (Zeno, AWP Printstream, Amberline…). Показывать оба сразу
 // нельзя: новая раскраска ложилась на старый корпус с чужой развёрткой
 // и выходила почти белой. Если в модели один корпус — не трогаем.
+// Оторванная деталь в модели: у R8 Revolver в корпусе лежит патрон далеко
+// за стволом — в просмотрщике висел отдельным предметом. Если маленькая
+// часть треугольников (до 12%) отделена от остальных разрывом больше 12%
+// длины модели вдоль её длинной оси, её не рисуем.
+function dropStrayParts(geometry){
+if (!geometry || geometry.userData.dgStray) return;
+geometry.userData.dgStray = true;
+const pos = geometry.attributes && geometry.attributes.position;
+const index = geometry.index;
+if (!pos || !index || index.count < 300) return;
+geometry.computeBoundingBox();
+const bb = geometry.boundingBox;
+const ext = [bb.max.x - bb.min.x, bb.max.y - bb.min.y, bb.max.z - bb.min.z];
+const axis = ext.indexOf(Math.max(...ext));
+const len = ext[axis] || 1;
+const tris = index.count / 3;
+const lo = new Float32Array(tris), hi = new Float32Array(tris);
+const idx = index.array;
+for (let t = 0; t < tris; t++){
+const a = pos.getComponent(idx[3 * t], axis), b = pos.getComponent(idx[3 * t + 1], axis), c = pos.getComponent(idx[3 * t + 2], axis);
+lo[t] = Math.min(a, b, c); hi[t] = Math.max(a, b, c);
+}
+// Разрыв — место, которое не перекрывает ни один треугольник (длинные
+// треугольники ствола AWP «разрыва» не дают).
+const order = Array.from({ length: tris }, (_, i) => i).sort((p, q) => lo[p] - lo[q]);
+let reach = hi[order[0]], gap = 0, at = -1, cut = 0;
+for (let i = 1; i < tris; i++){
+const g = lo[order[i]] - reach;
+if (g > gap){ gap = g; at = i; cut = reach + g / 2; }
+reach = Math.max(reach, hi[order[i]]);
+}
+if (at < 0 || gap < 0.12 * len) return;
+const low = at, high = tris - at;
+if (Math.min(low, high) > 0.12 * tris) return;
+const keepLow = low > high;
+const kept = [];
+for (let t = 0; t < tris; t++){
+if ((hi[t] < cut) === keepLow) kept.push(idx[3 * t], idx[3 * t + 1], idx[3 * t + 2]);
+}
+geometry.setIndex(kept);
+geometry.computeBoundingBox();
+geometry.computeBoundingSphere();
+}
+
 function selectModelBody(object, useHd){
 let hasHd = false, hasLegacy = false;
 object.traverse(node => {
 const name = String(node.name || '').toLowerCase();
+if (node.isMesh && /body_(hd|legacy)/.test(name)) dropStrayParts(node.geometry);
 // Кобура (у Dual Berettas — eholster) — для вида от третьего лица: в
 // просмотрщике висела огромным белым блоком рядом с пистолетами.
 if (name.indexOf('holster') !== -1) node.visible = false;
