@@ -777,10 +777,10 @@ return skin.format === 'template' && [1, 2].indexOf(skin.params.paint_style) !==
 }
 
 const PATINA_PATTERN_GAMMA = 1.8;
-// Gunsmith старого формата (стиль 8: Iron Clad, Winterized, Fubar,
-// Vendetta, Pipe Down…): рисунок — сам цвет ствола; со степенью 1.8 он
-// уходил почти в чёрный (по CSFloat темнее на 15–27, по Steam — тоже).
-const GUNSMITH_LEGACY_GAMMA = 1.2;
+// Gunsmith старого формата (стиль 8: Empress, Fubar, Vendetta…): рисунок —
+// сам цвет ствола. Со степенью 1.8 группа выходила темнее CSFloat в
+// среднем на 6 (246 образцов), с 1.2 — светлее Steam на 13 (23 скина).
+const GUNSMITH_LEGACY_GAMMA = 1.55;
 // Усиление тонировки патины (стиль 7). Клинки ножей светлее стволов, и с
 // общим 3.4 Blue Steel и Stained выходили серебристыми вместо воронёных:
 // по 96 ножам с патиной сходство 65.4 → 69.0 при 1.2 (Steam-картинки).
