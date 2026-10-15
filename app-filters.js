@@ -1458,8 +1458,9 @@ document.getElementById('buyBalanceAvailable').textContent = formatCoins(myAvail
 buyConfirmStars.style.display = (!isOwn && directStarsPurchaseEnabled) ? '' : 'none';
 buyConfirmCrypto.style.display = (!isOwn && directCryptoPurchaseEnabled) ? '' : 'none';
 buyConfirmP2P.style.display = (!isOwn && directP2pPurchaseEnabled) ? '' : 'none';
+buyConfirmCard.style.display = (!isOwn && hostedPayMethods.length) ? '' : 'none';
 document.getElementById('buyNoPaymentHint').style.display =
-(!isOwn && !canPayFromBalance && !directStarsPurchaseEnabled && !directCryptoPurchaseEnabled && !directP2pPurchaseEnabled) ? '' : 'none';
+(!isOwn && !canPayFromBalance && !directStarsPurchaseEnabled && !directCryptoPurchaseEnabled && !directP2pPurchaseEnabled && !hostedPayMethods.length) ? '' : 'none';
 buyEditPriceBtn.style.display = isOwn ? '' : 'none';
 document.getElementById('buyDiscountBtn').style.display = isOwn ? '' : 'none';
 buySavePriceBtn.style.display = 'none';
@@ -2431,6 +2432,44 @@ const p2pSkinDetailsBox = document.getElementById('p2pSkinDetailsBox');
 const p2pSkinCloseBtn = document.getElementById('p2pSkinCloseBtn');
 const p2pSkinReceiptInput = document.getElementById('p2pSkinReceiptInput');
 const p2pSkinReceiptPreview = document.getElementById('p2pSkinReceiptPreview');
+
+// Оплата картой на странице банка: бот резервирует лот и создаёт заказ,
+// мини-апп открывает страницу оплаты. Итог банк присылает боту — лот
+// появится в «Сделках», а если он уже недоступен, деньги лягут на баланс.
+const buyConfirmCard = document.getElementById('buyConfirmCard');
+buyConfirmCard.addEventListener('click', () => {
+if (!pendingBuySkin || !tg || !tg.initData || !hostedPayMethods.length) return;
+const dict = I18N[currentLang] || I18N.ru;
+const provider = hostedPayMethods[0].code;
+const skinId = pendingBuySkin.id;
+buyConfirmCard.disabled = true;
+buyStatus.textContent = dict.status_reserving;
+fetch(API_BASE + '/api/pay/' + encodeURIComponent(provider) + '/skin/' + skinId, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+})
+.then(async r => {
+const data = await r.json().catch(() => ({}));
+if (!r.ok){
+throw new Error(purchaseTrustLimitMessage(data)
+|| (data.error === 'feature_disabled' || data.error === 'provider_unavailable' ? dict.buy_card_unavailable : errorMessage(data.error)));
+}
+return data;
+})
+.then(data => {
+if (!data.payment_url) throw new Error(dict.buy_card_unavailable);
+buyStatus.textContent = dict.buy_card_opened;
+if (typeof tg.openLink === 'function') tg.openLink(data.payment_url);
+else window.open(data.payment_url, '_blank');
+})
+.catch(err => {
+buyStatus.textContent = friendlyErrorMessage(err);
+})
+.finally(() => {
+buyConfirmCard.disabled = false;
+});
+});
 
 buyConfirmP2P.addEventListener('click', () => {
 if (!pendingBuySkin || !tg || !tg.initData) return;
