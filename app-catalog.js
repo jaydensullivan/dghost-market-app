@@ -300,6 +300,15 @@ applyTheme(currentTheme);
 applyCardView(currentCardView);
 applyCardLayout(currentCardLayout);
 
+// Лоты в 1,5+ раза дороже рынка в обычной сортировке уходят в конец:
+// покупатель сначала видит то, что реально купить. Сортировка по цене
+// не меняется. Без рыночной цены лот остаётся на своём месте.
+const OVERPRICED_SINK_RATIO = 1.5;
+function overpricedRank(skin){
+const market = Number(skin.market_price_uzs || skin.market_price) || 0;
+return market > 0 && skin.price > market * OVERPRICED_SINK_RATIO ? 1 : 0;
+}
+
 function skinCardHtml(skin){
 const photo = skin.photo_url
 ? `<img class="skin-photo" src="${escapeHtml(skin.photo_url)}" alt="" onerror="showPlaceholderIcon(this)">`
@@ -504,9 +513,9 @@ filtered.sort((a, b) => a.price - b.price);
 filtered.sort((a, b) => b.price - a.price);
 } else if (sort === 'auto' && currentShopTab === 'popular'){
 // Популярное — по просмотрам, при равенстве новые выше.
-filtered.sort((a, b) => (b.view_count || 0) - (a.view_count || 0) || b.id - a.id);
+filtered.sort((a, b) => overpricedRank(a) - overpricedRank(b) || (b.view_count || 0) - (a.view_count || 0) || b.id - a.id);
 } else {
-filtered.sort((a, b) => b.id - a.id);
+filtered.sort((a, b) => (sort === 'auto' ? overpricedRank(a) - overpricedRank(b) : 0) || b.id - a.id);
 }
 
 if (!filtered.length){
