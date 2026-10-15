@@ -737,6 +737,14 @@ knife_widowmaker: 0.36, knife_skeleton: 0.36, knife_kukri: 0.36,
 const GUN_FADE_SCALE = 1.3;
 const PATINA_TILED = /^aq_(oiled|forced|blued|brass|copper|obsidian|steel|damascus)/;
 const WEAPON_SPECIFIC_FINISH = /(?:^|_)(ak47|m4a4|m4a1s?|awp|glock(?:_?18)?|p250|p90|ump(?:45)?|tec9|ssg08|mac(?:_?10)|usp|deagle|deserteagle|desert_eagle|famas|galil(?:ar)?|sg553|sg556|aug|mp7|mp9|mp5|bizon|nova|xm1014|mag7|sawedoff|negev|m249|cz75a?|five_?seven|57|p2000|hkp2000|dualberettas|elites?|revolver|r8|scar20|scar|g3sg1|zeus)(?=$|_|lam|\d)/;
+// Узор, который игра сдвигает по паттерну на целую текстуру и больше
+// (P250 Bengal Tiger: 0…3), — тайловый, хоть в имени и есть ствол.
+function wideSeedRoll(params){
+const roll = params.seed_roll;
+const span = r => Array.isArray(r) && r.length === 2 ? Math.abs(Number(r[1]) - Number(r[0])) : 0;
+return !!roll && Math.max(span(roll.offset_x), span(roll.offset_y)) >= 1;
+}
+
 function isGunFade(skin){
 return (!skin.format || skin.format === 'legacy') && skin.params.paint_style === 5 && /fade/i.test(String(skin.finish || skin.params.finish || ''));
 }
@@ -763,7 +771,7 @@ if (isGunFade(skin)) return GUN_FADE_SCALE;
 // дамаск…) тайлятся — им UVScale нужен. Спрей под ствол (P250 Splash, Galil
 // CAUTION!) — тоже 1; аэрография (5) откалибрована отдельно.
 if (params.paint_style !== 5
-&& (WEAPON_SPECIFIC_FINISH.test(String(skin.finish || ''))
+&& ((WEAPON_SPECIFIC_FINISH.test(String(skin.finish || '')) && !wideSeedRoll(params))
 || (params.paint_style === 7 && !PATINA_TILED.test(String(skin.finish || ''))))) return 1;
 return WEAPON_UV_SCALE[weaponName] || 1;
 }
@@ -974,11 +982,19 @@ function seedPlacement(params, seed){
 const placement = { offset: [0, 0], rotation: Number(params.pattern_rotation) || 0, rolled: false };
 const roll = params.seed_roll;
 seed = parsePaintSeed(seed);
-if (!roll || seed === null) return placement;
+if (!roll) return placement;
 const range = r => Array.isArray(r) && r.length === 2 ? r.map(Number) : null;
 const ox = range(roll.offset_x) || [0, 0];
 const oy = range(roll.offset_y) || [0, 0];
 const rot = range(roll.rotation) || [placement.rotation, placement.rotation];
+// Паттерн неизвестен — середина диапазонов игры, а не ноль: у части
+// скинов рисунок рассчитан на сдвиг (Glock Dragon Tattoo — дракон на
+// затворе только при сдвиге −0.31 / −1.6), без него он уходил мимо.
+if (seed === null){
+placement.offset = [(ox[0] + ox[1]) / 2, (oy[0] + oy[1]) / 2];
+placement.rotation = (rot[0] + rot[1]) / 2;
+return placement;
+}
 const rng = new ValveRandom(seed);
 placement.offset = [rng.float(ox[0], ox[1]), rng.float(oy[0], oy[1])];
 placement.rotation = rng.float(rot[0], rot[1]);
