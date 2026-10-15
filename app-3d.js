@@ -1775,7 +1775,7 @@ return { w: c.width, h: c.height, d: ctx.getImageData(0, 0, c.width, c.height).d
 
 function composeGloveColor(p, imgs){
 const N = GLOVE_TEX;
-const opt = Object.assign({ tintLinear: false, ao: 0.3, detail: 0.7, gain: 1, palMode: 2, detailAbs: 0, layerMap: 1 }, window.DGHOST_GLOVE || {});
+const opt = Object.assign({ tintLinear: false, ao: 0.3, detail: 0.7, gain: 1, palMode: 2, detailAbs: 0, layerMap: 1, metalRough: 0.45, metalDetail: 2.2, metalGain: 1.5 }, window.DGHOST_GLOVE || {});
 const lin = (x) => opt.tintLinear ? x :  x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
 const srgb = (x) => { x = Math.max(0, Math.min(1, x)); return 255 * (x <= 0.0031308 ? x * 12.92 : 1.055 * Math.pow(x, 1 / 2.4) - 0.055); };
 const tint = [null];
@@ -1789,8 +1789,12 @@ if (!img){ details.push(null); continue; }
 const d = gloveImageData(img);
 let sum = 0;
 for (let k = 0; k < d.d.length; k += 4) sum += d.d[k];
+// Металличность слоя — доля (у скотча Duct Tape 0.5: серебристый блеск),
+// слои metal* — полностью металл.
+const metalness = /metal/i.test(p['layer_name_' + i] || '') ? 1
+: Math.max(0, Math.min(1, Number(p['g_fDetailMetalness' + i]) || 0));
 details.push({ d, mean: Math.max(1, sum / (d.d.length / 4)), scale: Number(p['g_fDetailScale' + i]) || 1,
-metal: /metal/i.test(p['layer_name_' + i] || '') || Number(p['g_fDetailMetalness' + i]) > 0.5,
+metal: opt.metalFrac === false ? (metalness > 0.5 ? 1 : 0) : metalness,
 roughGain: Number(p['g_fDetailRoughnessBrightness' + i]) || 1 });
 }
 const usePattern = p.F_PATTERN === '1' && imgs.pattern;
@@ -1863,12 +1867,20 @@ r += (t[0] - r) * w; g += (t[1] - g) * w; b += (t[2] - b) * w;
 const det = details[layer];
 if (det){
 const q = sample(det.d, u * det.scale, v * det.scale);
-const f = opt.detailAbs ? det.d.d[q] / 255 * opt.detailAbs : 1 + (det.d.d[q] / det.mean - 1) * opt.detail;
+// Полуметаллические слои (скотч Duct Tape, металличность 0.5) в игре —
+// светлое серебро с заметной фактурой и блеском: сильнее деталь, светлее
+// цвет, ниже шероховатость. Подобрано по иконке Steam. Полностью
+// металлические и тканевые слои — как раньше.
+const semi = det.metal > 0 && det.metal < 1;
+const dStr = semi ? opt.detail * opt.metalDetail : opt.detail;
+const f = opt.detailAbs ? det.d.d[q] / 255 * opt.detailAbs : 1 + (det.d.d[q] / det.mean - 1) * dStr;
 r *= f; g *= f; b *= f;
+if (semi){ r *= opt.metalGain; g *= opt.metalGain; b *= opt.metalGain; }
 // Шероховатость — канал G детали слоя, металл — слои metal*.
 const rk = (y * N + x) * 4;
-mr[rk + 1] = det.d.d[q + 1] * (det.roughGain || 1);
-mr[rk + 2] = det.metal ? 255 : 0;
+const rough = det.d.d[q + 1] * (det.roughGain || 1) * (semi ? opt.metalRough : 1);
+mr[rk + 1] = opt.roughInvert ? 255 - rough : rough;
+mr[rk + 2] = 255 * det.metal;
 mr[rk + 3] = 255;
 }
 if (surface){
@@ -2177,6 +2189,20 @@ return Promise.all(names.map(n => loadGloveImage(base + n + '.webp').catch(() =>
 .then(list => {
 const imgs = {};
 names.forEach((n, i) => { imgs[n] = list[i]; });
+// Одна и та же текстура бывает у двух слоёв (у Duct Tape скотч — слои 1
+// и 3), а сборка сохраняла её только под последним номером. Слою без
+// своей картинки отдаём картинку слоя с тем же файлом в материале.
+if (!volatile){
+for (let i = 1; i <= 4; i++){
+if (imgs['detail' + i] || !p['g_tDetail' + i]) continue;
+for (let j = 1; j <= 4; j++){
+if (j !== i && imgs['detail' + j] && p['g_tDetail' + j] === p['g_tDetail' + i]){
+imgs['detail' + i] = imgs['detail' + j];
+break;
+}
+}
+}
+}
 if (!volatile && !imgs.layermask) throw new Error('нет маски слоёв');
 if (volatile && !imgs.tintid) throw new Error('нет карты тонировки');
 const maps = volatile ? composeVolatileGlove(p, imgs) : composeGloveColor(p, imgs);
@@ -2419,14 +2445,19 @@ btn.setAttribute('aria-checked', btn.dataset.view === id ? 'true' : 'false');
 });
 }
 
-function renderViewerViews(dict, knifeName, onPick){
+function renderViewerViews(dict, knifeName, onPick, requireFile){
 const box = document.getElementById('viewer3dViews');
 if (!box) return;
 box.hidden = true;
 box.innerHTML = '';
 if (!/^[a-z0-9_]+$/.test(knifeName || '')) return;
-fetch(modelsUrl('models/anim/' + knifeName + '/index.json'))
-.then(r => r.ok ? r.json() : null)
+// requireFile — у перчаток модель с костями: пока сборка её не положила,
+// режима «в руках» нет.
+const need = requireFile
+? fetch(modelsUrl(requireFile), { method: 'HEAD' }).then(r => r.ok).catch(() => false)
+: Promise.resolve(true);
+need.then(ok => ok ? fetch(modelsUrl('models/anim/' + knifeName + '/index.json')) : null)
+.then(r => r && r.ok ? r.json() : null)
 .catch(() => null)
 .then(index => {
 const inspects = index && Array.isArray(index.clips) ? index.clips.filter(c => /^lookat/.test(c.id)) : [];
@@ -3209,8 +3240,10 @@ status.textContent = dict.v3_hands_loading;
 markViewerView(clipId);
 try {
 if (!handsCache[clipId]){
-const ih = await loadInHandsScene(THREE, animDir, clipId);
-if (skinDir){
+// Перчатки лота: руки из анимации осмотра ножа, на них — перчатки
+// с костями (models/gloves/rig/) и раскраской лота.
+const ih = await loadInHandsScene(THREE, animDir, clipId, gloveRig ? { gloveRig, gloveSkin: skinDir } : null);
+if (skinDir && !gloveRig){
 const [[skin, weapon], atlas] = await Promise.all([loadSkinWithWeapon(THREE, skinDir, weaponDir), stickerAtlasReady]);
 applySkinToModel(THREE, ih.knifeGroup, skin, viewer3dWearPreview ?? wearValue, weapon, maskChannel, seed, atlas);
 }
@@ -3232,8 +3265,11 @@ status.textContent = dict.v3_hands_failed;
 markViewerView('3d');
 }
 };
-const knifeName = ((String(modelUrl).match(/([a-z0-9_]+)\.glb$/i) || [])[1] || '').toLowerCase();
-renderViewerViews(dict, knifeName, setView);
+const gloveMatch = String(modelUrl).match(/(?:^|\/)models\/gloves\/(glove_[a-z0-9_]+)\.glb$/i);
+const gloveRig = gloveMatch ? 'models/gloves/rig/' + gloveMatch[1].toLowerCase() + '.glb' : null;
+const knifeName = gloveRig ? GLOVE_HANDS_PACK
+: ((String(modelUrl).match(/([a-z0-9_]+)\.glb$/i) || [])[1] || '').toLowerCase();
+renderViewerViews(dict, knifeName, setView, gloveRig);
 
 status.textContent = `${dict.v3_triangles}: ${countTriangles(THREE, object).toLocaleString('ru-RU')}`
 + (texturesDropped ? ' · без текстур' : '');
@@ -3804,7 +3840,40 @@ return meshes;
 }
 
 let IN_HANDS_AXIS_FIX = null;
-async function loadInHandsScene(THREE, animDir, clipId){
+// Модель перчаток с костями (models/gloves/rig/): два меша — worldmodel
+// (для вида от третьего лица, не нужен) и viewmodel из трёх частей в
+// порядке материалов модели. Материалов в файле нет, поэтому части
+// различаем по порядку: голая рука первой, а у moto, slick и sport —
+// последней (порядок сверен с обычными моделями models/gloves/).
+const RIG_BARE_ARM_LAST = /glove_(motorcycle|slick|sporty)\.glb$/i;
+
+function markRigParts(scene, bareArmLast){
+const parts = [];
+scene.traverse(n => { if (n.isSkinnedMesh) parts.push(n); });
+let i = 0;
+parts.forEach(n => {
+const path = String(n.name || '') + ' ' + String((n.parent && n.parent.name) || '');
+if (/worldmodel/i.test(path)){
+n.removeFromParent();
+return;
+}
+n.userData.rigPart = i;
+i += 1;
+});
+const bare = bareArmLast ? i - 1 : 0;
+parts.forEach(n => { if ('rigPart' in n.userData) n.userData.rigGlove = n.userData.rigPart !== bare; });
+}
+
+function isRigGloveMesh(mesh){
+return !!mesh.userData.rigGlove;
+}
+
+// Перчатки «в руках» показываем на руках с Desert Eagle: в его осмотре
+// обе кисти крупно в кадре и пистолет с текстурой (у ножа кисти мелкие,
+// у винтовок оружие закрывает перчатки).
+const GLOVE_HANDS_PACK = 'deagle';
+
+async function loadInHandsScene(THREE, animDir, clipId, opts){
 if (!IN_HANDS_AXIS_FIX) IN_HANDS_AXIS_FIX = new THREE.Quaternion(-0.5, -0.5, -0.5, 0.5).invert();
 await loadGltfLoader();
 const base = modelsUrl(animDir).replace(/\/+$/, '') + '/';
@@ -3815,7 +3884,14 @@ const glb = (file) => fetch(base + file).then(r => {
 if (!r.ok) throw new Error(file + ' ' + r.status);
 return r.arrayBuffer();
 }).then(parseGlb);
-const [arms, knife, clip] = await Promise.all([glb(index.arms), glb(index.knife), glb(clipInfo.file)]);
+const gloveRig = opts && opts.gloveRig;
+const [arms, knife, clip, rig] = await Promise.all([
+glb(index.arms), glb(index.knife), glb(clipInfo.file),
+gloveRig ? fetch(modelsUrl(gloveRig)).then(r => {
+if (!r.ok) throw new Error(gloveRig + ' ' + r.status);
+return r.arrayBuffer();
+}).then(parseGlb) : Promise.resolve(null),
+]);
 
 const root = clip.scene;
 root.traverse(node => { if (node.isPoints) node.visible = false; });
@@ -3823,7 +3899,10 @@ root.traverse(node => { if (node.isPoints) node.visible = false; });
 // animation/skeletons/weapons/ak47.vnmskel (загрузчик glTF вырезает из
 // имён «/» и «.»: animationskeletonsweaponsak47vnmskel).
 const knifeSkel = root.children.find(c => /skeletons_?weapons|knife|bayonet/.test(c.name) && !/empty_?mesh/.test(c.name) && !c.isPoints);
-const armMeshes = rebindToSkeleton(THREE, arms.scene, root);
+// С перчатками лота: их модель уже с голой рукой — стандартные руки
+// (со своими перчатками) не нужны, иначе одни перчатки торчат из других.
+if (rig) markRigParts(rig.scene, RIG_BARE_ARM_LAST.test(gloveRig));
+const armMeshes = rebindToSkeleton(THREE, rig ? rig.scene : arms.scene, root);
 armMeshes.forEach(m => root.add(m));
 const knifeGroup = new THREE.Group();
 // Кобура (у Dual Berettas — eholster) — для вида от третьего лица; в руках
@@ -3847,11 +3926,24 @@ const hand = root.getObjectByName('hand_R');
 const tex = index.textures || {};
 const loadTex = (file) => file ? loadSkinTexture(THREE, base + file, true) : Promise.resolve(null);
 const [skinTex, gloveTex] = await Promise.all([loadTex(tex.skin), loadTex(tex.glove)]);
+if (rig){
+// Рука — текстура кожи, перчатки — раскраска лота (applyGloveSkin берёт
+// материалы с «glove» в имени).
+armMeshes.forEach(mesh => {
+const isGlove = isRigGloveMesh(mesh);
+mesh.material = new THREE.MeshStandardMaterial({ map: isGlove ? null : skinTex, roughness: 0.75, metalness: 0, name: isGlove ? 'glove' : 'arm' });
+});
+if (opts.gloveSkin){
+const holder = { traverse: (fn) => armMeshes.forEach(fn) };
+await applyGloveSkin(THREE, holder, opts.gloveSkin).catch(err => console.warn('3D: раскраска перчаток в руках —', err));
+}
+} else {
 armMeshes.forEach((mesh, i) => {
 const isGlove = /glove/i.test((mesh.material && mesh.material.name) || '') || i > 0;
 const t = isGlove ? (gloveTex || skinTex) : skinTex;
 if (t) mesh.material = new THREE.MeshStandardMaterial({ map: t, roughness: 0.75, metalness: 0 });
 });
+}
 
 const mixer = new THREE.AnimationMixer(root);
 const action = mixer.clipAction(clip.animations[0]);
