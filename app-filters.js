@@ -1732,7 +1732,7 @@ document.getElementById('shareItemTitle').textContent =
 const has3d = typeof canShare3DLot === 'function' && canShare3DLot(shareSkin);
 document.getElementById('sharePhotoBtn').style.display = has3d ? '' : 'none';
 document.getElementById('shareGifBtn').style.display = has3d ? '' : 'none';
-// Видео «в руках» — только у ножей с комплектом анимаций.
+// Видео «в руках» — у ножей и стволов с комплектом анимаций и у перчаток.
 const handsBtn = document.getElementById('shareHandsBtn');
 handsBtn.style.display = 'none';
 if (has3d && typeof canShareInHands === 'function'){
