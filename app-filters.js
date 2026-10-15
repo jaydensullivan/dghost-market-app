@@ -227,6 +227,9 @@ function openKycOverlay(){
 document.getElementById('kycFullName').value = '';
 document.getElementById('kycCountry').value = '';
 document.getElementById('kycAddress').value = '';
+document.getElementById('kycLegalStatus').value = 'individual';
+document.getElementById('kycTin').value = '';
+document.getElementById('kycTinField').style.display = 'none';
 resetKycPhoto('doc');
 resetKycPhoto('selfie');
 setKycPhone('');
@@ -778,6 +781,12 @@ const dict = I18N[currentLang] || I18N.ru;
 const fullName = document.getElementById('kycFullName').value.trim();
 const country = document.getElementById('kycCountry').value.trim();
 const address = document.getElementById('kycAddress').value.trim();
+const legalStatus = document.getElementById('kycLegalStatus').value;
+const tin = document.getElementById('kycTin').value.replace(/\D/g, '');
+if (legalStatus !== 'individual' && tin.length !== 9 && tin.length !== 14){
+kycStatus.textContent = errorMessage(tin ? 'bad_tin' : 'tin_required');
+return;
+}
 if (!fullName || !country || !address){
 kycStatus.textContent = dict.kyc_fill_all;
 return;
@@ -799,6 +808,7 @@ headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({
 init_data: tg.initData,
 full_name: fullName, country: country, address: address,
+legal_status: legalStatus, tin: tin,
 doc_photo: kycPhotos.doc, selfie_photo: kycPhotos.selfie,
 })
 })
@@ -2712,4 +2722,9 @@ if (typeof loadFavQueries === 'function') loadFavQueries();
 
 document.getElementById('buyWatchBtn').addEventListener('click', () => {
 if (pendingBuySkin) openWatchSheet(pendingBuySkin);
+});
+
+// Самозанятым и ИП — поле ИНН/ПИНФЛ (для сплита оплаты банком).
+document.getElementById('kycLegalStatus').addEventListener('change', (e) => {
+document.getElementById('kycTinField').style.display = e.target.value === 'individual' ? 'none' : '';
 });
