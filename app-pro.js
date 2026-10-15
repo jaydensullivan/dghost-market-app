@@ -146,7 +146,8 @@ ${action}
 
 const yes = '<span class="pro-yes">✓</span>';
 const no = '<span class="pro-no">—</span>';
-const num = v => (v ? String(v) : no);
+// null — без лимита (у «Гаранта» посты в канал маркета).
+const num = v => (v === null ? '∞' : (v ? String(v) : no));
 // Третий элемент — пояснение строки: открывается по ⓘ под самой строкой.
 const rows = [
 [dict.pro_cmp_buy, () => yes, dict.pro_help_buy],

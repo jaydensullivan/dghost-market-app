@@ -1872,7 +1872,9 @@ shareStatus.textContent = own ? dict.pro_ch_done.replace('{name}', ownName) : di
 return;
 }
 if (data.error === 'post_limit'){
-shareStatus.textContent = (own ? dict.pro_ch_limit : dict.pro_channel_limit).replace('{n}', data.per_day || 3);
+shareStatus.textContent = !own && data.per_day === null
+? dict.pro_channel_limit_lot
+: (own ? dict.pro_ch_limit : dict.pro_channel_limit).replace('{n}', data.per_day || 3);
 } else if (data.error === 'pro_required'){
 shareStatus.textContent = dict.pro_locked.replace('{price}', '');
 } else if (own && typeof proChannelError === 'function'){
