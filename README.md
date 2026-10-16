@@ -1,5 +1,5 @@
 # DGhostMarket — мини-апп
 
-Telegram-мини-апп маркетплейса скинов CS2 (app.dghostmarket.com).
+Telegram-мини-апп маркетплейса скинов CS2 (app.dghostmarket.uz).
 
 3D-модели и раскраски собираются в отдельном закрытом репозитории и раздаются с CDN.

@@ -15,7 +15,7 @@
 const real = window.Telegram && window.Telegram.WebApp;
 if (real && real.initData) return;
 
-const API = 'https://api.dghostmarket.com';
+const API = 'https://api.dghostmarket.uz';
 const BOT_LOGIN = 'dghostmarketbot';
 const KEY = 'dg_web_session';
 
