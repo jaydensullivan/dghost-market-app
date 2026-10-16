@@ -1,0 +1,12 @@
+/* 3D-виджет (embed.html): просмотрщик мини-аппа на всё окно iframe. */
+html, body.embed{ height:100%; margin:0; background:#0c0816; overflow:hidden; }
+body.embed .edit-overlay{ background:transparent; backdrop-filter:none; -webkit-backdrop-filter:none; }
+body.embed .viewer3d-sheet.full{ padding:8px 10px 10px; }
+/* Закрыть и «во весь экран» — у виджета нет: размер задаёт сайт клиента. */
+body.embed #viewer3dCloseBtn, body.embed #viewer3dFullBtn{ display:none !important; }
+body.embed .viewer3d-mode{ display:none; }
+body.embed.no-ar #viewer3dArBtn{ display:none !important; }
+.embed-msg{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; padding:20px; text-align:center;
+  font:500 14px/1.5 Inter, system-ui, sans-serif; color:#A8A4B3; }
+.embed-badge{ position:fixed; right:10px; bottom:8px; z-index:2000; font:600 11px/1 Inter, system-ui, sans-serif; color:#d8c8ff;
+  background:rgba(12,8,22,0.72); border:1px solid rgba(168,85,247,0.35); border-radius:999px; padding:5px 9px; text-decoration:none; }

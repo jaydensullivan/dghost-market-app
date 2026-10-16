@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>DGhost 3D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css?v=71">
+<link rel="stylesheet" href="embed.css?v=1">
+<!-- Карта импортов для three.js — сразу в разметке (та же, что app-3d.js
+     добавляет сам): вставленная скриптом позже, она может не сработать. -->
+<script type="importmap" id="threeImportMap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head>
+<body class="embed">
+<!-- 3D-виджет для чужих сайтов (сервис 3D-рендера, dghostmarket.uz/3d-api/).
+     Открывается в iframe: embed.html?key=…&skin=…&float=…&seed=…
+     Тот же просмотрщик, что в мини-аппе (app-3d.js); ключ и сайт
+     проверяет бот (/api/embed/session), он же считает показы. -->
+<div class="edit-overlay" id="viewer3dOverlay" style="z-index:30;">
+<div class="edit-sheet viewer3d-sheet" id="viewer3dSheet">
+<div class="viewer3d-head">
+<div class="viewer3d-titles">
+<div class="viewer3d-title" id="viewer3dTitle" data-i18n="v3_title">3D-просмотр</div>
+<div class="viewer3d-mode" id="viewer3dMode"></div>
+<div class="viewer3d-exact" id="viewer3dExact" hidden></div>
+</div>
+<button type="button" class="viewer3d-icon" id="viewer3dArBtn" aria-label="AR — на столе" data-i18n-aria-label="v3_ar" hidden>
+<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 4v8l-7 4-7-4V7z"/><path d="M5 7l7 4 7-4M12 11v8"/></svg>
+</button>
+<button type="button" class="viewer3d-icon" id="viewer3dTiltBtn" aria-label="Наклон телефона" data-i18n-aria-label="v3_tilt" hidden>
+<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="10" height="18" rx="2" transform="rotate(-14 12 12)"/><path d="M3 9a8 8 0 0 1 2-4M21 15a8 8 0 0 1-2 4"/></svg>
+</button>
+<button type="button" class="viewer3d-icon" id="viewer3dFullBtn" aria-label="Во весь экран">
+<svg class="v3-ico-enter" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+<svg class="v3-ico-exit" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>
+</button>
+<button type="button" class="viewer3d-icon" id="viewer3dCloseBtn" aria-label="Закрыть">
+<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+</button>
+</div>
+<div class="viewer3d-stage">
+<img class="viewer3d-poster" id="viewer3dPoster" alt="" hidden>
+<canvas id="viewer3dCanvas"></canvas>
+<div class="viewer3d-views" id="viewer3dViews" role="radiogroup" hidden></div>
+<div class="viewer3d-hint" id="viewer3dHint" data-i18n="v3_hint">Покрути пальцем, двумя пальцами — масштаб.</div>
+<div class="viewer3d-status" id="viewer3dStatus"></div>
+</div>
+<div class="viewer3d-wear" id="viewer3dWear" hidden>
+<div class="v3w-head">
+<label class="v3w-label" id="v3wLabel" for="v3wRange">Износ</label>
+<span class="v3w-value" id="v3wValue"></span>
+<button type="button" class="v3w-reset" id="v3wReset" hidden>Как у лота</button>
+</div>
+<div class="v3w-track">
+<div class="v3w-zones" aria-hidden="true"><span style="width:7%">FN</span><span style="width:8%">MW</span><span style="width:23%">FT</span><span style="width:7%">WW</span><span style="width:55%">BS</span></div>
+<div class="v3w-lot" id="v3wLot" aria-hidden="true"></div>
+<input type="range" id="v3wRange" min="0" max="1000" step="1" value="0">
+</div>
+</div>
+<div class="viewer3d-bgs" id="viewer3dBgs" role="radiogroup"></div>
+</div>
+</div>
+<div class="embed-msg" id="embedMsg" hidden></div>
+<div hidden><canvas id="rain"></canvas></div>
+<a class="embed-badge" id="embedBadge" href="https://dghostmarket.uz/3d-api/" target="_blank" rel="noopener" hidden>3D by DGhost</a>
+<script>
+// В виджете нет остального интерфейса мини-аппа, а общие скрипты
+// (app-core, app-i18n, app-3d) при загрузке вешают обработчики на его
+// элементы. Для отсутствующих id отдаём пустой отсоединённый элемент,
+// чтобы скрипты загрузились без ошибок.
+(function(){
+var orig = document.getElementById.bind(document);
+var spare = {};
+document.getElementById = function(id){
+var el = orig(id);
+if (el) return el;
+if (!spare[id]){ spare[id] = document.createElement(/canvas|rain/i.test(id) ? 'canvas' : 'div'); }
+return spare[id];
+};
+})();
+</script>
+<script src="app-core.js?v=12"></script>
+<script src="app-i18n.js?v=99"></script>
+<script src="app-3d.js?v=100"></script>
+<script src="app-embed.js?v=1"></script>
+</body>
+</html>
