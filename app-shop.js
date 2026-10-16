@@ -54,7 +54,7 @@ let pendingBuySkin = null;
 const WEAR_LABELS = { FN: 'FN', MW: 'MW', FT: 'FT', WW: 'WW', BS: 'BS' };
 
 const ERROR_MESSAGES_RU = {
-garant_required: "Нужен тариф «Гарант».",
+garant_required: "Нужен тариф Pro, Business или «Гарант».",
 garant_not_approved: "Сначала подай заявку на «Гарант» — её одобрит администрация.",
 seller_verification_required: "Сначала пройди проверку продавца.",
 event_limit: "Лимит тарифа на этот месяц исчерпан.",
@@ -118,7 +118,7 @@ not_running: 'Раздача сейчас не запущена.',
 };
 
 const ERROR_MESSAGES_UZ = {
-garant_required: "«Kafil» tarifi kerak.",
+garant_required: "Pro, Business yoki «Kafil» tarifi kerak.",
 garant_not_approved: "Avval «Kafil»ga ariza bering — ma'muriyat ma'qullaydi.",
 seller_verification_required: "Avval sotuvchi tekshiruvidan o'ting.",
 event_limit: "Bu oy uchun tarif limiti tugadi.",
@@ -182,7 +182,7 @@ not_running: "Tanlov hozir boshlanmagan.",
 };
 
 const ERROR_MESSAGES_EN = {
-garant_required: "The Guarantor plan is required.",
+garant_required: "The Pro, Business or Guarantor plan is required.",
 garant_not_approved: "Apply for the Guarantor plan first — the team will approve it.",
 seller_verification_required: "Complete seller verification first.",
 event_limit: "This month's plan limit is used up.",

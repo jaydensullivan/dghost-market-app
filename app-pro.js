@@ -469,7 +469,9 @@ return (proStatus && proStatus.garant) || {};
 }
 
 function isGarantActive(){
-return !!(proStatus && (proStatus.tier === 'garant' || proStatus.admin));
+// Аукционы и розыгрыши в своём канале — в Pro, Business и «Гаранте»: бот
+// присылает garant.active, если в тарифе есть лимит на события.
+return !!(proStatus && (proStatus.admin || (proStatus.garant && proStatus.garant.active)));
 }
 
 function applyGarant(){
