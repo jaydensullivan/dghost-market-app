@@ -1735,6 +1735,7 @@ list.innerHTML = pending.length ? pending.map(k => `
 <dt>${dict.kyc_label_phone}</dt><dd>${escapeHtml(k.phone)}</dd>
 <dt>${dict.kyc_label_country}</dt><dd>${escapeHtml(k.country)}</dd>
 <dt>${dict.kyc_label_address}</dt><dd>${escapeHtml(k.address)}</dd>
+<dt>${dict.kyc_label_legal}</dt><dd>${escapeHtml(dict['kyc_legal_' + (k.legal_status || 'individual')] || k.legal_status || '')}${k.tin ? ' · ' + escapeHtml(k.tin) : ''}</dd>
 </dl>
 ${k.checks ? `<div class="kyc-checks">${escapeHtml(k.checks)}</div>` : ''}
 ${k.has_photos ? `<div class="kyc-shots">

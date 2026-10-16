@@ -737,6 +737,21 @@ knife_widowmaker: 0.36, knife_skeleton: 0.36, knife_kukri: 0.36,
 const GUN_FADE_SCALE = 1.3;
 const PATINA_TILED = /^aq_(oiled|forced|blued|brass|copper|obsidian|steel|damascus)/;
 const WEAPON_SPECIFIC_FINISH = /(?:^|_)(ak47|m4a4|m4a1s?|awp|glock(?:_?18)?|p250|p90|ump(?:45)?|tec9|ssg08|mac(?:_?10)|usp|deagle|deserteagle|desert_eagle|famas|galil(?:ar)?|sg553|sg556|aug|mp7|mp9|mp5|bizon|nova|xm1014|mag7|sawedoff|negev|m249|cz75a?|five_?seven|57|p2000|hkp2000|dualberettas|elites?|revolver|r8|scar20|scar|g3sg1|zeus)(?=$|_|lam|\d)/;
+// Узор, который игра сдвигает по паттерну на целую текстуру и больше
+// (P250 Bengal Tiger: 0…3), — тайловый, хоть в имени и есть ствол.
+function wideSeedRoll(params){
+const roll = params.seed_roll;
+const span = r => Array.isArray(r) && r.length === 2 ? Math.abs(Number(r[1]) - Number(r[0])) : 0;
+return !!roll && Math.max(span(roll.offset_x), span(roll.offset_y)) >= 1;
+}
+
+// Фиолетовая заглушка второго цвета в шаблонах (0.28, 0.24, 0.55) — рецепт
+// её не переопределил, в игре этот цвет не виден.
+function templatePlaceholderColor(params){
+const c = Array.isArray(params.colors) ? params.colors[1] : null;
+return !!c && Math.abs(c[0] - 0.28) < 0.01 && Math.abs(c[1] - 0.24) < 0.01 && Math.abs(c[2] - 0.55) < 0.01;
+}
+
 function isGunFade(skin){
 return (!skin.format || skin.format === 'legacy') && skin.params.paint_style === 5 && /fade/i.test(String(skin.finish || skin.params.finish || ''));
 }
@@ -763,7 +778,7 @@ if (isGunFade(skin)) return GUN_FADE_SCALE;
 // дамаск…) тайлятся — им UVScale нужен. Спрей под ствол (P250 Splash, Galil
 // CAUTION!) — тоже 1; аэрография (5) откалибрована отдельно.
 if (params.paint_style !== 5
-&& (WEAPON_SPECIFIC_FINISH.test(String(skin.finish || ''))
+&& ((WEAPON_SPECIFIC_FINISH.test(String(skin.finish || '')) && !wideSeedRoll(params))
 || (params.paint_style === 7 && !PATINA_TILED.test(String(skin.finish || ''))))) return 1;
 return WEAPON_UV_SCALE[weaponName] || 1;
 }
@@ -778,8 +793,8 @@ return skin.format === 'template' && [1, 2].indexOf(skin.params.paint_style) !==
 
 const PATINA_PATTERN_GAMMA = 1.8;
 // Gunsmith старого формата (стиль 8: Empress, Fubar, Vendetta…): рисунок —
-// сам цвет ствола. Со степенью 1.8 группа выходила темнее CSFloat в
-// среднем на 6 (246 образцов), с 1.2 — светлее Steam на 13 (23 скина).
+// сам цвет ствола. Сверка со Steam по 163 скинам: 1.2 → 73.5, 1.55 →
+// 77.3, 1.8 → 75.8, 2.0 → 74.2.
 const GUNSMITH_LEGACY_GAMMA = 1.55;
 // Усиление тонировки патины (стиль 7). Клинки ножей светлее стволов, и с
 // общим 3.4 Blue Steel и Stained выходили серебристыми вместо воронёных:
@@ -974,11 +989,19 @@ function seedPlacement(params, seed){
 const placement = { offset: [0, 0], rotation: Number(params.pattern_rotation) || 0, rolled: false };
 const roll = params.seed_roll;
 seed = parsePaintSeed(seed);
-if (!roll || seed === null) return placement;
+if (!roll) return placement;
 const range = r => Array.isArray(r) && r.length === 2 ? r.map(Number) : null;
 const ox = range(roll.offset_x) || [0, 0];
 const oy = range(roll.offset_y) || [0, 0];
 const rot = range(roll.rotation) || [placement.rotation, placement.rotation];
+// Паттерн неизвестен — середина диапазонов игры, а не ноль: у части
+// скинов рисунок рассчитан на сдвиг (Glock Dragon Tattoo — дракон на
+// затворе только при сдвиге −0.31 / −1.6), без него он уходил мимо.
+if (seed === null){
+placement.offset = [(ox[0] + ox[1]) / 2, (oy[0] + oy[1]) / 2];
+placement.rotation = (rot[0] + rot[1]) / 2;
+return placement;
+}
 const rng = new ValveRandom(seed);
 placement.offset = [rng.float(ox[0], ox[1]), rng.float(oy[0], oy[1])];
 placement.rotation = rng.float(rot[0], rot[1]);
@@ -1136,7 +1159,11 @@ uPaintMask: { value: weapon ? weapon.masks : null },
 // Свои маски зон скина — только для раскладки цветов и зоны оверлея;
 // где краска лежит вообще (клинок ножа, металл), решает маска ствола.
 uZones: { value: skin.zones || (weapon && weapon.masks) || pattern },
-uHasZones: { value: skin.zones || (weapon && weapon.masks) ? 1 : 0 },
+// Шаблонный скин без узора и без своих зон (сборка их не нашла — SSG 08
+// и Galil Grey Smoke, UMP Green Swirl): по маске ствола весь ствол
+// красился вторым цветом рецепта — фиолетовой заглушкой. Такому — один
+// основной цвет.
+uHasZones: { value: skin.zones || (weapon && weapon.masks && !(skin.format === 'template' && !skin.pattern && templatePlaceholderColor(skin.params))) ? 1 : 0 },
 uAo: { value: weapon ? weapon.ao : null },
 uWearAmount: { value: Math.max(0, Math.min(1, wear || 0)) },
 uPatternScale: { value: (skin.params.pattern_scale || 1) * weaponPatternScale(skin, weaponName) * templateScaleTest(skin) },
