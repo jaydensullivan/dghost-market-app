@@ -4,7 +4,7 @@ name: "Мини-апп: версии файлов"
 
 on:
   pull_request:
-    paths: ["app*.js", "app.css", "index.html"]
+    paths: ["app*.js", "app.css", "index.html", "embed.html"]
 
 permissions:
   contents: read
