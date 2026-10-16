@@ -834,7 +834,13 @@ function legacyCaseHardened(skin){
 return legacyPatinaStyle(skin) && skin.finish === 'aq_oiled';
 }
 function legacyPatinaMetal(skin){
-return legacyPatinaStyle(skin) && skin.params.paint_style === 7;
+return (legacyPatinaStyle(skin) || templatePatina(skin)) && skin.params.paint_style === 7;
+}
+// Патина на шаблоне закалки без палитры (gsch_ripple — Sawed-Off Runoff):
+// узор — мягкий цветной отлив, тонирующий металл; дерево и пластик не
+// красятся. Без этого ствол целиком выходил бледно-розовым, с белым прикладом.
+function templatePatina(skin){
+return skin.format === 'template' && skin.params.paint_style === 7 && !skin.ramp;
 }
 
 // Фаза радуги и усиление подобраны по CSFloat (Leafhopper — зелёный,
