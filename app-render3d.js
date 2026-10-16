@@ -416,6 +416,8 @@ const R3D = {
 }
 };
 
+R3D.x = {"ru": {"my_h": "🧊 Мой 3D-виджет", "trial_btn": "Попробовать бесплатно — 14 дней", "pick_plan": "Выбрать тариф", "plan": "Тариф", "until": "до {date}", "expired": "Срок ключа закончился — продли подписку, и виджет снова заработает.", "views": "Показы в этом месяце", "domains": "Сайты (через запятую)", "domains_ph": "shop.uz, m.shop.uz", "save": "Сохранить", "saved": "Сохранено", "code": "Код для сайта (скин, float и паттерн подставляйте свои)", "copy": "Скопировать код", "copied": "Код скопирован", "no_domains": "Впишите сайт — без него виджет нигде не покажется.", "max_domains": "В тарифе до {n} сайтов", "err_domains": "Не понял адрес сайта. Пример: shop.uz", "err_too_many": "В вашем тарифе до {n} сайтов.", "err_trial_used": "Пробный ключ уже был — выберите тариф.", "login": "Войдите, чтобы получить ключ.", "plans_note": "Каждый платный тариф включает ключ 3D-виджета для вашего сайта: Профиль → «🧊 3D-рендер для бизнеса».", "widget_sec": "🧊 3D-виджет для вашего сайта", "seller_sec": "🛒 В маркете DGhost", "apply_ent": "Enterprise — оставить заявку", "no_limit": "∞"}, "uz": {"my_h": "🧊 Mening 3D-vidjetim", "trial_btn": "Bepul sinab ko‘rish — 14 kun", "pick_plan": "Tarif tanlash", "plan": "Tarif", "until": "{date} gacha", "expired": "Kalit muddati tugadi — obunani uzaytiring, vidjet yana ishlaydi.", "views": "Bu oydagi ko‘rsatuvlar", "domains": "Saytlar (vergul bilan)", "domains_ph": "shop.uz, m.shop.uz", "save": "Saqlash", "saved": "Saqlandi", "code": "Sayt uchun kod (skin, float va naqshni o‘zingiz qo‘ying)", "copy": "Kodni nusxalash", "copied": "Kod nusxalandi", "no_domains": "Saytni yozing — usiz vidjet hech qayerda ko‘rinmaydi.", "max_domains": "Tarifda {n} tagacha sayt", "err_domains": "Sayt manzilini tushunmadim. Misol: shop.uz", "err_too_many": "Tarifingizda {n} tagacha sayt.", "err_trial_used": "Sinov kaliti avval olingan — tarif tanlang.", "login": "Kalit olish uchun kiring.", "plans_note": "Har bir pullik tarifga saytingiz uchun 3D-vidjet kaliti kiradi: Profil → «🧊 Biznes uchun 3D-render».", "widget_sec": "🧊 Saytingiz uchun 3D-vidjet", "seller_sec": "🛒 DGhost marketida", "apply_ent": "Enterprise — ariza qoldirish", "no_limit": "∞"}, "en": {"my_h": "🧊 My 3D widget", "trial_btn": "Try free — 14 days", "pick_plan": "Choose a plan", "plan": "Plan", "until": "until {date}", "expired": "The key has expired — renew your subscription and the widget will work again.", "views": "Views this month", "domains": "Websites (comma-separated)", "domains_ph": "shop.uz, m.shop.uz", "save": "Save", "saved": "Saved", "code": "Code for your website (put your own skin, float and pattern)", "copy": "Copy code", "copied": "Code copied", "no_domains": "Add your website — without it the widget will not show anywhere.", "max_domains": "Up to {n} websites on your plan", "err_domains": "Could not read the website address. Example: shop.uz", "err_too_many": "Your plan allows up to {n} websites.", "err_trial_used": "The trial key was already used — please choose a plan.", "login": "Log in to get a key.", "plans_note": "Every paid plan includes a 3D widget key for your website: Profile → “🧊 3D rendering for business”.", "widget_sec": "🧊 3D widget for your website", "seller_sec": "🛒 In the DGhost marketplace", "apply_ent": "Enterprise — apply", "no_limit": "∞"}};
+
 (function(){
 const css = `
 .r3d-card .r3d-sub{color:var(--muted);font-size:13px;margin:4px 0 10px}
@@ -452,6 +454,16 @@ const css = `
 .r3d-sheet details p{color:var(--muted);font-size:13px;line-height:1.5;margin:8px 0 0}
 .r3d-sheet .r3d-legal{color:var(--muted);font-size:11px;line-height:1.5;margin:14px 0 6px}
 .r3d-sheet .r3d-actions{display:grid;gap:8px;margin:14px 0 4px}
+.r3d-sheet .r3d-my{background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.35);border-radius:14px;padding:12px;margin:0 0 12px}
+.r3d-sheet .r3d-my h3{margin:0 0 8px}
+.r3d-sheet .r3d-my .row{display:flex;justify-content:space-between;gap:10px;font-size:13px;margin:4px 0}
+.r3d-sheet .r3d-my .row span:first-child{color:var(--muted)}
+.r3d-sheet .r3d-my input{width:100%;box-sizing:border-box;margin:4px 0 6px;padding:9px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);background:rgba(0,0,0,0.25);color:var(--text);font:inherit;font-size:14px}
+.r3d-sheet .r3d-my label{display:block;font-size:12px;color:var(--muted);margin-top:8px}
+.r3d-sheet .r3d-my pre{white-space:pre-wrap;word-break:break-all;font-size:11px;line-height:1.45;background:rgba(0,0,0,0.3);border-radius:10px;padding:8px;margin:4px 0 6px;color:#d8c8ff}
+.r3d-sheet .r3d-my .note{font-size:12px;color:#ffb86b;margin:6px 0}
+.r3d-sheet .r3d-my .st{font-size:12px;color:var(--muted);min-height:16px}
+.pro-compare tr.pro-cmp-sec td{text-align:left;padding:14px 8px 6px;color:#c9a6ff;font-size:12px;border-bottom:1px solid rgba(168,85,247,0.25)}
 `;
 const style = document.createElement('style');
 style.textContent = css;
@@ -496,7 +508,7 @@ const mail = 'mailto:' + R3D.mail + '?subject=' + encodeURIComponent(t.mail_subj
 body.innerHTML =
 '<div class="r3d-badge">' + esc(t.badge) + '</div>'
 + '<p class="r3d-lead">' + esc(t.lead) + '</p>'
-+ '<div class="r3d-actions"><button type="button" class="pf-btn pro-buy" data-r3d-apply>' + esc(t.cta) + '</button></div>'
++ '<div class="r3d-my" id="r3dMy"></div>'
 + '<h3>' + esc(t.demo_h) + '</h3><p class="r3d-lead">' + esc(t.demo_sub) + '</p>'
 + '<div class="r3d-demo"><iframe id="r3dDemo" title="3D" allow="xr-spatial-tracking; fullscreen" allowfullscreen></iframe>'
 + '<div class="r3d-skins">' + R3D.demo.map((d, i) => '<button type="button" data-r3d-demo="' + i + '"' + (i === 0 ? ' class="on"' : '') + '>' + esc(d.skin.replace('★ ', '')) + '</button>').join('') + '</div></div>'
@@ -507,13 +519,107 @@ body.innerHTML =
 + '<div class="r3d-note"><b>' + esc(t.over_h) + '</b><br>' + esc(t.over) + '</div>'
 + '<h3>' + esc(t.how_h) + '</h3><ol>' + t.how.map(h => '<li>' + esc(h) + '</li>').join('') + '</ol>'
 + '<h3>' + esc(t.faq_h) + '</h3>' + t.faq.map(f => '<details><summary>' + esc(f[0]) + '</summary><p>' + esc(f[1]) + '</p></details>').join('')
-+ '<div class="r3d-actions"><button type="button" class="pf-btn pro-buy" data-r3d-apply>' + esc(t.cta) + '</button>'
++ '<div class="r3d-actions"><button type="button" class="pf-btn pro-buy" data-r3d-plans>' + esc(R3D.x[l].pick_plan) + '</button>'
++ '<button type="button" class="pf-btn" data-r3d-apply>' + esc(R3D.x[l].apply_ent) + '</button>'
 + '<a class="pf-btn" href="' + esc(mail) + '">' + esc(t.cta_mail) + '</a>'
 + '<button type="button" class="pf-btn" data-r3d-site>' + esc(R3D.open_site[l]) + '</button></div>'
 + '<p class="r3d-legal">' + esc(t.legal) + '</p>';
 document.getElementById('r3dTitle').textContent = t.crumb;
 document.getElementById('r3dDemo').src = demoSrc(R3D.demo[0], l);
+renderMy();
+loadMy();
 }
+
+// ---------- Мой 3D-виджет: ключ от подписки или пробный (бот: /api/embed/*) ----------
+let myWidget = null;
+let myStatus = '';
+
+function loadMy(){
+if (!tg || !tg.initData){ myWidget = null; renderMy(); return; }
+fetch(API_BASE + '/api/embed/my?init_data=' + encodeURIComponent(tg.initData))
+.then(r => r.ok ? r.json() : null)
+.then(d => { if (d && !d.error){ myWidget = d; renderMy(); } })
+.catch(() => {});
+}
+
+function myPost(path, extra){
+return fetch(API_BASE + path, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify(Object.assign({ init_data: tg.initData }, extra || {})),
+}).then(async r => ({ ok: r.ok, data: await r.json().catch(() => ({})) }));
+}
+
+function renderMy(){
+const box = document.getElementById('r3dMy');
+if (!box) return;
+const l = lang();
+const x = R3D.x[l];
+const t = R3D.t[l];
+let html = '<h3>' + esc(x.my_h) + '</h3>';
+if (!tg || !tg.initData){
+html += '<p class="r3d-lead">' + esc(x.login) + '</p>';
+box.innerHTML = html;
+return;
+}
+const w = myWidget;
+if (!w){ box.innerHTML = html + '<div class="st">…</div>'; return; }
+if (!w.key){
+html += '<p class="r3d-lead">' + esc(x.plans_note) + '</p>'
++ '<div class="r3d-actions"><button type="button" class="pf-btn pro-buy" data-r3d-trial>' + esc(x.trial_btn) + '</button>'
++ '<button type="button" class="pf-btn" data-r3d-plans>' + esc(x.pick_plan) + '</button></div>'
++ '<div class="st">' + esc(myStatus) + '</div>';
+box.innerHTML = html;
+return;
+}
+const planName = t['plan_' + (w.plan === 'start' ? 'starter' : w.plan)] || w.plan;
+const until = w.expires_at ? x.until.replace('{date}', new Date(w.expires_at).toLocaleDateString(l === 'en' ? 'en-GB' : 'ru-RU')) : '';
+const lim = w.limit ? num(w.limit, l) : x.no_limit;
+html += '<div class="row"><span>' + esc(x.plan) + '</span><b>' + esc(planName) + (until ? ' · ' + esc(until) : '') + '</b></div>'
++ '<div class="row"><span>' + esc(x.views) + '</span><b>' + esc(num(w.views || 0, l)) + ' / ' + esc(lim) + '</b></div>';
+if (w.expired) html += '<div class="note">' + esc(x.expired) + '</div>';
+html += '<label for="r3dDomains">' + esc(x.domains) + (w.max_domains ? ' · ' + esc(x.max_domains.replace('{n}', w.max_domains)) : '') + '</label>'
++ '<input id="r3dDomains" type="text" inputmode="url" autocapitalize="off" autocomplete="off" placeholder="' + esc(x.domains_ph) + '" value="' + esc((w.domains || []).join(', ')) + '">'
++ '<button type="button" class="pf-btn" data-r3d-save>' + esc(x.save) + '</button>';
+if (!(w.domains || []).length) html += '<div class="note">' + esc(x.no_domains) + '</div>';
+html += '<label>' + esc(x.code) + '</label><pre id="r3dCode">' + esc(w.code || '') + '</pre>'
++ '<div class="r3d-actions"><button type="button" class="pf-btn" data-r3d-copy>' + esc(x.copy) + '</button>'
++ '<button type="button" class="pf-btn pro-buy" data-r3d-plans>' + esc(x.pick_plan) + '</button></div>'
++ '<div class="st">' + esc(myStatus) + '</div>';
+box.innerHTML = html;
+}
+
+function myError(code, data){
+const x = R3D.x[lang()];
+if (code === 'bad_domains') return x.err_domains;
+if (code === 'too_many_domains') return x.err_too_many.replace('{n}', data && data.max);
+if (code === 'trial_used') return x.err_trial_used;
+return typeof errorMessage === 'function' ? errorMessage(code || 'network') : String(code);
+}
+
+function myAction(kind){
+const x = R3D.x[lang()];
+if (kind === 'trial'){
+myPost('/api/embed/trial').then(({ ok, data }) => {
+myStatus = ok ? '' : myError(data.error, data);
+if (ok) myWidget = data;
+renderMy();
+}).catch(() => { myStatus = myError('network'); renderMy(); });
+} else if (kind === 'save'){
+const v = (document.getElementById('r3dDomains') || {}).value || '';
+myPost('/api/embed/domains', { domains: v }).then(({ ok, data }) => {
+myStatus = ok ? x.saved : myError(data.error, data);
+if (ok) myWidget = data;
+renderMy();
+}).catch(() => { myStatus = myError('network'); renderMy(); });
+} else if (kind === 'copy'){
+const code = (myWidget && myWidget.code) || '';
+const done = () => { myStatus = x.copied; renderMy(); };
+if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code).then(done, () => {});
+else done();
+}
+}
+window.r3dReload = loadMy;
 
 function openLink(url){
 if (tg && tg.openTelegramLink && /^https:\/\/t\.me\//.test(url)) tg.openTelegramLink(url);
@@ -539,6 +645,10 @@ overlay.querySelectorAll('[data-r3d-demo]').forEach(b => b.classList.toggle('on'
 return;
 }
 if (e.target.closest('[data-r3d-apply]')) return openLink(R3D.tg);
+if (e.target.closest('[data-r3d-plans]')){ if (typeof openProPlans === 'function') openProPlans(); return; }
+if (e.target.closest('[data-r3d-trial]')) return myAction('trial');
+if (e.target.closest('[data-r3d-save]')) return myAction('save');
+if (e.target.closest('[data-r3d-copy]')) return myAction('copy');
 if (e.target.closest('[data-r3d-site]')) return openLink(R3D.page);
 });
 document.getElementById('r3dCloseBtn').addEventListener('click', close);
