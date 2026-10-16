@@ -1243,6 +1243,9 @@ uniforms.uStkQ = { value: stk.Q };
 // оранжевый, а к острию — розовый и фиолетовый, у части ножей маску
 // зеркалим (1), отражаем по вертикали развёртки (2) или и то и другое (3).
 // Подобрано по всем 20 ножам, 8 из них — по скриншотам CSFloat.
+// [сторона, порог] по длинной оси ножа (−0.5…0.5 от центра): краска Fade
+// только там, где сторона·x ≥ порог — на клинке, не на рукояти.
+const KNIFE_FADE_BLADE = { knife_falchion: [-1, 0.1], knife_butterfly: [-1, 0.1] };
 const KNIFE_FADE_MODE = {
 knife_flip: 1, knife_kukri: 1, knife_tactical: 1, knife_ursus: 1, knife_widowmaker: 1, knife_falchion: 1,
 knife_cord: 2, knife_css: 2, knife_m9_bayonet: 2, knife_outdoor: 2, knife_skeleton: 2, knife_stiletto: 2,
@@ -1309,6 +1312,7 @@ const toRoot = new THREE.Matrix4().multiplyMatrices(rootInverse, node.matrixWorl
 const meshUniforms = {
 uProjected: { value: projected ? 1 : 0 },
 uClampPattern: { value: projected && isGunFade(skin) ? 1 : 0 },
+uBladeCut: { value: new THREE.Vector2(...((knifeFade && KNIFE_FADE_BLADE[weapon.name]) || [0, 0])) },
 uFadeMirror: { value: knifeFade ? (KNIFE_FADE_MODE[weapon.name] || 0) : 0 },
 uToRoot: { value: toRoot },
 uProjU: { value: projU },
@@ -1456,6 +1460,7 @@ uniform int uMaskChannel;
 uniform int uHasWeapon;
 uniform int uProjected;
 uniform int uClampPattern;
+uniform vec2 uBladeCut;
 uniform int uFadeMirror;
 varying vec2 vSkinUv;
 varying vec2 vProjUv;`)
@@ -1477,6 +1482,9 @@ vec4 masks = uHasWeapon == 1 ? texture2D(uPaintMask, vSkinUv) : vec4(1.0);
 if (uHasWeapon == 1 && uMaskChannel < 3){
 paintable = uMaskChannel == 1 ? masks.g : (uMaskChannel == 2 ? masks.b : masks.r);
 }
+// Fade только на клинке (у Falchion и Butterfly металл рукояти в маске
+// тот же, что у клинка): отсекаем по длинной оси ножа.
+if (uBladeCut.x != 0.0) paintable *= step(uBladeCut.y, uBladeCut.x * vProjUv.x);
 
 // Режим отладки: показываем саму маску, чтобы увидеть, какой
 // канал какие детали покрывает.
