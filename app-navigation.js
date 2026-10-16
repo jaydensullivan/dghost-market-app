@@ -116,6 +116,13 @@ inAppPopup(opts, cb);
 }
 
 function showAlert(message){
+// Веб-версия без входа: вместо «Открой мини-апп через Telegram» —
+// сразу окно входа через Telegram (app-web.js).
+if (window.DG_WEB && !window.DG_WEB.loggedIn && typeof window.dgWebLogin === 'function'
+&& typeof errorMessage === 'function' && message === errorMessage('unauthorized')){
+window.dgWebLogin();
+return;
+}
 showPopupSafe({ message: String(message == null ? '' : message).slice(0, 4000) });
 }
 
