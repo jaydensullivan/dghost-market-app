@@ -2,8 +2,15 @@
 html, body.embed{ height:100%; margin:0; background:#0c0816; overflow:hidden; }
 body.embed .edit-overlay{ background:transparent; backdrop-filter:none; -webkit-backdrop-filter:none; }
 body.embed .viewer3d-sheet.full{ padding:8px 10px 10px; }
-/* Закрыть и «во весь экран» — у виджета нет: размер задаёт сайт клиента. */
-body.embed #viewer3dCloseBtn, body.embed #viewer3dFullBtn{ display:none !important; }
+/* Закрыть — у виджета нет: размер задаёт сайт клиента. «Во весь экран» —
+   своя: разворачивает iframe (Fullscreen API) или открывает новую вкладку. */
+body.embed #viewer3dCloseBtn{ display:none !important; }
+body.embed #viewer3dFullBtn{ display:flex; }
+body.embed .viewer3d-sheet.full .viewer3d-icon .v3-ico-enter{ display:block; }
+body.embed .viewer3d-sheet.full .viewer3d-icon .v3-ico-exit{ display:none; }
+body.embed.fs .viewer3d-sheet.full .viewer3d-icon .v3-ico-enter{ display:none; }
+body.embed.fs .viewer3d-sheet.full .viewer3d-icon .v3-ico-exit{ display:block; }
+body.embed.no-fs #viewer3dFullBtn{ display:none !important; }
 body.embed .viewer3d-mode{ display:none; }
 body.embed.no-ar #viewer3dArBtn{ display:none !important; }
 .embed-msg{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; padding:20px; text-align:center;
