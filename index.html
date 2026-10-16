@@ -398,6 +398,11 @@
 </details>
 
 <!-- ❤️ Хочу: слежу за скинами и заявки «Ищут» — отдельный экран -->
+<!-- 🧊 3D-рендер для бизнеса — как на сайте (app-render3d.js) -->
+<div class="pf-card r3d-card">
+<button type="button" class="pf-btn" id="r3dOpenBtn">🧊 3D-рендер для бизнеса</button>
+<div class="r3d-sub" id="r3dCardSub"></div>
+</div>
 <div class="pf-card pro-card" id="profileProCard" style="display:none;">
 <div class="pro-head"><span class="pro-title" data-i18n="pro_title">⭐ DGhost PRO — для продавцов</span><span class="pro-badge" id="proBadge"></span></div>
 <div class="pro-features" data-i18n="pro_features">🎞 GIF и 🎬 видео твоих лотов в 3D
@@ -1116,6 +1121,14 @@
 <button type="button" class="pf-btn pro-buy" id="proEventSubmit"></button>
 <div class="edit-status" id="proEventStatus"></div>
 <button type="button" id="proEventCloseBtn" style="width:100%; margin-top:6px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_close">Закрыть</button>
+</div>
+</div>
+
+<div class="edit-overlay" id="r3dOverlay" style="z-index:900;">
+<div class="edit-sheet r3d-sheet">
+<h2 style="margin:0 0 8px;" id="r3dTitle">3D-рендер для бизнеса</h2>
+<div id="r3dBody"></div>
+<button type="button" id="r3dCloseBtn" style="width:100%; margin-top:6px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_close">Закрыть</button>
 </div>
 </div>
 
@@ -2101,5 +2114,6 @@
 <script src="app-raffle.js?v=10"></script>
 <script src="app-home.js?v=6"></script>
 <script src="app-pro.js?v=9"></script>
+<script src="app-render3d.js?v=1"></script>
 </body>
 </html>
