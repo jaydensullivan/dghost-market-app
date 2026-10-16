@@ -32,7 +32,7 @@ img.replaceWith(div);
 
 // Адрес бота на Railway — сюда мини-апп ходит за живыми данными
 // розыгрыша и сюда же сохраняет правки из формы редактирования.
-const API_BASE = 'https://api.dghostmarket.com';
+const API_BASE = 'https://api.dghostmarket.uz';
 const BID_BOT_URL_JS = 'https://t.me/dghostmarketbot';
 const MINI_APP_LINK_BASE = 'https://t.me/dghostmarketbot/DGhost';
 
