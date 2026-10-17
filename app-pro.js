@@ -36,8 +36,30 @@ const dict = I18N[currentLang] || I18N.ru;
 return dict['pro_tier_' + (id || 'free')] || id;
 }
 
+// Скидка на первый месяц (бот: first_discount, first_prices) — только
+// при самой первой покупке подписки; продление — по полной цене.
+const PRO_FIRST_T = {
+ru: { badge: '−{p}% на первый месяц', note: '🎁 Первая подписка — скидка {p}% на первый месяц. Продление — по обычной цене.', confirm: ' Первый месяц со скидкой {p}% (обычная цена — {full}).' },
+uz: { badge: 'Birinchi oyga −{p}%', note: "🎁 Birinchi obuna — birinchi oyga {p}% chegirma. Uzaytirish — oddiy narxda.", confirm: " Birinchi oy {p}% chegirma bilan (oddiy narx — {full})." },
+en: { badge: '−{p}% first month', note: '🎁 First subscription — {p}% off the first month. Renewals at the regular price.', confirm: ' First month {p}% off (regular price — {full}).' },
+};
+
+function proFirstText(){
+return PRO_FIRST_T[currentLang] || PRO_FIRST_T.ru;
+}
+
+function proFirstPercent(){
+return (proStatus && proStatus.first_discount) || 0;
+}
+
+// Цена, которую человек заплатит сейчас (со скидкой первого месяца, если есть).
+function proPayPrice(t){
+const fp = proStatus && proStatus.first_prices;
+return (proFirstPercent() && fp && fp[t.id] != null) ? fp[t.id] : t.price;
+}
+
 function proMinPrice(){
-const prices = proTiers().map(t => t.price);
+const prices = proTiers().map(proPayPrice);
 return prices.length ? Math.min.apply(null, prices) : (proStatus ? proStatus.price : 0);
 }
 
@@ -109,13 +131,15 @@ if (!proStatus) return;
 const dict = I18N[currentLang] || I18N.ru;
 const days = proStatus.days;
 const current = proStatus.active ? (proStatus.tier || 'pro') : 'free';
-document.getElementById('proPlansHint').textContent = dict.pro_plans_hint.replace('{days}', days);
+document.getElementById('proPlansHint').textContent = dict.pro_plans_hint.replace('{days}', days)
++ (proFirstPercent() ? ' ' + proFirstText().note.replace('{p}', proFirstPercent()) : '');
 const cols = [{ id: 'free', price: 0, share_per_hour: proStatus.free_share_per_hour || 30, market_posts: 0, own_channels: 0, own_posts: 0, own_auctions: 0, own_raffles: 0 }]
 .concat(PRO_TIER_IDS.map(proTier).filter(Boolean));
 
 document.getElementById('proPlans').innerHTML = cols.map(t => {
 const isCurrent = t.id === current;
-const price = t.id === 'free' ? dict.pro_free_price : formatCoins(t.price);
+const disc = t.id !== 'free' && proFirstPercent() && proPayPrice(t) < t.price;
+const price = t.id === 'free' ? dict.pro_free_price : formatCoins(proPayPrice(t));
 let action = '';
 if (t.id !== 'free' && !proStatus.admin){
 const label = isCurrent ? dict.pro_extend : (proStatus.active ? dict.pro_switch : dict.pro_pick);
@@ -137,7 +161,8 @@ const flag = isCurrent ? `<span class="pro-plan-flag current">${escapeHtml(dict.
 return `<div class="pro-plan${t.popular ? ' popular' : ''}${isCurrent ? ' current' : ''}">
 ${flag}
 <div class="pro-plan-name">${escapeHtml(proTierName(t.id))}</div>
-<div class="pro-plan-price">${escapeHtml(price)}</div>
+<div class="pro-plan-price">${escapeHtml(price)}${disc ? ` <s style="opacity:.55;font-weight:600;font-size:13px;">${escapeHtml(formatCoins(t.price))}</s>` : ''}</div>
+${disc ? `<div class="pro-plan-per" style="color:#7CF2A5;">${escapeHtml(proFirstText().badge.replace('{p}', proFirstPercent()))}</div>` : ''}
 <div class="pro-plan-per">${t.id === 'free' ? '&nbsp;' : escapeHtml(dict.pro_per_days.replace('{days}', days))}</div>
 <div class="pro-plan-tag">${escapeHtml(dict['pro_tag_' + t.id] || '')}</div>
 ${action}
@@ -179,7 +204,7 @@ function buyPro(tierId){
 if (proBuying || !proStatus) return;
 const dict = I18N[currentLang] || I18N.ru;
 const tier = proTier(tierId || 'pro');
-const price = formatCoins(tier ? tier.price : proStatus.price);
+const price = formatCoins(tier ? proPayPrice(tier) : proStatus.price);
 const name = proTierName(tierId || 'pro');
 const days = proStatus.days;
 let ask = dict.pro_confirm.replace('{name}', name).replace('{price}', price).replace('{days}', days);
@@ -192,6 +217,9 @@ const conv = oldTier.price > 0 && tier.price > 0 ? left * oldTier.price / tier.p
 const until = new Date(Date.now() + conv + days * 86400000).toISOString();
 ask = dict.pro_confirm_switch.replace('{name}', name).replace('{price}', price)
 .replace('{old}', proTierName(oldId)).replace('{date}', proDateText(until));
+}
+if (tier && proFirstPercent() && proPayPrice(tier) < tier.price){
+ask += proFirstText().confirm.replace('{p}', proFirstPercent()).replace('{full}', formatCoins(tier.price));
 }
 showConfirmDialog(ask, () => {
 proBuying = true;
