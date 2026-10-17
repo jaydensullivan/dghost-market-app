@@ -31,25 +31,8 @@ function proTier(id){
 return proTiers().find(t => t.id === id) || null;
 }
 
-// Названия и лимиты 3D-виджета — как у тарифов сервиса на сайте
-// (R3D из app-render3d.js): free = «Пробный», start = Starter и т.д.
-const PRO_R3D_PLAN = { free: 'trial', start: 'starter', pro: 'pro', business: 'business', garant: 'business' };
-
-function proR3d(){
-return typeof R3D !== 'undefined' ? R3D : null;
-}
-
-function proR3dText(){
-const r = proR3d();
-if (!r) return null;
-return { t: r.t[currentLang] || r.t.ru, x: (r.x && (r.x[currentLang] || r.x.ru)) || {} };
-}
-
 function proTierName(id){
 const dict = I18N[currentLang] || I18N.ru;
-const r = proR3dText();
-const plan = PRO_R3D_PLAN[id || 'free'];
-if (r && plan && id !== 'garant' && r.t['plan_' + plan]) return r.t['plan_' + plan];
 return dict['pro_tier_' + (id || 'free')] || id;
 }
 
@@ -126,21 +109,14 @@ if (!proStatus) return;
 const dict = I18N[currentLang] || I18N.ru;
 const days = proStatus.days;
 const current = proStatus.active ? (proStatus.tier || 'pro') : 'free';
-const r3h = proR3dText();
-document.getElementById('proPlansHint').textContent = dict.pro_plans_hint.replace('{days}', days) + (r3h && r3h.x.plans_note ? ' ' + r3h.x.plans_note : '');
+document.getElementById('proPlansHint').textContent = dict.pro_plans_hint.replace('{days}', days);
 const cols = [{ id: 'free', price: 0, share_per_hour: proStatus.free_share_per_hour || 30, market_posts: 0, own_channels: 0, own_posts: 0, own_auctions: 0, own_raffles: 0 }]
 .concat(PRO_TIER_IDS.map(proTier).filter(Boolean));
 
 document.getElementById('proPlans').innerHTML = cols.map(t => {
 const isCurrent = t.id === current;
-const r3 = proR3dText();
-const r3plan = proR3d() ? proR3d().plans.find(p => p.key === PRO_R3D_PLAN[t.id]) : null;
-const price = t.id === 'free' ? (r3 ? r3.t.free : dict.pro_free_price) : formatCoins(t.price);
-const usd = (r3plan && r3plan.usd && t.id !== 'garant') ? '≈ $' + r3plan.usd + ' ' + r3.t.per_month : (t.id === 'free' && r3 ? r3.t.trial_note : '');
+const price = t.id === 'free' ? dict.pro_free_price : formatCoins(t.price);
 let action = '';
-if (t.id === 'free' && r3 && !proStatus.admin){
-action = `<button type="button" class="pf-btn pro-plan-btn" data-r3d-open="1">${escapeHtml(r3.x.trial_btn || '')}</button>`;
-}
 if (t.id !== 'free' && !proStatus.admin){
 const label = isCurrent ? dict.pro_extend : (proStatus.active ? dict.pro_switch : dict.pro_pick);
 action = `<button type="button" class="pf-btn pro-plan-btn" data-pro-tier="${t.id}">${escapeHtml(label)}</button>`;
@@ -163,7 +139,6 @@ ${flag}
 <div class="pro-plan-name">${escapeHtml(proTierName(t.id))}</div>
 <div class="pro-plan-price">${escapeHtml(price)}</div>
 <div class="pro-plan-per">${t.id === 'free' ? '&nbsp;' : escapeHtml(dict.pro_per_days.replace('{days}', days))}</div>
-${usd ? `<div class="pro-plan-per">${escapeHtml(usd)}</div>` : ''}
 <div class="pro-plan-tag">${escapeHtml(dict['pro_tag_' + t.id] || '')}</div>
 ${action}
 </div>`;
@@ -187,30 +162,10 @@ const rows = [
 [dict.pro_cmp_share, t => String(t.share_per_hour), dict.pro_help_share],
 [dict.pro_cmp_price.replace('{days}', days), t => (t.id === 'free' ? '0' : escapeHtml(formatCoins(t.price))), dict.pro_help_price],
 ];
-// Строки 3D-виджета — те же лимиты, что в тарифах на сайте.
-const r3 = proR3dText();
-const r3plans = proR3d() ? proR3d().plans : [];
-const wp = t => r3plans.find(p => p.key === PRO_R3D_PLAN[t.id]) || {};
-const lim = v => (v === null || v === undefined ? '∞' : (v ? Number(v).toLocaleString('ru-RU').replace(/\u00a0/g, ' ') : no));
-const widgetRows = r3 ? [
-[r3.t.f_domains, t => lim(wp(t).domains), r3.x.plans_note],
-[r3.t.f_views, t => lim(wp(t).views), r3.x.plans_note],
-[r3.t.f_images, t => lim(wp(t).images), r3.x.plans_note],
-[r3.t.f_videos, t => lim(wp(t).videos), r3.x.plans_note],
-[r3.t.f_ar, t => (wp(t).ar ? yes : no), r3.x.plans_note],
-[r3.t.f_badge, t => escapeHtml(r3.t['badge_' + wp(t).badge] || ''), r3.x.plans_note],
-[r3.t.f_brand, t => (wp(t).brand ? yes : no), r3.x.plans_note],
-[r3.t.f_support, t => escapeHtml(r3.t['sup_' + wp(t).support] || ''), r3.x.plans_note],
-] : [];
-if (widgetRows.length){
-rows.splice(rows.length - 1, 0, ['§' + r3.x.widget_sec], ...widgetRows);
-rows.unshift(['§' + r3.x.seller_sec]);
-}
 document.getElementById('proCompare').innerHTML =
 `<thead><tr><th></th>${cols.map(t => `<th class="${t.id === current ? 'current' : ''}">${escapeHtml(proTierName(t.id))}</th>`).join('')}</tr></thead>`
-+ `<tbody>${rows.map(([label, cell, help], i) => label.charAt(0) === '§'
-? `<tr class="pro-cmp-sec"><td colspan="${cols.length + 1}"><b>${escapeHtml(label.slice(1))}</b></td></tr>`
-: `<tr${i === rows.length - 1 ? ' class="pro-cmp-total"' : ''}><td><button type="button" class="pro-cmp-label" data-pro-help="${i}" aria-expanded="false">${escapeHtml(label)} <span class="pro-cmp-i">ⓘ</span></button></td>${cols.map(t => `<td class="${t.id === current ? 'current' : ''}">${cell(t)}</td>`).join('')}</tr>`
++ `<tbody>${rows.map(([label, cell, help], i) =>
+`<tr${i === rows.length - 1 ? ' class="pro-cmp-total"' : ''}><td><button type="button" class="pro-cmp-label" data-pro-help="${i}" aria-expanded="false">${escapeHtml(label)} <span class="pro-cmp-i">ⓘ</span></button></td>${cols.map(t => `<td class="${t.id === current ? 'current' : ''}">${cell(t)}</td>`).join('')}</tr>`
 + `<tr class="pro-cmp-help" data-pro-help-row="${i}" hidden><td colspan="${cols.length + 1}">${escapeHtml(help || '')}</td></tr>`
 ).join('')}</tbody>`;
 document.getElementById('proCompareHint').textContent = dict.pro_help_hint;
@@ -262,7 +217,6 @@ renderProPlans();
 renderProChannels();
 loadProChannels();
 if (typeof loadMe === 'function') loadMe();
-if (typeof window.r3dReload === 'function') window.r3dReload();
 showAlert(dict.pro_ok.replace('{name}', name).replace('{date}', proDateText(data.expires_at)));
 })
 .catch(() => showAlert(errorMessage('network')))
@@ -274,11 +228,6 @@ if (proPlansOverlay){
 document.getElementById('proPlans').addEventListener('click', (e) => {
 if (e.target.closest('[data-garant-apply]')){
 applyGarant();
-return;
-}
-if (e.target.closest('[data-r3d-open]')){
-closeProPlans();
-if (typeof window.openRender3d === 'function') window.openRender3d();
 return;
 }
 const btn = e.target.closest('[data-pro-tier]');
