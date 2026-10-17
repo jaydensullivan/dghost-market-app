@@ -516,7 +516,8 @@ document.getElementById('proEventStart').value = start;
 document.getElementById('proEventStep').value = Math.max(1000, Math.round(start * 0.05 / 1000) * 1000);
 document.getElementById('proEventHint').textContent = kind === 'auction' ? dict.ev_auction_hint : dict.ev_raffle_hint;
 const left = kind === 'auction' ? g.auctions_left : g.raffles_left;
-document.getElementById('proEventLeft').textContent = proStatus.admin ? '' : dict.ev_left.replace('{n}', left || 0);
+// null — без лимита («Гарант»).
+document.getElementById('proEventLeft').textContent = proStatus.admin ? '' : dict.ev_left.replace('{n}', left === null ? '∞' : (left || 0));
 document.getElementById('proEventSubmit').textContent = kind === 'auction' ? dict.ev_submit_auction : dict.ev_submit_raffle;
 document.getElementById('proEventSubmit').disabled = !proChannels.length;
 document.getElementById('proEventStatus').textContent = proChannels.length ? '' : dict.ev_no_channels;
@@ -600,7 +601,7 @@ const g = garantInfo();
 box.hidden = !(isGarantActive() || proEvents.length);
 if (box.hidden) return;
 document.getElementById('proEventsLeft').textContent = proStatus && proStatus.admin ? ''
-: dict.ev_left_both.replace('{a}', g.auctions_left || 0).replace('{r}', g.raffles_left || 0);
+: dict.ev_left_both.replace('{a}', g.auctions_left === null ? '∞' : (g.auctions_left || 0)).replace('{r}', g.raffles_left === null ? '∞' : (g.raffles_left || 0));
 const list = document.getElementById('proEventsList');
 if (!proEvents.length){
 list.innerHTML = `<div class="pro-channels-empty">${escapeHtml(dict.ev_empty)}</div>`;
