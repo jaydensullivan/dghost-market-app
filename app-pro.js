@@ -44,8 +44,22 @@ uz: { badge: 'Birinchi oyga −{p}%', note: "🎁 Birinchi obuna — birinchi oy
 en: { badge: '−{p}% first month', note: '🎁 First subscription — {p}% off the first month. Renewals at the regular price.', confirm: ' First month {p}% off (regular price — {full}).' },
 };
 
+// Личная скидка от владельца (бот: discount_kind = 'personal') — на
+// каждую покупку и продление, а не только на первый месяц.
+const PRO_PERSONAL_T = {
+ru: { badge: '−{p}% лично для вас', note: '🎁 Ваша личная скидка {p}% на подписку — на каждую покупку и продление.', confirm: ' С вашей личной скидкой {p}% (обычная цена — {full}).' },
+uz: { badge: 'Siz uchun −{p}%', note: "🎁 Obunaga shaxsiy chegirmangiz {p}% — har bir xarid va uzaytirishda.", confirm: " Shaxsiy chegirmangiz {p}% bilan (oddiy narx — {full})." },
+en: { badge: '−{p}% just for you', note: '🎁 Your personal {p}% discount on the subscription — on every purchase and renewal.', confirm: ' With your personal {p}% discount (regular price — {full}).' },
+};
+
 function proFirstText(){
-return PRO_FIRST_T[currentLang] || PRO_FIRST_T.ru;
+const table = proStatus && proStatus.discount_kind === 'personal' ? PRO_PERSONAL_T : PRO_FIRST_T;
+return table[currentLang] || table.ru;
+}
+
+// Подписка «навсегда» (подарок владельца) — срок 2100 год.
+function proIsForever(iso){
+return !!iso && new Date(iso).getUTCFullYear() >= 2099;
 }
 
 function proFirstPercent(){
@@ -86,8 +100,11 @@ return;
 btn.style.display = '';
 if (proStatus.active){
 badge.textContent = proTierName(proStatus.tier || 'pro');
-status.textContent = dict.pro_status_until.replace('{name}', proTierName(proStatus.tier || 'pro')).replace('{date}', proDateText(proStatus.expires_at));
-btn.textContent = dict.pro_btn_extend;
+// Подарок «навсегда» — продлевать нечего, кнопка только открывает тарифы.
+const forever = proIsForever(proStatus.expires_at);
+status.textContent = (proIsForever(proStatus.expires_at) ? dict.pro_status_forever : dict.pro_status_until)
+.replace('{name}', proTierName(proStatus.tier || 'pro')).replace('{date}', proDateText(proStatus.expires_at));
+btn.textContent = forever ? dict.pro_btn_view : dict.pro_btn_extend;
 } else {
 badge.textContent = '';
 status.textContent = dict.pro_status_off.replace('{price}', formatCoins(proMinPrice())).replace('{days}', proStatus.days);
