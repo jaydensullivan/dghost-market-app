@@ -1937,11 +1937,59 @@ function closePaySheet(){
 payOverlay.classList.remove('show');
 }
 
-document.getElementById('buyOpenPayBtn').addEventListener('click', () => {
+function openPaySheet(){
 if (!pendingBuySkin) return;
 document.getElementById('payItemTitle').textContent = buyTitle.textContent;
 document.getElementById('payItemPrice').textContent = formatCoins(pendingBuySkin.price);
 payOverlay.classList.add('show');
+}
+
+// ---------- «Как купить за 3 шага» — один раз перед первой оплатой ----------
+// Отметка в localStorage: в приватном режиме её может не быть —
+// тогда подсказка просто покажется ещё раз, это не страшно.
+const BUY_GUIDE_KEY = 'dg_buy_guide_seen';
+const buyGuideOverlay = document.getElementById('buyGuideOverlay');
+
+function buyGuideSeen(){
+try { return localStorage.getItem(BUY_GUIDE_KEY) === '1'; } catch (e) { return false; }
+}
+
+function openBuyGuide(){
+// Без ссылки на обмен продавец не сможет отправить скин — показываем
+// это прямо в шаге 2 с кнопкой привязки.
+document.getElementById('buyGuideLinkOk').style.display = hasSteamLink ? '' : 'none';
+document.getElementById('buyGuideLinkBtn').style.display = hasSteamLink ? 'none' : '';
+buyGuideOverlay.classList.add('show');
+}
+
+function closeBuyGuide(){
+buyGuideOverlay.classList.remove('show');
+}
+
+document.getElementById('buyOpenPayBtn').addEventListener('click', () => {
+if (!pendingBuySkin) return;
+if (!buyGuideSeen()){
+openBuyGuide();
+return;
+}
+openPaySheet();
+});
+
+document.getElementById('buyGuideContinue').addEventListener('click', () => {
+try { localStorage.setItem(BUY_GUIDE_KEY, '1'); } catch (e) {}
+closeBuyGuide();
+openPaySheet();
+});
+
+document.getElementById('buyGuideLinkBtn').addEventListener('click', () => {
+closeBuyGuide();
+steamLinkSkippedThisSession = false;
+updateMandatorySteamOverlay();
+});
+
+document.getElementById('buyGuideClose').addEventListener('click', closeBuyGuide);
+buyGuideOverlay.addEventListener('click', (e) => {
+if (e.target === buyGuideOverlay) closeBuyGuide();
 });
 
 document.getElementById('payClose').addEventListener('click', closePaySheet);

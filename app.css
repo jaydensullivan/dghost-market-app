@@ -2978,6 +2978,13 @@ pointer-events:none;
 /* ---------- окно выбора способа оплаты ---------- */
 .pay-overlay{ z-index:25; }
 .pay-sheet{ padding-bottom:calc(env(safe-area-inset-bottom, 0px) + 16px); }
+.buy-guide-steps{ margin:4px 0 16px; padding:0 0 0 22px; display:flex; flex-direction:column; gap:12px; }
+.buy-guide-steps li{ font-size:14px; line-height:1.45; color:var(--muted); }
+.buy-guide-steps li::marker{ color:#A855F7; font-weight:700; }
+.buy-guide-steps b{ display:block; color:var(--text); font-size:15px; margin-bottom:2px; }
+.buy-guide-link{ display:block; margin-top:6px; font-size:13px; color:#4ade80; }
+.buy-guide-link-btn{ margin-top:8px; padding:8px 12px; border-radius:10px; border:1px solid rgba(168,85,247,0.5);
+  background:rgba(168,85,247,0.12); color:#d8c8ff; font:600 13px/1.2 inherit; cursor:pointer; }
 .pay-head{ padding:14px 56px 12px 20px; }
 .pay-title{
 font-family:'JetBrains Mono', monospace;

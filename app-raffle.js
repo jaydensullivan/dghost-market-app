@@ -26,15 +26,12 @@ return (ps.photo_url ? `<img src="${escapeHtml(ps.photo_url)}" alt="">` : '')
 }
 
 // Запись для 3D-просмотрщика, если скин есть в models/index.json.
-// app-3d.js грузится позже этого файла — ждём загрузки страницы.
+// app-3d.js грузится отдельно (ensure3DScript) — ждём его.
 function rafflePrizeModel(title){
-if (typeof loadModelIndex !== 'function'){
-return new Promise(resolve => {
-if (document.readyState === 'complete') return resolve(null);
-window.addEventListener('load', () => resolve(rafflePrizeModel(title)), { once: true });
-});
-}
-return loadModelIndex().then(map => map[modelIndexKey(title)] || null).catch(() => null);
+return ensure3DScript()
+.then(() => loadModelIndex())
+.then(map => map[modelIndexKey(title)] || null)
+.catch(() => null);
 }
 
 let raffleData = null;

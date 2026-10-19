@@ -490,14 +490,12 @@ pickBtn.textContent = isInvPicked(item) ? dict.inv_picked_btn : dict.inv_pick;
 pickBtn.disabled = item.tradable === false && !inventoryPickHandler;
 const btn3d = document.getElementById('invDetail3d');
 btn3d.style.display = 'none';
-if (typeof loadModelIndex === 'function'){
-loadModelIndex().then(map => {
+ensure3DScript().then(() => loadModelIndex()).then(map => {
 const entry = map[modelIndexKey((item.stattrak ? 'StatTrak™ ' : '') + item.title)] || map[modelIndexKey(item.title)];
 if (!entry || invDetailItem !== item) return;
 btn3d.style.display = '';
 btn3d.onclick = () => open3DViewer(entry.model, item.title, entry.skin, Number(item.float_value) || 0, entry.weapon || null, 'none', item.pattern, item.stickers, item.photo_url);
 }).catch(() => {});
-}
 document.getElementById('invDetailOverlay').classList.add('show');
 }
 
