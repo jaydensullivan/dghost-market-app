@@ -404,10 +404,37 @@ function displayScreen(name){
 switchTab(name === 'welcome' ? 'shop' : name);
 }
 
+// 3D-просмотрщик — самый тяжёлый файл мини-аппа (~210 КБ). Грузим его
+// не при старте, а сразу после того, как открылась витрина (или раньше,
+// если 3D понадобилось). До загрузки кнопки 3D просто не видны —
+// app-3d.js сам обновит кнопку у открытого лота.
+let threeDScriptLoading = null;
+function ensure3DScript(){
+if (typeof loadModelIndex === 'function') return Promise.resolve();
+if (!threeDScriptLoading){
+threeDScriptLoading = new Promise((resolve, reject) => {
+const s = document.createElement('script');
+s.src = window.DG_3D_SRC || 'app-3d.js';
+s.onload = () => resolve();
+s.onerror = () => { threeDScriptLoading = null; reject(new Error('3d script')); };
+document.body.appendChild(s);
+});
+}
+return threeDScriptLoading;
+}
+
+(function schedule3DScript(){
+const start = () => setTimeout(() => ensure3DScript().catch(() => {}), 300);
+if (document.readyState === 'complete') start();
+else window.addEventListener('load', start, { once: true });
+})();
+
 // Код админки грузим, только когда он нужен: открыли раздел или стало
 // известно, что пользователь — админ/аукционист (тогда заранее, в фоне).
 let adminScriptLoading = null;
 function ensureAdminScript(){
+// Розыгрыши в админке рисуют GIF через 3D — подгружаем заодно.
+ensure3DScript().catch(() => {});
 if (typeof loadAdminPanel === 'function') return Promise.resolve();
 if (!adminScriptLoading){
 adminScriptLoading = new Promise((resolve, reject) => {

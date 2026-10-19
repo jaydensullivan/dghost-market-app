@@ -4318,3 +4318,11 @@ renderer.dispose();
 if (renderer.forceContextLoss) renderer.forceContextLoss();
 }
 }
+
+// В мини-аппе этот файл грузится уже после старта (ensure3DScript в
+// app-navigation.js): если окно лота успели открыть раньше — показываем
+// у него кнопки 3D/AR сейчас.
+if (typeof pendingBuySkin !== 'undefined' && pendingBuySkin
+&& document.getElementById('buyOverlay') && document.getElementById('buyOverlay').classList.contains('show')){
+update3DButton(pendingBuySkin);
+}

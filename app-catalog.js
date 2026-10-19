@@ -309,6 +309,18 @@ const market = Number(skin.market_price_uzs || skin.market_price) || 0;
 return market > 0 && skin.price > market * OVERPRICED_SINK_RATIO ? 1 : 0;
 }
 
+// Витрина «Все» без поиска: наклейки и мелочь дешевле 3 000 сум уходят
+// в самый конец — на главной они забивают место дорогим лотам. Их
+// по-прежнему видно в категории «Наклейки», в поиске и при сортировке
+// по цене. Во вкладке «Популярное» первыми идут лоты дешевле рынка.
+const SHOWCASE_FILLER_PRICE = 3000;
+function showcaseRank(skin, boostDeals, sinkFiller){
+if (sinkFiller && (categorizeSkin(skin) === 'stickers' || skin.price < SHOWCASE_FILLER_PRICE)) return 3;
+if (overpricedRank(skin)) return 2;
+const market = Number(skin.market_price_uzs || skin.market_price) || 0;
+return boostDeals && market > 0 && skin.price < market ? 0 : 1;
+}
+
 function skinCardHtml(skin){
 const photo = skin.photo_url
 ? `<img class="skin-photo" src="${escapeHtml(skin.photo_url)}" alt="" onerror="showPlaceholderIcon(this)">`
@@ -511,11 +523,16 @@ if (sort === 'price_asc'){
 filtered.sort((a, b) => a.price - b.price);
 } else if (sort === 'price_desc'){
 filtered.sort((a, b) => b.price - a.price);
-} else if (sort === 'auto' && currentShopTab === 'popular'){
-// Популярное — по просмотрам, при равенстве новые выше.
-filtered.sort((a, b) => overpricedRank(a) - overpricedRank(b) || (b.view_count || 0) - (a.view_count || 0) || b.id - a.id);
+} else if (sort === 'auto'){
+const sinkFiller = currentCategory === 'all' && !q;
+const popular = currentShopTab === 'popular';
+const rank = s => showcaseRank(s, popular, sinkFiller);
+// Популярное — выгодные первыми, дальше по просмотрам; при равенстве новые выше.
+filtered.sort((a, b) => rank(a) - rank(b)
+|| (popular ? (b.view_count || 0) - (a.view_count || 0) : 0)
+|| b.id - a.id);
 } else {
-filtered.sort((a, b) => (sort === 'auto' ? overpricedRank(a) - overpricedRank(b) : 0) || b.id - a.id);
+filtered.sort((a, b) => b.id - a.id);
 }
 
 if (!filtered.length){
