@@ -10,7 +10,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=2"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=72">
+<link rel="stylesheet" href="app.css?v=73">
 </head>
 <body data-tab="shop">
 
@@ -419,6 +419,47 @@
 <button type="button" class="pf-btn" id="proChannelAddBtn" data-i18n="pro_ch_add">Подключить</button>
 </div>
 <div class="pro-channels-status" id="proChannelsStatus"></div>
+</div>
+<!-- «Моя подписка»: лимиты, формат постов, логотип, подпись,
+     автопубликация (app-pro.js, бот: /api/pro/settings, /api/pro/logo). -->
+<div class="pro-settings" id="proSettings" hidden>
+<div class="pro-channels-title" data-i18n="ps_title">⚙️ Моя подписка</div>
+<div class="pro-channels-hint" id="psUsage"></div>
+<div class="ps-section">
+<div class="ps-label" data-i18n="ps_format">Формат постов в мои каналы</div>
+<div class="ps-chips" id="psFormat">
+<button type="button" data-ps-format="photo" data-i18n="ps_fmt_photo">🖼 Фото</button>
+<button type="button" data-ps-format="gif" data-i18n="ps_fmt_gif">🎞 GIF</button>
+<button type="button" data-ps-format="hands" data-i18n="ps_fmt_hands">🖐 Видео</button>
+</div>
+<div class="ps-note" data-i18n="ps_format_note">«Поделиться» → свой канал сразу отправит в этом формате.</div>
+</div>
+<div class="ps-section" id="psLogoBox">
+<div class="ps-label" data-i18n="ps_logo">Мой логотип на постах</div>
+<div class="ps-logo-row">
+<img id="psLogoImg" class="ps-logo-img" alt="" hidden>
+<div class="ps-note" id="psLogoStatus"></div>
+</div>
+<div class="ps-btns">
+<button type="button" class="pf-btn" id="psLogoUploadBtn" data-i18n="ps_logo_upload">Загрузить</button>
+<button type="button" class="pf-btn" id="psLogoRemoveBtn" data-i18n="ps_logo_remove" style="display:none;">Убрать</button>
+<input type="file" id="psLogoInput" accept="image/png,image/jpeg,image/webp" hidden>
+</div>
+<div class="ps-lock" id="psLogoLock" hidden></div>
+</div>
+<div class="ps-section" id="psFooterBox">
+<div class="ps-label" data-i18n="ps_footer">Подпись к постам</div>
+<textarea id="psFooter" rows="2" maxlength="150"></textarea>
+<button type="button" class="pf-btn" id="psFooterSave" data-i18n="ps_save">Сохранить</button>
+<div class="ps-lock" id="psFooterLock" hidden></div>
+</div>
+<div class="ps-section" id="psAutoBox">
+<label class="pf-toggle"><span data-i18n="ps_autopost">⚡ Автопубликация новых лотов</span> <input type="checkbox" id="psAutopost"></label>
+<div class="ps-note" data-i18n="ps_autopost_note">Выставил лот — пост с картинкой сразу уходит в выбранные каналы.</div>
+<div id="psAutoChannels"></div>
+<div class="ps-lock" id="psAutoLock" hidden></div>
+</div>
+<div class="pro-channels-status" id="psStatus"></div>
 </div>
 <div class="pro-events" id="proEvents" hidden>
 <div class="pro-channels-title" data-i18n="ev_my_title">🎯 Мои аукционы и розыгрыши</div>
@@ -2111,7 +2152,7 @@
 </div>
 
 <script src="app-core.js?v=12"></script>
-<script src="app-i18n.js?v=104"></script>
+<script src="app-i18n.js?v=105"></script>
 <script src="app-navigation.js?v=21"></script>
 <script src="app-shop.js?v=30"></script>
 <script src="app-legal.js?v=2"></script>
@@ -2134,7 +2175,7 @@
 <script src="app-telegram.js?v=15"></script>
 <script src="app-raffle.js?v=11"></script>
 <script src="app-home.js?v=6"></script>
-<script src="app-pro.js?v=15"></script>
+<script src="app-pro.js?v=16"></script>
 <script src="app-render3d.js?v=3"></script>
 </body>
 </html>
