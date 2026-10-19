@@ -263,6 +263,7 @@ renderProChannels();
 loadProChannels();
 if (typeof loadMe === 'function') loadMe();
 showAlert(dict.pro_ok.replace('{name}', name).replace('{date}', proDateText(data.expires_at)));
+loadProSettings();
 })
 .catch(() => showAlert(errorMessage('network')))
 .finally(() => { proBuying = false; });
@@ -345,6 +346,7 @@ proChannels = data.items;
 if (data.bot_username) proBotUsername = data.bot_username;
 if (data.max) proChannelMax = data.max;
 renderProChannels();
+if (typeof renderProSettings === 'function') renderProSettings();
 }
 
 function renderProChannels(){
@@ -436,7 +438,165 @@ if (!ch) return;
 shareTarget = 'own:' + ch.id;
 document.getElementById('shareSendBtn').style.display = 'none';
 shareStatus.textContent = dict.pro_ch_pick.replace('{name}', proChannelName(ch));
+// Формат по умолчанию из «Моей подписки» — сразу готовим и отправляем
+// (видео «в руках» — только если оно есть у этого лота).
+const fmt = proDefaultPostFormat();
+const btnFor = { photo: 'sharePhotoBtn', gif: 'shareGifBtn', hands: 'shareHandsBtn' }[fmt];
+if (btnFor && document.getElementById(btnFor).style.display !== 'none') shareMedia(fmt);
 });
+
+// ---------- «Моя подписка»: лимиты, формат, логотип, подпись, автопубликация ----------
+// Бот: GET/POST /api/pro/settings, POST /api/pro/logo. Что доступно —
+// features (format — любой тариф, branding — с PRO, autopost — с «Бизнеса»).
+let proSettings = null;
+
+function psDict(){
+return I18N[currentLang] || I18N.ru;
+}
+
+function psLimitText(used, limit){
+return limit === null || limit === undefined ? used + ' / ∞' : used + ' / ' + limit;
+}
+
+function psLeftText(left){
+return left === null || left === undefined ? '∞' : String(left);
+}
+
+function loadProSettings(){
+if (!tg || !tg.initData) return Promise.resolve();
+return fetch(API_BASE + '/api/pro/settings?init_data=' + encodeURIComponent(tg.initData))
+.then(r => r.ok ? r.json() : null)
+.then(data => { if (data) proSettings = data; renderProSettings(); })
+.catch(() => {});
+}
+
+function postProSettings(path, payload){
+const dict = psDict();
+const status = document.getElementById('psStatus');
+status.textContent = dict.ps_saving;
+return fetch(API_BASE + path, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify(Object.assign({ init_data: tg.initData }, payload)),
+}).then(async r => {
+const data = await r.json().catch(() => ({}));
+if (!r.ok){
+status.textContent = data.error === 'tier_required'
+? dict.ps_tier_needed.replace('{tier}', proTierName(data.tier))
+: data.error === 'bad_image' ? dict.ps_logo_bad : errorMessage(data.error);
+return null;
+}
+proSettings = data;
+status.textContent = dict.ps_saved;
+renderProSettings();
+return data;
+}).catch(() => { status.textContent = dict.err_generic || ''; });
+}
+
+function psLock(sectionId, lockId, allowed, tier){
+const section = document.getElementById(sectionId);
+const lock = document.getElementById(lockId);
+section.classList.toggle('locked', !allowed);
+lock.hidden = allowed;
+lock.textContent = allowed ? '' : psDict().ps_tier_needed.replace('{tier}', proTierName(tier));
+}
+
+function renderProSettings(){
+const box = document.getElementById('proSettings');
+if (!box) return;
+const show = !!(proSettings && proStatus && (proStatus.active || proStatus.admin));
+box.hidden = !show;
+if (!show) return;
+const dict = psDict();
+const s = proSettings;
+const u = s.usage || {};
+const mp = u.market_posts || {}, op = u.own_posts || {};
+document.getElementById('psUsage').textContent = dict.ps_usage
+.replace('{market}', psLimitText(mp.used || 0, mp.limit))
+.replace('{own}', psLimitText(op.used || 0, op.limit))
+.replace('{auctions}', psLeftText((u.auctions || {}).left))
+.replace('{raffles}', psLeftText((u.raffles || {}).left));
+document.querySelectorAll('#psFormat [data-ps-format]').forEach(b => b.classList.toggle('active', b.dataset.psFormat === s.post_format));
+
+const f = s.features || {};
+psLock('psLogoBox', 'psLogoLock', !!f.branding, 'pro');
+psLock('psFooterBox', 'psFooterLock', !!f.branding, 'pro');
+psLock('psAutoBox', 'psAutoLock', !!f.autopost, 'business');
+
+const logo = s.logo || {};
+const img = document.getElementById('psLogoImg');
+const src = logo.pending || logo.approved;
+img.hidden = !src;
+if (src) img.src = src;
+document.getElementById('psLogoStatus').textContent = logo.pending ? dict.ps_logo_pending
+: logo.approved ? dict.ps_logo_ok : logo.rejected ? dict.ps_logo_rejected : dict.ps_logo_none;
+document.getElementById('psLogoRemoveBtn').style.display = src ? '' : 'none';
+
+const footer = document.getElementById('psFooter');
+if (document.activeElement !== footer) footer.value = s.footer || '';
+footer.placeholder = dict.ps_footer_ph;
+
+document.getElementById('psAutopost').checked = !!s.autopost;
+const picked = new Set(s.autopost_channels || []);
+const list = document.getElementById('psAutoChannels');
+list.innerHTML = proChannels.length
+? proChannels.map(c => `<label class="ps-ch-row"><span>${escapeHtml(c.title || proChannelName(c))}</span><input type="checkbox" data-ps-ch="${c.id}"${picked.has(c.id) ? ' checked' : ''}></label>`).join('')
+: `<div class="pro-channels-empty">${escapeHtml(dict.ps_auto_no_channels)}</div>`;
+}
+
+document.getElementById('psFormat').addEventListener('click', (e) => {
+const btn = e.target.closest('[data-ps-format]');
+if (!btn || !proSettings) return;
+const fmt = proSettings.post_format === btn.dataset.psFormat ? null : btn.dataset.psFormat;
+postProSettings('/api/pro/settings', { post_format: fmt });
+});
+
+document.getElementById('psFooterSave').addEventListener('click', () => {
+postProSettings('/api/pro/settings', { footer: document.getElementById('psFooter').value });
+});
+
+document.getElementById('psAutopost').addEventListener('change', (e) => {
+postProSettings('/api/pro/settings', { autopost: e.target.checked });
+});
+
+document.getElementById('psAutoChannels').addEventListener('change', () => {
+const ids = [...document.querySelectorAll('#psAutoChannels [data-ps-ch]:checked')].map(i => Number(i.dataset.psCh));
+postProSettings('/api/pro/settings', { autopost_channels: ids });
+});
+
+document.getElementById('psLogoUploadBtn').addEventListener('click', () => document.getElementById('psLogoInput').click());
+
+document.getElementById('psLogoRemoveBtn').addEventListener('click', () => {
+postProSettings('/api/pro/logo', { remove: true });
+});
+
+// Логотип ужимаем в браузере до 400 px (с прозрачностью) — меньше трафика.
+document.getElementById('psLogoInput').addEventListener('change', (e) => {
+const file = e.target.files && e.target.files[0];
+e.target.value = '';
+if (!file) return;
+const url = URL.createObjectURL(file);
+const img = new Image();
+img.onload = () => {
+const k = Math.min(1, 400 / Math.max(img.width, img.height));
+const canvas = document.createElement('canvas');
+canvas.width = Math.max(1, Math.round(img.width * k));
+canvas.height = Math.max(1, Math.round(img.height * k));
+canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+URL.revokeObjectURL(url);
+postProSettings('/api/pro/logo', { image_base64: canvas.toDataURL('image/png') });
+};
+img.onerror = () => {
+URL.revokeObjectURL(url);
+document.getElementById('psStatus').textContent = psDict().ps_logo_bad;
+};
+img.src = url;
+});
+
+// Формат по умолчанию для «Поделиться» → свой канал.
+function proDefaultPostFormat(){
+return proSettings && proSettings.features && proSettings.features.format ? proSettings.post_format : null;
+}
 
 // Смена языка — перерисовать карточку (тексты в ней собираются из шаблонов).
 const proBaseApplyTranslations = applyTranslations;
@@ -444,11 +604,13 @@ applyTranslations = function(){
 proBaseApplyTranslations.apply(this, arguments);
 renderProCard();
 renderProChannels();
+renderProSettings();
 };
 
 loadProStatus().then(() => {
 renderProChannels();
 loadProChannels();
+loadProSettings();
 });
 
 // ------------------------------------------------------------
