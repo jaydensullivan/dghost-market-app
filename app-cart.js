@@ -99,6 +99,14 @@ return;
 list.innerHTML = items.map(cartItemRowHtml).join('');
 const total = items.reduce((sum, s) => sum + s.price, 0);
 document.getElementById('cartTotalAmount').textContent = formatCoins(total);
+// Гость в браузере: баланса у него нет — кнопка ведёт ко входу
+// (её перехватывает app-web.js), без «не хватает денег».
+if (window.DG_WEB && !window.DG_WEB.loggedIn){
+balanceEl.classList.remove('cart-short');
+balanceEl.textContent = '';
+document.getElementById('cartCheckoutBtn').disabled = false;
+return;
+}
 // Корзина платит с баланса: сразу видно, хватает ли денег.
 const balance = (typeof myAvailableBalance === 'number') ? myAvailableBalance : 0;
 const missing = total - balance;
