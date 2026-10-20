@@ -2735,7 +2735,7 @@ font-family:'Inter', sans-serif; font-size:12px; color:var(--muted);
 .viewer3d-mode{ font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--muted); margin-top:2px; }
 .viewer3d-icon{ flex:0 0 auto; width:36px; height:36px; padding:0; border-radius:10px; border:1px solid var(--red-dim);
   background:var(--surface); color:var(--silver); display:flex; align-items:center; justify-content:center; cursor:pointer; }
-.viewer3d-icon svg{ width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.viewer3d-icon svg:not(.gi){ width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 .viewer3d-icon:active{ background:rgba(123,44,255,0.25); }
 .viewer3d-icon.active{ background:rgba(123,44,255,0.45); border-color:var(--red); }
 .viewer3d-icon[hidden]{ display:none; }
@@ -3538,9 +3538,9 @@ align-items:center;
 justify-content:center;
 cursor:pointer;
 }
-.skin-fav svg{ fill:none; }
+.skin-fav svg:not(.gi){ fill:none; }
 .skin-fav.on{ color:#ff2bd6; }
-.skin-fav.on svg{ fill:#ff2bd6; }
+.skin-fav.on svg:not(.gi){ fill:#ff2bd6; }
 .skin-title{ min-height:0; font-size:13px; }
 .skin-price{ font-size:14px; margin-top:4px; }
 .skin-action-row{ margin-top:8px; }
@@ -4677,3 +4677,11 @@ body.layout-large #skinsList .skin-badges{ top:8px; left:8px; gap:6px; }
 .nav-btn.active .nav-icon .gi{ filter:drop-shadow(0 0 6px rgba(255,43,214,0.55)); transform:translateY(-1px); }
 .header-menu-item .gi{ vertical-align:-5px; margin-right:4px; }
 .pf-ico .gi{ display:block; }
+/* Эмодзи в тексте, заменённые значками (app-emoji.js), — размером с букву. */
+.gi-inline{ width:1.15em; height:1.15em; vertical-align:-0.22em; margin:0 0.06em; }
+.viewer3d-icon .gi{ width:20px; height:20px; }
+/* «Хочу» на карточке: пока не отмечено — сердце приглушено, отмечено — яркое. */
+.skin-fav .gi{ transition:filter .2s, opacity .2s; }
+.skin-fav:not(.on) .gi{ filter:grayscale(1) brightness(1.5); opacity:.7; }
+.skin-fav.on .gi{ filter:drop-shadow(0 0 5px rgba(255,43,214,0.6)); }
+.gi-placeholder{ width:40px; height:40px; opacity:.55; }

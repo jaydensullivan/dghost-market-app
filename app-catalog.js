@@ -266,9 +266,9 @@ renderLayoutCycleBtn();
 // Одна кнопка у поиска вместо строки «Шаблон лота»: по кругу
 // обычный → компакт → крупная. Значок — текущий вид.
 const LAYOUT_ICONS = {
-'': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="7" height="16" rx="1.5"/><rect x="13" y="4" width="7" height="16" rx="1.5"/></svg>',
-compact: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="4" width="4.5" height="7" rx="1"/><rect x="9.75" y="4" width="4.5" height="7" rx="1"/><rect x="16" y="4" width="4.5" height="7" rx="1"/><rect x="3.5" y="13" width="4.5" height="7" rx="1"/><rect x="9.75" y="13" width="4.5" height="7" rx="1"/><rect x="16" y="13" width="4.5" height="7" rx="1"/></svg>',
-large: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>',
+'': '<svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-lay2"/></svg>',
+compact: '<svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-lay3"/></svg>',
+large: '<svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-lay1"/></svg>',
 };
 
 function renderLayoutCycleBtn(){
@@ -376,7 +376,7 @@ const isOwn = currentUserId && skin.seller_id === currentUserId;
 
 const inCart = cart.includes(skin.id);
 
-const CART_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h2l2.2 12.4a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 2-1.6L21 7H6"/></svg>';
+const CART_ICON = '<svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-cart"/></svg>';
 
 // Свой лот — «Управлять»; чужой — корзина + «Купить».
 const actionBtn = isOwn
@@ -387,7 +387,7 @@ const actionBtn = isOwn
 </div>`;
 
 const favBtn = isOwn ? ''
-: `<button type="button" class="skin-fav${isFavSkin(skin) ? ' on' : ''}" data-fav="${skin.id}" aria-label="${escapeHtml((I18N[currentLang] || I18N.ru).fav_aria || 'Хочу')}"><svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.8 3.9 4.5 7.3 4.5c2 0 3.6 1.1 4.7 2.7 1.1-1.6 2.7-2.7 4.7-2.7 3.4 0 5.7 3.3 4.5 6.7-1.7 4.7-9.2 9.3-9.2 9.3z"/></svg></button>`;
+: `<button type="button" class="skin-fav${isFavSkin(skin) ? ' on' : ''}" data-fav="${skin.id}" aria-label="${escapeHtml((I18N[currentLang] || I18N.ru).fav_aria || 'Хочу')}"><svg class="gi" width="18" height="18" aria-hidden="true"><use href="#gi-heart"/></svg></button>`;
 
 const weaponType = skin.weapon_type
 ? `<div class="skin-weapon-type">${escapeHtml(skin.weapon_type)}</div>`

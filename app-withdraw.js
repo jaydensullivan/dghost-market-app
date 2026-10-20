@@ -192,7 +192,7 @@ const RARITY_RANK = {
 'Contraband': 7, 'Extraordinary': 7,
 };
 
-const HEART_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.8 3.9 4.5 7.3 4.5c2 0 3.6 1.1 4.7 2.7 1.1-1.6 2.7-2.7 4.7-2.7 3.4 0 5.7 3.3 4.5 6.7-1.7 4.7-9.2 9.3-9.2 9.3z"/></svg>';
+const HEART_SVG = '<svg class="gi" width="18" height="18" aria-hidden="true"><use href="#gi-heart"/></svg>';
 
 let invPicked = [];          // выбранные предметы (объекты из lastInventoryItems)
 let invTradableOnly = false;
