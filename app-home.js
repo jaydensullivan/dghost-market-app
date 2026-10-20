@@ -12,9 +12,35 @@ let promoIndex = 0;
 let promoTimer = null;
 let promoKey = '';
 
+// «Выгода дня» — лот с самой большой скидкой к рынку (тот же расчёт,
+// что у плашки «−N% к рынку» на карточке). Нет такого — нет слайда.
+function promoDealSkin(){
+let best = null, bestPct = 0;
+(typeof lastSkins !== 'undefined' ? lastSkins : []).forEach(s => {
+const market = Number(s.market_price_uzs || s.market_price) || 0;
+if (!s.photo_url || !(market > 0) || !(s.price > 0)) return;
+if (currentUserId && s.seller_id === currentUserId) return;
+const pct = Math.round((1 - s.price / market) * 100);
+if (pct >= TRADER_BADGE_MIN_PCT && pct > bestPct){ best = s; bestPct = pct; }
+});
+return best ? { skin: best, pct: bestPct } : null;
+}
+
 function promoSlides(){
 const dict = I18N[currentLang] || I18N.ru;
 const slides = [];
+const deal = promoDealSkin();
+if (deal){
+slides.push({
+key: 'deal' + deal.skin.id + '_' + deal.skin.price,
+kicker: dict.promo_deal_kicker,
+title: deal.skin.title,
+text: dict.promo_deal_text.replace('{price}', formatCoins(deal.skin.price)).replace('{p}', deal.pct),
+btn: dict.promo_deal_btn,
+image: deal.skin.photo_url,
+action: () => openBuySheet(deal.skin),
+});
+}
 // Картинка первого слайда — самый дорогой лот каталога.
 const top = (typeof lastSkins !== 'undefined' ? lastSkins : [])
 .filter(s => s.photo_url)
@@ -73,14 +99,14 @@ if (key === promoKey) return;
 promoKey = key;
 const track = document.getElementById('promoTrack');
 track.innerHTML = slides.map((s, i) => `
-<div class="promo-slide" data-promo="${i}">
+<div class="promo-slide${s.key.indexOf('deal') === 0 ? ' promo-deal' : ''}" data-promo="${i}">
 <div class="promo-body">
 ${s.kicker ? `<div class="promo-kicker">${escapeHtml(s.kicker)}</div>` : ''}
 <div class="promo-title">${escapeHtml(s.title)}</div>
 <div class="promo-text">${escapeHtml(s.text)}</div>
-<button type="button" class="promo-btn" data-promo-btn="${i}">${escapeHtml(s.btn)} →</button>
 </div>
 ${s.image ? `<img class="promo-img" src="${escapeHtml(s.image)}" alt="" onerror="this.remove()">` : ''}
+<button type="button" class="promo-btn" data-promo-btn="${i}" aria-label="${escapeHtml(s.btn)}">→</button>
 </div>`).join('');
 document.getElementById('promoDots').innerHTML = slides.length > 1
 ? slides.map((_, i) => `<span class="${i === 0 ? 'on' : ''}"></span>`).join('') : '';

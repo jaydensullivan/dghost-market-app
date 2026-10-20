@@ -210,6 +210,8 @@ layout_large: 'Крупная',
 layout_label: 'Шаблон лота',
 layout_compact_hint: 'Компактный вид: 3 колонки',
 layout_large_hint: 'Крупный вид: одна колонка',
+layout_normal_hint: 'Обычный вид: 2 колонки',
+layout_cycle: 'Вид каталога',
 theme_midnight: 'Полночь',
 theme_neon: 'Неон-фиолет',
 theme_emerald: 'Изумруд',
@@ -517,6 +519,9 @@ lots_empty: "У тебя пока нет лотов на продаже. Наж�
 promo_shop_title: "Лучшие скины тут",
 promo_shop_text: "Покупай · Продавай · Обменивай",
 promo_shop_btn: "Перейти к скинам",
+promo_deal_kicker: "🔥 Выгода дня",
+promo_deal_text: "{price} · на {p}% дешевле рынка",
+promo_deal_btn: "Смотреть лот",
 promo_raffle_text: "Пригласи {n} друзей — участвуй в бесплатной раздаче",
 promo_raffle_btn: "Участвовать",
 promo_auctions_kicker: "🔨 Аукционы",
@@ -1634,6 +1639,8 @@ layout_large: 'Katta',
 layout_label: 'Lot ko\'rinishi',
 layout_compact_hint: 'Ixcham ko\'rinish: 3 ustun',
 layout_large_hint: 'Katta ko\'rinish: bitta ustun',
+layout_normal_hint: 'Oddiy ko\'rinish: 2 ustun',
+layout_cycle: 'Katalog ko\'rinishi',
 theme_midnight: 'Yarim tun',
 theme_neon: 'Neon-binafsha',
 theme_emerald: 'Zumrad',
@@ -1941,6 +1948,9 @@ lots_empty: "Hozircha sotuvda lotlaringiz yo'q. Qo'yish uchun «+ Skin» ni bosi
 promo_shop_title: "Eng yaxshi skinlar shu yerda",
 promo_shop_text: "Sotib oling · Soting · Almashtiring",
 promo_shop_btn: "Skinlarga o'tish",
+promo_deal_kicker: "🔥 Kun foydasi",
+promo_deal_text: "{price} · bozordan {p}% arzon",
+promo_deal_btn: "Lotni ko'rish",
 promo_raffle_text: "{n} do'stingizni taklif qiling — bepul sovg'a tarqatishda qatnashing",
 promo_raffle_btn: "Qatnashish",
 promo_auctions_kicker: "🔨 Auksionlar",
@@ -3058,6 +3068,8 @@ layout_large: 'Large',
 layout_label: 'Lot layout',
 layout_compact_hint: 'Compact view: 3 columns',
 layout_large_hint: 'Large view: one column',
+layout_normal_hint: 'Normal view: 2 columns',
+layout_cycle: 'Catalog view',
 theme_midnight: 'Midnight',
 theme_neon: 'Neon Violet',
 theme_emerald: 'Emerald',
@@ -3365,6 +3377,9 @@ lots_empty: "You have no listings for sale yet. Tap «+ Skin» to list one.",
 promo_shop_title: "The best skins are here",
 promo_shop_text: "Buy · Sell · Trade",
 promo_shop_btn: "Browse skins",
+promo_deal_kicker: "🔥 Deal of the day",
+promo_deal_text: "{price} · {p}% below market",
+promo_deal_btn: "View item",
 promo_raffle_text: "Invite {n} friends to join the giveaway",
 promo_raffle_btn: "Join",
 promo_auctions_kicker: "🔨 Auctions",
@@ -4360,6 +4375,10 @@ renderRaffle();
 
 if (typeof renderPromo === 'function'){
 renderPromo();
+}
+
+if (typeof renderLayoutCycleBtn === 'function'){
+renderLayoutCycleBtn();
 }
 
 if (typeof lastDeals !== 'undefined' && lastDeals.length){

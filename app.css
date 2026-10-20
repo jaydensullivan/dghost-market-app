@@ -4445,15 +4445,6 @@ background:radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--rar-c) 38
 /* ---------- шаблоны карточки лота: «Компакт» и «Крупная» ----------
    Класс layout-compact / layout-large ставится на body из app-catalog.js;
    без него каталог выглядит как раньше. Только переменные темы. */
-.layout-bar{ display:flex; align-items:center; justify-content:flex-end; gap:8px; margin:0 0 8px; }
-.layout-label{ font-family:'Inter',sans-serif; font-size:11px; color:var(--muted); }
-.layout-switch{ display:inline-flex; border:1px solid var(--red-dim); border-radius:10px; overflow:hidden; background:var(--surface); }
-.layout-btn{
-padding:6px 12px; border:0; background:transparent; color:var(--muted);
-font-family:'Inter',sans-serif; font-size:12px; font-weight:600; cursor:pointer;
-}
-.layout-btn + .layout-btn{ border-left:1px solid var(--red-dim); }
-.layout-btn.active{ background:var(--cta-gradient); color:#fff; }
 .skin-float, .skin-stickers{ display:none; }
 .skin-float{
 font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted);
@@ -4614,9 +4605,52 @@ position:absolute;
 top:-4px; right:-4px; bottom:-10px; left:-10px;
 }
 
-/* Компакт / Крупная: кнопки выглядят как раньше, но зона нажатия 44px. */
-.layout-switch{ overflow:visible; }
-.layout-btn{ position:relative; }
-.layout-btn:first-child{ border-radius:9px 0 0 9px; }
-.layout-btn:last-child{ border-radius:0 9px 9px 0; }
-.layout-btn::after{ content:''; position:absolute; left:0; right:0; top:50%; height:44px; transform:translateY(-50%); }
+
+/* ---------- компактный промо-баннер ----------
+   Вдвое ниже прежнего: картинка слева, текст в строку, кнопка-стрелка.
+   Палитра и градиент прежние. */
+.promo-slide{
+display:flex;
+align-items:center;
+gap:12px;
+min-height:84px;
+padding:10px 12px;
+}
+.promo-img{
+position:static;
+order:-1;
+flex:0 0 64px;
+width:64px;
+height:64px;
+max-height:none;
+transform:rotate(-8deg);
+}
+.promo-body{ flex:1; min-width:0; max-width:none; }
+.promo-kicker{ font-size:11px; margin-bottom:2px; letter-spacing:0.06em; }
+.promo-title{
+font-size:15px;
+display:-webkit-box;
+-webkit-box-orient:vertical;
+-webkit-line-clamp:2;
+overflow:hidden;
+}
+.promo-text{
+margin-top:3px;
+display:-webkit-box;
+-webkit-box-orient:vertical;
+-webkit-line-clamp:2;
+overflow:hidden;
+}
+.promo-btn{
+flex:0 0 44px;
+width:44px;
+height:44px;
+margin:0;
+padding:0;
+border-radius:50%;
+font-size:18px;
+line-height:1;
+}
+.promo-dots{ margin-top:6px; }
+/* Название лота читается целиком лучше в обычном регистре. */
+.promo-deal .promo-title{ text-transform:none; font-family:'Inter', sans-serif; font-weight:800; }
