@@ -360,7 +360,7 @@ const actionBtn = isOwn
 </div>`;
 
 const favBtn = isOwn ? ''
-: `<button type="button" class="skin-fav${isFavSkin(skin) ? ' on' : ''}" data-fav="${skin.id}" aria-label="Следить"><svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.8 3.9 4.5 7.3 4.5c2 0 3.6 1.1 4.7 2.7 1.1-1.6 2.7-2.7 4.7-2.7 3.4 0 5.7 3.3 4.5 6.7-1.7 4.7-9.2 9.3-9.2 9.3z"/></svg></button>`;
+: `<button type="button" class="skin-fav${isFavSkin(skin) ? ' on' : ''}" data-fav="${skin.id}" aria-label="${escapeHtml((I18N[currentLang] || I18N.ru).fav_aria || 'Хочу')}"><svg width="18" height="18" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.8 3.9 4.5 7.3 4.5c2 0 3.6 1.1 4.7 2.7 1.1-1.6 2.7-2.7 4.7-2.7 3.4 0 5.7 3.3 4.5 6.7-1.7 4.7-9.2 9.3-9.2 9.3z"/></svg></button>`;
 
 const weaponType = skin.weapon_type
 ? `<div class="skin-weapon-type">${escapeHtml(skin.weapon_type)}</div>`
@@ -376,7 +376,7 @@ const title = skin.stattrak
 : escapeHtml(shortTitle);
 
 const priceHtml = skin.original_price
-? `<div class="skin-price"><span style="text-decoration:line-through; color:var(--muted); font-size:11px; margin-right:5px;">${formatCoins(skin.original_price)}</span>${formatCoins(skin.price)} <span style="color:#7ec98a; font-size:11px;">-${skin.discount_type === 'percent' ? skin.discount_value + '%' : formatCoins(skin.discount_value)}</span></div>`
+? `<div class="skin-price has-discount"><span class="skin-price-old">${formatCoins(skin.original_price)}</span><span class="skin-price-now">${formatCoins(skin.price)}</span> <span class="skin-price-off">-${skin.discount_type === 'percent' ? skin.discount_value + '%' : formatCoins(skin.discount_value)}</span></div>`
 : `<div class="skin-price">${formatCoins(skin.price)}</div>`;
 
 // Бейдж «Трейдер»: только если рыночная цена уже пришла в данных лота

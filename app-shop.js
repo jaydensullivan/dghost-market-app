@@ -538,3 +538,22 @@ loadDeals();
 loadTradeOffers();
 }
 
+
+// promo.mp4 (~0,5 МБ) нужен только на экране привязки Steam — качаем
+// его при первом показе этого экрана, а не при каждом открытии приложения.
+(function lazyMandatorySteamPromo(){
+const overlay = document.getElementById('mandatorySteamOverlay');
+const video = document.getElementById('mandatorySteamPromo');
+if (!overlay || !video || typeof MutationObserver === 'undefined') return;
+function sync(){
+if (overlay.classList.contains('show')){
+if (!video.getAttribute('src') && video.dataset.src) video.src = video.dataset.src;
+const p = video.play();
+if (p && p.catch) p.catch(() => {});
+} else if (!video.paused){
+video.pause();
+}
+}
+new MutationObserver(sync).observe(overlay, { attributes: true, attributeFilter: ['class'] });
+sync();
+})();

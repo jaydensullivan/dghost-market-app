@@ -1378,7 +1378,12 @@ const statsDict = I18N[currentLang] || I18N.ru;
 const rating = skin.seller_rating_avg
 ? ` · ⭐ ${skin.seller_rating_avg} (${skin.seller_rating_count})` : '';
 // Строка продавца кликабельна — открывает его публичный профиль.
-const sellerLine = skin.seller_verified ? statsDict.seller_line_verified : statsDict.seller_line;
+// У нового продавца нет сделок — «0 сделок · 0 споров» отпугивает,
+// поэтому пишем «новый на маркете».
+const sellerIsNew = !Number(skin.seller_completed_trades) && !skin.seller_rating_avg;
+const sellerLine = sellerIsNew
+? (skin.seller_verified ? statsDict.seller_line_verified_new : statsDict.seller_line_new)
+: (skin.seller_verified ? statsDict.seller_line_verified : statsDict.seller_line);
 sellerStatsBox.innerHTML = `<button type="button" class="seller-line${skin.seller_verified ? ' verified' : ''}" data-seller-profile="${skin.seller_id}">
 <span>${escapeHtml(sellerLine
 .replace('{rating}', rating)
