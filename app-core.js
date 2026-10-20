@@ -19,9 +19,13 @@ tg.onEvent('themeChanged', applyTelegramTheme);
 // ---- read data ----
 const params = new URLSearchParams(window.location.search);
 
-const COIN_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="vertical-align:-2px"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5c0-1 1-1.8 2.5-1.8s2.5.7 2.5 1.7c0 2.3-5 1.3-5 3.6 0 1 1 1.8 2.5 1.8s2.5-.8 2.5-1.8"/></svg>';
-const LOCK_ICON = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="vertical-align:-1px"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
-const TARGET_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>';
+// Объёмные значки gi-* есть только в index.html (спрайт); во встраиваемом
+// виджете (embed.html) спрайта нет — там остаются прежние линейные.
+const HAS_GI = !!document.querySelector('#giSprite');
+
+const COIN_ICON = HAS_GI ? '<svg class="gi" width="14" height="14" aria-hidden="true"><use href="#gi-coins"/></svg>' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="vertical-align:-2px"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5c0-1 1-1.8 2.5-1.8s2.5.7 2.5 1.7c0 2.3-5 1.3-5 3.6 0 1 1 1.8 2.5 1.8s2.5-.8 2.5-1.8"/></svg>';
+const LOCK_ICON = HAS_GI ? '<svg class="gi" width="13" height="13" aria-hidden="true"><use href="#gi-lock"/></svg>' : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="vertical-align:-1px"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
+const TARGET_ICON = HAS_GI ? '<svg class="gi gi-placeholder" width="22" height="22" aria-hidden="true"><use href="#gi-target"/></svg>' : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>';
 
 function showPlaceholderIcon(img){
 const div = document.createElement('div');
