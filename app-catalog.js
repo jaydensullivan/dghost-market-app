@@ -251,11 +251,26 @@ function applyCardLayout(layout){
 currentCardLayout = CARD_LAYOUTS.includes(layout) ? layout : '';
 CARD_LAYOUTS.forEach(l => document.body.classList.toggle('layout-' + l, currentCardLayout === l));
 storageSet('dg_card_layout', currentCardLayout);
-document.querySelectorAll('[data-card-layout]').forEach(b => {
-const on = b.dataset.cardLayout === currentCardLayout;
-b.classList.toggle('active', on);
-b.setAttribute('aria-pressed', on ? 'true' : 'false');
-});
+renderLayoutCycleBtn();
+}
+
+// Одна кнопка у поиска вместо строки «Шаблон лота»: по кругу
+// обычный → компакт → крупная. Значок — текущий вид.
+const LAYOUT_ICONS = {
+'': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="7" height="16" rx="1.5"/><rect x="13" y="4" width="7" height="16" rx="1.5"/></svg>',
+compact: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="4" width="4.5" height="7" rx="1"/><rect x="9.75" y="4" width="4.5" height="7" rx="1"/><rect x="16" y="4" width="4.5" height="7" rx="1"/><rect x="3.5" y="13" width="4.5" height="7" rx="1"/><rect x="9.75" y="13" width="4.5" height="7" rx="1"/><rect x="16" y="13" width="4.5" height="7" rx="1"/></svg>',
+large: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>',
+};
+
+function renderLayoutCycleBtn(){
+const btn = document.getElementById('layoutCycleBtn');
+if (!btn) return;
+const d = I18N[currentLang] || I18N.ru;
+const hint = currentCardLayout === 'compact' ? d.layout_compact_hint : (currentCardLayout === 'large' ? d.layout_large_hint : d.layout_normal_hint);
+btn.innerHTML = LAYOUT_ICONS[currentCardLayout] || LAYOUT_ICONS[''];
+btn.setAttribute('aria-label', (d.layout_cycle || '') + ': ' + (hint || ''));
+btn.title = hint || '';
+btn.classList.toggle('active', !!currentCardLayout);
 }
 
 function applyTheme(id){
@@ -285,9 +300,12 @@ box.innerHTML = THEMES.map(t => `<button type="button" class="theme-btn${t.id ==
 document.addEventListener('click', (e) => {
 const tb = e.target.closest ? e.target.closest('[data-theme-id]') : null;
 if (tb) { applyTheme(tb.dataset.themeId); return; }
-const lb = e.target.closest ? e.target.closest('[data-card-layout]') : null;
+const lb = e.target.closest ? e.target.closest('[data-layout-cycle]') : null;
 if (lb) {
-applyCardLayout(lb.dataset.cardLayout === currentCardLayout ? '' : lb.dataset.cardLayout);
+const order = [''].concat(CARD_LAYOUTS);
+applyCardLayout(order[(order.indexOf(currentCardLayout) + 1) % order.length]);
+const d = I18N[currentLang] || I18N.ru;
+if (typeof showToast === 'function') showToast(currentCardLayout === 'compact' ? d.layout_compact_hint : (currentCardLayout === 'large' ? d.layout_large_hint : d.layout_normal_hint));
 return;
 }
 const vb = e.target.closest ? e.target.closest('[data-card-view]') : null;
