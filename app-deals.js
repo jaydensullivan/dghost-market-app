@@ -735,8 +735,36 @@ return;
 pendingDeliveryCheck = deal.id;
 haptic('light');
 showToast(dict.dlv_hint, { type: 'info', duration: 5000 });
+showTradeLinkFallback(deal.id, url);
 openSteamLink(url);
 }
+
+// Запасной путь: на части телефонов Telegram молча не открывает ссылку
+// Steam. Под кнопкой появляется «Скопировать ссылку» — её можно вставить
+// в браузер или открыть из чата.
+const tradeLinkFallbacks = {};
+function showTradeLinkFallback(dealId, url){
+tradeLinkFallbacks[dealId] = url;
+const btn = document.querySelector(`[data-open-trade="${dealId}"]`);
+if (!btn || document.querySelector(`[data-copy-trade="${dealId}"]`)) return;
+const dict = I18N[currentLang] || I18N.ru;
+btn.insertAdjacentHTML('afterend',
+`<button class="deal-action secondary" data-copy-trade="${dealId}" type="button">${dict.btn_copy_trade_link}</button>`);
+}
+
+document.addEventListener('click', (e) => {
+const btn = e.target.closest('[data-copy-trade]');
+if (!btn) return;
+const dict = I18N[currentLang] || I18N.ru;
+const url = tradeLinkFallbacks[btn.dataset.copyTrade];
+if (!url) return;
+const done = () => showToast(dict.trade_link_copied, { type: 'success', duration: 7000 });
+if (navigator.clipboard && navigator.clipboard.writeText){
+navigator.clipboard.writeText(url).then(done).catch(() => showAlert(url));
+} else {
+showAlert(url);
+}
+});
 
 function checkDelivery(skinId, silent){
 const dict = I18N[currentLang] || I18N.ru;
