@@ -39,7 +39,16 @@ sets: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
 builder: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
 };
 
+// Категории и инструменты каталога — картинки (icons/cat-*.webp, ~2–3 КБ):
+// оружие — базовые предметы CS2 без раскраски, остальное (Все, Наклейки,
+// Другое, Сеты, Билдер) — наши значки в цветах бренда.
+const CATEGORY_IMG_KEYS = ['all','knives','rifles','pistols','snipers','smgs','heavy','gloves','stickers','other','sets','builder'];
+
+// Огонёк у «дешевле рынка» и «Выгоды дня» — наш значок (icons/fire.webp).
+const FIRE_ICON = '<img class="fire-ico" src="icons/fire.webp" alt="" width="16" height="16">';
+
 function categoryIconSvg(key){
+if (CATEGORY_IMG_KEYS.includes(key)) return `<img class="cat-ico" src="icons/cat-${key}.webp" alt="" width="44" height="29" decoding="async">`;
 return `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${CATEGORY_ICONS[key] || ''}</svg>`;
 }
 
@@ -408,7 +417,7 @@ const pct = Math.round((skin.price / marketPrice - 1) * 100);
 const ownLot = currentUserId && skin.seller_id === currentUserId;
 if (pct <= -TRADER_BADGE_MIN_PCT || (ownLot && pct >= TRADER_BADGE_MIN_PCT)){
 const d = I18N[currentLang] || I18N.ru;
-traderBadge = `<div class="trader-badge ${pct < 0 ? 'below' : 'above'}">${(pct < 0 ? d.trader_below : d.trader_above).replace('{p}', Math.abs(pct))}</div>`;
+traderBadge = `<div class="trader-badge ${pct < 0 ? 'below' : 'above'}">${pct < 0 ? FIRE_ICON : ''}${(pct < 0 ? d.trader_below : d.trader_above).replace('{p}', Math.abs(pct))}</div>`;
 }
 }
 
@@ -425,8 +434,7 @@ return `
 <div class="skin-card ${rarityClass}" data-card="${skin.id}">
 <div class="skin-photo-wrap"${rarityBg}>
 ${photo}
-${wearBadge}
-${stBadge}
+${(wearBadge || stBadge) ? `<div class="skin-badges">${wearBadge}${stBadge}</div>` : ''}
 ${favBtn}
 </div>
 ${weaponType}
