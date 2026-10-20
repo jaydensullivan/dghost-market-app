@@ -461,7 +461,15 @@ profileAvatar.innerHTML = `<img src="${escapeHtml(tg.initDataUnsafe.user.photo_u
 }
 
 if (!tg || !tg.initData){
-profileName.textContent = (I18N[currentLang] || I18N.ru).open_via_telegram;
+const pDict = I18N[currentLang] || I18N.ru;
+if (window.DG_WEB && typeof window.dgWebLogin === 'function'){
+// Браузер без входа: вместо «Открой через Telegram» — кнопка входа.
+profileName.textContent = pDict.web_login;
+profileName.style.cursor = 'pointer';
+profileName.onclick = () => window.dgWebLogin();
+} else {
+profileName.textContent = pDict.open_via_telegram;
+}
 profileBalanceAmount.textContent = '—';
 return;
 }

@@ -1358,17 +1358,22 @@ box.style.display = 'none';
 }
 
 function openBuySheet(skin){
-if (!tg || !tg.initData){
+// Гость в браузере может рассмотреть лот; купить — только после входа
+// (кнопки действий перехватывает app-web.js).
+const webGuest = !!(window.DG_WEB && !window.DG_WEB.loggedIn);
+if ((!tg || !tg.initData) && !webGuest){
 showAlert(errorMessage('unauthorized'));
 return;
 }
 pendingBuySkin = skin;
 
+if (tg && tg.initData){
 fetch(API_BASE + '/api/skins/' + skin.id + '/view', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({ init_data: tg.initData })
 }).catch(() => {});
+}
 
 loadPriceHistoryChart(skin.title);
 

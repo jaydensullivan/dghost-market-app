@@ -7,7 +7,7 @@
 // сессии «web:<токен>», который бот выдаёт после входа через
 // Telegram Login Widget (/api/web_login). Бот принимает его везде,
 // где принимает initData, поэтому остальной код не меняется.
-// Без входа маркет можно смотреть как гость; любое действие,
+// Без входа маркет сразу открыт как витрина; любое действие,
 // которому нужен аккаунт, предлагает войти.
 // ============================================================
 
@@ -187,10 +187,7 @@ gate.querySelector('.dgw-gate-title').textContent = T.title;
 gate.querySelector('.dgw-gate-text').textContent = T.text;
 gate.querySelector('.dgw-gate-guest').textContent = T.guest;
 gate.querySelector('.dgw-gate-note').textContent = T.note;
-gate.querySelector('.dgw-gate-guest').addEventListener('click', () => {
-try { sessionStorage.setItem('dg_web_guest', '1'); } catch(e) {}
-gate.remove();
-});
+gate.querySelector('.dgw-gate-guest').addEventListener('click', () => gate.remove());
 const s = document.createElement('script');
 s.async = true;
 s.src = 'https://telegram.org/js/telegram-widget.js?22';
@@ -204,11 +201,25 @@ document.body.appendChild(gate);
 }
 window.dgWebLogin = openGate;
 
+const GUEST_GATED = [
+'#buyOpenPayBtn', '#buyMakeOfferBtn', '#buyMakeTradeBtn', '#buyWatchBtn',
+'#skinsList [data-fav]', '#cartCheckoutBtn', '#tabDealsBtn', '#tabLotsBtn',
+].join(',');
+
 document.addEventListener('DOMContentLoaded', () => {
 document.documentElement.classList.add('dg-web', session ? 'dg-web-in' : 'dg-web-guest');
-let guest = false;
-try { guest = sessionStorage.getItem('dg_web_guest') === '1'; } catch(e) {}
-if (!session && !guest) openGate();
+// Витрину гость видит сразу, без экрана входа. Вход просим только
+// там, где нужен аккаунт: покупка, «Хочу», предложение цены, сделки,
+// продажа. Сервер всё равно проверяет сессию в каждом таком запросе.
+if (!session){
+document.addEventListener('click', (e) => {
+const t = e.target.closest && e.target.closest(GUEST_GATED);
+if (!t) return;
+e.preventDefault();
+e.stopImmediatePropagation();
+openGate();
+}, true);
+}
 const inBtn = document.getElementById('webLoginBtn');
 if (inBtn) inBtn.addEventListener('click', openGate);
 const outBtn = document.getElementById('webLogoutBtn');
