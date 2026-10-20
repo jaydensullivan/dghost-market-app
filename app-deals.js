@@ -706,8 +706,14 @@ return url;
 }
 
 // Открыть внешнюю ссылку; если не вышло — скопировать её и сказать об этом.
+// На телефоне ссылки Steam идут через go.html: на iPhone с приложением
+// Steam Telegram отдаёт ссылку обмена приложению, и она молча теряется,
+// а переход со своей страницы остаётся в браузере.
 function openSteamLink(url){
 const dict = I18N[currentLang] || I18N.ru;
+if (!IS_DESKTOP && /^https:\/\/steamcommunity\.com\//.test(url)){
+url = location.origin + '/go.html?to=' + encodeURIComponent(url);
+}
 try {
 if (tg && tg.openLink) tg.openLink(url);
 else window.open(url, '_blank');
