@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DGhost Trade</title>
+<meta name="description" content="Расширение для продавцов DGhostMarket: обмен в Steam с проданным скином создаётся сам.">
+<link rel="icon" href="icon-48.png">
+<style>
+:root{ --bg:#0d0a14; --card:#15101f; --line:#2c2340; --text:#f1eefa; --muted:#a59cbf; --accent:#c084fc; }
+*{ box-sizing:border-box; }
+body{ margin:0; background:var(--bg); color:var(--text); font:16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+main{ max-width:640px; margin:0 auto; padding:32px 16px 48px; }
+header{ display:flex; align-items:center; gap:14px; margin-bottom:20px; }
+header img{ width:56px; height:56px; }
+h1{ margin:0; font-size:26px; }
+.lead{ color:var(--muted); margin:0 0 24px; }
+.card{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; margin-bottom:16px; }
+h2{ margin:0 0 10px; font-size:18px; color:var(--accent); }
+ol{ margin:0; padding-left:22px; }
+li{ margin:6px 0; }
+code{ background:#241b35; padding:1px 6px; border-radius:6px; font-size:14px; }
+.btn{ display:inline-block; margin-top:6px; padding:12px 18px; border-radius:12px; color:#fff; text-decoration:none; font-weight:600; background:linear-gradient(90deg,#7c3aed,#db2777); }
+.note{ color:var(--muted); font-size:14px; }
+</style>
+</head>
+<body>
+<main>
+<header>
+<img src="icon-128.png" alt="">
+<div>
+<h1>DGhost Trade</h1>
+<div class="note">для продавцов DGhostMarket · Chrome, Edge, Яндекс Браузер, Opera</div>
+</div>
+</header>
+<p class="lead">Когда скин продан, нажми в мини-аппе «Отправить обмен в Steam» на компьютере. Расширение само найдёт проданный предмет и создаст обмен с покупателем. Тебе останется подтвердить его в Steam Guard на телефоне.</p>
+
+<div class="card">
+<h2>Установка (Chrome, Edge, Яндекс, Opera)</h2>
+<ol>
+<li><a class="btn" href="dghost-trade.zip" download>Скачать расширение</a></li>
+<li>Распакуй архив в любую папку.</li>
+<li>Открой страницу расширений: <code>chrome://extensions</code> (в Edge — <code>edge://extensions</code>).</li>
+<li>Включи «Режим разработчика» справа сверху.</li>
+<li>Нажми «Загрузить распакованное расширение» и выбери распакованную папку.</li>
+<li>Войди в Steam в этом же браузере.</li>
+</ol>
+</div>
+
+<div class="card">
+<h2>Как пользоваться</h2>
+<ol>
+<li>Открой Telegram на компьютере, мини-апп DGhostMarket → «Сделки».</li>
+<li>Нажми «Отправить обмен в Steam» — откроется страница обмена в браузере.</li>
+<li>Справа снизу появится окно DGhost Trade: проверь скин и покупателя, нажми «Отправить обмен».</li>
+<li>Подтверди обмен в Steam Guard на телефоне и нажми «Отправил» в мини-аппе.</li>
+</ol>
+</div>
+
+<div class="card">
+<h2>Безопасность</h2>
+<p class="note">Расширение работает только на странице нового обмена Steam и только по ссылке из мини-аппа. Оно не знает твой пароль, ничего не отправляет без твоего нажатия и никуда не передаёт данные. Каждый обмен ты ещё раз подтверждаешь в Steam Guard. Никогда не ставь «помощников» из других источников и не вводи пароль Steam на сторонних сайтах.</p>
+</div>
+</main>
+</body>
+</html>

@@ -162,6 +162,9 @@ actionHtml = `<button class="deal-action" data-open-incoming="${deal.id}" type="
 // показываем причину, чтобы продавец не искал кнопку впустую.
 if (deal.partner_trade_link){
 actionHtml = `<button class="deal-action" data-open-trade="${deal.id}" type="button">${dict.btn_open_trade}</button>`;
+if (IS_DESKTOP && deal.asset_id){
+statusHtml += `<div class="deal-hint">${dict.trade_ext_hint} <a href="#" data-trade-ext>${dict.trade_ext_link}</a></div>`;
+}
 } else {
 statusHtml += `<div class="deal-hint">${dict.dlv_no_link}</div>`;
 }
@@ -714,8 +717,16 @@ navigator.clipboard?.writeText(url).catch(() => {});
 showToast(dict.steam_link_copied, { type: 'error', duration: 7000 });
 }
 
+// Расширение DGhost Trade (extension/) на компьютере находит предмет по
+// dghost_asset и создаёт обмен само; Steam лишние параметры игнорирует.
+const IS_DESKTOP = !/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+const TRADE_EXTENSION_URL = 'https://app.dghostmarket.com/extension/';
+
 function openSteamTrade(deal){
-const url = steamTradeUrl(deal.partner_trade_link);
+let url = steamTradeUrl(deal.partner_trade_link);
+if (url && deal.asset_id){
+url += '&dghost_asset=' + encodeURIComponent(deal.asset_id) + '&dghost_deal=' + encodeURIComponent(deal.id);
+}
 const dict = I18N[currentLang] || I18N.ru;
 if (!url){
 showToast(dict.dlv_no_link, { type: 'error', duration: 6000 });
@@ -751,6 +762,13 @@ data.state === 'pending' ? dict.dlv_pending : dict.dlv_unknown,
 })
 .catch(() => {});
 }
+
+document.addEventListener('click', (e) => {
+const link = e.target.closest('[data-trade-ext]');
+if (!link) return;
+e.preventDefault();
+openSteamLink(TRADE_EXTENSION_URL);
+});
 
 document.addEventListener('click', (e) => {
 const btn = e.target.closest('[data-open-trade]');
