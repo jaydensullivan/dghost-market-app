@@ -39,11 +39,12 @@ sets: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
 builder: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
 };
 
-// Категории и инструменты каталога — картинки настоящих предметов CS2
-// (icons/cat-*.webp, ~3 КБ каждая). Линейная иконка — если картинки нет.
+// Категории и инструменты каталога — картинки (icons/cat-*.webp, ~2–3 КБ):
+// оружие — базовые предметы CS2 без раскраски, остальное (Все, Наклейки,
+// Другое, Сеты, Билдер) — наши значки в цветах бренда.
 const CATEGORY_IMG_KEYS = ['all','knives','rifles','pistols','snipers','smgs','heavy','gloves','stickers','other','sets','builder'];
 
-// Огонь у «дешевле рынка» и «Выгоды дня» — коктейль Молотова из CS2.
+// Огонёк у «дешевле рынка» и «Выгоды дня» — наш значок (icons/fire.webp).
 const FIRE_ICON = '<img class="fire-ico" src="icons/fire.webp" alt="" width="16" height="16">';
 
 function categoryIconSvg(key){

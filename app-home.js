@@ -106,7 +106,7 @@ ${s.kicker ? `<div class="promo-kicker">${s.key.indexOf('deal') === 0 ? FIRE_ICO
 <div class="promo-text">${escapeHtml(s.text)}</div>
 </div>
 ${s.image ? `<img class="promo-img" src="${escapeHtml(s.image)}" alt="" onerror="this.remove()">` : ''}
-<button type="button" class="promo-btn" data-promo-btn="${i}" aria-label="${escapeHtml(s.btn)}"><img src="icons/arrow.webp" alt="" width="40" height="20"></button>
+<button type="button" class="promo-btn" data-promo-btn="${i}" aria-label="${escapeHtml(s.btn)}"><img src="icons/arrow.webp" alt="" width="32" height="16"></button>
 </div>`).join('');
 document.getElementById('promoDots').innerHTML = slides.length > 1
 ? slides.map((_, i) => `<span class="${i === 0 ? 'on' : ''}"></span>`).join('') : '';
