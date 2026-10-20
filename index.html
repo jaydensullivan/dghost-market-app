@@ -10,9 +10,11 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=4"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=76">
+<link rel="stylesheet" href="app.css?v=77">
 </head>
 <body data-tab="shop">
+<!-- Значки интерфейса в едином объёмном стиле (gi-*): <svg class="gi"><use href="#gi-…"/></svg>. -->
+<svg id="giSprite" width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" focusable="false"><defs><linearGradient id="gig" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c084fc"/><stop offset=".55" stop-color="#a855f7"/><stop offset="1" stop-color="#ff2bd6"/></linearGradient><linearGradient id="gig2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7b2cff"/><stop offset="1" stop-color="#ff2bd6"/></linearGradient><linearGradient id="gigold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3b0"/><stop offset=".5" stop-color="#fbbf24"/><stop offset="1" stop-color="#d97706"/></linearGradient><linearGradient id="gired" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fda4af"/><stop offset="1" stop-color="#e11d48"/></linearGradient><linearGradient id="gipink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8ad8"/><stop offset="1" stop-color="#ff2bd6"/></linearGradient><linearGradient id="gigreen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#86efac"/><stop offset="1" stop-color="#16a34a"/></linearGradient><filter id="gish" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="1.5" stdDeviation="1.3" flood-color="#000" flood-opacity=".5"/></filter></defs><symbol id="gi-shop" viewBox="0 0 48 48"><g filter="url(#gish)"><path d="M9 20h30v18a3 3 0 0 1-3 3H12a3 3 0 0 1-3-3z" fill="url(#gig2)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><path d="M8 10h32l3 9a5 5 0 0 1-9 2 5 5 0 0 1-10 0 5 5 0 0 1-10 0 5 5 0 0 1-9-2z" fill="url(#gig)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><rect x="20" y="28" width="8" height="13" rx="1.5" fill="#2a0a4a" opacity=".55"/></g><path d="M11 13h26" stroke="#fff" stroke-opacity=".6" stroke-width="2.2" fill="none" stroke-linecap="round"/></symbol><symbol id="gi-deals" viewBox="0 0 48 48"><g filter="url(#gish)"><path d="M10 18a14 14 0 0 1 25-6l2-4 2 12-12-1 4-3a9 9 0 0 0-16 3z" fill="url(#gig)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><path d="M38 30a14 14 0 0 1-25 6l-2 4-2-12 12 1-4 3a9 9 0 0 0 16-3z" fill="url(#gig2)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/></g><path d="M14 15a11 11 0 0 1 8-5" stroke="#fff" stroke-opacity=".6" stroke-width="2.2" fill="none" stroke-linecap="round"/></symbol><symbol id="gi-tag" viewBox="0 0 48 48"><g filter="url(#gish)"><path d="M24 6h14a4 4 0 0 1 4 4v14L22 44 4 26z" fill="url(#gig)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><circle cx="34" cy="14" r="3.5" fill="#2a0a4a"/></g><path d="M25 10h10" stroke="#fff" stroke-opacity=".6" stroke-width="2.2" fill="none" stroke-linecap="round"/></symbol><symbol id="gi-user" viewBox="0 0 48 48"><g filter="url(#gish)"><circle cx="24" cy="16" r="9" fill="url(#gig)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><path d="M8 42c1.5-9 8-14 16-14s14.5 5 16 14z" fill="url(#gig2)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/></g><path d="M19 12a6 6 0 0 1 5-3" stroke="#fff" stroke-opacity=".6" stroke-width="2.2" fill="none" stroke-linecap="round"/></symbol><symbol id="gi-coins" viewBox="0 0 48 48"><g filter="url(#gish)"><ellipse cx="24" cy="36" rx="15" ry="5" fill="#d97706" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><path d="M9 30v6c0 2.8 6.7 5 15 5s15-2.2 15-5v-6" fill="url(#gigold)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><ellipse cx="24" cy="30" rx="15" ry="5" fill="url(#gigold)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><path d="M9 20v10c0 2.8 6.7 5 15 5s15-2.2 15-5V20" fill="url(#gigold)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><ellipse cx="24" cy="20" rx="15" ry="5" fill="#fff3b0" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><path d="M9 11v9c0 2.8 6.7 5 15 5s15-2.2 15-5v-9" fill="url(#gigold)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><ellipse cx="24" cy="11" rx="15" ry="5" fill="#fef08a" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/></g><path d="M15 10c3-1.5 9-2 13-1" stroke="#fff" stroke-opacity=".6" stroke-width="2.2" fill="none" stroke-linecap="round"/></symbol><symbol id="gi-history" viewBox="0 0 48 48"><g filter="url(#gish)"><circle cx="25" cy="25" r="16" fill="url(#gig)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><circle cx="25" cy="25" r="11.5" fill="#2a0a4a" opacity=".35"/><path d="M25 16v10l7 4" stroke="#fff" stroke-width="3.2" stroke-linecap="round" fill="none"/><path d="M5 14l4 9 7-6z" fill="url(#gig2)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/></g><path d="M16 14a13 13 0 0 1 8-3" stroke="#fff" stroke-opacity=".6" stroke-width="2.2" fill="none" stroke-linecap="round"/></symbol><symbol id="gi-gift" viewBox="0 0 48 48"><g filter="url(#gish)"><rect x="8" y="20" width="32" height="21" rx="3" fill="url(#gig2)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><rect x="6" y="14" width="36" height="8" rx="2.5" fill="url(#gig)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><rect x="21" y="14" width="6" height="27" fill="url(#gigold)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><path d="M24 14c-4-7-12-7-11-2s11 2 11 2zM24 14c4-7 12-7 11-2s-11 2-11 2z" fill="url(#gigold)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/></g><path d="M9 17h10" stroke="#fff" stroke-opacity=".6" stroke-width="2.2" fill="none" stroke-linecap="round"/></symbol><symbol id="gi-heart" viewBox="0 0 48 48"><g filter="url(#gish)"><path d="M24 41s-16-9.5-18.5-19C3.8 15.5 8 9 14.5 9c4 0 7 2.2 9.5 5.5C26.5 11.2 29.5 9 33.5 9 40 9 44.2 15.5 42.5 22 40 31.5 24 41 24 41z" fill="url(#gipink)" stroke="#5a0a3a" stroke-width="1.2" stroke-linejoin="round"/></g><path d="M11 16c1-2.5 3-3.6 5-3.6" stroke="#fff" stroke-opacity=".6" stroke-width="2.2" fill="none" stroke-linecap="round"/></symbol><symbol id="gi-gavel" viewBox="0 0 48 48"><g filter="url(#gish)"><rect x="8" y="38" width="22" height="5" rx="2" fill="url(#gig2)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><path d="M22 22l15 15-3.5 3.5-15-15z" fill="#d8b4fe" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><rect x="13" y="6" width="12" height="20" rx="2.5" transform="rotate(-45 19 16)" fill="url(#gig)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/></g><path d="M13 11l6-6" stroke="#fff" stroke-opacity=".6" stroke-width="2.2" fill="none" stroke-linecap="round"/></symbol><symbol id="gi-help" viewBox="0 0 48 48"><g filter="url(#gish)"><path d="M24 6c10 0 18 7 18 16s-8 16-18 16c-2 0-4-.3-6-.9L9 42l2-8c-3-3-5-7-5-12C6 13 14 6 24 6z" fill="url(#gig)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/></g><path d="M19 18a5 5 0 1 1 7 4.6c-1.2.6-2 1.4-2 2.9v1" stroke="#fff" stroke-width="3.2" stroke-linecap="round" fill="none"/><circle cx="24" cy="32" r="2" fill="#fff"/></symbol><symbol id="gi-doc" viewBox="0 0 48 48"><g filter="url(#gish)"><path d="M12 5h17l9 9v26a3 3 0 0 1-3 3H12a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3z" fill="url(#gig)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><path d="M29 5v9h9z" fill="#e9d5ff" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/></g><path d="M15 21h18M15 27h18M15 33h12" stroke="#fff" stroke-opacity=".85" stroke-width="2.6" stroke-linecap="round"/></symbol><symbol id="gi-bell" viewBox="0 0 48 48"><g filter="url(#gish)"><path d="M24 6c-7 0-12 5.5-12 12.5v7.5L8 32v3h32v-3l-4-6v-7.5C36 11.5 31 6 24 6z" fill="url(#gig)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><path d="M19 37a5 5 0 0 0 10 0z" fill="#ff2bd6" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><circle cx="24" cy="5.5" r="2.4" fill="#d8b4fe" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/></g><path d="M16 19c0-4 3-8 7-8.6" stroke="#fff" stroke-opacity=".6" stroke-width="2.2" fill="none" stroke-linecap="round"/></symbol><symbol id="gi-cart" viewBox="0 0 48 48"><g filter="url(#gish)"><path d="M4 7h6l5 24h22l4-17H12" fill="none" stroke="url(#gig2)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 14h28l-4 17H16z" fill="url(#gig)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><circle cx="18" cy="39" r="3.6" fill="#d8b4fe" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><circle cx="34" cy="39" r="3.6" fill="#d8b4fe" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/></g><path d="M16 18h20" stroke="#fff" stroke-opacity=".6" stroke-width="2.2" fill="none" stroke-linecap="round"/></symbol><symbol id="gi-share" viewBox="0 0 48 48"><g filter="url(#gish)"><path d="M14 24l20-11M14 24l20 11" stroke="#d8b4fe" stroke-width="3.5"/><circle cx="13" cy="24" r="7" fill="url(#gig)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><circle cx="35" cy="12" r="7" fill="url(#gig)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><circle cx="35" cy="36" r="7" fill="url(#gig2)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/></g></symbol><symbol id="gi-cube" viewBox="0 0 48 48"><g filter="url(#gish)"><path d="M24 5l17 9v20l-17 9-17-9V14z" fill="url(#gig2)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><path d="M24 5l17 9-17 9-17-9z" fill="#d8b4fe" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><path d="M24 23v20" stroke="#2a0a4a" stroke-width="1.2"/></g><path d="M24 8l11 6-11 6" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.6" stroke-linecap="round"/></symbol><symbol id="gi-ar" viewBox="0 0 48 48"><g filter="url(#gish)"><path d="M24 12l11 6v13l-11 6-11-6V18z" fill="url(#gig2)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><path d="M24 12l11 6-11 6-11-6z" fill="#d8b4fe" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/></g><path d="M5 13V6h7M43 13V6h-7M5 35v7h7M43 35v7h-7" stroke="url(#gig)" stroke-width="3.5" stroke-linecap="round" fill="none"/></symbol><symbol id="gi-trash" viewBox="0 0 48 48"><g filter="url(#gish)"><path d="M11 14h26l-2.5 26a3 3 0 0 1-3 3h-15a3 3 0 0 1-3-3z" fill="url(#gired)" stroke="#5a0a1a" stroke-width="1.2" stroke-linejoin="round"/><rect x="7" y="9" width="34" height="6" rx="2.5" fill="#fda4af" stroke="#5a0a1a" stroke-width="1.2"/><path d="M19 9V6h10v3" stroke="#5a0a1a" stroke-width="2" fill="none"/></g><path d="M19 21v15M24 21v15M29 21v15" stroke="#fff" stroke-opacity=".7" stroke-width="2.2" stroke-linecap="round"/></symbol><symbol id="gi-shield" viewBox="0 0 48 48"><g filter="url(#gish)"><path d="M24 4l17 6v12c0 11-7.5 18-17 22C14.5 40 7 33 7 22V10z" fill="url(#gig)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/></g><path d="M16 23l6 6 11-12" stroke="#fff" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M11 12l8-3" stroke="#fff" stroke-opacity=".6" stroke-width="2.2" fill="none" stroke-linecap="round"/></symbol><symbol id="gi-idcard" viewBox="0 0 48 48"><g filter="url(#gish)"><rect x="4" y="9" width="40" height="30" rx="5" fill="url(#gig)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/></g><circle cx="16" cy="21" r="4.5" fill="#fff"/><path d="M9 33c.8-4 3.6-6 7-6s6.2 2 7 6z" fill="#fff"/><path d="M28 19h11M28 25h11M28 31h7" stroke="#fff" stroke-opacity=".85" stroke-width="2.6" stroke-linecap="round"/></symbol><symbol id="gi-people" viewBox="0 0 48 48"><g filter="url(#gish)"><circle cx="32" cy="15" r="7" fill="url(#gig2)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><path d="M20 38c1-7 6-11 12-11s11 4 12 11z" fill="url(#gig2)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><circle cx="18" cy="17" r="8" fill="url(#gig)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><path d="M4 42c1.2-8 7-12.5 14-12.5S30.8 34 32 42z" fill="url(#gig)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/></g><path d="M14 13a5 5 0 0 1 4-2.5" stroke="#fff" stroke-opacity=".6" stroke-width="2.2" fill="none" stroke-linecap="round"/></symbol><symbol id="gi-globe" viewBox="0 0 48 48"><g filter="url(#gish)"><circle cx="24" cy="24" r="18" fill="url(#gig)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/></g><path d="M6 24h36M24 6c-6 6-6 30 0 36M24 6c6 6 6 30 0 36M9 15h30M9 33h30" stroke="#fff" stroke-opacity=".7" stroke-width="1.8" fill="none"/><path d="M13 12a16 16 0 0 1 8-4" stroke="#fff" stroke-opacity=".6" stroke-width="2.2" fill="none" stroke-linecap="round"/></symbol><symbol id="gi-palette" viewBox="0 0 48 48"><g filter="url(#gish)"><path d="M24 5C13 5 5 13 5 23c0 9 7 17 16 17 3 0 4-2 3-4-1.5-3 0-6 4-6h5c5 0 10-4 10-10C43 11 35 5 24 5z" fill="url(#gig)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/></g><circle cx="15" cy="20" r="3.4" fill="#fbbf24"/><circle cx="22" cy="13" r="3.4" fill="#22d3ee"/><circle cx="32" cy="14" r="3.4" fill="#4ade80"/><circle cx="14" cy="30" r="3.4" fill="#fff"/></symbol><symbol id="gi-grid" viewBox="0 0 48 48"><g filter="url(#gish)"><rect x="7" y="7" width="15" height="15" rx="4" fill="url(#gig)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><rect x="26" y="7" width="15" height="15" rx="4" fill="url(#gig)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><rect x="7" y="26" width="15" height="15" rx="4" fill="url(#gig)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/><rect x="26" y="26" width="15" height="15" rx="4" fill="url(#gig)" stroke="#2a0a4a" stroke-width="1.2" stroke-linejoin="round"/></g><path d="M10 10h9M29 10h9M10 29h9M29 29h9" stroke="#fff" stroke-opacity=".6" stroke-width="2.2" fill="none" stroke-linecap="round"/></symbol><symbol id="gi-exit" viewBox="0 0 48 48"><g filter="url(#gish)"><path d="M8 6h18a3 3 0 0 1 3 3v30a3 3 0 0 1-3 3H8z" fill="url(#gired)" stroke="#5a0a1a" stroke-width="1.2" stroke-linejoin="round"/><path d="M22 24h20M35 17l7 7-7 7" stroke="#fda4af" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></g><circle cx="22" cy="25" r="1.8" fill="#5a0a1a"/></symbol><symbol id="gi-trade" viewBox="0 0 48 48"><g filter="url(#gish)"><path d="M6 15h28l-6-6M42 33H14l6 6" stroke="url(#gig)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></g></symbol><symbol id="gi-star" viewBox="0 0 48 48"><g filter="url(#gish)"><path d="M24 4l6 12.5 13.5 2-9.8 9.5 2.3 13.5L24 35l-12 6.5 2.3-13.5L4.5 18.5l13.5-2z" fill="url(#gigold)" stroke="#7a4a00" stroke-width="1.2" stroke-linejoin="round"/></g><path d="M20 15l3-6" stroke="#fff" stroke-opacity=".6" stroke-width="2.2" fill="none" stroke-linecap="round"/></symbol></svg>
 
 <div class="princess-bg" id="princessBg"></div>
 
@@ -25,7 +27,7 @@
 <button type="button" class="balance-pill-info" id="balanceInfoBtn" aria-label="Как работает холд">ⓘ</button>
 </div>
 <button type="button" id="navCartBtn" class="brand-logo notif-bell" aria-label="Корзина" style="display:none;">
-<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h2l2.2 12.4a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 2-1.6L21 7H6"/></svg>
+<svg class="gi" width="26" height="26" aria-hidden="true"><use href="#gi-cart"/></svg>
 <span class="notif-badge" id="navCartBadge" style="display:none;">0</span>
 </button>
 <button type="button" id="notifBellBtn" class="brand-logo notif-bell" aria-label="Уведомления">
@@ -36,16 +38,16 @@
 <img src="icons/profile.webp" alt="" width="40" height="40" style="width:100%; height:100%; object-fit:cover;">
 </button>
 <div id="headerMenu" class="edit-sheet" style="display:none; position:absolute; top:48px; right:0; width:210px; padding:8px; border-radius:14px; z-index:501;">
-<button type="button" class="header-menu-item" data-header-action="profile">👤 <span data-i18n="header_menu_profile">Профиль</span></button>
-<button type="button" class="header-menu-item" data-header-action="balance">💰 <span data-i18n="header_menu_balance">Баланс</span></button>
-<button type="button" class="header-menu-item" data-header-action="history">📜 <span data-i18n="header_menu_history">История сделок</span></button>
-<button type="button" class="header-menu-item" data-header-action="giveaway">🎁 <span data-i18n="nav_giveaway">Раздача</span></button>
-<button type="button" class="header-menu-item" data-header-action="wants">❤️ <span data-i18n="header_menu_wants">Хочу</span></button>
-<button type="button" class="header-menu-item" data-header-action="auctionsList">🔨 <span data-i18n="nav_auctions_short">Аукционы</span></button>
-<button type="button" class="header-menu-item" data-header-action="sell">🏷️ <span data-i18n="header_menu_sell">Продать скин</span></button>
-<button type="button" class="header-menu-item" data-header-action="support">🆘 <span data-i18n="header_menu_support">Поддержка</span></button>
-<button type="button" class="header-menu-item" data-header-action="legal">📄 <span data-i18n="header_menu_legal">Правила и оферты</span></button>
-<button type="button" class="header-menu-item" data-header-action="auctions" id="headerMenuAuctions" style="display:none;">🔨 <span data-i18n="header_menu_auctions">Аукцион</span></button>
+<button type="button" class="header-menu-item" data-header-action="profile"><svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-user"/></svg> <span data-i18n="header_menu_profile">Профиль</span></button>
+<button type="button" class="header-menu-item" data-header-action="balance"><svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-coins"/></svg> <span data-i18n="header_menu_balance">Баланс</span></button>
+<button type="button" class="header-menu-item" data-header-action="history"><svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-history"/></svg> <span data-i18n="header_menu_history">История сделок</span></button>
+<button type="button" class="header-menu-item" data-header-action="giveaway"><svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-gift"/></svg> <span data-i18n="nav_giveaway">Раздача</span></button>
+<button type="button" class="header-menu-item" data-header-action="wants"><svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-heart"/></svg> <span data-i18n="header_menu_wants">Хочу</span></button>
+<button type="button" class="header-menu-item" data-header-action="auctionsList"><svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-gavel"/></svg> <span data-i18n="nav_auctions_short">Аукционы</span></button>
+<button type="button" class="header-menu-item" data-header-action="sell"><svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-tag"/></svg> <span data-i18n="header_menu_sell">Продать скин</span></button>
+<button type="button" class="header-menu-item" data-header-action="support"><svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-help"/></svg> <span data-i18n="header_menu_support">Поддержка</span></button>
+<button type="button" class="header-menu-item" data-header-action="legal"><svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-doc"/></svg> <span data-i18n="header_menu_legal">Правила и оферты</span></button>
+<button type="button" class="header-menu-item" data-header-action="auctions" id="headerMenuAuctions" style="display:none;"><svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-gavel"/></svg> <span data-i18n="header_menu_auctions">Аукцион</span></button>
 <button type="button" class="header-menu-item" data-header-action="admin" id="headerMenuAdmin" style="display:none;">⚙️ <span data-i18n="header_menu_admin">Админка</span></button>
 </div>
 </div>
@@ -124,19 +126,19 @@
 
 <div class="bottom-nav" id="bottomNav">
 <button class="nav-btn active" id="tabShopBtn" type="button">
-<span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg></span>
+<span class="nav-icon"><svg class="gi" width="26" height="26" aria-hidden="true"><use href="#gi-shop"/></svg></span>
 <span class="nav-label" data-i18n="nav_market">Маркет</span>
 </button>
 <button class="nav-btn" id="tabDealsBtn" type="button">
-<span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5z"/><path d="M3.5 7.5 12 12l8.5-4.5M12 12v9"/></svg></span>
+<span class="nav-icon"><svg class="gi" width="26" height="26" aria-hidden="true"><use href="#gi-deals"/></svg></span>
 <span class="nav-label" data-i18n="nav_deals">Сделки</span>
 </button>
 <button class="nav-btn" id="tabLotsBtn" type="button">
-<span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span>
+<span class="nav-icon"><svg class="gi" width="26" height="26" aria-hidden="true"><use href="#gi-tag"/></svg></span>
 <span class="nav-label" data-i18n="nav_sell">Продать</span>
 </button>
 <button class="nav-btn" id="tabProfileBtn" type="button">
-<span class="nav-icon" id="navAvatarIcon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.2-4 4-6 7.5-6s6.3 2 7.5 6"/></svg></span>
+<span class="nav-icon" id="navAvatarIcon"><svg class="gi" width="26" height="26" aria-hidden="true"><use href="#gi-user"/></svg></span>
 <span class="nav-label" data-i18n="nav_profile">Профиль</span>
 </button>
 </div>
@@ -248,7 +250,7 @@
 <div class="profile-card pf-hero rain-card-wrap">
 <canvas id="rain"></canvas>
 <div class="pf-hero-row">
-<div class="profile-avatar" id="profileAvatar"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.2-4 4-6 7.5-6s6.3 2 7.5 6"/></svg></div>
+<div class="profile-avatar" id="profileAvatar"><svg class="gi" width="30" height="30" aria-hidden="true"><use href="#gi-user"/></svg></div>
 <div class="pf-hero-info">
 <div class="pf-name-row"><div class="profile-name" id="profileName">—</div><span class="pf-verified" id="profileVerified" style="display:none;" title="Проверенный продавец"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="m12 1.5 2.6 2 3.3-.2.9 3.2 2.7 1.9-1.2 3.1 1.2 3.1-2.7 1.9-.9 3.2-3.3-.2-2.6 2-2.6-2-3.3.2-.9-3.2-2.7-1.9L4.8 12 3.6 8.9l2.7-1.9.9-3.2 3.3.2z"/><path d="m8.5 12.2 2.4 2.4 4.6-4.9" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
 <div class="trust-badge" id="trustBadge" style="display:none;"></div>
@@ -260,7 +262,7 @@
 <!-- 💰 Баланс -->
 <div class="pf-card pf-balance">
 <div class="pf-balance-top">
-<div class="pf-ico violet"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg></div>
+<div class="pf-ico violet"><svg class="gi" width="26" height="26" aria-hidden="true"><use href="#gi-coins"/></svg></div>
 <div class="pf-balance-info">
 <div class="pf-label" data-i18n="pf_balance">Баланс</div>
 <div class="pf-balance-amount" id="profileBalanceAmount">—</div>
@@ -282,15 +284,15 @@
 <!-- 📊 Моя активность -->
 <div class="profile-stats pf-stats">
 <button type="button" class="stat-box" data-pf-go="deals">
-<div class="pf-ico green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></div>
+<div class="pf-ico green"><svg class="gi" width="26" height="26" aria-hidden="true"><use href="#gi-tag"/></svg></div>
 <div><div class="stat-value" id="statSold">—</div><div class="stat-label" data-i18n="stat_sold">Продано</div></div>
 </button>
 <button type="button" class="stat-box" data-pf-go="deals">
-<div class="pf-ico blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h2l2.2 12.4a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 2-1.6L21 7H6"/></svg></div>
+<div class="pf-ico blue"><svg class="gi" width="26" height="26" aria-hidden="true"><use href="#gi-cart"/></svg></div>
 <div><div class="stat-value" id="statBought">—</div><div class="stat-label" data-i18n="stat_bought">Куплено</div></div>
 </button>
 <button type="button" class="stat-box" data-pf-go="lots">
-<div class="pf-ico orange"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m12 2 9 5v10l-9 5-9-5V7z"/><path d="m3 7 9 5 9-5M12 12v10"/></svg></div>
+<div class="pf-ico orange"><svg class="gi" width="26" height="26" aria-hidden="true"><use href="#gi-cube"/></svg></div>
 <div><div class="stat-value" id="statActive">—</div><div class="stat-label" data-i18n="stat_active">Активных лотов</div></div>
 </button>
 </div>
@@ -338,7 +340,7 @@
 <!-- 🪪 Стать продавцом — только пока не проверен -->
 <div class="pf-card" id="profileSellerSection">
 <div class="pf-card-head">
-<div class="pf-ico green"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.4 1.7-2 3-2s2.4.6 3 2M14 10h4M14 13h3"/></svg></div>
+<div class="pf-ico green"><svg class="gi" width="26" height="26" aria-hidden="true"><use href="#gi-idcard"/></svg></div>
 <div class="pf-card-title"><div class="pf-title" data-i18n="pf_seller_title">Статус продавца</div></div>
 </div>
 <div id="sellerStatusNone">
@@ -358,7 +360,7 @@
 <!-- 🛡 Безопасность — сворачивается -->
 <details class="pf-card pf-collapse" id="profile2faSection">
 <summary class="pf-card-head">
-<div class="pf-ico teal"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2 4 5v6c0 5 3.4 9.5 8 11 4.6-1.5 8-6 8-11V5z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg></div>
+<div class="pf-ico teal"><svg class="gi" width="26" height="26" aria-hidden="true"><use href="#gi-shield"/></svg></div>
 <div class="pf-card-title">
 <div class="pf-title" data-i18n="pf_2fa_title">Двухэтапная защита</div>
 <div class="pf-status" id="totpSummaryStatus"><span class="pf-dot"></span><span></span></div>
@@ -465,7 +467,7 @@
 
 <div class="pf-card" id="profileWantsCard">
 <div class="pf-card-head">
-<div class="pf-ico gold"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 20.5s-7.5-4.6-9.2-9.3C1.6 7.8 3.9 4.5 7.3 4.5c2 0 3.6 1.1 4.7 2.7 1.1-1.6 2.7-2.7 4.7-2.7 3.4 0 5.7 3.3 4.5 6.7-1.7 4.7-9.2 9.3-9.2 9.3z"/></svg></div>
+<div class="pf-ico gold"><svg class="gi" width="26" height="26" aria-hidden="true"><use href="#gi-heart"/></svg></div>
 <div class="pf-card-title">
 <div class="pf-title" data-i18n="wants_title">Хочу</div>
 <div class="pf-sub" data-i18n="wants_profile_hint">Скины, за которыми следишь, и твои заявки «Ищу».</div>
@@ -477,7 +479,7 @@
 <!-- 👥 Рефералы -->
 <div class="pf-card" id="profileReferralSection">
 <div class="pf-card-head">
-<div class="pf-ico violet"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.8-3.4 3.2-5.2 6-5.2s5.2 1.8 6 5.2"/><circle cx="17" cy="9" r="2.4"/><path d="M16.5 14.3c2.4.2 4 1.9 4.5 4.7"/></svg></div>
+<div class="pf-ico violet"><svg class="gi" width="26" height="26" aria-hidden="true"><use href="#gi-people"/></svg></div>
 <div class="pf-card-title">
 <div class="pf-title" data-i18n="pf_referral_title">Реферальная программа</div>
 <div class="pf-sub" id="referralBonusText">Загрузка...</div>
@@ -505,7 +507,7 @@
 
 <!-- ⚙️ Настройки -->
 <div class="pf-card pf-lang" id="profileLanguageSection">
-<div class="pf-lang-head"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.7 5.7 3.7 9s-1.2 6.3-3.7 9c-2.5-2.7-3.7-5.7-3.7-9S9.5 5.7 12 3z"/></svg><span data-i18n="section_language">Язык</span></div>
+<div class="pf-lang-head"><svg class="gi" width="26" height="26" aria-hidden="true"><use href="#gi-globe"/></svg><span data-i18n="section_language">Язык</span></div>
 <div class="lang-switch">
 <button type="button" class="lang-btn" id="langBtnRu" data-lang="ru">🇷🇺 Русский</button>
 <button type="button" class="lang-btn" id="langBtnUz" data-lang="uz">🇺🇿 O'zbekcha</button>
@@ -514,9 +516,9 @@
 </div>
 
 <div class="pf-card pf-lang pf-theme" id="profileThemeSection">
-<div class="pf-lang-head"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/></svg><span data-i18n="section_theme">Тема оформления</span></div>
+<div class="pf-lang-head"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-palette"/></svg><span data-i18n="section_theme">Тема оформления</span></div>
 <div class="theme-switch" id="themeSwitch"></div>
-<div class="pf-lang-head"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span data-i18n="section_card_view">Вид карточек</span></div>
+<div class="pf-lang-head"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-grid"/></svg><span data-i18n="section_card_view">Вид карточек</span></div>
 <div class="view-switch">
 <button type="button" class="view-btn" data-card-view="normal" data-i18n="card_view_normal">Обычный</button>
 <button type="button" class="view-btn" data-card-view="showcase" data-i18n="card_view_showcase">Витрина</button>
@@ -524,14 +526,14 @@
 </div>
 
 <div class="pf-settings">
-<button type="button" class="pf-set-btn dgw-guest-only" id="webLoginBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 4 3 11l6 2 2 6 3-4 5 4z"/><path d="m9 13 8-6"/></svg><span data-i18n="web_login">Войти через Telegram</span></button>
-<button type="button" class="pf-set-btn dgw-in-only" id="webLogoutBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5M5 12h11"/></svg><span data-i18n="web_logout">Выйти из аккаунта на сайте</span></button>
-<button type="button" class="pf-set-btn" data-pf-action="notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span data-i18n="pf_notifications">Уведомления</span></button>
-<button type="button" class="pf-set-btn pf-seller-only" id="openHistoryBtn" style="display:none;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg><span data-i18n="pf_history">История операций</span></button>
-<button type="button" class="pf-set-btn pf-seller-only" id="exportSalesCsvBtn" style="display:none;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 15V3M7 10l5 5 5-5"/><path d="M4 21h16"/></svg><span data-i18n="btn_export_csv">Экспорт CSV</span></button>
-<button type="button" class="pf-set-btn" data-pf-action="legal"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span data-i18n="header_menu_legal">Правила и оферты</span></button>
-<button type="button" class="pf-set-btn" data-pf-action="support"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7M12 17h.01"/></svg><span data-i18n="pf_help">Помощь</span></button>
-<button type="button" class="pf-set-btn danger" data-pf-action="exit"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l-5-5 5-5M5 12h11"/></svg><span data-i18n="pf_exit">Выйти</span></button>
+<button type="button" class="pf-set-btn dgw-guest-only" id="webLoginBtn"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-user"/></svg><span data-i18n="web_login">Войти через Telegram</span></button>
+<button type="button" class="pf-set-btn dgw-in-only" id="webLogoutBtn"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-exit"/></svg><span data-i18n="web_logout">Выйти из аккаунта на сайте</span></button>
+<button type="button" class="pf-set-btn" data-pf-action="notifications"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-bell"/></svg><span data-i18n="pf_notifications">Уведомления</span></button>
+<button type="button" class="pf-set-btn pf-seller-only" id="openHistoryBtn" style="display:none;"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-history"/></svg><span data-i18n="pf_history">История операций</span></button>
+<button type="button" class="pf-set-btn pf-seller-only" id="exportSalesCsvBtn" style="display:none;"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-doc"/></svg><span data-i18n="btn_export_csv">Экспорт CSV</span></button>
+<button type="button" class="pf-set-btn" data-pf-action="legal"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-doc"/></svg><span data-i18n="header_menu_legal">Правила и оферты</span></button>
+<button type="button" class="pf-set-btn" data-pf-action="support"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-help"/></svg><span data-i18n="pf_help">Помощь</span></button>
+<button type="button" class="pf-set-btn danger" data-pf-action="exit"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-exit"/></svg><span data-i18n="pf_exit">Выйти</span></button>
 </div>
 
 </div>
@@ -590,7 +592,7 @@
 <div id="wantsPaneWatch">
 <div class="pf-card" id="profileWishlistSection">
 <div class="pf-card-head">
-<div class="pf-ico gold"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z"/></svg></div>
+<div class="pf-ico gold"><svg class="gi" width="26" height="26" aria-hidden="true"><use href="#gi-star"/></svg></div>
 <div class="pf-card-title">
 <div class="pf-title" data-i18n="pf_wishlist_title">Каталог желаний</div>
 <div class="pf-sub" data-i18n="wishlist_intro_hint">Сохрани, что ищешь — пришлём уведомление, когда подходящий лот появится или подешевеет.</div>
@@ -1746,23 +1748,23 @@
 
 <div class="buy-actions-row">
 <button type="button" id="buyShareBtn" class="buy-action-btn">
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+<svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-share"/></svg>
 <span data-i18n="btn_share">Поделиться</span>
 </button>
 <button type="button" id="buy3dBtn" class="buy-action-btn" style="display:none;">
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M3 7l9 5 9-5M12 12v10"/></svg>
+<svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-cube"/></svg>
 <span data-i18n="btn_3d">3D</span>
 </button>
 <button type="button" id="buyArBtn" class="buy-action-btn" style="display:none;">
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 3l6 3.5v6L12 16l-6-3.5v-6z"/><path d="M6 6.5l6 3.5 6-3.5M12 10v6"/><path d="M2 19.5l5-2.5h10l5 2.5"/></svg>
+<svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-ar"/></svg>
 <span data-i18n="btn_ar">На столе</span>
 </button>
 <button type="button" id="buyWatchBtn" class="buy-action-btn">
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+<svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-heart"/></svg>
 <span data-i18n="watch_btn">Следить</span>
 </button>
 <button type="button" id="buyRemoveBtn" class="buy-action-btn" style="display:none;">
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg>
+<svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-trash"/></svg>
 <span data-i18n="btn_remove_listing">Снять с продажи</span>
 </button>
 </div>
@@ -2146,7 +2148,7 @@
 </div>
 
 <script src="app-core.js?v=12"></script>
-<script src="app-i18n.js?v=108"></script>
+<script src="app-i18n.js?v=109"></script>
 <script src="app-navigation.js?v=21"></script>
 <script src="app-shop.js?v=32"></script>
 <script src="app-legal.js?v=2"></script>
