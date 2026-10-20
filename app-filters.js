@@ -2500,6 +2500,16 @@ const p2pSkinDetailsBox = document.getElementById('p2pSkinDetailsBox');
 const p2pSkinCloseBtn = document.getElementById('p2pSkinCloseBtn');
 const p2pSkinReceiptInput = document.getElementById('p2pSkinReceiptInput');
 const p2pSkinReceiptPreview = document.getElementById('p2pSkinReceiptPreview');
+const p2pSkinPayerName = document.getElementById('p2pSkinPayerName');
+
+// Имя держателя карты: минимум имя и фамилия. Запоминаем на устройстве,
+// чтобы не вводить при каждой покупке.
+function p2pPayerNameValue(){
+return p2pSkinPayerName.value.trim().replace(/\s+/g, ' ');
+}
+function p2pPayerNameValid(){
+return p2pPayerNameValue().split(' ').filter(w => w.length >= 2).length >= 2;
+}
 
 // Оплата картой на странице банка: бот резервирует лот и создаёт заказ,
 // мини-апп открывает страницу оплаты. Итог банк присылает боту — лот
@@ -2564,6 +2574,7 @@ pendingP2pOrderId = data.order_id;
 p2pReceiptBase64 = null;
 p2pSkinReceiptInput.value = '';
 p2pSkinReceiptPreview.style.display = 'none';
+try { p2pSkinPayerName.value = localStorage.getItem('dg_payer_name') || ''; } catch (e) { p2pSkinPayerName.value = ''; }
 p2pSkinDetailsText.textContent = data.card_details || p2pCardDetails || 'Реквизиты не заданы — обратись в поддержку.';
 p2pSkinAmount.textContent = formatCoins(data.amount);
 p2pSkinSentBtn.disabled = true;
@@ -2645,13 +2656,20 @@ p2pSkinSentBtn.addEventListener('click', () => {
 if (!pendingP2pOrderId || !tg || !tg.initData || !p2pReceiptBase64) return;
 
 const dict = I18N[currentLang] || I18N.ru;
+if (!p2pPayerNameValid()){
+p2pSkinStatus.textContent = dict.p2p_skin_payer_required;
+p2pSkinPayerName.focus();
+return;
+}
+const payerName = p2pPayerNameValue();
+try { localStorage.setItem('dg_payer_name', payerName); } catch (e) {}
 p2pSkinSentBtn.disabled = true;
 p2pSkinStatus.textContent = dict.p2p_skin_sending;
 
 fetch(API_BASE + '/api/p2p_skin_orders/' + pendingP2pOrderId + '/mark_sent', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ init_data: tg.initData, photo_base64: p2pReceiptBase64 })
+body: JSON.stringify({ init_data: tg.initData, photo_base64: p2pReceiptBase64, payer_name: payerName })
 })
 .then(async r => {
 if (!r.ok){

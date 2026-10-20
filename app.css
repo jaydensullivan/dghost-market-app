@@ -4685,3 +4685,4 @@ body.layout-large #skinsList .skin-badges{ top:8px; left:8px; gap:6px; }
 .skin-fav:not(.on) .gi{ filter:grayscale(1) brightness(1.5); opacity:.7; }
 .skin-fav.on .gi{ filter:drop-shadow(0 0 5px rgba(255,43,214,0.6)); }
 .gi-placeholder{ width:40px; height:40px; opacity:.55; }
+.p2p-payer-hint{ margin-top:6px; font-size:12px; line-height:1.4; color:var(--muted); }
