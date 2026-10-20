@@ -175,7 +175,7 @@ const gate = document.createElement('div');
 gate.className = 'dgw-gate';
 gate.innerHTML =
 '<div class="dgw-gate-box">'
-+ '<img class="dgw-gate-logo" src="logo.PNG" alt="">'
++ '<img class="dgw-gate-logo" src="logo.webp" alt="">'
 + '<div class="dgw-gate-title"></div>'
 + '<div class="dgw-gate-text"></div>'
 + '<div class="dgw-gate-widget"></div>'

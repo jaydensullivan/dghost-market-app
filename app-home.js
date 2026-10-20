@@ -58,7 +58,7 @@ kicker: '',
 title: dict.promo_sell_title,
 text: dict.promo_sell_text,
 btn: dict.promo_sell_btn,
-image: 'coin.PNG',
+image: 'coin-512.webp',
 action: () => { goToScreen('lots'); setTimeout(() => addSkinBtn.click(), 150); },
 });
 return slides;

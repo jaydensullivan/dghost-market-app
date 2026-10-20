@@ -85,7 +85,7 @@ top:0;
 left:0;
 width:100vw;
 height:100vh;
-background-image:url('app-bg.jpg');
+background-image:url('app-bg.webp');
 background-size:cover;
 background-position:center center;
 opacity:0.35;
@@ -4583,3 +4583,40 @@ padding:2px 7px; border-radius:6px; font-size:11px; font-weight:700; line-height
 .pro-no{ opacity:.4; }
 
 .save.pro-cta{ background:linear-gradient(90deg, var(--accent), var(--accent-2)); color:#fff; }
+
+/* ---------- мобильная читаемость и зоны нажатия ----------
+   Внешний вид прежний: меняются только размер мелкого текста, перенос
+   цены со скидкой и невидимая зона нажатия вокруг маленьких кнопок. */
+
+/* Цена со скидкой: старая цена отдельной строкой, сумма и «сум» не рвутся. */
+.skin-price.has-discount .skin-price-old{
+display:block;
+font-size:11px;
+font-weight:500;
+line-height:1.2;
+color:var(--muted);
+text-decoration:line-through;
+white-space:nowrap;
+}
+.skin-price-now{ white-space:nowrap; }
+.skin-price-off{ font-size:11px; color:#7ec98a; white-space:nowrap; }
+
+/* Мелкий текст: подписи меню и тип оружия — не меньше 11px, плашки — 10px. */
+.nav-label{ font-size:11px; }
+.skin-weapon-type{ font-size:11px; }
+.skin-badge{ font-size:10px; }
+
+/* «Хочу» на карточке: значок 30px, а нажимается область 44×44
+   (расширяем внутрь карточки — снаружи её обрезает фото). */
+.skin-fav::after{
+content:'';
+position:absolute;
+top:-4px; right:-4px; bottom:-10px; left:-10px;
+}
+
+/* Компакт / Крупная: кнопки выглядят как раньше, но зона нажатия 44px. */
+.layout-switch{ overflow:visible; }
+.layout-btn{ position:relative; }
+.layout-btn:first-child{ border-radius:9px 0 0 9px; }
+.layout-btn:last-child{ border-radius:0 9px 9px 0; }
+.layout-btn::after{ content:''; position:absolute; left:0; right:0; top:50%; height:44px; transform:translateY(-50%); }
