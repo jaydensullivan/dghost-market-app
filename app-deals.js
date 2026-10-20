@@ -686,14 +686,45 @@ disputeOverlay.classList.remove('show');
 
 let pendingDeliveryCheck = null;
 
-function openSteamTrade(deal){
-if (!deal.partner_trade_link) return;
+// Ссылку на обмен пользователь вставляет сам — бывает без «https://»
+// или с лишним текстом вокруг. Telegram такую не открывает (openLink
+// бросает ошибку, и кнопка «молчит»), поэтому собираем ссылку заново
+// из partner, token и for_item.
+function steamTradeUrl(raw){
+const s = String(raw || '');
+const partner = (s.match(/partner=(\d+)/) || [])[1];
+if (!partner) return null;
+const token = (s.match(/token=([\w-]+)/) || [])[1];
+const forItem = (s.match(/for_item=([\d_]+)/) || [])[1];
+let url = 'https://steamcommunity.com/tradeoffer/new/?partner=' + partner;
+if (token) url += '&token=' + token;
+if (forItem) url += '&for_item=' + forItem;
+return url;
+}
+
+// Открыть внешнюю ссылку; если не вышло — скопировать её и сказать об этом.
+function openSteamLink(url){
 const dict = I18N[currentLang] || I18N.ru;
+try {
+if (tg && tg.openLink) tg.openLink(url);
+else window.open(url, '_blank');
+return;
+} catch (e) {}
+navigator.clipboard?.writeText(url).catch(() => {});
+showToast(dict.steam_link_copied, { type: 'error', duration: 7000 });
+}
+
+function openSteamTrade(deal){
+const url = steamTradeUrl(deal.partner_trade_link);
+const dict = I18N[currentLang] || I18N.ru;
+if (!url){
+showToast(dict.dlv_no_link, { type: 'error', duration: 6000 });
+return;
+}
 pendingDeliveryCheck = deal.id;
 haptic('light');
 showToast(dict.dlv_hint, { type: 'info', duration: 5000 });
-if (tg && tg.openLink) tg.openLink(deal.partner_trade_link);
-else window.open(deal.partner_trade_link, '_blank');
+openSteamLink(url);
 }
 
 function checkDelivery(skinId, silent){
@@ -778,8 +809,7 @@ if (!deal.trade_requested_at){
 tradeRequestOpened.add(deal.id);
 reqBtn.insertAdjacentHTML('afterend', `<button class="deal-action" data-request-done="${deal.id}" type="button">${dict.btn_request_done}</button>`);
 }
-if (tg && tg.openLink) tg.openLink(deal.request_trade_url);
-else window.open(deal.request_trade_url, '_blank');
+openSteamLink(steamTradeUrl(deal.request_trade_url) || deal.request_trade_url);
 return;
 }
 
@@ -806,8 +836,7 @@ const deal = lastDeals.find(d => d.id === Number(incomingBtn.dataset.openIncomin
 if (!deal || !deal.incoming_offers_url) return;
 haptic('light');
 showToast(dict.hint_seller_accept, { type: 'info', duration: 7000 });
-if (tg && tg.openLink) tg.openLink(deal.incoming_offers_url);
-else window.open(deal.incoming_offers_url, '_blank');
+openSteamLink(deal.incoming_offers_url);
 return;
 }
 

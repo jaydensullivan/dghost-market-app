@@ -1126,6 +1126,7 @@ return `
 <div class="deal-info">
 <div class="deal-title">#${o.id} · ${escapeHtml(dict.admin_p2p_lot.replace('{id}', o.skin_id))} ${escapeHtml(o.skin_title || '')}</div>
 <div class="deal-meta">${escapeHtml(o.buyer_username || ('ID ' + o.buyer_id))} · ${formatCoins(o.amount)} · ${escapeHtml(dict.admin_p2p_waiting.replace('{h}', hours))}</div>
+${o.payer_name ? `<div class="deal-meta">${escapeHtml(dict.admin_p2p_payer.replace('{name}', o.payer_name))}${o.payer_mismatch ? ' · ⚠️ ' + escapeHtml(dict.admin_p2p_payer_mismatch) : ''}</div>` : ''}
 ${gone}
 ${receipt}
 </div>

@@ -116,6 +116,7 @@ not_active: 'Аукцион уже завершился.',
 already_running: 'Раздача уже запущена.',
 no_end_time: 'Сначала укажи, через сколько минут финал.',
 not_running: 'Раздача сейчас не запущена.',
+payer_name_required: 'Укажи имя и фамилию владельца карты.',
 };
 
 const ERROR_MESSAGES_UZ = {
@@ -181,6 +182,7 @@ not_active: "Auksion allaqachon tugagan.",
 already_running: "Tanlov allaqachon boshlangan.",
 no_end_time: "Avval final necha daqiqadan keyin bo'lishini kiriting.",
 not_running: "Tanlov hozir boshlanmagan.",
+payer_name_required: "Karta egasining ismi va familiyasini kiriting.",
 };
 
 const ERROR_MESSAGES_EN = {
@@ -246,6 +248,7 @@ not_active: 'The auction has already ended.',
 already_running: 'The giveaway is already running.',
 no_end_time: 'First set how many minutes until the final.',
 not_running: "The giveaway isn't running right now.",
+payer_name_required: 'Enter the card holder’s first and last name.',
 };
 
 function errorMessage(code){
@@ -253,6 +256,18 @@ return langMessage(ERROR_MESSAGES_RU, ERROR_MESSAGES_UZ, ERROR_MESSAGES_EN, code
 }
 
 function purchaseTrustLimitMessage(data){
+if (data.error === 'new_account_limit'){
+const dict = I18N[currentLang] || I18N.ru;
+return dict.aml_new_account_limit
+.replace('{n}', data.max_purchases || 0)
+.replace('{sum}', formatCoins(data.max_amount || 0))
+.replace('{days}', data.days_left || 1);
+}
+if (data.error === 'buyer_kyc_required'){
+const dict = I18N[currentLang] || I18N.ru;
+if (typeof openKycOverlay === 'function') openKycOverlay();
+return dict.aml_buyer_kyc_required.replace('{sum}', formatCoins(data.threshold || 0));
+}
 if (data.error === 'buyer_verification_required'){
 if (typeof openBuyerVerify === 'function') openBuyerVerify(data);
 const dict = I18N[currentLang] || I18N.ru;
