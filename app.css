@@ -4686,3 +4686,5 @@ body.layout-large #skinsList .skin-badges{ top:8px; left:8px; gap:6px; }
 .skin-fav.on .gi{ filter:drop-shadow(0 0 5px rgba(255,43,214,0.6)); }
 .gi-placeholder{ width:40px; height:40px; opacity:.55; }
 .p2p-payer-hint{ margin-top:6px; font-size:12px; line-height:1.4; color:var(--muted); }
+.seller-id-copy{ display:inline-flex; align-items:center; gap:6px; margin:6px 0 4px; padding:6px 10px; min-height:32px; border-radius:8px; border:1px solid var(--line, rgba(255,255,255,.12)); background:rgba(255,255,255,.04); color:var(--silver, #eee); font:600 13px/1 ui-monospace, SFMono-Regular, Menlo, monospace; cursor:pointer; }
+.seller-id-copy:active{ transform:scale(.97); }

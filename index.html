@@ -10,7 +10,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=4"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=79">
+<link rel="stylesheet" href="app.css?v=80">
 </head>
 <body data-tab="shop">
 <!-- Значки интерфейса в едином объёмном стиле (gi-*): <svg class="gi"><use href="#gi-…"/></svg>. -->
@@ -909,6 +909,16 @@
 
 <!-- ===== clients ===== -->
 
+<div class="profile-section admin-group" id="adminSellersSection" data-group="finance" style="margin-top:10px; display:none;" data-view="clients">
+<div class="profile-section-title" data-i18n="admin_sellers_title">Продавцы и балансы</div>
+<div class="shop-hint" style="margin-bottom:8px;" data-i18n="admin_sellers_hint">Все продавцы и все, у кого есть деньги на балансе. Нажми на ID, чтобы скопировать.</div>
+<div class="deal-meta" id="adminSellersTotals" style="margin-bottom:8px;"></div>
+<div class="edit-field">
+<input id="adminSellersSearch" type="search" autocomplete="off" data-i18n-placeholder="admin_sellers_search" placeholder="Поиск: ID, @username или имя">
+</div>
+<div id="adminSellersList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+</div>
+
 <div class="profile-section admin-group" id="adminClientsSection" data-group="finance" style="margin-top:10px; display:none;" data-view="clients">
 <div class="profile-section-title" data-i18n="admin_client_history">История клиента</div>
 <div class="shop-hint" style="margin-bottom:8px;" data-i18n="admin_client_hint">Баланс и все движения денег пользователя по его Telegram ID.</div>
@@ -929,6 +939,10 @@
 <div class="edit-field">
 <label for="adminBalanceAmount" data-i18n="admin_label_amount">Сумма, сум</label>
 <input id="adminBalanceAmount" type="number" min="1" placeholder="10000">
+</div>
+<div class="edit-field">
+<label for="adminBalanceReason" data-i18n="admin_label_balance_reason">Причина (видна в истории)</label>
+<input id="adminBalanceReason" type="text" maxlength="200" data-i18n-placeholder="admin_balance_reason_ph" placeholder="Например: ошибочное начисление по сделке #123">
 </div>
 <div class="edit-row">
 <button type="button" id="adminBalanceAddBtn" class="steam-link-btn" data-i18n="admin_btn_add_balance">Начислить</button>
@@ -2154,7 +2168,7 @@
 
 <script src="app-emoji.js?v=1"></script>
 <script src="app-core.js?v=13"></script>
-<script src="app-i18n.js?v=113"></script>
+<script src="app-i18n.js?v=114"></script>
 <script src="app-navigation.js?v=21"></script>
 <script src="app-shop.js?v=33"></script>
 <script src="app-legal.js?v=2"></script>
@@ -2168,7 +2182,7 @@
 <script src="app-referral.js?v=6"></script>
 <script src="app-withdraw.js?v=24"></script>
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
-<script>window.DG_ADMIN_SRC = 'app-admin.js?v=22';</script>
+<script>window.DG_ADMIN_SRC = 'app-admin.js?v=23';</script>
 <!-- 3D-просмотрщик (210 КБ) грузится после открытия витрины — ensure3DScript в app-navigation.js. -->
 <script>window.DG_3D_SRC = 'app-3d.js?v=101';</script>
 <script src="app-auctions.js?v=7"></script>
