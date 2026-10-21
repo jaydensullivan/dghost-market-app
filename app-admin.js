@@ -299,6 +299,7 @@ loadAdminFraud();
 loadAdminCounts();
 loadAdminSettings();
 loadAdminPeople();
+loadAdminSellers();
 }
 
 // ---------------- Создание аукциона ----------------
@@ -1021,20 +1022,104 @@ return;
 
 status.textContent = '...';
 
+const reason = document.getElementById('adminBalanceReason').value.trim();
 adminApiFetch('/api/admin/balance/adjust', {
 method: 'POST',
-body: { user_id: Number(userId), amount: amount, direction: direction }
+body: { user_id: Number(userId), amount: amount, direction: direction, reason: reason }
 })
 .then(() => {
 status.textContent = (I18N[currentLang] || I18N.ru).status_done_ok;
 document.getElementById('adminBalanceAmount').value = '';
+document.getElementById('adminBalanceReason').value = '';
 loadAdminHolds();
+loadAdminSellers();
 })
 .catch(err => { status.textContent = friendlyErrorMessage(err); });
 }
 
 document.getElementById('adminBalanceAddBtn').addEventListener('click', () => adminAdjustBalance('add'));
 document.getElementById('adminBalanceRemoveBtn').addEventListener('click', () => adminAdjustBalance('remove'));
+
+// ---------------- Продавцы и балансы ----------------
+
+function loadAdminSellers(){
+const list = document.getElementById('adminSellersList');
+const totals = document.getElementById('adminSellersTotals');
+const dict = I18N[currentLang] || I18N.ru;
+const q = document.getElementById('adminSellersSearch').value.trim();
+adminApiFetch('/api/admin/finance/sellers' + (q ? '?q=' + encodeURIComponent(q) : ''))
+.then(data => {
+const items = data.items || [];
+totals.textContent = dict.admin_sellers_totals
+.replace('{n}', items.length)
+.replace('{sum}', formatCoins(data.total_balance || 0))
+.replace('{held}', formatCoins(data.total_held || 0));
+if (!items.length){
+list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.admin_empty}</div>`;
+return;
+}
+list.innerHTML = items.map(s => {
+const name = s.kyc_name || s.username || ('ID ' + s.user_id);
+const badges = [
+s.verified ? '✅ ' + dict.admin_sellers_verified : '',
+s.blocked ? '🚫 ' + dict.admin_sellers_blocked : '',
+s.open_flags ? '⚠️ ' + dict.admin_sellers_flags.replace('{n}', s.open_flags) : '',
+].filter(Boolean).join(' · ');
+const t = s.last_tx;
+const last = t ? `<div class="deal-meta">${escapeHtml(dict.admin_sellers_last)}: ${t.amount >= 0 ? '+' : ''}${formatCoins(t.amount)} · ${escapeHtml(t.type)}${t.note ? ' · ' + escapeHtml(t.note) : ''} · ${escapeHtml(new Date(t.created_at).toLocaleString())}</div>` : '';
+return `
+<div class="deal-card" style="flex-direction:column; align-items:stretch;">
+<div class="deal-info">
+<div class="deal-title">${escapeHtml(name)}</div>
+<div class="deal-meta">${[s.username ? escapeHtml(s.username) : '', badges].filter(Boolean).join(' · ')}</div>
+<button type="button" class="seller-id-copy" data-copy-id="${s.user_id}">ID ${s.user_id} <svg class="gi" width="14" height="14" aria-hidden="true"><use href="#gi-copy"/></svg></button>
+<div class="deal-meta"><b>${formatCoins(s.balance)}</b> · ${escapeHtml(dict.admin_sellers_held)} ${formatCoins(s.held)} · ${escapeHtml(dict.admin_sellers_available)} ${formatCoins(s.available)}</div>
+<div class="deal-meta">${escapeHtml(dict.admin_sellers_stats.replace('{trades}', s.trades).replace('{lots}', s.active_lots))}</div>
+${last}
+</div>
+<div class="deal-actions" style="margin-top:8px;">
+<button class="deal-action secondary" data-seller-history="${s.user_id}" type="button">${dict.admin_sellers_history}</button>
+<button class="deal-action secondary" data-seller-adjust="${s.user_id}" type="button">${dict.admin_sellers_adjust}</button>
+</div>
+</div>`;
+}).join('');
+})
+.catch(err => { list.innerHTML = `<div class="shop-hint">${friendlyErrorMessage(err)}</div>`; });
+}
+
+let adminSellersSearchTimer = null;
+document.getElementById('adminSellersSearch').addEventListener('input', () => {
+clearTimeout(adminSellersSearchTimer);
+adminSellersSearchTimer = setTimeout(loadAdminSellers, 400);
+});
+
+document.getElementById('adminSellersList').addEventListener('click', (e) => {
+const dict = I18N[currentLang] || I18N.ru;
+const copyBtn = e.target.closest('[data-copy-id]');
+if (copyBtn){
+const id = copyBtn.dataset.copyId;
+const done = () => showToast(dict.admin_sellers_id_copied.replace('{id}', id), { type: 'success', duration: 2500 });
+if (navigator.clipboard && navigator.clipboard.writeText){
+navigator.clipboard.writeText(id).then(done).catch(() => showAlert(id));
+} else {
+showAlert(id);
+}
+return;
+}
+const historyBtn = e.target.closest('[data-seller-history]');
+if (historyBtn){
+document.getElementById('adminClientHistoryId').value = historyBtn.dataset.sellerHistory;
+document.getElementById('adminClientHistoryBtn').click();
+document.getElementById('adminClientsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+return;
+}
+const adjustBtn = e.target.closest('[data-seller-adjust]');
+if (adjustBtn){
+document.getElementById('adminBalanceUserId').value = adjustBtn.dataset.sellerAdjust;
+document.getElementById('adminBalanceSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+document.getElementById('adminBalanceAmount').focus();
+}
+});
 
 // ---------------- Заявки на пополнение ----------------
 
