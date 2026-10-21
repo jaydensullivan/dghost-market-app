@@ -4698,3 +4698,10 @@ body.layout-large #skinsList .skin-badges{ top:8px; left:8px; gap:6px; }
 .deal-safety ol{ margin:0; padding-left:18px; }
 .deal-safety li{ margin:2px 0; }
 .deal-safety-foot{ margin-top:4px; color:var(--muted); }
+.p2p-amount-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.p2p-timer{ margin-top:8px; padding:8px 10px; border-radius:10px; font-size:13px; font-weight:600; background:rgba(124,58,237,.14); color:var(--silver); }
+.p2p-timer.soon{ background:rgba(245,158,11,.16); color:#fbbf24; }
+.p2p-timer.expired{ background:rgba(224,85,90,.14); color:#fca5a5; font-weight:500; }
+.p2p-status-card{ border-left:3px solid #a78bfa; }
+.p2p-status-card.done{ border-left-color:#7ec98a; }
+.p2p-status-card.failed{ border-left-color:#e0555a; }

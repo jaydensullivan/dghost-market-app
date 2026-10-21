@@ -281,9 +281,48 @@ let lastDeals = [];
 // них показываем кнопку «Я отправил запрос».
 const tradeRequestOpened = new Set();
 
+// Оплаты переводом покупателя: «на проверке» и недавно решённые —
+// чтобы после отправки чека было видно, что с деньгами.
+const P2P_STATUS_META = {
+pending: { icon: '⏳', cls: 'pending' },
+approved: { icon: '✅', cls: 'done' },
+rejected: { icon: '❌', cls: 'failed' },
+refund_due: { icon: '↩️', cls: 'pending' },
+refunded: { icon: '↩️', cls: 'done' },
+};
+function p2pStatusCardHtml(o){
+const dict = I18N[currentLang] || I18N.ru;
+const meta = P2P_STATUS_META[o.status] || P2P_STATUS_META.pending;
+const mins = Math.max(0, Math.round((Date.now() - new Date(o.created_at).getTime()) / 60000));
+const ago = mins < 60 ? dict.p2p_st_ago_min.replace('{n}', mins) : dict.p2p_st_ago_h.replace('{n}', Math.round(mins / 60));
+return `<div class="deal-card p2p-status-card ${meta.cls}" style="flex-direction:column; align-items:stretch;">
+<div class="deal-info">
+<div class="deal-title">${meta.icon} ${escapeHtml(dict['p2p_st_' + o.status] || o.status)}</div>
+<div class="deal-meta">${escapeHtml(o.skin_title || ('#' + o.skin_id))} · ${formatCoins(o.amount)} · ${escapeHtml(ago)}</div>
+<div class="deal-hint">${escapeHtml(dict['p2p_st_hint_' + o.status] || '')}</div>
+</div>
+</div>`;
+}
+
+function loadP2pStatus(){
+const box = document.getElementById('p2pStatusList');
+if (!box || !tg || !tg.initData) return;
+fetch(API_BASE + '/api/p2p_skin_orders/mine?init_data=' + encodeURIComponent(tg.initData))
+.then(r => r.ok ? r.json() : { items: [] })
+.then(data => {
+const items = (data && data.items) || [];
+const dict = I18N[currentLang] || I18N.ru;
+box.innerHTML = items.length
+? `<div class="profile-section-title" style="margin:0 0 8px;">${dict.p2p_st_title}</div>` + items.map(p2pStatusCardHtml).join('') + '<div style="height:10px"></div>'
+: '';
+})
+.catch(() => { box.innerHTML = ''; });
+}
+
 function loadDeals(){
 const dict = I18N[currentLang] || I18N.ru;
 const dealsList = document.getElementById('dealsList');
+loadP2pStatus();
 if (!tg || !tg.initData){
 dealsList.innerHTML = `<div class="skins-empty" style="padding:16px 4px;">${dict.open_via_telegram}</div>`;
 return;
