@@ -68,7 +68,7 @@ badge.style.display = cart.length ? '' : 'none';
 document.getElementById('navCartBtn').style.display = cart.length ? '' : 'none';
 }
 
-function cartItemRowHtml(skin){
+function cartItemRowHtml(skin, buyOne){
 const photo = skin.photo_url
 ? `<img class="cart-item-photo" src="${escapeHtml(skin.photo_url)}" alt="" onerror="this.style.display='none'">`
 : `<div class="cart-item-photo"></div>`;
@@ -78,6 +78,7 @@ ${photo}
 <div class="cart-item-title">${escapeHtml(skin.title)}</div>
 <div class="cart-item-price">${formatCoins(skin.price)}</div>
 </div>
+${buyOne ? `<button type="button" class="cart-item-buy" data-cart-buy="${skin.id}">${escapeHtml((I18N[currentLang] || I18N.ru).cart_buy_one)}</button>` : ''}
 <button type="button" class="cart-item-remove" data-cart-remove="${skin.id}">✕</button>
 </div>`;
 }
@@ -96,12 +97,14 @@ balanceEl.textContent = '';
 return;
 }
 
-list.innerHTML = items.map(cartItemRowHtml).join('');
 const total = items.reduce((sum, s) => sum + s.price, 0);
+const topupBtn = document.getElementById('cartTopupBtn');
+topupBtn.hidden = true;
 document.getElementById('cartTotalAmount').textContent = formatCoins(total);
 // Гость в браузере: баланса у него нет — кнопка ведёт ко входу
 // (её перехватывает app-web.js), без «не хватает денег».
 if (window.DG_WEB && !window.DG_WEB.loggedIn){
+list.innerHTML = items.map(s => cartItemRowHtml(s, false)).join('');
 balanceEl.classList.remove('cart-short');
 balanceEl.textContent = '';
 document.getElementById('cartCheckoutBtn').disabled = false;
@@ -115,13 +118,31 @@ balanceEl.textContent = missing > 0
 ? dict.cart_short.replace('{balance}', formatCoins(balance)).replace('{missing}', formatCoins(missing))
 : dict.cart_balance.replace('{balance}', formatCoins(balance));
 document.getElementById('cartCheckoutBtn').disabled = missing > 0;
+// Денег не хватает — не тупик: у каждого лота кнопка «Купить» (обычная
+// покупка картой или П2П) и, если пополнение включено, «Пополнить баланс».
+list.innerHTML = items.map(s => cartItemRowHtml(s, missing > 0)).join('');
+const openTopup = document.getElementById('openTopupBtn');
+topupBtn.hidden = !(missing > 0 && openTopup && openTopup.style.display !== 'none');
 }
+
+document.getElementById('cartTopupBtn').addEventListener('click', () => {
+document.getElementById('cartOverlay').classList.remove('show');
+document.getElementById('openTopupBtn').click();
+});
 
 document.getElementById('cartCloseBtn').addEventListener('click', () => {
 document.getElementById('cartOverlay').classList.remove('show');
 });
 
 document.getElementById('cartItemsList').addEventListener('click', (e) => {
+const buy = e.target.closest('[data-cart-buy]');
+if (buy){
+const skin = lastSkins.find(s => s.id === Number(buy.dataset.cartBuy));
+if (!skin) return;
+document.getElementById('cartOverlay').classList.remove('show');
+openBuySheet(skin);
+return;
+}
 const btn = e.target.closest('[data-cart-remove]');
 if (!btn) return;
 const id = Number(btn.dataset.cartRemove);

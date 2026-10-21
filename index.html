@@ -10,7 +10,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=4"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=82">
+<link rel="stylesheet" href="app.css?v=83">
 </head>
 <body data-tab="shop">
 <!-- Значки интерфейса в едином объёмном стиле (gi-*): <svg class="gi"><use href="#gi-…"/></svg>. -->
@@ -1278,6 +1278,10 @@
 <span data-i18n="btn_copy">Скопировать</span>
 </button>
 </div>
+<button type="button" id="p2pSkinCardCopy" class="topup-copy-btn p2p-card-copy" hidden>
+<svg class="gi" width="15" height="15" aria-hidden="true"><use href="#gi-copy"/></svg>
+<span data-i18n="p2p_copy_card">Скопировать номер карты</span>
+</button>
 <div class="edit-field">
 <label data-i18n="p2p_skin_amount_label">Сумма к переводу</label>
 <div class="p2p-amount-row">
@@ -1299,6 +1303,7 @@
 <input type="file" id="p2pSkinReceiptInput" accept="image/*" style="color:var(--silver);">
 <img id="p2pSkinReceiptPreview" style="display:none; max-width:100%; max-height:180px; margin-top:8px; border-radius:8px;">
 </div>
+<div class="buy-guarantee p2p-guarantee">🛡 <span data-i18n="p2p_guarantee">Деньги у гаранта: продавец получит их только после того, как ты получишь скин. Не передал за 24 ч — вернём.</span></div>
 <div class="topup-warning" data-i18n="p2p_skin_warning">⚠️ Переведи ровно эту сумму на реквизиты выше, приложи скриншот чека и нажми «Отправил, подтверждаю».</div>
 <button type="button" id="p2pSkinSentBtn" class="welcome-btn primary" style="width:100%; margin-top:12px;" disabled data-i18n="p2p_skin_sent_btn">Отправил, подтверждаю</button>
 <div class="edit-status" id="p2pSkinStatus" style="margin-top:8px;"></div>
@@ -1404,6 +1409,7 @@
 <span id="cartTotalAmount">0 сум</span>
 </div>
 <div class="cart-balance-hint" id="cartBalanceHint"></div>
+<button type="button" id="cartTopupBtn" class="cart-topup-btn" hidden data-i18n="cart_topup">💳 Пополнить баланс</button>
 <div class="edit-actions">
 <button type="button" id="cartCloseBtn" data-i18n="btn_cancel">Закрыть</button>
 <button type="button" id="cartCheckoutBtn" class="save" data-i18n="cart_checkout">Купить всё</button>
@@ -2177,14 +2183,14 @@
 
 <script src="app-emoji.js?v=1"></script>
 <script src="app-core.js?v=13"></script>
-<script src="app-i18n.js?v=116"></script>
+<script src="app-i18n.js?v=117"></script>
 <script src="app-navigation.js?v=21"></script>
 <script src="app-shop.js?v=33"></script>
 <script src="app-legal.js?v=2"></script>
 <script src="app-deals.js?v=19"></script>
 <script src="app-catalog.js?v=25"></script>
-<script src="app-cart.js?v=8"></script>
-<script src="app-filters.js?v=44"></script>
+<script src="app-cart.js?v=9"></script>
+<script src="app-filters.js?v=45"></script>
 <script src="app-steam.js?v=7"></script>
 <script src="app-topup.js?v=5"></script>
 <script src="app-history.js?v=6"></script>
