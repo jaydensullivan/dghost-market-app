@@ -196,6 +196,94 @@ const HEART_SVG = '<svg class="gi" width="18" height="18" aria-hidden="true"><us
 
 let invPicked = [];          // выбранные предметы (объекты из lastInventoryItems)
 let invTradableOnly = false;
+// Цены рынка по market_hash_name (сум) — для «инвентарь стоит N»,
+// суммы выбранных и сортировки «сначала дорогие». Приходят порциями.
+let invPrices = {};
+let invPricesLoading = false;
+let invPricesSeq = 0;
+const INV_TOP_PICK = 5;
+const INV_CATEGORY_ORDER = ['knives','gloves','rifles','snipers','pistols','smgs','heavy','stickers','other'];
+
+function invItemPrice(item){
+return invPrices[item.market_hash_name] || 0;
+}
+
+// Цены всех предметов: бот отдаёт из кэша сразу, остальные дотягивает
+// с рынка порциями (pending > 0 — спрашиваем ещё раз).
+function loadInvPrices(){
+if (!tg || !tg.initData) return;
+const seq = ++invPricesSeq;
+const names = [...new Set(lastInventoryItems.map(it => it.market_hash_name).filter(Boolean))];
+if (!names.length) return;
+invPricesLoading = true;
+renderInvStats();
+const step = (attempt) => fetch(API_BASE + '/api/steam/inventory/prices', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData, names: names.filter(n => !invPrices[n]) })
+})
+.then(r => r.ok ? r.json() : { prices: {}, pending: 0 })
+.then(data => {
+if (seq !== invPricesSeq) return;
+Object.assign(invPrices, data.prices || {});
+if (data.pending > 0 && attempt < 6){
+renderInventory();
+return step(attempt + 1);
+}
+invPricesLoading = false;
+renderInventory();
+})
+.catch(() => {
+if (seq !== invPricesSeq) return;
+invPricesLoading = false;
+renderInvStats();
+});
+step(0);
+}
+
+function renderInvStats(){
+const box = document.getElementById('invStats');
+box.style.display = (lastInventoryItems.length && !inventoryPickHandler) ? '' : 'none';
+const tradable = lastInventoryItems.filter(it => it.tradable !== false);
+const total = tradable.reduce((sum, it) => sum + invItemPrice(it), 0);
+document.getElementById('invStatValue').textContent = total
+? formatCoins(total) + (invPricesLoading ? ' …' : '')
+: (invPricesLoading ? '…' : '—');
+document.getElementById('invStatSellable').textContent = String(tradable.length);
+}
+
+// Категории кнопками: только те, что есть в инвентаре, с количеством.
+function renderInvTypeChips(){
+const dict = I18N[currentLang] || I18N.ru;
+const current = document.getElementById('invTypeFilter').value;
+const counts = {};
+lastInventoryItems.forEach(it => { const c = categorizeSkin(it); counts[c] = (counts[c] || 0) + 1; });
+const chip = (cat, n) => `<button type="button" class="category-chip inv-type-chip${cat === current ? ' active' : ''}" data-inv-type="${cat}"><span>${escapeHtml(dict[cat === 'all' ? 'cat_all' : 'cat_' + cat] || cat)}</span><b>${n}</b></button>`;
+const top = (!inventoryPickHandler && Object.keys(invPrices).length)
+? `<button type="button" class="category-chip inv-top-chip" id="invTopPickBtn">${escapeHtml(dict.inv_top_pick.replace('{n}', INV_TOP_PICK))}</button>`
+: '';
+document.getElementById('invTypeChips').innerHTML = lastInventoryItems.length
+? chip('all', lastInventoryItems.length) + top + INV_CATEGORY_ORDER.filter(c => counts[c]).map(c => chip(c, counts[c])).join('')
+: '';
+}
+
+// «5 самых дорогих»: добавляет к выбору дорогие передаваемые скины.
+function pickTopExpensive(){
+const dict = I18N[currentLang] || I18N.ru;
+const candidates = lastInventoryItems
+.filter(it => it.tradable !== false && invItemPrice(it) > 0 && !isInvPicked(it))
+.sort((a, b) => invItemPrice(b) - invItemPrice(a));
+const room = Math.max(0, INV_PICK_MAX - invPicked.length);
+const add = candidates.slice(0, Math.min(INV_TOP_PICK, room));
+if (!add.length){
+showToast(candidates.length ? dict.inv_limit.replace('{max}', INV_PICK_MAX) : dict.inv_top_none);
+return;
+}
+invPicked.push(...add);
+haptic('light');
+renderInventory();
+showToast(dict.inv_top_done.replace('{n}', add.length));
+}
 
 function invKey(item){
 return String(item.asset_id || item.title);
@@ -227,6 +315,8 @@ if (invTradableOnly) list = list.filter(({ item }) => item.tradable !== false);
 if (sort === 'rare' || sort === 'common'){
 const dir = sort === 'rare' ? -1 : 1;
 list.sort((a, b) => dir * ((RARITY_RANK[a.item.rarity] || 0) - (RARITY_RANK[b.item.rarity] || 0)) || a.i - b.i);
+} else if (sort === 'price'){
+list.sort((a, b) => invItemPrice(b.item) - invItemPrice(a.item) || a.i - b.i);
 } else if (sort === 'float'){
 const f = x => (x.item.float_value === null || x.item.float_value === undefined) ? 2 : Number(x.item.float_value);
 list.sort((a, b) => f(a) - f(b) || a.i - b.i);
@@ -252,6 +342,7 @@ const rarityClass = RARITY_CLASS[item.rarity] || 'rarity-consumer';
 const hasFloat = item.float_value !== null && item.float_value !== undefined;
 const picked = isInvPicked(item);
 const { weapon, skin } = invSplitTitle(item);
+const price = invItemPrice(item);
 
 // Полоска износа с меткой на месте точного float — как в CSFloat.
 const floatBlock = hasFloat
@@ -278,6 +369,7 @@ ${photo}
 ${weapon ? `<div class="inv-item-weapon">${escapeHtml(weapon)}</div>` : ''}
 <div class="inv-item-skin">${escapeHtml(skin)}</div>
 ${floatBlock}
+${price ? `<div class="inv-item-price">≈ ${formatCoins(price)}</div>` : ''}
 <div class="inv-item-actions">
 <button type="button" class="inv-more" data-inv-more="${i}">${dict.inv_more}</button>
 <button type="button" class="inv-pick${picked ? ' on' : ''}" data-inv-pick="${i}"${!isTradable && !pickMode ? ' disabled' : ''}>${pickLabel}</button>
@@ -286,6 +378,8 @@ ${floatBlock}
 </div>`;
 }).join('');
 renderInvPicked();
+renderInvStats();
+renderInvTypeChips();
 }
 
 function renderInvPicked(){
@@ -294,6 +388,8 @@ if (!sellAllRunning) document.getElementById('invSellAllBtn').textContent = dict
 const box = document.getElementById('invPicked');
 box.style.display = invPicked.length && !inventoryPickHandler ? '' : 'none';
 document.getElementById('invPickedCount').textContent = dict.inv_of.replace('{n}', invPicked.length).replace('{max}', INV_PICK_MAX);
+const pickedSum = invPicked.reduce((sum, it) => sum + invItemPrice(it), 0);
+document.getElementById('invPickedSum').textContent = pickedSum ? '≈ ' + formatCoins(pickedSum) : '';
 document.getElementById('invPickedThumbs').innerHTML = invPicked.map(item => `
 <div class="inv-thumb">${item.photo_url ? `<img src="${escapeHtml(item.photo_url)}" alt="">` : ''}<button type="button" data-inv-unpick="${escapeHtml(invKey(item))}">✕</button></div>`).join('')
 + '<button type="button" class="inv-thumb add" id="invPickMore">+</button>';
@@ -337,7 +433,7 @@ invPicked = [];
 document.getElementById('invSearch').value = '';
 document.getElementById('invTypeFilter').value = 'all';
 document.getElementById('invWearFilter').value = 'all';
-document.getElementById('invSort').value = 'steam';
+document.getElementById('invSort').value = inventoryPickHandler ? 'steam' : 'price';
 document.getElementById('invHeadSub').textContent = inventoryPickHandler ? dict.inv_subtitle_pick : dict.inv_subtitle;
 renderInvPicked();
 inventoryOverlay.classList.add('show');
@@ -376,6 +472,7 @@ lastInventoryItems = data.items || [];
 // После обновления выбранные остаются выбранными, если они ещё есть.
 invPicked = invPicked.filter(p => lastInventoryItems.some(it => invKey(it) === invKey(p)));
 renderInventory();
+loadInvPrices();
 })
 .catch(err => {
 const msg = friendlyErrorMessage(err);
@@ -413,6 +510,17 @@ inventoryOverlay.classList.remove('show');
 document.getElementById(id).addEventListener(id === 'invSearch' ? 'input' : 'change', () => {
 if (lastInventoryItems.length) renderInventory();
 });
+});
+
+document.getElementById('invTypeChips').addEventListener('click', (e) => {
+if (e.target.closest('#invTopPickBtn')){
+pickTopExpensive();
+return;
+}
+const chip = e.target.closest('[data-inv-type]');
+if (!chip) return;
+document.getElementById('invTypeFilter').value = chip.dataset.invType;
+renderInventory();
 });
 
 document.getElementById('invTradableBtn').addEventListener('click', (e) => {
