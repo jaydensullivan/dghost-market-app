@@ -2503,6 +2503,8 @@ const p2pSkinReceiptPreview = document.getElementById('p2pSkinReceiptPreview');
 const p2pSkinPayerName = document.getElementById('p2pSkinPayerName');
 const p2pSkinTimer = document.getElementById('p2pSkinTimer');
 const p2pSkinAmountCopy = document.getElementById('p2pSkinAmountCopy');
+const p2pSkinCardCopy = document.getElementById('p2pSkinCardCopy');
+let p2pCardNumber = '';
 let p2pAmountValue = 0;
 
 // Таймер брони: сколько ещё лот закреплён за покупателем. После нуля
@@ -2534,6 +2536,23 @@ p2pSkinTimer.textContent = dict.p2p_timer.replace('{time}', mm + ':' + ss);
 tick();
 p2pTimerInterval = setInterval(tick, 1000);
 }
+
+// Номер карты из реквизитов (16 цифр, можно с пробелами или дефисами) —
+// отдельной кнопкой: в банковском приложении его вставляют без имени и банка.
+function p2pExtractCardNumber(text){
+const m = String(text || '').match(/(?:\d[ -]?){15}\d/);
+return m ? m[0].replace(/\D/g, '') : '';
+}
+p2pSkinCardCopy.addEventListener('click', () => {
+if (!p2pCardNumber) return;
+const dict = I18N[currentLang] || I18N.ru;
+const done = () => showToast(dict.p2p_card_copied, { type: 'success', duration: 2500 });
+if (navigator.clipboard && navigator.clipboard.writeText){
+navigator.clipboard.writeText(p2pCardNumber).then(done).catch(() => showAlert(p2pCardNumber));
+} else {
+showAlert(p2pCardNumber);
+}
+});
 
 p2pSkinAmountCopy.addEventListener('click', () => {
 if (!p2pAmountValue) return;
@@ -2621,6 +2640,8 @@ p2pSkinReceiptInput.value = '';
 p2pSkinReceiptPreview.style.display = 'none';
 try { p2pSkinPayerName.value = localStorage.getItem('dg_payer_name') || ''; } catch (e) { p2pSkinPayerName.value = ''; }
 p2pSkinDetailsText.textContent = data.card_details || p2pCardDetails || 'Реквизиты не заданы — обратись в поддержку.';
+p2pCardNumber = p2pExtractCardNumber(p2pSkinDetailsText.textContent);
+p2pSkinCardCopy.hidden = !p2pCardNumber;
 p2pSkinAmount.textContent = formatCoins(data.amount);
 p2pAmountValue = Number(data.amount) || 0;
 startP2pTimer(data.reserved_until);

@@ -4705,3 +4705,11 @@ body.layout-large #skinsList .skin-badges{ top:8px; left:8px; gap:6px; }
 .p2p-status-card{ border-left:3px solid #a78bfa; }
 .p2p-status-card.done{ border-left-color:#7ec98a; }
 .p2p-status-card.failed{ border-left-color:#e0555a; }
+
+/* П2П: номер карты отдельной кнопкой и строка гаранта */
+.p2p-card-copy{ width:100%; justify-content:center; margin:-4px 0 12px; }
+.p2p-guarantee{ margin:10px 4px 8px; }
+/* Корзина: не хватает денег — купить по одному или пополнить */
+.cart-item-buy{ flex:none; padding:6px 10px; border-radius:8px; border:1px solid var(--line, #2c2340); background:transparent; color:var(--silver); font:600 12px/1 inherit; cursor:pointer; }
+.cart-topup-btn{ display:block; width:100%; margin:8px 0 4px; padding:10px; border-radius:10px; border:1px solid var(--line, #2c2340); background:transparent; color:var(--silver); font:600 14px/1 inherit; cursor:pointer; }
+.cart-topup-btn[hidden]{ display:none; }
