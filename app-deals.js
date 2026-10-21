@@ -135,6 +135,25 @@ const avatar = ps.steam_avatar ? `<img src="${escapeHtml(ps.steam_avatar)}" alt=
 return `<div class="deal-partner-steam">${avatar}<span>${dict.deal_partner_steam}: <b>${escapeHtml(ps.steam_persona || 'Steam')}</b> ✅</span></div>`;
 }
 
+// Памятка продавцу: в обмен могут подложить его другие предметы или
+// прислать обмен с поддельного аккаунта. Проверить до «Принять».
+function tradeSafetyHtml(deal){
+const dict = I18N[currentLang] || I18N.ru;
+const ps = deal.partner_steam;
+const who = ps && ps.steam_verified && ps.steam_persona ? ps.steam_persona : dict.safety_buyer_fallback;
+const items = [
+dict.safety_only_item.replace('{title}', deal.title),
+dict.safety_partner.replace('{name}', who),
+dict.safety_no_strangers,
+dict.safety_guard,
+];
+return `<div class="deal-safety">
+<div class="deal-safety-title">${dict.safety_title}</div>
+<ol>${items.map(t => `<li>${escapeHtml(t)}</li>`).join('')}</ol>
+<div class="deal-safety-foot">${dict.safety_doubt}</div>
+</div>`;
+}
+
 function dealCardHtml(deal){
 const dict = I18N[currentLang] || I18N.ru;
 
@@ -143,6 +162,8 @@ const photo = deal.photo_url
 : `<div class="deal-photo" style="display:flex;align-items:center;justify-content:center;">${TARGET_ICON}</div>`;
 
 let statusHtml = '';
+// Блоки под прогрессом: последний шаг, памятка, подсказки.
+let extraHtml = '';
 let actionHtml = '';
 
 if (deal.role === 'selling'){
@@ -155,18 +176,20 @@ statusHtml = `<div class="deal-status pending">${dict.status_need_to_send}</div>
 if (deal.trade_requested_at){
 // Покупатель уже прислал обмен с этим предметом — продавцу только
 // принять его в Steam и подтвердить в Steam Guard.
+extraHtml += tradeSafetyHtml(deal);
 actionHtml = `<button class="deal-action" data-open-incoming="${deal.id}" type="button">${dict.btn_open_incoming}</button>
 <button class="deal-action" data-accepted-trade="${deal.id}" type="button">${dict.btn_accepted_trade}</button>`;
 } else {
 // Кнопка обмена — только если у покупателя есть ссылка. Иначе
 // показываем причину, чтобы продавец не искал кнопку впустую.
 if (deal.partner_trade_link){
+extraHtml += tradeSafetyHtml(deal);
 actionHtml = `<button class="deal-action" data-open-trade="${deal.id}" type="button">${dict.btn_open_trade}</button>`;
 if (IS_DESKTOP && deal.asset_id){
-statusHtml += `<div class="deal-hint">${dict.trade_ext_hint} <a href="#" data-trade-ext>${dict.trade_ext_link}</a></div>`;
+extraHtml += `<div class="deal-hint">${dict.trade_ext_hint} <a href="#" data-trade-ext>${dict.trade_ext_link}</a></div>`;
 }
 } else {
-statusHtml += `<div class="deal-hint">${dict.dlv_no_link}</div>`;
+extraHtml += `<div class="deal-hint">${dict.dlv_no_link}</div>`;
 }
 actionHtml += `<button class="deal-action" data-mark-sent="${deal.id}" type="button">${dict.btn_sent}</button>`;
 }
@@ -194,10 +217,13 @@ if (deal.request_trade_url){
 if (deal.trade_requested_at){
 actionHtml = `<button class="deal-action secondary" data-request-trade="${deal.id}" type="button">${dict.btn_request_again}</button>`;
 } else {
-actionHtml = `<button class="deal-action" data-request-trade="${deal.id}" type="button">${dict.btn_request_trade}</button>`;
-if (tradeRequestOpened.has(deal.id)){
-actionHtml += `<button class="deal-action" data-request-done="${deal.id}" type="button">${dict.btn_request_done}</button>`;
-}
+// Главный шаг покупателя после оплаты — отдельным заметным блоком.
+extraHtml += `<div class="deal-last-step">
+<div class="deal-last-step-title">${dict.last_step_title}</div>
+<div class="deal-last-step-text">${dict.last_step_text}</div>
+<button class="deal-action deal-last-step-btn" data-request-trade="${deal.id}" type="button">${dict.btn_request_trade}</button>
+${tradeRequestOpened.has(deal.id) ? `<button class="deal-action" data-request-done="${deal.id}" type="button">${dict.btn_request_done}</button>` : ''}
+</div>`;
 }
 }
 }
@@ -231,6 +257,7 @@ ${partnerSteamHtml(deal)}
 </div>
 </div>
 <div id="dealProgress-${deal.id}">${dealProgressHtml(deal)}</div>
+${extraHtml}
 <div class="deal-actions" style="margin-top:8px;">${actionHtml}${messageBtn}<button class="deal-action secondary" data-trade-details="${deal.id}" type="button">${dict.btn_deal_details}</button></div>
 </div>`;
 }

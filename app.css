@@ -4688,3 +4688,13 @@ body.layout-large #skinsList .skin-badges{ top:8px; left:8px; gap:6px; }
 .p2p-payer-hint{ margin-top:6px; font-size:12px; line-height:1.4; color:var(--muted); }
 .seller-id-copy{ display:inline-flex; align-items:center; gap:6px; margin:6px 0 4px; padding:6px 10px; min-height:32px; border-radius:8px; border:1px solid var(--line, rgba(255,255,255,.12)); background:rgba(255,255,255,.04); color:var(--silver, #eee); font:600 13px/1 ui-monospace, SFMono-Regular, Menlo, monospace; cursor:pointer; }
 .seller-id-copy:active{ transform:scale(.97); }
+.deal-last-step{ margin-top:10px; padding:12px; border-radius:12px; border:1px solid rgba(192,132,252,.55); background:linear-gradient(135deg, rgba(124,58,237,.18), rgba(219,39,119,.12)); }
+.deal-last-step-title{ font-weight:700; font-size:14px; margin-bottom:4px; }
+.deal-last-step-text{ font-size:12px; line-height:1.45; color:var(--muted); margin-bottom:10px; }
+.deal-last-step .deal-action{ width:100%; margin:0 0 6px; }
+.deal-last-step-btn{ background:linear-gradient(90deg,#7c3aed,#db2777); color:#fff; border-color:transparent; min-height:44px; }
+.deal-safety{ margin-top:10px; padding:10px 12px; border-radius:12px; border:1px solid rgba(245,158,11,.5); background:rgba(245,158,11,.08); font-size:12px; line-height:1.45; }
+.deal-safety-title{ font-weight:700; margin-bottom:4px; color:#fbbf24; }
+.deal-safety ol{ margin:0; padding-left:18px; }
+.deal-safety li{ margin:2px 0; }
+.deal-safety-foot{ margin-top:4px; color:var(--muted); }
