@@ -2501,6 +2501,51 @@ const p2pSkinCloseBtn = document.getElementById('p2pSkinCloseBtn');
 const p2pSkinReceiptInput = document.getElementById('p2pSkinReceiptInput');
 const p2pSkinReceiptPreview = document.getElementById('p2pSkinReceiptPreview');
 const p2pSkinPayerName = document.getElementById('p2pSkinPayerName');
+const p2pSkinTimer = document.getElementById('p2pSkinTimer');
+const p2pSkinAmountCopy = document.getElementById('p2pSkinAmountCopy');
+let p2pAmountValue = 0;
+
+// Таймер брони: сколько ещё лот закреплён за покупателем. После нуля
+// чек всё равно можно отправить — заявку проверит админ.
+let p2pTimerInterval = null;
+function stopP2pTimer(){
+clearInterval(p2pTimerInterval);
+p2pTimerInterval = null;
+p2pSkinTimer.hidden = true;
+}
+function startP2pTimer(untilIso){
+stopP2pTimer();
+const until = untilIso ? new Date(untilIso).getTime() : NaN;
+if (!until) return;
+const tick = () => {
+const dict = I18N[currentLang] || I18N.ru;
+const left = Math.max(0, Math.round((until - Date.now()) / 1000));
+p2pSkinTimer.hidden = false;
+p2pSkinTimer.classList.toggle('expired', left === 0);
+p2pSkinTimer.classList.toggle('soon', left > 0 && left <= 300);
+if (left === 0){
+p2pSkinTimer.textContent = dict.p2p_timer_expired;
+clearInterval(p2pTimerInterval);
+return;
+}
+const mm = Math.floor(left / 60), ss = String(left % 60).padStart(2, '0');
+p2pSkinTimer.textContent = dict.p2p_timer.replace('{time}', mm + ':' + ss);
+};
+tick();
+p2pTimerInterval = setInterval(tick, 1000);
+}
+
+p2pSkinAmountCopy.addEventListener('click', () => {
+if (!p2pAmountValue) return;
+const dict = I18N[currentLang] || I18N.ru;
+const text = String(p2pAmountValue);
+const done = () => showToast(dict.p2p_amount_copied.replace('{sum}', formatCoins(p2pAmountValue)), { type: 'success', duration: 2500 });
+if (navigator.clipboard && navigator.clipboard.writeText){
+navigator.clipboard.writeText(text).then(done).catch(() => showAlert(text));
+} else {
+showAlert(text);
+}
+});
 
 // Имя держателя карты: минимум имя и фамилия. Запоминаем на устройстве,
 // чтобы не вводить при каждой покупке.
@@ -2577,6 +2622,8 @@ p2pSkinReceiptPreview.style.display = 'none';
 try { p2pSkinPayerName.value = localStorage.getItem('dg_payer_name') || ''; } catch (e) { p2pSkinPayerName.value = ''; }
 p2pSkinDetailsText.textContent = data.card_details || p2pCardDetails || 'Реквизиты не заданы — обратись в поддержку.';
 p2pSkinAmount.textContent = formatCoins(data.amount);
+p2pAmountValue = Number(data.amount) || 0;
+startP2pTimer(data.reserved_until);
 p2pSkinSentBtn.disabled = true;
 p2pSkinStatus.textContent = '';
 buyOverlay.classList.remove('show');
@@ -2682,7 +2729,10 @@ return r.json();
 p2pSkinStatus.textContent = '';
 p2pSkinOverlay.classList.remove('show');
 pendingP2pOrderId = null;
+stopP2pTimer();
 showAlert(dict.p2p_skin_sent_alert);
+// Сразу показываем, где теперь смотреть статус оплаты.
+if (typeof goToScreen === 'function') goToScreen('deals');
 })
 .catch(err => {
 p2pSkinStatus.textContent = friendlyErrorMessage(err);
@@ -2693,6 +2743,7 @@ p2pSkinSentBtn.disabled = false;
 p2pSkinCloseBtn.addEventListener('click', () => {
 p2pSkinOverlay.classList.remove('show');
 pendingP2pOrderId = null;
+stopP2pTimer();
 });
 
 function cancelListing(skinId){
