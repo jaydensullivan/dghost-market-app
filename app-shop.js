@@ -309,7 +309,7 @@ if (agreementTextLoaded) return;
 fetch(API_BASE + '/api/agreement')
 .then(r => r.json())
 .then(data => {
-document.getElementById('agreementTextBox').textContent = data.text;
+document.getElementById('agreementTextBox').textContent = (currentLang === 'uz' && data.text_uz) ? data.text_uz : data.text;
 agreementTextLoaded = true;
 })
 .catch(() => {
