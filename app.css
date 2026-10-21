@@ -4713,3 +4713,9 @@ body.layout-large #skinsList .skin-badges{ top:8px; left:8px; gap:6px; }
 .cart-item-buy{ flex:none; padding:6px 10px; border-radius:8px; border:1px solid var(--line, #2c2340); background:transparent; color:var(--silver); font:600 12px/1 inherit; cursor:pointer; }
 .cart-topup-btn{ display:block; width:100%; margin:8px 0 4px; padding:10px; border-radius:10px; border:1px solid var(--line, #2c2340); background:transparent; color:var(--silver); font:600 14px/1 inherit; cursor:pointer; }
 .cart-topup-btn[hidden]{ display:none; }
+
+/* Пластинки: плеер YouTube поверх карточки лота */
+.music-overlay{ z-index:20; }
+.music-note{ font-size:12px; color:var(--muted); margin-bottom:10px; }
+.music-frame{ position:relative; width:100%; aspect-ratio:16/9; border-radius:12px; overflow:hidden; background:#000; }
+.music-frame iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; }
