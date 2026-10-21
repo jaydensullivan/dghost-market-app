@@ -1463,6 +1463,7 @@ stickersBox.style.display = 'none';
 // и "Предложить цену" на чужом.
 buyRemoveBtn.style.display = (isOwn || isAdmin) ? '' : 'none';
 document.getElementById('buyWatchBtn').style.display = isOwn ? 'none' : '';
+if (typeof updateMusicKitButton === 'function') updateMusicKitButton(skin);
 document.getElementById('buyPaymentMethods').style.display = isOwn ? 'none' : 'flex';
 document.getElementById('buyOpenPayBtn').style.display = isOwn ? 'none' : '';
 document.getElementById('buyGuarantee').style.display = isOwn ? 'none' : '';
