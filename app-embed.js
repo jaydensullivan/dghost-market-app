@@ -18,6 +18,12 @@ const seedRaw = q.get('seed');
 const paint = q.get('paint');
 const lang = ['ru', 'uz', 'en'].includes(q.get('lang')) ? q.get('lang') : 'en';
 const ticket = (q.get('ticket') || '').trim();
+// hero=1 — витрина на наших сайтах: без кнопок, прозрачный фон, скин
+// поворачивает прокрутка страницы (сообщения { source: 'dghost-site',
+// type: 'hero', p: 0…1 } только с наших адресов).
+const hero = q.get('hero') === '1';
+const HERO_ORIGIN = /^https:\/\/(www\.)?dghostmarket\.(uz|com)$|^http:\/\/localhost(:\d+)?$/;
+if (hero) document.body.classList.add('hero');
 
 const MSG = {
 ru: { no_skin: 'Не указан скин.', no_key: 'Не указан ключ виджета.', denied: 'Виджет не подключён для этого сайта.', limit: 'Лимит показов пробного периода исчерпан.', no_model: 'Для этого скина 3D пока нет.', blocked: 'Ключ отключён.' },
@@ -38,6 +44,28 @@ try { return document.referrer ? new URL(document.referrer).origin : ''; } catch
 
 function post(event, extra){
 try { window.parent.postMessage(Object.assign({ source: 'dghost3d', event: event }, extra || {}), '*'); } catch (e) {}
+}
+
+function startHero(){
+let p = 0;
+window.addEventListener('message', (e) => {
+const d = e.data;
+if (!HERO_ORIGIN.test(e.origin) || !d || d.source !== 'dghost-site' || d.type !== 'hero') return;
+p = Math.min(1, Math.max(0, Number(d.p) || 0));
+});
+// Прокрутка — полтора оборота с наклоном и приближением; без прокрутки
+// скин слегка покачивается, чтобы витрина не замирала.
+// На узком экране (телефон) отодвигаем камеру — нож не упирается в края.
+const far = () => (window.innerWidth < 600 ? 0.3 : 0);
+const tick = (now) => {
+viewer3dPose = {
+ry: -0.6 + p * Math.PI * 1.5 + Math.sin(now / 1800) * 0.12,
+rx: 0.18 - p * 0.36 + Math.sin(now / 2300) * 0.04,
+dist: 1.08 + far() - p * 0.3,
+};
+requestAnimationFrame(tick);
+};
+requestAnimationFrame(tick);
 }
 
 function fail(text, code){
@@ -109,7 +137,8 @@ if (!entry || !entry.model) return fail(MSG.no_model, 'no_model');
 const seed = seedRaw !== null && seedRaw !== '' ? seedRaw : null;
 open3DViewer(entry.model, skinName.replace(/\s*\([^)]*\)\s*$/, ''), entry.skin, floatValue, entry.weapon || null, 'none', seed, null, null);
 setViewerFullscreen(true);
-setupFullscreen(s.ticket || '');
+if (hero) startHero();
+else setupFullscreen(s.ticket || '');
 post('ready');
 }).catch(() => fail(MSG.denied, 'network'));
 })();

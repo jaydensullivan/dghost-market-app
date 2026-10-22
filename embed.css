@@ -17,3 +17,11 @@ body.embed.no-ar #viewer3dArBtn{ display:none !important; }
   font:500 14px/1.5 Inter, system-ui, sans-serif; color:#A8A4B3; }
 .embed-badge{ position:fixed; right:10px; bottom:8px; z-index:2000; font:600 11px/1 Inter, system-ui, sans-serif; color:#d8c8ff;
   background:rgba(12,8,22,0.72); border:1px solid rgba(168,85,247,0.35); border-radius:999px; padding:5px 9px; text-decoration:none; }
+/* Витрина на наших сайтах (hero=1): только скин на прозрачном фоне.
+   Касания проходят сквозь — страница листается и над скином. */
+html:has(body.embed.hero), body.embed.hero{ background:transparent; }
+body.embed.hero .viewer3d-sheet.full{ padding:0; background:transparent; border:0; box-shadow:none; }
+body.embed.hero .viewer3d-stage, body.embed.hero .viewer3d-stage[data-bg], body.embed.hero .viewer3d-stage[data-bg-image]{ background:transparent !important; border:0; box-shadow:none; }
+body.embed.hero .viewer3d-head, body.embed.hero .viewer3d-wear, body.embed.hero .viewer3d-bgs, body.embed.hero .viewer3d-views,
+body.embed.hero .viewer3d-hint, body.embed.hero .viewer3d-status, body.embed.hero .embed-badge{ display:none !important; }
+body.embed.hero canvas{ pointer-events:none; }

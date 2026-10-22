@@ -356,6 +356,10 @@ buffer, '',
 
 const viewer3dOverlay = document.getElementById('viewer3dOverlay');
 let viewer3d = null; // { renderer, scene, camera, object, raf }
+// Поворот и отдаление, которые задаёт страница-хозяин (витрина сайта в
+// embed.html?hero=1 крутит скин прокруткой): { ry, rx, dist } — углы в
+// радианах и расстояние камеры в долях от исходного. null — как обычно.
+let viewer3dPose = null;
 
 function dispose3DViewer(){
 if (!viewer3d) return;
@@ -3353,7 +3357,11 @@ hands.ih.setTime(hands.t);
 updateViewerBgParallax(Math.sin(now / 2600) * 0.4);
 renderer.render(scene, hands.camera);
 } else {
-if (tilt.on){
+if (viewer3dPose){
+object.rotation.y += (viewer3dPose.ry - object.rotation.y) * 0.1;
+object.rotation.x += (viewer3dPose.rx - object.rotation.x) * 0.1;
+camera.position.z += (baseDistance * viewer3dPose.dist - camera.position.z) * 0.1;
+} else if (tilt.on){
 // Плавно к углу наклона: вбок до ±45°, вперёд-назад до ±35°.
 const deg = Math.PI / 180;
 const ty = tilt.rotY + Math.max(-45, Math.min(45, tilt.g)) * deg * 1.4;
