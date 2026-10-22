@@ -4719,3 +4719,28 @@ body.layout-large #skinsList .skin-badges{ top:8px; left:8px; gap:6px; }
 .music-note{ font-size:12px; color:var(--muted); margin-bottom:10px; }
 .music-frame{ position:relative; width:100%; aspect-ratio:16/9; border-radius:12px; overflow:hidden; background:#000; }
 .music-frame iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; }
+
+/* Окно инвентаря: стоимость, категории с количеством, цены, сумма выбранного */
+.inv-stats{ display:grid; grid-template-columns:1.4fr 1fr; gap:8px; margin:0 0 10px; }
+.inv-stat{ padding:10px 12px; border-radius:12px; background:var(--card, rgba(255,255,255,.04)); border:1px solid var(--line, rgba(255,255,255,.08)); min-width:0; }
+.inv-stat-label{ font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+.inv-stat-value{ font-size:20px; font-weight:800; color:var(--silver); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.inv-type-chips{ display:flex; gap:6px; overflow-x:auto; padding:2px 0 8px; margin-bottom:2px; scrollbar-width:none; }
+.inv-type-chips::-webkit-scrollbar{ display:none; }
+.inv-type-chip{ flex:none; }
+.inv-type-chip b{ margin-left:6px; font-weight:700; opacity:.75; }
+.inv-top-chip{ flex:none; border-color:var(--accent, #c084fc); color:var(--accent, #c084fc); }
+.inv-item-price{ font-size:13px; font-weight:700; color:var(--accent, #c084fc); margin:4px 0 2px; }
+.inv-picked-sum{ font-size:12px; font-weight:700; color:var(--accent, #c084fc); }
+/* Профиль: значок бонуса у рефералов и блок «Помощь» */
+.pf-bonus-badge{ display:inline-block; margin-left:6px; padding:1px 7px; border-radius:999px; border:1px solid #ef4444; color:#ef4444; font-size:10px; font-weight:800; letter-spacing:.06em; vertical-align:middle; }
+.pf-help-faq{ margin:4px 0 8px; }
+.pf-help-q{ border-top:1px solid var(--line, rgba(255,255,255,.08)); padding:10px 2px; }
+.pf-help-q summary{ cursor:pointer; font-size:14px; font-weight:600; color:var(--silver); list-style:none; }
+.pf-help-q summary::-webkit-details-marker{ display:none; }
+.pf-help-q summary::after{ content:"＋"; float:right; color:var(--muted); }
+.pf-help-q[open] summary::after{ content:"－"; }
+.pf-help-q p{ margin:8px 0 0; font-size:13px; line-height:1.5; color:var(--muted); }
+.pf-help-links{ display:flex; flex-direction:column; gap:6px; }
+.inv-filters-2{ grid-template-columns:1fr 1.3fr; }
+.inv-type-chips .category-chip{ display:inline-flex; flex-direction:row; align-items:center; gap:0; height:auto; min-height:34px; width:auto; padding:7px 12px; font-size:13px; line-height:1.2; white-space:nowrap; }

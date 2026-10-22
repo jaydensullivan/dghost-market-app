@@ -227,6 +227,12 @@ document.getElementById('notifBellBtn').click();
 openLegal('terms');
 } else if (action === 'support'){
 document.querySelector('[data-header-action="support"]').click();
+} else if (action === 'howbuy'){
+openBuyGuide();
+} else if (action === 'channel'){
+const url = 'https://t.me/dghostmarket';
+if (tg && tg.openTelegramLink) tg.openTelegramLink(url);
+else window.open(url, '_blank', 'noopener');
 } else if (action === 'exit'){
 if (tg && tg.close) tg.close();
 }

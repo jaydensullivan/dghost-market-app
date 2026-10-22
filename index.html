@@ -10,7 +10,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=4"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=84">
+<link rel="stylesheet" href="app.css?v=85">
 </head>
 <body data-tab="shop">
 <!-- Значки интерфейса в едином объёмном стиле (gi-*): <svg class="gi"><use href="#gi-…"/></svg>. -->
@@ -481,7 +481,7 @@
 <div class="pf-card-head">
 <div class="pf-ico violet"><svg class="gi" width="26" height="26" aria-hidden="true"><use href="#gi-people"/></svg></div>
 <div class="pf-card-title">
-<div class="pf-title" data-i18n="pf_referral_title">Реферальная программа</div>
+<div class="pf-title"><span data-i18n="pf_referral_title">Реферальная программа</span> <span class="pf-bonus-badge">BONUS</span></div>
 <div class="pf-sub" id="referralBonusText">Загрузка...</div>
 </div>
 </div>
@@ -525,6 +525,28 @@
 </div>
 </div>
 
+<!-- ❓ Помощь: как это работает, ответы на частые вопросы, связь. -->
+<div class="pf-card pf-help" id="profileHelpSection">
+<div class="pf-card-head">
+<div class="pf-ico blue"><svg class="gi" width="26" height="26" aria-hidden="true"><use href="#gi-help"/></svg></div>
+<div class="pf-card-title"><div class="pf-title" data-i18n="pf_help">Помощь</div></div>
+</div>
+<div class="pf-help-faq" id="profileHelpFaq">
+<details class="pf-help-q"><summary data-i18n="faq_q1"></summary><p data-i18n="faq_a1"></p></details>
+<details class="pf-help-q"><summary data-i18n="faq_q2"></summary><p data-i18n="faq_a2"></p></details>
+<details class="pf-help-q"><summary data-i18n="faq_q3"></summary><p data-i18n="faq_a3"></p></details>
+<details class="pf-help-q"><summary data-i18n="faq_q4"></summary><p data-i18n="faq_a4"></p></details>
+<details class="pf-help-q"><summary data-i18n="faq_q5"></summary><p data-i18n="faq_a5"></p></details>
+<details class="pf-help-q"><summary data-i18n="faq_q6"></summary><p data-i18n="faq_a6"></p></details>
+<details class="pf-help-q"><summary data-i18n="faq_q7"></summary><p data-i18n="faq_a7"></p></details>
+</div>
+<div class="pf-help-links">
+<button type="button" class="pf-set-btn" data-pf-action="howbuy"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-cart"/></svg><span data-i18n="help_how_buy">Как купить за 3 шага</span></button>
+<button type="button" class="pf-set-btn" data-pf-action="support"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-mail"/></svg><span data-i18n="help_support">Написать в поддержку</span></button>
+<button type="button" class="pf-set-btn" data-pf-action="channel"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-megaphone"/></svg><span data-i18n="help_channel">Наш канал @dghostmarket</span></button>
+</div>
+</div>
+
 <div class="pf-settings">
 <button type="button" class="pf-set-btn dgw-guest-only" id="webLoginBtn"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-user"/></svg><span data-i18n="web_login">Войти через Telegram</span></button>
 <button type="button" class="pf-set-btn dgw-in-only" id="webLogoutBtn"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-exit"/></svg><span data-i18n="web_logout">Выйти из аккаунта на сайте</span></button>
@@ -532,7 +554,6 @@
 <button type="button" class="pf-set-btn pf-seller-only" id="openHistoryBtn" style="display:none;"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-history"/></svg><span data-i18n="pf_history">История операций</span></button>
 <button type="button" class="pf-set-btn pf-seller-only" id="exportSalesCsvBtn" style="display:none;"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-doc"/></svg><span data-i18n="btn_export_csv">Экспорт CSV</span></button>
 <button type="button" class="pf-set-btn" data-pf-action="legal"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-doc"/></svg><span data-i18n="header_menu_legal">Правила и оферты</span></button>
-<button type="button" class="pf-set-btn" data-pf-action="support"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-help"/></svg><span data-i18n="pf_help">Помощь</span></button>
 <button type="button" class="pf-set-btn danger" data-pf-action="exit"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-exit"/></svg><span data-i18n="pf_exit">Выйти</span></button>
 </div>
 
@@ -2101,6 +2122,12 @@
 <button type="button" id="inventoryRefreshBtn" class="inv-refresh-btn"><svg class="gi" width="18" height="18" aria-hidden="true"><use href="#gi-refresh"/></svg><span data-i18n="inv_refresh">Обновить</span></button>
 </div>
 
+<!-- Сколько стоит инвентарь по ценам рынка и сколько можно продать. -->
+<div class="inv-stats" id="invStats" style="display:none;">
+<div class="inv-stat"><div class="inv-stat-label" data-i18n="inv_stat_value">Инвентарь стоит</div><div class="inv-stat-value" id="invStatValue">…</div></div>
+<div class="inv-stat"><div class="inv-stat-label" data-i18n="inv_stat_sellable">Можно продать</div><div class="inv-stat-value" id="invStatSellable">…</div></div>
+</div>
+
 <div class="shop-search-row inv-search-row">
 <label class="shop-search">
 <svg class="gi" width="18" height="18" aria-hidden="true"><use href="#gi-search"/></svg>
@@ -2112,8 +2139,11 @@
 </button>
 </div>
 
-<div class="inv-filters">
-<label class="inv-select"><svg class="gi" width="16" height="16" aria-hidden="true"><use href="#gi-grid"/></svg>
+<!-- Категории кнопками с количеством; сам select скрыт и хранит выбор. -->
+<div class="inv-type-chips" id="invTypeChips"></div>
+
+<div class="inv-filters inv-filters-2">
+<label class="inv-select" style="display:none;"><svg class="gi" width="16" height="16" aria-hidden="true"><use href="#gi-grid"/></svg>
 <select id="invTypeFilter">
 <option value="all" data-i18n="inv_all_types">Все типы</option>
 <option value="knives" data-i18n="cat_knives">Ножи</option>
@@ -2138,6 +2168,7 @@
 <label class="inv-select"><svg class="gi" width="16" height="16" aria-hidden="true"><use href="#gi-sort"/></svg>
 <select id="invSort">
 <option value="steam" data-i18n="inv_sort_steam">Сортировка</option>
+<option value="price" data-i18n="inv_sort_price">Сначала дорогие</option>
 <option value="rare" data-i18n="inv_sort_rare">Сначала редкие</option>
 <option value="common" data-i18n="inv_sort_common">Сначала обычные</option>
 <option value="float" data-i18n="inv_sort_float">По float</option>
@@ -2158,7 +2189,7 @@
 <!-- Выбранные предметы: миниатюры, счётчик и «Продолжить». -->
 <div class="inv-picked" id="invPicked" style="display:none;">
 <div class="inv-picked-thumbs" id="invPickedThumbs"></div>
-<div class="inv-picked-count"><span data-i18n="inv_picked">Выбрано скинов:</span><b id="invPickedCount">0 из 50</b></div>
+<div class="inv-picked-count"><span data-i18n="inv_picked">Выбрано скинов:</span><b id="invPickedCount">0 из 50</b><span class="inv-picked-sum" id="invPickedSum"></span></div>
 <button type="button" class="inv-continue" id="invContinueBtn"><span data-i18n="inv_continue">Продолжить</span> →</button>
 <button type="button" class="inv-sell-all" id="invSellAllBtn">⚡ Все по рынку −3%</button>
 </div>
@@ -2196,10 +2227,10 @@
 </div>
 </div>
 <script src="app-core.js?v=13"></script>
-<script src="app-i18n.js?v=118"></script>
+<script src="app-i18n.js?v=120"></script>
 <script src="app-navigation.js?v=21"></script>
-<script src="app-shop.js?v=33"></script>
-<script src="app-legal.js?v=2"></script>
+<script src="app-shop.js?v=34"></script>
+<script src="app-legal.js?v=3"></script>
 <script src="app-deals.js?v=19"></script>
 <script src="app-catalog.js?v=25"></script>
 <script src="app-cart.js?v=9"></script>
@@ -2209,7 +2240,7 @@
 <script src="app-topup.js?v=5"></script>
 <script src="app-history.js?v=6"></script>
 <script src="app-referral.js?v=6"></script>
-<script src="app-withdraw.js?v=24"></script>
+<script src="app-withdraw.js?v=25"></script>
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
 <script>window.DG_ADMIN_SRC = 'app-admin.js?v=23';</script>
 <!-- 3D-просмотрщик (210 КБ) грузится после открытия витрины — ensure3DScript в app-navigation.js. -->
@@ -2219,7 +2250,7 @@
 <script src="app-notifications.js?v=3"></script>
 <script src="app-telegram.js?v=15"></script>
 <script src="app-raffle.js?v=11"></script>
-<script src="app-home.js?v=9"></script>
+<script src="app-home.js?v=10"></script>
 <script src="app-pro.js?v=16"></script>
 <script src="app-render3d.js?v=3"></script>
 </body>

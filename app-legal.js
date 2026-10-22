@@ -9,6 +9,7 @@
 // ============================================================
 
 let legalDocs = null;
+let legalDocsUz = null;
 let legalDocsPromise = null;
 let legalOnAccept = null;
 
@@ -20,6 +21,7 @@ legalDocsPromise = fetch(API_BASE + '/api/agreement')
 .then(data => {
 if (!data.docs) throw new Error('no docs');
 legalDocs = data.docs;
+legalDocsUz = data.docs_uz || null;
 return legalDocs;
 })
 .catch(err => {
@@ -38,9 +40,12 @@ b.classList.toggle('active', b.dataset.legalTab === key);
 });
 box.textContent = dict.loading || 'Загрузка...';
 loadLegalDocs()
-.then(docs => {
+.then(ruDocs => {
+// Узбекский — государственный язык: документы есть и на нём.
+// Английского текста нет — показываем русский с пометкой.
+const docs = (currentLang === 'uz' && legalDocsUz) ? legalDocsUz : ruDocs;
 const doc = docs[key] || docs.terms;
-box.textContent = (currentLang !== 'ru' ? dict.legal_ru_only + '\n\n' : '') + doc.text;
+box.textContent = (currentLang === 'en' ? dict.legal_ru_only + '\n\n' : '') + doc.text;
 box.scrollTop = 0;
 })
 .catch(() => {
