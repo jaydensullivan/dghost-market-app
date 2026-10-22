@@ -3,6 +3,14 @@
 // ============================================================
 
 const HISTORY_TYPE_LABELS_RU = {
+p2p_direct_purchase: "Оплата переводом на карту",
+p2p_card_direct_purchase: "Оплата переводом на карту",
+octo_direct_purchase: "Оплата картой",
+crypto_direct_purchase: "Оплата (крипта)",
+p2p_direct_purchase_refund_card: "Возврат на карту",
+dispute_refund_to_card: "Возврат на карту (спор)",
+p2p_direct_purchase_refund: "Возврат (перевод на карту)",
+octo_direct_purchase_refund: "Возврат (оплата картой)",
 topup_crypto: 'Пополнение (крипта)',
 trade_cash: 'Доплата по обмену',
 withdrawal_paid: 'Вывод средств',
@@ -26,6 +34,14 @@ finalize_hold: 'Списание (сделка завершена)',
 };
 
 const HISTORY_TYPE_LABELS_UZ = {
+p2p_direct_purchase: "Kartaga o'tkazma orqali to'lov",
+p2p_card_direct_purchase: "Kartaga o'tkazma orqali to'lov",
+octo_direct_purchase: "Karta orqali to'lov",
+crypto_direct_purchase: "To'lov (kripto)",
+p2p_direct_purchase_refund_card: "Kartaga qaytarish",
+dispute_refund_to_card: "Kartaga qaytarish (nizo)",
+p2p_direct_purchase_refund: "Qaytarish (kartaga o'tkazma)",
+octo_direct_purchase_refund: "Qaytarish (karta orqali to'lov)",
 topup_crypto: "To'ldirish (kripto)",
 trade_cash: "Almashuv bo'yicha to'lov",
 withdrawal_paid: 'Pul yechish',
@@ -49,6 +65,14 @@ finalize_hold: 'Yechildi (bitim yakunlandi)',
 };
 
 const HISTORY_TYPE_LABELS_EN = {
+p2p_direct_purchase: "Payment by card transfer",
+p2p_card_direct_purchase: "Payment by card transfer",
+octo_direct_purchase: "Card payment",
+crypto_direct_purchase: "Payment (crypto)",
+p2p_direct_purchase_refund_card: "Refund to card",
+dispute_refund_to_card: "Refund to card (dispute)",
+p2p_direct_purchase_refund: "Refund (card transfer)",
+octo_direct_purchase_refund: "Refund (card payment)",
 topup_crypto: 'Top-up (crypto)',
 trade_cash: 'Trade cash',
 withdrawal_paid: 'Withdrawal',
@@ -96,11 +120,11 @@ ${photo}
 // во «Все» — так новые типы на бэкенде не теряются.
 const HISTORY_GROUPS = {
 topup: ['topup_manual', 'topup_stars', 'topup_crypto'],
-sale: ['skin_sale', 'trade_cash', 'stars_direct_purchase'],
+sale: ['skin_sale', 'trade_cash', 'stars_direct_purchase', 'p2p_direct_purchase', 'p2p_card_direct_purchase', 'octo_direct_purchase', 'crypto_direct_purchase'],
 withdraw: ['withdrawal_paid', 'hold', 'release_hold', 'finalize_hold'],
 fee: ['platform_fee', 'withdraw_commission', 'set_discount'],
 bonus: ['referral_bonus', 'referral_claim', 'admin_credit'],
-refund: ['stars_direct_purchase_refund', 'crypto_direct_purchase_refund'],
+refund: ['stars_direct_purchase_refund', 'crypto_direct_purchase_refund', 'p2p_direct_purchase_refund_card', 'dispute_refund_to_card', 'p2p_direct_purchase_refund', 'octo_direct_purchase_refund'],
 };
 
 let historyItems = [];
