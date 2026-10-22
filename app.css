@@ -4722,10 +4722,13 @@ body.layout-large #skinsList .skin-badges{ top:8px; left:8px; gap:6px; }
 
 /* Окно инвентаря: стоимость, категории с количеством, цены, сумма выбранного */
 .inv-stats{ display:grid; grid-template-columns:1.4fr 1fr; gap:8px; margin:0 0 10px; }
+.inv-stats.one{ grid-template-columns:1fr; }
 .inv-stat{ padding:10px 12px; border-radius:12px; background:var(--card, rgba(255,255,255,.04)); border:1px solid var(--line, rgba(255,255,255,.08)); min-width:0; }
 .inv-stat-label{ font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
 .inv-stat-value{ font-size:20px; font-weight:800; color:var(--silver); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.inv-type-chips{ display:flex; gap:6px; overflow-x:auto; padding:2px 0 8px; margin-bottom:2px; scrollbar-width:none; }
+/* flex:none — окно инвентаря сжимает детей по высоте, а ряд с прокруткой
+   иначе сплющивался до полоски (видны были только верхние края кнопок). */
+.inv-type-chips{ display:flex; flex:none; gap:6px; overflow-x:auto; overflow-y:hidden; padding:2px 0 8px; margin-bottom:2px; scrollbar-width:none; }
 .inv-type-chips::-webkit-scrollbar{ display:none; }
 .inv-type-chip{ flex:none; }
 .inv-type-chip b{ margin-left:6px; font-weight:700; opacity:.75; }
