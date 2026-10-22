@@ -248,7 +248,12 @@ const tradable = lastInventoryItems.filter(it => it.tradable !== false);
 const total = tradable.reduce((sum, it) => sum + invItemPrice(it), 0);
 document.getElementById('invStatValue').textContent = total
 ? formatCoins(total) + (invPricesLoading ? ' …' : '')
-: (invPricesLoading ? '…' : '—');
+: '…';
+// Цен нет совсем (бот их не отдал) — плитку стоимости прячем, а не
+// показываем прочерк.
+const noPrices = !total && !invPricesLoading;
+document.getElementById('invStatValue').parentElement.hidden = noPrices;
+box.classList.toggle('one', noPrices);
 document.getElementById('invStatSellable').textContent = String(tradable.length);
 }
 
