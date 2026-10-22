@@ -1,0 +1,22 @@
+# Проверка кода мини-аппа: вызовы несуществующих функций и переменных,
+# повторные ключи, недостижимый код (tools/lint-check.js, eslint).
+# Красная галочка в PR — не мержить, пока не починят.
+name: "Мини-апп: проверка кода"
+
+on:
+  pull_request:
+    paths: ["app*.js", "index.html", "tools/lint-check.js"]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: node tools/lint-check.js
