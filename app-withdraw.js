@@ -442,6 +442,7 @@ document.getElementById('invSort').value = inventoryPickHandler ? 'steam' : 'pri
 document.getElementById('invHeadSub').textContent = inventoryPickHandler ? dict.inv_subtitle_pick : dict.inv_subtitle;
 renderInvPicked();
 inventoryOverlay.classList.add('show');
+inventoryOverlay.querySelector('.inventory-sheet').scrollTop = 0;
 loadInventory(false);
 }
 
@@ -571,7 +572,7 @@ invPicked = invPicked.filter(p => invKey(p) !== un.dataset.invUnpick);
 renderInventory();
 return;
 }
-if (e.target.closest('#invPickMore')) inventoryGrid.scrollTo({ top: 0, behavior: 'smooth' });
+if (e.target.closest('#invPickMore')) inventoryGrid.closest('.inventory-sheet').scrollTo({ top: 0, behavior: 'smooth' });
 });
 
 // ---------- подробнее о предмете ----------

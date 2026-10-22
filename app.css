@@ -4747,3 +4747,32 @@ body.layout-large #skinsList .skin-badges{ top:8px; left:8px; gap:6px; }
 .pf-help-links{ display:flex; flex-direction:column; gap:6px; }
 .inv-filters-2{ grid-template-columns:1fr 1.3fr; }
 .inv-type-chips .category-chip{ display:inline-flex; flex-direction:row; align-items:center; gap:0; height:auto; min-height:34px; width:auto; padding:7px 12px; font-size:13px; line-height:1.2; white-space:nowrap; }
+
+/* Окно инвентаря — на весь экран и листается целиком: раньше шапка с
+   поиском и фильтрами стояла на месте, а список крутился в узкой полосе
+   между ними и кнопкой «Закрыть». Низ окна прилипает к краю экрана. */
+#inventoryOverlay{ align-items:stretch; }
+#inventoryOverlay .inventory-sheet{
+display:block;
+height:100%;
+max-height:none;
+border-radius:0;
+border:0;
+overflow-y:auto;
+overscroll-behavior:contain;
+-webkit-overflow-scrolling:touch;
+padding:calc(12px + var(--tg-safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px)) 14px 0;
+}
+#inventoryOverlay .inventory-sheet .inventory-grid{ max-height:none; min-height:0; overflow:visible; }
+.inv-foot{
+position:sticky;
+bottom:0;
+z-index:5;
+margin:0 -14px;
+padding:10px 14px calc(10px + var(--tg-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
+background:linear-gradient(to bottom, rgba(0,0,0,0), var(--surface) 14px);
+}
+.inv-foot .inv-picked{ margin-bottom:8px; }
+/* Логотип и кнопки в углах (z-index 50) не рисуются поверх окна инвентаря. */
+body:has(#inventoryOverlay.show) .brand-tl, body:has(#inventoryOverlay.show) .brand-tr{ visibility:hidden; }
+.inv-foot .inv-close{ background:var(--surface); }
