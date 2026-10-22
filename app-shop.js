@@ -36,8 +36,6 @@ const buyClose = document.getElementById('buyClose');
 const buyPrice = document.getElementById('buyPrice');
 const buyCancel = document.getElementById('buyCancel');
 const buyConfirmBalance = document.getElementById('buyConfirmBalance');
-const buyConfirmStars = document.getElementById('buyConfirmStars');
-const buyConfirmCrypto = document.getElementById('buyConfirmCrypto');
 const buyConfirmP2P = document.getElementById('buyConfirmP2P');
 const buyEditPriceBtn = document.getElementById('buyEditPriceBtn');
 const buySavePriceBtn = document.getElementById('buySavePriceBtn');
@@ -76,7 +74,7 @@ bad_photo: 'Не удалось прочитать фото — попробуй
 evidence_empty: 'Добавь описание, Trade ID или скриншот.',
 evidence_limit: 'Ты уже отправил максимум доказательств по этому спору. Админ свяжется с тобой в боте.',
 item_no_longer_available: 'Этого предмета уже нет в инвентаре продавца — лот снят с продажи. Извини, оплата не потребуется.',
-balance_purchase_disabled: 'Оплата с баланса доступна только покупателям. Продавец деньги с продаж выводит — выбери Stars, крипту или П2П.',
+balance_purchase_disabled: 'Оплата с баланса доступна только покупателям. Продавец деньги с продаж выводит — выбери другой способ оплаты.',
 self_dealing: 'Нельзя предложить обмен самому себе или связанному аккаунту.',
 not_your_skin: 'Этот лот тебе не принадлежит.',
 target_mismatch: 'Лот уже сменил владельца — обнови страницу.',
@@ -142,7 +140,7 @@ bad_photo: "Rasmni o'qib bo'lmadi — boshqasini sinab ko'ring.",
 evidence_empty: "Tavsif, Trade ID yoki skrinshot qo'shing.",
 evidence_limit: "Bu nizo bo'yicha maksimal dalil yuborgansiz. Admin bot orqali siz bilan bog'lanadi.",
 item_no_longer_available: "Bu buyum endi sotuvchining inventarida yo'q — lot sotuvdan olindi. Uzr, to'lov talab qilinmaydi.",
-balance_purchase_disabled: "Balansdan to'lov faqat xaridorlar uchun. Sotuvchi savdodan tushgan pulni yechib oladi — Stars, kripto yoki P2P ni tanlang.",
+balance_purchase_disabled: "Balansdan to'lov faqat xaridorlar uchun. Sotuvchi savdodan tushgan pulni yechib oladi — boshqa to'lov usulini tanlang.",
 self_dealing: "O'zingizga yoki bog'langan akkauntga almashuv taklif qilib bo'lmaydi.",
 not_your_skin: "Bu lot sizga tegishli emas.",
 target_mismatch: "Lot egasi allaqachon o'zgargan — sahifani yangilang.",
@@ -208,7 +206,7 @@ bad_photo: "Couldn't read the photo — try another one.",
 evidence_empty: 'Add a description, a Trade ID or a screenshot.',
 evidence_limit: "You've already sent the maximum amount of evidence for this dispute. An admin will contact you in the bot.",
 item_no_longer_available: "This item is no longer in the seller's inventory — the listing was removed. Sorry, no payment is needed.",
-balance_purchase_disabled: 'Paying from balance is for buyers only. Sellers withdraw their sales money — choose Stars, crypto or P2P.',
+balance_purchase_disabled: 'Paying from balance is for buyers only. Sellers withdraw their sales money — choose another payment method.',
 self_dealing: "You can't offer a trade to yourself or a linked account.",
 not_your_skin: "This listing doesn't belong to you.",
 target_mismatch: 'The listing has already changed owner — refresh the page.',
@@ -411,14 +409,7 @@ applySteamVerification(data);
 agreementAccepted = !!data.agreement_accepted;
 sellerOfferAccepted = !!data.seller_offer_accepted;
 changelogSeen = !!data.changelog_seen;
-cryptoTopupAvailable = !!data.crypto_topup_available;
-cryptoPayoutAvailable = !!data.crypto_payout_available;
 topupCardEnabled = data.topup_card_enabled !== false;
-topupCryptoEnabled = data.topup_crypto_enabled !== false;
-topupStarsEnabled = data.topup_stars_enabled !== false;
-coinsPerStar = data.coins_per_star || 200;
-directStarsPurchaseEnabled = data.direct_stars_purchase_enabled === true;
-directCryptoPurchaseEnabled = data.direct_crypto_purchase_enabled === true;
 directP2pPurchaseEnabled = data.direct_p2p_purchase_enabled === true;
 hostedPayMethods = Array.isArray(data.payment_methods) ? data.payment_methods.filter(m => m && m.kind === 'hosted') : [];
 sellerKycStatus = data.seller_kyc_status || 'none';
@@ -433,11 +424,9 @@ p2pCardDetails = data.p2p_card_details || '';
 withdrawCardEnabled = data.withdraw_card_enabled !== false;
 currentUserTrust = data.trust || null;
 renderTrustBadge();
-withdrawCryptoEnabled = data.withdraw_crypto_enabled !== false;
-if (typeof updateWithdrawMethodVisibility === 'function') updateWithdrawMethodVisibility();
-if (typeof updateTopupCryptoBtnVisibility === 'function') updateTopupCryptoBtnVisibility();
-document.getElementById('openTopupBtn').style.display = (!topupCardEnabled && !topupCryptoEnabled) ? 'none' : '';
-document.getElementById('openWithdrawBtn').style.display = (!withdrawCardEnabled && !withdrawCryptoEnabled) ? 'none' : '';
+if (typeof updateTopupMethods === 'function') updateTopupMethods();
+document.getElementById('openTopupBtn').style.display = topupCardEnabled ? '' : 'none';
+document.getElementById('openWithdrawBtn').style.display = withdrawCardEnabled ? '' : 'none';
 if (data.language && data.language !== currentLang){
 currentLang = data.language;
 applyTranslations();
@@ -510,14 +499,7 @@ applySteamVerification(data);
 agreementAccepted = !!data.agreement_accepted;
 sellerOfferAccepted = !!data.seller_offer_accepted;
 changelogSeen = !!data.changelog_seen;
-cryptoTopupAvailable = !!data.crypto_topup_available;
-cryptoPayoutAvailable = !!data.crypto_payout_available;
 topupCardEnabled = data.topup_card_enabled !== false;
-topupCryptoEnabled = data.topup_crypto_enabled !== false;
-topupStarsEnabled = data.topup_stars_enabled !== false;
-coinsPerStar = data.coins_per_star || 200;
-directStarsPurchaseEnabled = data.direct_stars_purchase_enabled === true;
-directCryptoPurchaseEnabled = data.direct_crypto_purchase_enabled === true;
 directP2pPurchaseEnabled = data.direct_p2p_purchase_enabled === true;
 hostedPayMethods = Array.isArray(data.payment_methods) ? data.payment_methods.filter(m => m && m.kind === 'hosted') : [];
 sellerKycStatus = data.seller_kyc_status || 'none';
@@ -532,11 +514,9 @@ p2pCardDetails = data.p2p_card_details || '';
 withdrawCardEnabled = data.withdraw_card_enabled !== false;
 currentUserTrust = data.trust || null;
 renderTrustBadge();
-withdrawCryptoEnabled = data.withdraw_crypto_enabled !== false;
-if (typeof updateWithdrawMethodVisibility === 'function') updateWithdrawMethodVisibility();
-if (typeof updateTopupCryptoBtnVisibility === 'function') updateTopupCryptoBtnVisibility();
-document.getElementById('openTopupBtn').style.display = (!topupCardEnabled && !topupCryptoEnabled) ? 'none' : '';
-document.getElementById('openWithdrawBtn').style.display = (!withdrawCardEnabled && !withdrawCryptoEnabled) ? 'none' : '';
+if (typeof updateTopupMethods === 'function') updateTopupMethods();
+document.getElementById('openTopupBtn').style.display = topupCardEnabled ? '' : 'none';
+document.getElementById('openWithdrawBtn').style.display = withdrawCardEnabled ? '' : 'none';
 updateSteamBlockVisibility();
 updateMandatorySteamOverlay();
 updateProfileSteamBlock();

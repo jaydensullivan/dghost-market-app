@@ -8,28 +8,6 @@ const withdrawSubmitBtn = document.getElementById('withdrawSubmitBtn');
 const withdrawStatus = document.getElementById('withdrawStatus');
 const withdrawPayoutPreview = document.getElementById('withdrawPayoutPreview');
 
-let withdrawMethod = 'card';
-
-function setWithdrawMethod(method){
-withdrawMethod = method;
-document.querySelectorAll('.withdraw-method-btn').forEach(b => b.classList.toggle('active', b.dataset.method === method));
-document.getElementById('withdrawCardField').style.display = method === 'card' ? '' : 'none';
-document.getElementById('withdrawCryptoField').style.display = method === 'crypto' ? '' : 'none';
-}
-
-function updateWithdrawMethodVisibility(){
-const cardOn = withdrawCardEnabled;
-const cryptoOn = cryptoPayoutAvailable && withdrawCryptoEnabled;
-document.getElementById('withdrawCardMethodBtn').style.display = cardOn ? '' : 'none';
-document.getElementById('withdrawCryptoMethodBtn').style.display = cryptoOn ? '' : 'none';
-if (withdrawMethod === 'card' && !cardOn && cryptoOn) setWithdrawMethod('crypto');
-else if (withdrawMethod === 'crypto' && !cryptoOn && cardOn) setWithdrawMethod('card');
-}
-
-document.querySelectorAll('.withdraw-method-btn').forEach(btn => {
-btn.addEventListener('click', () => setWithdrawMethod(btn.dataset.method));
-});
-
 function updateWithdrawPayoutPreview(){
 const amount = Number(wAmount.value);
 if (!amount || amount <= 0){
@@ -49,10 +27,8 @@ wAmount.addEventListener('input', updateWithdrawPayoutPreview);
 const WITHDRAW_ERROR_MESSAGES_RU = {
 no_payment_details: 'Укажи карту и Ф.И.О. владельца карты.',
 payout_name_mismatch: 'Вывод возможен только на свою карту: Ф.И.О. держателя должно совпадать с Ф.И.О. из проверки продавца. Впиши имя так, как на карте (можно латиницей). Если всё верно, а ошибка остаётся — напиши в поддержку.',
-no_crypto_details: 'Укажи адрес кошелька.',
 below_minimum: 'Сумма меньше минимальной для вывода.',
 insufficient_funds: 'Недостаточно средств на балансе.',
-not_configured: 'Вывод в крипту сейчас недоступен.',
 feature_disabled: 'Вывод сейчас временно недоступен.',
 totp_required: 'Неверный или устаревший код 2FA — попробуй новый код из приложения.',
 totp_locked: `Слишком много неверных попыток — 2FA временно заблокирована на ${15} минут.`,
@@ -61,10 +37,8 @@ totp_locked: `Слишком много неверных попыток — 2FA 
 const WITHDRAW_ERROR_MESSAGES_UZ = {
 no_payment_details: "Karta va karta egasining F.I.Sh.ni kiriting.",
 payout_name_mismatch: "Pul faqat o'z kartangizga chiqariladi: karta egasining F.I.Sh. sotuvchi tekshiruvidagi F.I.Sh. bilan mos bo'lishi kerak. Ismni kartadagidek yozing (lotincha ham mumkin). Hammasi to'g'ri, lekin xato qolsa — qo'llab-quvvatlash xizmatiga yozing.",
-no_crypto_details: "Hamyon manzilini kiriting.",
 below_minimum: "Summa chiqarish uchun minimaldan kam.",
 insufficient_funds: "Balansda mablag' yetarli emas.",
-not_configured: "Kriptoga chiqarish hozir mavjud emas.",
 feature_disabled: "Pul chiqarish hozircha vaqtincha mavjud emas.",
 totp_required: "2FA kodi noto'g'ri yoki eskirgan — ilovadagi yangi kodni kiriting.",
 totp_locked: `Juda ko'p noto'g'ri urinish — 2FA ${15} daqiqaga vaqtincha bloklandi.`,
@@ -73,10 +47,8 @@ totp_locked: `Juda ko'p noto'g'ri urinish — 2FA ${15} daqiqaga vaqtincha blokl
 const WITHDRAW_ERROR_MESSAGES_EN = {
 no_payment_details: "Enter the card and the cardholder's full name.",
 payout_name_mismatch: "Withdrawals go only to your own card: the cardholder's full name must match the name from seller verification. Write the name as it is on the card (Latin letters are fine). If everything is correct and the error persists, contact support.",
-no_crypto_details: 'Enter the wallet address.',
 below_minimum: 'The amount is below the withdrawal minimum.',
 insufficient_funds: 'Not enough funds on your balance.',
-not_configured: 'Crypto withdrawals are unavailable right now.',
 feature_disabled: 'Withdrawals are temporarily unavailable.',
 totp_required: 'Wrong or expired 2FA code — try a new code from the app.',
 totp_locked: `Too many wrong attempts — 2FA is locked for ${15} minutes.`,
@@ -106,7 +78,7 @@ withdrawStatus.textContent = dict.withdraw_need_amount;
 return;
 }
 
-let payload = { init_data: tg.initData, amount: amount, method: withdrawMethod };
+let payload = { init_data: tg.initData, amount: amount, method: 'card' };
 
 if (totp2faStatus.enabled_withdraw){
 const totpCode = document.getElementById('wTotpCode').value.trim();
@@ -117,14 +89,6 @@ return;
 payload.totp_code = totpCode;
 }
 
-if (withdrawMethod === 'crypto'){
-const address = document.getElementById('wCryptoAddress').value.trim();
-if (!address){
-withdrawStatus.textContent = dict.withdraw_need_wallet;
-return;
-}
-payload.crypto_address = address;
-} else {
 const details = wDetails.value.trim();
 if (!details){
 withdrawStatus.textContent = dict.withdraw_need_card;
@@ -135,7 +99,6 @@ withdrawStatus.textContent = dict.withdraw_need_fio;
 return;
 }
 payload.payment_details = details;
-}
 
 withdrawSubmitBtn.disabled = true;
 withdrawStatus.textContent = dict.withdraw_sending;
@@ -157,7 +120,6 @@ const payoutText = data.payout ? ` ${dict.withdraw_will_arrive.replace('{amount}
 withdrawStatus.textContent = dict.withdraw_submitted.replace('{id}', data.id) + payoutText;
 wAmount.value = '';
 wDetails.value = '';
-document.getElementById('wCryptoAddress').value = '';
 withdrawPayoutPreview.textContent = '';
 loadProfile();
 })

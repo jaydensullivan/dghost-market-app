@@ -164,105 +164,10 @@ copyReferralLink();
 
 loadReferralInfo();
 
-function updateTopupCryptoBtnVisibility(){
-document.getElementById('topupCryptoBtn').style.display = (cryptoTopupAvailable && topupCryptoEnabled) ? '' : 'none';
-document.getElementById('topupStarsBtn').style.display = topupStarsEnabled ? '' : 'none';
+function updateTopupMethods(){
 document.getElementById('topupDetailsBox').style.display = topupCardEnabled ? '' : 'none';
 topupSubmitBtn.style.display = topupCardEnabled ? '' : 'none';
 }
-
-document.getElementById('topupCryptoBtn').addEventListener('click', () => {
-if (!tg || !tg.initData){
-topupStatus.textContent = errorMessage('unauthorized');
-return;
-}
-const amount = Number(tAmount.value);
-if (!amount || amount < 1000){
-topupStatus.textContent = (I18N[currentLang] || I18N.ru).topup_need_amount;
-return;
-}
-const btn = document.getElementById('topupCryptoBtn');
-btn.disabled = true;
-topupStatus.textContent = (I18N[currentLang] || I18N.ru).status_creating_invoice_short;
-fetch(API_BASE + '/api/topup/crypto', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ init_data: tg.initData, amount: amount })
-})
-.then(async r => {
-if (!r.ok){
-const data = await r.json().catch(() => ({}));
-throw new Error(data.error === 'not_configured' ? 'Оплата криптой сейчас недоступна.' : errorMessage(data.error));
-}
-return r.json();
-})
-.then(data => {
-topupStatus.textContent = (I18N[currentLang] || I18N.ru).status_invoice_created;
-const link = data.tg_deeplink || data.url;
-if (tg && tg.openTelegramLink && data.tg_deeplink){
-tg.openTelegramLink(data.tg_deeplink);
-} else if (tg && tg.openLink){
-tg.openLink(link);
-} else {
-window.open(link, '_blank');
-}
-})
-.catch(err => {
-topupStatus.textContent = friendlyErrorMessage(err);
-})
-.finally(() => {
-btn.disabled = false;
-});
-});
-
-document.getElementById('topupStarsBtn').addEventListener('click', () => {
-if (!tg || !tg.initData){
-topupStatus.textContent = errorMessage('unauthorized');
-return;
-}
-const amount = Number(tAmount.value);
-if (!amount || amount < coinsPerStar){
-topupStatus.textContent = `Укажи сумму пополнения (минимум ${formatCoins(coinsPerStar)}).`;
-return;
-}
-const btn = document.getElementById('topupStarsBtn');
-btn.disabled = true;
-topupStatus.textContent = (I18N[currentLang] || I18N.ru).status_creating_invoice;
-fetch(API_BASE + '/api/topup/stars', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ init_data: tg.initData, amount: amount })
-})
-.then(async r => {
-if (!r.ok){
-const data = await r.json().catch(() => ({}));
-throw new Error(data.error === 'feature_disabled' ? 'Оплата Stars сейчас недоступна.' : errorMessage(data.error));
-}
-return r.json();
-})
-.then(data => {
-if (tg && tg.openInvoice){
-tg.openInvoice(data.link, (status) => {
-if (status === 'paid'){
-topupStatus.textContent = (I18N[currentLang] || I18N.ru).status_topup_paid_ok;
-setTimeout(() => { loadMe(); loadProfile(); }, 2500);
-} else if (status === 'cancelled'){
-topupStatus.textContent = '';
-} else {
-topupStatus.textContent = (I18N[currentLang] || I18N.ru).status_payment_failed;
-}
-});
-} else {
-window.open(data.link, '_blank');
-}
-})
-.catch(err => {
-topupStatus.textContent = friendlyErrorMessage(err);
-})
-.finally(() => {
-btn.disabled = false;
-});
-});
 
 topupSubmitBtn.addEventListener('click', () => {
 if (!tg || !tg.initData){
