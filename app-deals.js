@@ -5,14 +5,15 @@
 function formatDealCountdown(releaseAtIso){
 if (!releaseAtIso) return '';
 const remainingMs = new Date(releaseAtIso).getTime() - Date.now();
-if (remainingMs <= 0) return 'с минуты на минуту';
+const cd = I18N[currentLang] || I18N.ru;
+if (remainingMs <= 0) return cd.deal_cd_soon;
 const totalMinutes = Math.floor(remainingMs / 60000);
 const days = Math.floor(totalMinutes / 1440);
 const hours = Math.floor((totalMinutes % 1440) / 60);
 const minutes = totalMinutes % 60;
-if (days > 0) return `${days}д ${hours}ч`;
-if (hours > 0) return `${hours}ч ${minutes}м`;
-return `${minutes}м`;
+if (days > 0) return cd.deal_cd_dh.replace('{d}', days).replace('{h}', hours);
+if (hours > 0) return cd.deal_cd_hm.replace('{h}', hours).replace('{m}', minutes);
+return cd.deal_cd_m.replace('{m}', minutes);
 }
 
 // ============================================================
@@ -339,7 +340,7 @@ dealsList.innerHTML = lastDeals.map(dealCardHtml).join('');
 lastDeals.forEach(deal => loadDealTimelineInline(null, deal.id));
 })
 .catch(() => {
-dealsList.innerHTML = '<div class="skins-empty" style="padding:16px 4px;">Не удалось загрузить</div>';
+dealsList.innerHTML = '<div class="skins-empty" style="padding:16px 4px;">' + (I18N[currentLang] || I18N.ru).deals_load_failed + '</div>';
 });
 }
 
@@ -529,7 +530,7 @@ return;
 
 if (sentBtn){
 const id = sentBtn.dataset.markSent;
-showConfirm('Отметить, что скин отправлен покупателю?', () => {
+showConfirm((I18N[currentLang] || I18N.ru).deal_confirm_sent, () => {
 fetch(API_BASE + '/api/skins/' + id + '/mark_sent', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
@@ -537,13 +538,13 @@ body: JSON.stringify({ init_data: tg.initData })
 })
 .then(r => { if (!r.ok) throw new Error(); return r.json(); })
 .then(() => loadDeals())
-.catch(() => showErrorToast(new Error('Не удалось обновить статус.')));
+.catch(() => showErrorToast(new Error((I18N[currentLang] || I18N.ru).deal_status_update_failed)));
 });
 }
 
 if (receivedBtn){
 const id = receivedBtn.dataset.markReceived;
-showConfirm('Подтвердить получение? Это просто отметка для истории — деньги продавцу всё равно уйдут по истечении 8-дневного холда.', () => {
+showConfirm((I18N[currentLang] || I18N.ru).deal_confirm_received, () => {
 fetch(API_BASE + '/api/skins/' + id + '/mark_received', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
@@ -551,7 +552,7 @@ body: JSON.stringify({ init_data: tg.initData })
 })
 .then(r => { if (!r.ok) throw new Error(); return r.json(); })
 .then(() => loadDeals())
-.catch(() => showErrorToast(new Error('Не удалось обновить статус.')));
+.catch(() => showErrorToast(new Error((I18N[currentLang] || I18N.ru).deal_status_update_failed)));
 });
 }
 
@@ -561,7 +562,7 @@ openDisputeForm(Number(disputedBtn.dataset.markDisputed), 'open');
 
 if (cancelBtn){
 const id = cancelBtn.dataset.cancelSale;
-showConfirm('Отменить продажу? Деньги вернутся покупателю, лот больше не будет считаться проданным. Отменить можно только пока предмет ещё не отправлен.', () => {
+showConfirm((I18N[currentLang] || I18N.ru).deal_confirm_cancel_sale, () => {
 fetch(API_BASE + '/api/skins/' + id + '/cancel_sale', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
@@ -570,8 +571,8 @@ body: JSON.stringify({ init_data: tg.initData })
 .then(async r => {
 if (!r.ok){
 const data = await r.json().catch(() => ({}));
-if (data.error === 'already_sent') throw new Error('Уже отмечено как отправленное — отменить нельзя.');
-throw new Error('Не удалось отменить продажу.');
+if (data.error === 'already_sent') throw new Error((I18N[currentLang] || I18N.ru).deal_cancel_already_sent);
+throw new Error((I18N[currentLang] || I18N.ru).deal_cancel_failed);
 }
 return r.json();
 })
