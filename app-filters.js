@@ -1476,12 +1476,10 @@ const canPayFromBalance = !isOwn && sellerKycStatus !== 'verified' && myAvailabl
 buyConfirmBalance.style.display = canPayFromBalance ? '' : 'none';
 buyPrice.textContent = formatCoins(skin.price);
 document.getElementById('buyBalanceAvailable').textContent = formatCoins(myAvailableBalance);
-buyConfirmStars.style.display = (!isOwn && directStarsPurchaseEnabled) ? '' : 'none';
-buyConfirmCrypto.style.display = (!isOwn && directCryptoPurchaseEnabled) ? '' : 'none';
 buyConfirmP2P.style.display = (!isOwn && directP2pPurchaseEnabled) ? '' : 'none';
 buyConfirmCard.style.display = (!isOwn && hostedPayMethods.length) ? '' : 'none';
 document.getElementById('buyNoPaymentHint').style.display =
-(!isOwn && !canPayFromBalance && !directStarsPurchaseEnabled && !directCryptoPurchaseEnabled && !directP2pPurchaseEnabled && !hostedPayMethods.length) ? '' : 'none';
+(!isOwn && !canPayFromBalance && !directP2pPurchaseEnabled && !hostedPayMethods.length) ? '' : 'none';
 buyEditPriceBtn.style.display = isOwn ? '' : 'none';
 document.getElementById('buyDiscountBtn').style.display = isOwn ? '' : 'none';
 buySavePriceBtn.style.display = 'none';
@@ -2398,93 +2396,6 @@ buyStatus.textContent = friendlyErrorMessage(err);
 })
 .finally(() => {
 buyConfirmBalance.disabled = false;
-});
-});
-
-buyConfirmStars.addEventListener('click', () => {
-if (!pendingBuySkin || !tg || !tg.initData) return;
-
-const skinId = pendingBuySkin.id;
-buyConfirmStars.disabled = true;
-buyStatus.textContent = (I18N[currentLang] || I18N.ru).status_creating_invoice;
-
-fetch(API_BASE + '/api/skins/' + skinId + '/buy_stars_invoice', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ init_data: tg.initData })
-})
-.then(async r => {
-if (!r.ok){
-const data = await r.json().catch(() => ({}));
-throw new Error(purchaseTrustLimitMessage(data) || (data.error === 'feature_disabled' ? 'Оплата Stars сейчас недоступна.' : errorMessage(data.error)));
-}
-return r.json();
-})
-.then(data => {
-buyStatus.textContent = '';
-if (tg && tg.openInvoice){
-tg.openInvoice(data.link, (status) => {
-if (status === 'paid'){
-buyStatus.textContent = (I18N[currentLang] || I18N.ru).status_paid_ok;
-loadMe();
-loadSkins();
-setTimeout(() => {
-buyOverlay.classList.remove('show');
-pendingBuySkin = null;
-}, 700);
-} else if (status === 'cancelled'){
-buyStatus.textContent = '';
-} else {
-buyStatus.textContent = (I18N[currentLang] || I18N.ru).status_payment_failed;
-}
-});
-} else {
-window.open(data.link, '_blank');
-}
-})
-.catch(err => {
-buyStatus.textContent = friendlyErrorMessage(err);
-})
-.finally(() => {
-buyConfirmStars.disabled = false;
-});
-});
-
-buyConfirmCrypto.addEventListener('click', () => {
-if (!pendingBuySkin || !tg || !tg.initData) return;
-
-const skinId = pendingBuySkin.id;
-buyConfirmCrypto.disabled = true;
-buyStatus.textContent = (I18N[currentLang] || I18N.ru).status_creating_invoice;
-
-fetch(API_BASE + '/api/skins/' + skinId + '/buy_crypto_invoice', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ init_data: tg.initData })
-})
-.then(async r => {
-if (!r.ok){
-const data = await r.json().catch(() => ({}));
-throw new Error(purchaseTrustLimitMessage(data) || (data.error === 'feature_disabled' ? 'Оплата криптой сейчас недоступна.' : (data.error === 'not_configured' ? 'Оплата криптой сейчас недоступна.' : errorMessage(data.error))));
-}
-return r.json();
-})
-.then(data => {
-buyStatus.textContent = (I18N[currentLang] || I18N.ru).status_invoice_created_buy;
-const link = data.tg_deeplink || data.url;
-if (tg && tg.openTelegramLink && data.tg_deeplink){
-tg.openTelegramLink(data.tg_deeplink);
-} else if (tg && tg.openLink){
-tg.openLink(link);
-} else {
-window.open(link, '_blank');
-}
-})
-.catch(err => {
-buyStatus.textContent = friendlyErrorMessage(err);
-})
-.finally(() => {
-buyConfirmCrypto.disabled = false;
 });
 });
 

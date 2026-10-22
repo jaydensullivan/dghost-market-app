@@ -10,14 +10,7 @@ const screenProfile = document.getElementById('screenProfile');
 
 let isAdmin = false;
 let isOwner = false;
-let cryptoTopupAvailable = false;
-let cryptoPayoutAvailable = false;
 let topupCardEnabled = true;
-let topupCryptoEnabled = false;
-let topupStarsEnabled = false;
-let coinsPerStar = 200;
-let directStarsPurchaseEnabled = false;
-let directCryptoPurchaseEnabled = false;
 let directP2pPurchaseEnabled = false;
 // Оплата картой на странице банка (эквайринг; бот: payment_methods, kind hosted).
 let hostedPayMethods = [];
@@ -54,7 +47,6 @@ progressEl.style.display = 'none';
 }
 let p2pCardDetails = '';
 let withdrawCardEnabled = true;
-let withdrawCryptoEnabled = false;
 let adminPermissions = [];
 
 let adminStatsLiveTimer = null;
