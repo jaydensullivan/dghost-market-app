@@ -10,7 +10,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=4"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=86">
+<link rel="stylesheet" href="app.css?v=87">
 </head>
 <body data-tab="shop">
 <!-- Значки интерфейса в едином объёмном стиле (gi-*): <svg class="gi"><use href="#gi-…"/></svg>. -->
@@ -2186,6 +2186,8 @@
 <div class="edit-status" id="inventoryStatus">Загрузка...</div>
 <div class="inventory-grid" id="inventoryGrid"></div>
 
+<!-- Низ окна: прилипает к краю экрана, пока листается список. -->
+<div class="inv-foot">
 <!-- Выбранные предметы: миниатюры, счётчик и «Продолжить». -->
 <div class="inv-picked" id="invPicked" style="display:none;">
 <div class="inv-picked-thumbs" id="invPickedThumbs"></div>
@@ -2195,6 +2197,7 @@
 </div>
 
 <button type="button" id="inventoryCancel" class="inv-close" data-i18n="btn_close">Закрыть</button>
+</div>
 </div>
 </div>
 
@@ -2240,7 +2243,7 @@
 <script src="app-topup.js?v=5"></script>
 <script src="app-history.js?v=6"></script>
 <script src="app-referral.js?v=6"></script>
-<script src="app-withdraw.js?v=26"></script>
+<script src="app-withdraw.js?v=27"></script>
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
 <script>window.DG_ADMIN_SRC = 'app-admin.js?v=23';</script>
 <!-- 3D-просмотрщик (210 КБ) грузится после открытия витрины — ensure3DScript в app-navigation.js. -->
