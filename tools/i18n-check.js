@@ -12,36 +12,51 @@ const ROOT = path.join(__dirname, '..');
 const SRC_FILE = path.join(ROOT, 'app-i18n.js');
 const src = fs.readFileSync(SRC_FILE, 'utf8');
 
+// Русский словарь — в app-i18n.js (const I18N = { ru: … }), узбекский и
+// английский — отдельными файлами (I18N.uz = { … }): грузятся по языку.
+const LANG_FILES = { uz: 'app-i18n-uz.js', en: 'app-i18n-en.js' };
+
 // Берём только литерал словаря: остальной файл трогает DOM.
 const start = src.indexOf('const I18N = {');
 const end = src.indexOf('\n};', start);
 if (start < 0 || end < 0) throw new Error('I18N не найден в app-i18n.js');
 const literal = src.slice(start, end + 3);
-const I18N = vm.runInNewContext(literal + '\nI18N;');
+const sandbox = {};
+vm.runInNewContext(literal + '\nthis.I18N = I18N;', sandbox);
+const I18N = sandbox.I18N;
+const langSrc = { ru: src };
+for (const [lang, file] of Object.entries(LANG_FILES)){
+  langSrc[lang] = fs.readFileSync(path.join(ROOT, file), 'utf8');
+  vm.runInNewContext(langSrc[lang], sandbox);
+}
 const LANGS = Object.keys(I18N);
 const BASE = 'ru';
 
-// Строка исходника для ключа в словаре языка — чтобы в отчёте была ссылка.
-const blockStart = {};
-for (const lang of LANGS) blockStart[lang] = src.indexOf('\n' + lang + ': {', start);
+// Где в исходнике словарь языка: [файл, начало, конец] — для ссылок в отчёте.
+function block(lang){
+  const text = langSrc[lang];
+  if (lang === BASE){
+    const from = text.indexOf('\nru: {', start);
+    return { text, from, to: start + literal.length, file: 'app-i18n.js' };
+  }
+  return { text, from: text.indexOf('I18N.' + lang + ' = {'), to: text.length, file: LANG_FILES[lang] };
+}
 function lineOf(lang, key){
-  const from = blockStart[lang];
+  const { text, from } = block(lang);
   const re = new RegExp('\\n\\s*["\']?' + key + '["\']?\\s*:', 'g');
   re.lastIndex = from;
-  const m = re.exec(src);
-  return m ? src.slice(0, m.index + 1).split('\n').length : null;
+  const m = re.exec(text);
+  return m ? block(lang).file + ':' + text.slice(0, m.index + 1).split('\n').length : null;
 }
 
 // Ключ, повторённый внутри одного словаря: JS молча берёт последний.
 function duplicates(lang){
-  const from = blockStart[lang];
-  const nextStarts = LANGS.map(l => blockStart[l]).filter(p => p > from);
-  const to = nextStarts.length ? Math.min(...nextStarts) : start + literal.length;
+  const { text, from, to } = block(lang);
   const seen = new Map(); const dup = [];
   const re = /^\s*["']?([A-Za-z0-9_]+)["']?\s*:/gm;
-  const block = src.slice(from, to);
+  const body = text.slice(from, to);
   let m;
-  while ((m = re.exec(block))){
+  while ((m = re.exec(body))){
     const key = m[1];
     if (key === lang) continue;
     if (seen.has(key)) dup.push(key); else seen.set(key, true);
@@ -78,7 +93,7 @@ function usedKeys(){
 // Русский текст, зашитый прямо в JS (мимо словаря): в UZ/EN останется русским.
 function hardcodedRussian(){
   const out = [];
-  const files = fs.readdirSync(ROOT).filter(f => /^app.*\.js$/.test(f) && f !== 'app-admin.js'); // админка только на русском
+  const files = fs.readdirSync(ROOT).filter(f => /^app.*\.js$/.test(f) && f !== 'app-admin.js' && !Object.values(LANG_FILES).includes(f)); // админка только на русском; словари UZ/EN проверяются отдельно
   for (const f of files){
     const text = fs.readFileSync(path.join(ROOT, f), 'utf8');
     const lines = text.split('\n');
