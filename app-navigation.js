@@ -356,7 +356,7 @@ goToScreen('auctions');
 goToScreen('lots');
 setTimeout(() => addSkinBtn.click(), 150);
 } else if (action === 'support'){
-const url = 'https://t.me/DGhostCountdownBot';
+const url = 'https://t.me/dghostmarketsupportbot';
 if (tg && tg.openTelegramLink){
 tg.openTelegramLink(url);
 } else if (tg && tg.openLink){
