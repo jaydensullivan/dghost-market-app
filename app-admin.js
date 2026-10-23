@@ -272,7 +272,7 @@ currentAdminChip = firstAllowed.dataset.adminGroup;
 
 applyAdminChipFilter(currentAdminChip);
 
-if (hasChipPermission('support')) loadAdminSupport();
+if (hasChipPermission('support') && !applySupportStaffDeepLink()) loadAdminSupport();
 
 // Пультовый админ (только поддержка) — остальные разделы ему не нужны.
 if (!isAdmin && !isAuctioneer) return;

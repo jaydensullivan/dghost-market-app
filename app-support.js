@@ -66,6 +66,7 @@ function applySupportMe(data){
 isSupportStaff = !!data.support_staff;
 supportUnread = Number(data.support_unread) || 0;
 updateSupportBadges();
+startSupportStaffDeepLink();
 }
 
 function updateSupportBadges(){
@@ -205,13 +206,37 @@ readSupportPhoto(file).then(setSupportPhoto).catch(err => showAlert(err.message)
 
 document.getElementById('supportPhotoRemove').addEventListener('click', () => setSupportPhoto(null));
 
-// Кнопка «Чат» под ответом поддержки в боте ведёт сюда (?open=support).
+// Ссылки из ботов: ?open=support — чат клиента (кнопка «Чат» под
+// ответом поддержки); ?open=admin_support и ?open=ticket_N — пульт
+// команды (кнопки «Пульт» и «📱 Открыть в пульте» в боте поддержки).
+let supportStaffDeepLink = null;
+
 (function supportDeepLink(){
-let open = false;
-try { open = new URLSearchParams(location.search).get('open') === 'support'; } catch (e) {}
-if (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param === 'support') open = true;
-if (open) setTimeout(() => openSupport(), 300);
+let open = '';
+try { open = new URLSearchParams(location.search).get('open') || ''; } catch (e) {}
+if (!open && tg && tg.initDataUnsafe && typeof tg.initDataUnsafe.start_param === 'string') open = tg.initDataUnsafe.start_param;
+if (open === 'support') setTimeout(() => openSupport(), 300);
+const ticket = open.match(/^ticket_(\d+)$/);
+if (open === 'admin_support' || ticket) supportStaffDeepLink = { ticket: ticket ? Number(ticket[1]) : 0, started: false };
 })();
+
+// Права команды известны после /api/me — тогда и открываем админку.
+function startSupportStaffDeepLink(){
+if (!supportStaffDeepLink || supportStaffDeepLink.started || !isSupportStaff) return;
+supportStaffDeepLink.started = true;
+goToScreen('admin');
+}
+
+// Вызывается из loadAdminPanel: раздел «Поддержка» и нужное обращение.
+function applySupportStaffDeepLink(){
+if (!supportStaffDeepLink || !supportStaffDeepLink.started) return false;
+const link = supportStaffDeepLink;
+supportStaffDeepLink = null;
+const chip = document.querySelector('#adminChips [data-admin-group="support"]');
+if (chip) chip.click();
+if (link.ticket) openAdminSupportTicket(link.ticket);
+return true;
+}
 
 // ---------- команда: раздел «Поддержка» в админке ----------
 
