@@ -396,8 +396,8 @@
 <!-- ❤️ Хочу: слежу за скинами и заявки «Ищут» — отдельный экран -->
 <!-- 🧊 3D-рендер для бизнеса — как на сайте (app-render3d.js) -->
 <div class="pf-card r3d-card">
-<button type="button" class="pf-btn" id="r3dOpenBtn">🧊 3D-рендер для бизнеса</button>
-<div class="r3d-sub" id="r3dCardSub"></div>
+<button type="button" class="pf-btn" id="r3dOpenBtn" data-i18n="r3d_btn">🧊 3D-рендер для бизнеса</button>
+<div class="r3d-sub" id="r3dCardSub" data-i18n="r3d_btn_sub">3D-просмотр скинов на вашем сайте — тарифы от $19</div>
 </div>
 <div class="pf-card pro-card" id="profileProCard" style="display:none;">
 <div class="pro-head"><span class="pro-title" data-i18n="pro_title">⭐ DGhost PRO — для продавцов</span><span class="pro-badge" id="proBadge"></span></div>
@@ -2264,24 +2264,24 @@
 </div>
 </div>
 <script src="app-core.js?v=13"></script>
-<script src="app-i18n.js?v=124"></script>
-<script src="app-navigation.js?v=24"></script>
-<script src="app-shop.js?v=36"></script>
+<script src="app-i18n.js?v=125"></script>
+<script src="app-navigation.js?v=25"></script>
+<script src="app-shop.js?v=37"></script>
 <script src="app-legal.js?v=3"></script>
-<script src="app-deals.js?v=20"></script>
-<script src="app-catalog.js?v=25"></script>
+<script src="app-deals.js?v=21"></script>
+<script src="app-catalog.js?v=26"></script>
 <script src="app-cart.js?v=9"></script>
-<script src="app-filters.js?v=48"></script>
+<script src="app-filters.js?v=49"></script>
 <script src="app-music.js?v=1"></script>
 <script src="app-steam.js?v=7"></script>
 <script src="app-topup.js?v=5"></script>
 <script src="app-history.js?v=8"></script>
-<script src="app-referral.js?v=7"></script>
-<script src="app-withdraw.js?v=28"></script>
+<script src="app-referral.js?v=8"></script>
+<script src="app-withdraw.js?v=29"></script>
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
 <script>window.DG_ADMIN_SRC = 'app-admin.js?v=25';</script>
 <!-- 3D-просмотрщик (210 КБ) грузится после открытия витрины — ensure3DScript в app-navigation.js. -->
-<script>window.DG_3D_SRC = 'app-3d.js?v=102';</script>
+<script>window.DG_3D_SRC = 'app-3d.js?v=103';</script>
 <script src="app-auctions.js?v=7"></script>
 <script src="app-reviews.js?v=4"></script>
 <script src="app-notifications.js?v=3"></script>
@@ -2290,6 +2290,6 @@
 <script src="app-home.js?v=10"></script>
 <script src="app-support.js?v=2"></script>
 <script src="app-pro.js?v=16"></script>
-<script src="app-render3d.js?v=3"></script>
+<script>window.DG_R3D_SRC = 'app-render3d.js?v=4';</script>
 </body>
 </html>

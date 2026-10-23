@@ -596,7 +596,7 @@ throw new Error(errorMessage(data.error));
 return r.json();
 })
 .then((data) => {
-showAlert(`Открой чат с ботом и напиши сообщение следующим — оно уйдёт ${data.role_label} анонимно, без обмена личными контактами.`);
+showAlert(data.role_label === 'продавца' ? (I18N[currentLang] || I18N.ru).relay_to_seller : (I18N[currentLang] || I18N.ru).relay_to_buyer);
 })
 .catch(err => showErrorToast(err));
 }

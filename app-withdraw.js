@@ -18,8 +18,8 @@ return;
 const fee = Number(withdrawFeePercent) || 0;
 const payout = Math.round(amount * (100 - fee) / 100);
 withdrawPayoutPreview.textContent = fee
-? `На карту придёт: ${formatCoins(payout)} (после комиссии ${fee}%)`
-: `На карту придёт: ${formatCoins(payout)} (без комиссии)`;
+? (I18N[currentLang] || I18N.ru).withdraw_payout_fee.replace('{sum}', formatCoins(payout)).replace('{fee}', fee)
+: (I18N[currentLang] || I18N.ru).withdraw_payout_nofee.replace('{sum}', formatCoins(payout));
 }
 
 wAmount.addEventListener('input', updateWithdrawPayoutPreview);
@@ -56,10 +56,10 @@ totp_locked: `Too many wrong attempts — 2FA is locked for ${15} minutes.`,
 
 function withdrawTrustLimitMessage(data){
 if (data.error === 'single_limit'){
-return `Максимум за один вывод на твоём уровне доверия — ${formatCoins(data.limit)}. Попробуй сумму меньше.`;
+return (I18N[currentLang] || I18N.ru).withdraw_single_limit.replace('{sum}', formatCoins(data.limit));
 }
 if (data.error === 'daily_limit'){
-return `Превышен дневной лимит вывода для твоего уровня доверия (${formatCoins(data.limit)} за 24 часа). Попробуй позже или уменьши сумму.`;
+return (I18N[currentLang] || I18N.ru).withdraw_daily_limit.replace('{sum}', formatCoins(data.limit));
 }
 return null;
 }
@@ -329,7 +329,7 @@ return `
 <div class="inv-item ${rarityClass}${isTradable ? '' : ' inv-item-banned'}${picked ? ' selected' : ''}" data-idx="${i}">
 <div class="inv-item-photo">
 <div class="inv-badges">${badges.join('')}</div>
-<button type="button" class="skin-fav inv-fav${isFavSkin(item) ? ' on' : ''}" data-inv-fav="${i}" aria-label="Следить">${HEART_SVG}</button>
+<button type="button" class="skin-fav inv-fav${isFavSkin(item) ? ' on' : ''}" data-inv-fav="${i}" aria-label="${escapeHtml((I18N[currentLang] || I18N.ru).watch_aria)}">${HEART_SVG}</button>
 ${photo}
 </div>
 <div class="inv-item-body">
@@ -427,7 +427,7 @@ fetch(url, { cache: 'no-store' })
 if (!r.ok){
 const data = await r.json().catch(() => ({}));
 if (data.error === 'refresh_limited'){
-const limitErr = new Error(`Обновлять инвентарь можно не больше 3 раз в сутки. Попробуй ещё раз через ${formatWaitHours(data.wait_hours)}.`);
+const limitErr = new Error((I18N[currentLang] || I18N.ru).inventory_refresh_limited.replace('{wait}', formatWaitHours(data.wait_hours)));
 limitErr.noRetry = true;
 throw limitErr;
 }
@@ -960,7 +960,7 @@ showAlert(errorMessage('unauthorized'));
 return;
 }
 if (sellerKycStatus !== 'verified'){
-showAlert('Чтобы выставлять лоты, нужно пройти проверку продавца — открой Профиль → «Стать продавцом».');
+showAlert((I18N[currentLang] || I18N.ru).sell_need_kyc);
 return;
 }
 if (steamLoginRequired && !steamVerified){
@@ -969,7 +969,7 @@ showConfirm(dict.steam_login_required_q, startSteamLogin);
 return;
 }
 if (!hasSteamLink){
-showAlert('Сначала привяжи трейд-ссылку Steam в Профиле.');
+showAlert((I18N[currentLang] || I18N.ru).sell_need_trade_link);
 return;
 }
 addSkinStatus.textContent = '';
@@ -1133,7 +1133,7 @@ sellerOfferAccepted = false;
 openSellerOffer(() => publishSkin(triggerBtn, statusEl, overlayEl));
 }
 if (data.error === 'price_too_high'){
-throw new Error(`Цена слишком высокая — максимум для этого предмета сейчас ${formatCoins(data.max_allowed)} (не больше 200% от рыночной цены ${formatCoins(data.market_price_uzs)}).`);
+throw new Error((I18N[currentLang] || I18N.ru).price_too_high.replace('{max}', formatCoins(data.max_allowed)).replace('{market}', formatCoins(data.market_price_uzs)));
 }
 throw new Error(errorMessage(data.error));
 }

@@ -83,17 +83,34 @@ function hardcodedRussian(){
     const text = fs.readFileSync(path.join(ROOT, f), 'utf8');
     const lines = text.split('\n');
     const from = f === 'app-i18n.js' ? src.slice(0, end).split('\n').length : 0;
-    // Словарь вида NAME_RU = { … } с парными NAME_UZ и NAME_EN — переведён.
+    // Словарь вида NAME_RU = { … } (или NAME = { … }) с парными NAME_UZ и
+    // NAME_EN — переведён. Так же — объект { ru: {…}, uz: {…}, en: {…} }:
+    // его русская часть (ru: …) пропускается, если рядом есть uz и en.
+    const hasLangSiblings = /["']?uz["']?\s*:/.test(text) && /["']?en["']?\s*:/.test(text);
     let inPairedRu = false;
+    let inRuObject = false;
     lines.forEach((line, i) => {
-      const open = line.match(/^const ([A-Z0-9_]+)_RU = \{/);
-      if (open) inPairedRu = text.includes(open[1] + '_UZ') && text.includes(open[1] + '_EN');
+      const open = line.match(/^const ([A-Z0-9_]+?)(?:_RU)? = \{/);
+      if (open && !/_(UZ|EN) = \{/.test(line)) inPairedRu = text.includes(open[1] + '_UZ') && text.includes(open[1] + '_EN');
       if (inPairedRu){ if (/^\};?\s*$/.test(line)) inPairedRu = false; return; }
+      if (hasLangSiblings && /^\s*["']?ru["']?\s*:/.test(line)){
+        // Однострочное ru: {…} / "ru": "…" — пропустить строку; многострочное — до закрывающей скобки.
+        if (/\{\s*$/.test(line)) inRuObject = true;
+        return;
+      }
+      if (inRuObject){ if (/^\s*\},?\s*$/.test(line)) inRuObject = false; return; }
+      // Однострочный словарь {"ru": …, "uz": …, "en": …} — все три языка в строке.
+      if (/["']ru["']\s*:/.test(line) && /["']uz["']\s*:/.test(line) && /["']en["']\s*:/.test(line)) return;
       if (i < from) return;
-      const code = line.replace(/\/\/.*$/, '');
+      let code = line.replace(/\/\/.*$/, '');
       if (/^\s*\*|^\s*\/\*/.test(line)) return;
       // Сообщения в консоль видит только разработчик.
       if (/\bconsole\.(log|warn|error|info)\(/.test(code)) return;
+      // Запасной текст после || (dict.x || '…') и сравнение со значением с
+      // сервера (=== '…') — не текст интерфейса.
+      code = code.replace(/(\|\||===|!==)\s*(['"`])(?:\\.|(?!\2).)*\2/g, '$1 0');
+      // Технические причины сбоя 3D — мелко под понятной фразой, для разбора.
+      if (f === 'app-3d.js' && /new Error\(/.test(code)) return;
       const lits = code.match(/(['"`])(?:\\.|(?!\1).)*\1/g) || [];
       if (lits.some(l => CYR.test(l))) out.push({ file: f, line: i + 1, text: line.trim().slice(0, 140) });
     });

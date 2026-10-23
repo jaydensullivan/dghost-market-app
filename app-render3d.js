@@ -654,18 +654,13 @@ if (e.target.closest('[data-r3d-copy]')) return myAction('copy');
 if (e.target.closest('[data-r3d-site]')) return openLink(R3D.page);
 });
 document.getElementById('r3dCloseBtn').addEventListener('click', close);
-document.getElementById('r3dOpenBtn').addEventListener('click', open);
 
+// Кнопка и подпись в профиле — из словаря (r3d_btn, r3d_btn_sub): файл
+// грузится только по нажатию (ensureRender3dScript в app-navigation.js).
 function renderCard(){
-const l = lang();
-const b = document.getElementById('r3dOpenBtn');
-const s = document.getElementById('r3dCardSub');
-if (b) b.textContent = R3D.btn[l];
-if (s) s.textContent = R3D.btn_sub[l];
 if (overlay.classList.contains('show')) render();
 }
-renderCard();
-// Язык переключили — перерисовываем подписи.
+// Язык переключили — перерисовываем открытый раздел.
 ['langBtnRu', 'langBtnUz', 'langBtnEn'].forEach(id => {
 const el = document.getElementById(id);
 if (el) el.addEventListener('click', () => setTimeout(renderCard, 0));
