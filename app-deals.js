@@ -259,7 +259,7 @@ ${partnerSteamHtml(deal)}
 </div>
 <div id="dealProgress-${deal.id}">${dealProgressHtml(deal)}</div>
 ${extraHtml}
-<div class="deal-actions" style="margin-top:8px;">${actionHtml}${messageBtn}<button class="deal-action secondary" data-trade-details="${deal.id}" type="button">${dict.btn_deal_details}</button></div>
+<div class="deal-actions" style="margin-top:8px;">${actionHtml}${messageBtn}<button class="deal-action secondary" data-trade-details="${deal.id}" type="button">${dict.btn_deal_details}</button><button class="deal-action secondary" data-deal-help="${deal.id}" type="button">${dict.deal_help}</button></div>
 </div>`;
 }
 
@@ -490,6 +490,13 @@ const cancelBtn = e.target.closest('[data-cancel-sale]');
 const relayBtn = e.target.closest('[data-relay]');
 const inspectBtn = e.target.closest('[data-inspect-skin]');
 const detailsBtn = e.target.closest('[data-trade-details]');
+const helpBtn = e.target.closest('[data-deal-help]');
+
+// Поддержка по этой сделке — тема и номер лота подставлены сами.
+if (helpBtn){
+openSupport({ topic: 'deal', skinId: Number(helpBtn.dataset.dealHelp) });
+return;
+}
 
 if (detailsBtn){
 openTradeDetails(Number(detailsBtn.dataset.tradeDetails));

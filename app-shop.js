@@ -389,6 +389,26 @@ body: JSON.stringify({ init_data: tg.initData })
 }
 });
 
+// Язык из профиля на сервере — после того как подгрузился его словарь.
+function applyServerLanguage(lang){
+if (lang === currentLang) return;
+currentLang = lang;
+applyTranslations();
+applyFeePercents();
+if (typeof renderCategoryChips === 'function'){
+renderCategoryChips();
+}
+if (typeof loadReferralInfo === 'function'){
+loadReferralInfo();
+}
+if (typeof lastSkins !== 'undefined' && lastSkins.length){
+applyFiltersAndRender();
+}
+if (typeof lastDeals !== 'undefined' && lastDeals.length){
+document.getElementById('dealsList').innerHTML = lastDeals.map(dealCardHtml).join('');
+}
+}
+
 function loadMe(){
 if (!tg || !tg.initData){
 document.getElementById('balanceAmount').textContent = '—';
@@ -435,21 +455,7 @@ if (typeof updateTopupMethods === 'function') updateTopupMethods();
 document.getElementById('openTopupBtn').style.display = topupCardEnabled ? '' : 'none';
 document.getElementById('openWithdrawBtn').style.display = withdrawCardEnabled ? '' : 'none';
 if (data.language && data.language !== currentLang){
-currentLang = data.language;
-applyTranslations();
-applyFeePercents();
-if (typeof renderCategoryChips === 'function'){
-renderCategoryChips();
-}
-if (typeof loadReferralInfo === 'function'){
-loadReferralInfo();
-}
-if (typeof lastSkins !== 'undefined' && lastSkins.length){
-applyFiltersAndRender();
-}
-if (typeof lastDeals !== 'undefined' && lastDeals.length){
-document.getElementById('dealsList').innerHTML = lastDeals.map(dealCardHtml).join('');
-}
+ensureLanguage(data.language).then(() => applyServerLanguage(data.language)).catch(() => {});
 }
 updateSteamBlockVisibility();
 updateMandatorySteamOverlay();
