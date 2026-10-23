@@ -133,8 +133,6 @@ popup({ message: message, buttons: [
 showPopup: function(opts, cb){ popup(opts || {}, cb); },
 openLink: function(url){ window.open(url, '_blank', 'noopener'); },
 openTelegramLink: function(url){ window.open(url, '_blank', 'noopener'); },
-// Оплата Stars — только в Telegram: открываем счёт там.
-openInvoice: function(link){ window.open(link, '_blank', 'noopener'); },
 };
 window.Telegram = { WebApp: wa };
 window.DG_WEB = { loggedIn: !!session, user: session ? session.user : null };
