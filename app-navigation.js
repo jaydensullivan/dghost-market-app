@@ -265,6 +265,7 @@ document.getElementById('screenAdmin').style.display = name === 'admin' ? 'block
 document.getElementById('screenAuctions').style.display = name === 'auctions' ? 'block' : 'none';
 document.getElementById('screenDeals').style.display = name === 'deals' ? 'block' : 'none';
 document.getElementById('screenBuyRequests').style.display = name === 'buyRequests' ? 'block' : 'none';
+document.getElementById('screenSupport').style.display = name === 'support' ? 'block' : 'none';
 document.getElementById('screenLots').style.display = name === 'lots' ? 'block' : 'none';
 tabShopBtn.classList.toggle('active', name === 'shop');
 tabProfileBtn.classList.toggle('active', name === 'profile');
@@ -289,6 +290,8 @@ loadMyBuyRequests();
 loadPublicBuyRequests();
 } else if (name === 'profile'){
 loadProfile();
+} else if (name === 'support'){
+loadSupportThread();
 } else if (name === 'deals'){
 loadDeals();
 loadTradeOffers();
@@ -356,14 +359,7 @@ goToScreen('auctions');
 goToScreen('lots');
 setTimeout(() => addSkinBtn.click(), 150);
 } else if (action === 'support'){
-const url = 'https://t.me/dghostmarketsupportbot';
-if (tg && tg.openTelegramLink){
-tg.openTelegramLink(url);
-} else if (tg && tg.openLink){
-tg.openLink(url);
-} else {
-window.open(url, '_blank');
-}
+openSupport();
 } else if (action === 'giveaway'){
 goToScreen('timer');
 } else if (action === 'legal'){

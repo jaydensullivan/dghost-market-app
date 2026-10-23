@@ -52,6 +52,7 @@ let pendingBuySkin = null;
 const WEAR_LABELS = { FN: 'FN', MW: 'MW', FT: 'FT', WW: 'WW', BS: 'BS' };
 
 const ERROR_MESSAGES_RU = {
+support_too_many: "Слишком много сообщений подряд — дождитесь ответа поддержки.",
 garant_required: "Нужен тариф PRO, «Бизнес» или «Гарант».",
 garant_not_approved: "Сначала подай заявку на «Гарант» — её одобрит администрация.",
 pro_forever: "У тебя подписка навсегда — покупать ничего не нужно.",
@@ -118,6 +119,7 @@ payer_name_required: 'Укажи имя и фамилию владельца к�
 };
 
 const ERROR_MESSAGES_UZ = {
+support_too_many: "Juda ko'p xabar — qo'llab-quvvatlash javobini kuting.",
 garant_required: "PRO, «Biznes» yoki «Kafil» tarifi kerak.",
 garant_not_approved: "Avval «Kafil»ga ariza bering — ma'muriyat ma'qullaydi.",
 pro_forever: "Sizda muddatsiz obuna bor — hech narsa sotib olish shart emas.",
@@ -184,6 +186,7 @@ payer_name_required: "Karta egasining ismi va familiyasini kiriting.",
 };
 
 const ERROR_MESSAGES_EN = {
+support_too_many: "Too many messages in a row — please wait for support to reply.",
 garant_required: "The Pro, Business or Guarantor plan is required.",
 garant_not_approved: "Apply for the Guarantor plan first — the team will approve it.",
 pro_forever: "Your subscription is forever — nothing to buy.",
@@ -399,9 +402,10 @@ isAdmin = !!data.is_admin;
 isOwner = !!data.is_owner;
 adminPermissions = data.admin_permissions || [];
 isAuctioneer = !!data.is_auctioneer;
+applySupportMe(data);
 // Admin — в меню аватара; в нижней навигации только пять вкладок.
-document.getElementById('headerMenuAdmin').style.display = (isAdmin || isAuctioneer) ? '' : 'none';
-if (isAdmin || isAuctioneer) ensureAdminScript().catch(() => {});
+document.getElementById('headerMenuAdmin').style.display = (isAdmin || isAuctioneer || isSupportStaff) ? '' : 'none';
+if (isAdmin || isAuctioneer || isSupportStaff) ensureAdminScript().catch(() => {});
 if (typeof applyChipVisibility === 'function') applyChipVisibility();
 currentUserId = data.user_id;
 hasSteamLink = !!data.has_steam_link;
@@ -490,8 +494,9 @@ isAdmin = !!data.is_admin;
 isOwner = !!data.is_owner;
 adminPermissions = data.admin_permissions || [];
 isAuctioneer = !!data.is_auctioneer;
-document.getElementById('headerMenuAdmin').style.display = (isAdmin || isAuctioneer) ? '' : 'none';
-if (isAdmin || isAuctioneer) ensureAdminScript().catch(() => {});
+applySupportMe(data);
+document.getElementById('headerMenuAdmin').style.display = (isAdmin || isAuctioneer || isSupportStaff) ? '' : 'none';
+if (isAdmin || isAuctioneer || isSupportStaff) ensureAdminScript().catch(() => {});
 if (typeof applyChipVisibility === 'function') applyChipVisibility();
 currentUserId = data.user_id;
 hasSteamLink = !!data.has_steam_link;
