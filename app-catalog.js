@@ -578,7 +578,9 @@ skinsList.innerHTML = filtered.map(skinCardHtml).join('');
 }
 
 function renderSkins(list){
-lastSkins = list || [];
+// Сервер отдаёт массив; при ошибке (лимит запросов, сбой) приходит
+// объект {error} — тогда считаем, что лотов нет, а не падаем.
+lastSkins = Array.isArray(list) ? list : [];
 applyFiltersAndRender();
 if (typeof restoreCart === 'function') restoreCart();
 if (typeof renderMyLots === 'function') renderMyLots();

@@ -3,7 +3,6 @@
 // ============================================================
 
 let auctionsData = [];
-let auctionsTickTimer = null;
 let auctionsBgPollTimer = null;
 let currentBidAuction = null;
 
@@ -76,7 +75,6 @@ el.classList.toggle('ending', remaining !== null && remaining <= 60000);
 // аукционов изменился (новый начался или старый закончился).
 function applyAuctionUpdates(prevById){
 const dict = I18N[currentLang] || I18N.ru;
-const list = document.getElementById('auctionsList');
 const sameSet = auctionsData.length === Object.keys(prevById).length
 && auctionsData.every(a => prevById[a.auction_id])
 && auctionsData.every(a => document.getElementById('auctionCard_' + a.auction_id));
@@ -213,7 +211,6 @@ loadAuctionsList();
 }
 
 function renderQuickBids(a){
-const dict = I18N[currentLang] || I18N.ru;
 const box = document.getElementById('auctionQuickBids');
 box.innerHTML = [1, 2, 5].map(n => {
 const value = a.current_price + a.step * n;
@@ -252,8 +249,6 @@ return;
 }
 
 currentBidAuction = a;
-
-const dict = I18N[currentLang] || I18N.ru;
 
 document.getElementById('auctionBidTitle').textContent = a.title;
 
@@ -326,7 +321,7 @@ document.getElementById('auctionBidOverlay').classList.remove('show');
 // Живой посекундный таймер — просто обновляет текст на экране,
 // не дёргает сервер. Список (цены/новые ставки других игроков)
 // подтягиваем отдельно, реже.
-auctionsTickTimer = setInterval(tickAuctionTimers, 1000);
+setInterval(tickAuctionTimers, 1000);
 
 // Проверяем наличие активных аукционов в фоне — независимо от
 // того, какая вкладка сейчас открыта (иначе кнопка "Аукцион"

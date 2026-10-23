@@ -1203,16 +1203,7 @@ line-height:1.4;
 }
 
 /* ---------- deal cards ---------- */
-.trade-party-line{
-flex:1;
-height:2px;
-background:var(--red-dim);
-position:relative;
-}
 
-.trade-party-line.done{
-background:var(--red);
-}
 
 .deal-card{
 display:flex;
@@ -1257,17 +1248,7 @@ color:var(--muted);
 margin-top:2px;
 }
 
-.deal-status{
-font-family:'JetBrains Mono', monospace;
-font-size:9px;
-margin-top:3px;
-letter-spacing:0.03em;
-text-transform:uppercase;
-}
 
-.deal-status.pending{ color:#dbb84f; }
-.deal-status.sent{ color:#5f93c7; }
-.deal-status.done{ color:#6ba87e; }
 
 .deal-action{
 flex-shrink:0;
@@ -2592,16 +2573,6 @@ font-family:'Inter', sans-serif; font-size:10px;
 .au-quick-btn b{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--silver); }
 
 /* ---------- «Следить» и уточнения каталога желаний ---------- */
-.watch-skin{
-padding:10px 12px; margin-bottom:10px; border-radius:10px;
-border:1px solid var(--red-dim); background:rgba(255,255,255,0.03);
-font-family:'Inter', sans-serif; font-size:14px; font-weight:600; color:var(--silver);
-}
-.watch-check{
-display:flex; align-items:center; gap:10px; padding:8px 2px;
-font-family:'Inter', sans-serif; font-size:13px; color:var(--silver); cursor:pointer;
-}
-.watch-check input{ width:18px; height:18px; accent-color:var(--red); }
 .wl-row{ display:flex; gap:8px; }
 .wl-row .edit-field{ flex:1; min-width:0; }
 .wl-select{
@@ -3559,22 +3530,6 @@ border-radius:9px;
 .nav-icon svg{ display:block; }
 .nav-label{ font-family:'Inter', sans-serif; font-size:10px; text-transform:none; letter-spacing:0; }
 .nav-btn.active .nav-icon{ color:var(--red); }
-.nav-badge{
-position:absolute;
-top:-6px;
-right:-10px;
-min-width:16px;
-height:16px;
-padding:0 4px;
-border-radius:8px;
-background:#ff2bd6;
-color:#fff;
-font-family:'Inter', sans-serif;
-font-size:10px;
-font-weight:700;
-line-height:16px;
-text-align:center;
-}
 
 /* мои лоты */
 .lots-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }
