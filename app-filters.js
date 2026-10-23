@@ -1106,7 +1106,9 @@ throw new Error(errorMessage(data.error));
 return r.json();
 })
 .then(data => {
-status.textContent = `✅ Куплено за ${formatCoins(data.set_price)}`;
+const setDict = I18N[currentLang] || I18N.ru;
+status.textContent = `✅ Куплено за ${formatCoins(data.set_price)}`
++ (data.discount_on_completion ? ' ' + setDict.set_discount_later.replace('{sum}', formatCoins(data.discount_amount)) : '');
 loadSetsList();
 loadSkins();
 loadMe();
