@@ -926,7 +926,7 @@ const wear = item.wear && WEAR_LABELS[item.wear] ? `<span class="inv-badge">${WE
 return `<div class="bld-item${slot === builderAltSlot ? ' active' : ''} ${RARITY_CLASS[item.rarity] || ''}" data-bld-slot="${slot}">
 <div class="bld-item-photo">
 <div class="inv-badges"><span class="inv-badge">${categoryIconSvg(BUILDER_SLOT_ICON[slot])}</span>${wear}</div>
-<button type="button" class="skin-fav${isFavSkin(item) ? ' on' : ''}" data-bld-fav="${slot}" aria-label="Следить">${HEART_SVG}</button>
+<button type="button" class="skin-fav${isFavSkin(item) ? ' on' : ''}" data-bld-fav="${slot}" aria-label="${escapeHtml((I18N[currentLang] || I18N.ru).watch_aria)}">${HEART_SVG}</button>
 ${item.photo_url ? `<img src="${escapeHtml(item.photo_url)}" alt="">` : ''}
 </div>
 <div class="bld-item-title">${escapeHtml((item.stattrak ? 'StatTrak™ ' : '') + String(item.title || '').replace(/^★\s*/, ''))}</div>
@@ -1067,18 +1067,18 @@ function loadSetsList(){
 const list = document.getElementById('setsList');
 const status = document.getElementById('setsStatus');
 status.textContent = '';
-list.innerHTML = '<div class="skins-empty" style="padding:12px 4px;">Загрузка...</div>';
+list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${escapeHtml((I18N[currentLang] || I18N.ru).loading)}</div>`;
 fetch(API_BASE + '/api/sets')
 .then(r => r.json())
 .then(data => {
 const items = data.items || [];
 if (!items.length){
-list.innerHTML = '<div class="skins-empty" style="padding:12px 4px;">Сейчас нет доступных сетов</div>';
+list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${escapeHtml((I18N[currentLang] || I18N.ru).sets_empty)}</div>`;
 return;
 }
 list.innerHTML = items.map(renderSetCard).join('');
 })
-.catch(() => { list.innerHTML = '<div class="skins-empty" style="padding:12px 4px;">Не удалось загрузить</div>'; });
+.catch(() => { list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${escapeHtml((I18N[currentLang] || I18N.ru).load_failed)}</div>`; });
 }
 
 document.getElementById('setsList').addEventListener('click', (e) => {
@@ -1089,7 +1089,7 @@ if (!tg || !tg.initData){
 showAlert(errorMessage('unauthorized'));
 return;
 }
-showConfirm('Купить этот сет целиком?', () => {
+showConfirm((I18N[currentLang] || I18N.ru).set_buy_confirm, () => {
 btn.disabled = true;
 const status = document.getElementById('setsStatus');
 status.textContent = '...';
@@ -1107,7 +1107,7 @@ return r.json();
 })
 .then(data => {
 const setDict = I18N[currentLang] || I18N.ru;
-status.textContent = `✅ Куплено за ${formatCoins(data.set_price)}`
+status.textContent = setDict.set_bought.replace('{sum}', formatCoins(data.set_price))
 + (data.discount_on_completion ? ' ' + setDict.set_discount_later.replace('{sum}', formatCoins(data.discount_amount)) : '');
 loadSetsList();
 loadSkins();
@@ -1924,7 +1924,7 @@ shareOverlay.classList.remove('show');
 // касании. Ссылка ведёт на страницу превью лота (фото, цена), а ?r=
 // засчитывает того, кто поделился, как пригласившего.
 const me = tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
-const shareText = `${skin.stattrak ? 'StatTrak™ ' : ''}${skin.title} — ${formatCoins(skin.price)} в DGhost`;
+const shareText = (I18N[currentLang] || I18N.ru).share_lot_text.replace('{title}', (skin.stattrak ? 'StatTrak™ ' : '') + skin.title).replace('{price}', formatCoins(skin.price));
 const shareUrl = `${API_BASE}/s/${skin.id}` + (me ? `?r=${me}` : '');
 const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
 if (tg && tg.openTelegramLink) {
@@ -2542,7 +2542,7 @@ body: JSON.stringify({ init_data: tg.initData })
 .then(async r => {
 if (!r.ok){
 const data = await r.json().catch(() => ({}));
-throw new Error(purchaseTrustLimitMessage(data) || (data.error === 'feature_disabled' ? 'Оплата П2П сейчас недоступна.' : errorMessage(data.error)));
+throw new Error(purchaseTrustLimitMessage(data) || (data.error === 'feature_disabled' ? (I18N[currentLang] || I18N.ru).p2p_disabled : errorMessage(data.error)));
 }
 return r.json();
 })
@@ -2553,7 +2553,7 @@ p2pReceiptBase64 = null;
 p2pSkinReceiptInput.value = '';
 p2pSkinReceiptPreview.style.display = 'none';
 try { p2pSkinPayerName.value = localStorage.getItem('dg_payer_name') || ''; } catch (e) { p2pSkinPayerName.value = ''; }
-p2pSkinDetailsText.textContent = data.card_details || p2pCardDetails || 'Реквизиты не заданы — обратись в поддержку.';
+p2pSkinDetailsText.textContent = data.card_details || p2pCardDetails || (I18N[currentLang] || I18N.ru).p2p_no_details;
 p2pCardNumber = p2pExtractCardNumber(p2pSkinDetailsText.textContent);
 p2pSkinCardCopy.hidden = !p2pCardNumber;
 p2pSkinAmount.textContent = formatCoins(data.amount);
@@ -2691,7 +2691,7 @@ const isOwnListing = skin && currentUserId && skin.seller_id === currentUserId;
 const url = isOwnListing
 ? API_BASE + '/api/skins/' + skinId + '/cancel'
 : API_BASE + '/api/admin/skins/' + skinId + '/force_cancel';
-showConfirm('Снять этот лот с продажи?', () => {
+showConfirm((I18N[currentLang] || I18N.ru).lot_unlist_confirm, () => {
 fetch(url, {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },

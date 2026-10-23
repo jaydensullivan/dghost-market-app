@@ -31,14 +31,14 @@ if (progressEl) progressEl.style.display = 'none';
 return;
 }
 const icon = TRUST_BADGE_ICON[currentUserTrust.level] || '';
-badge.textContent = `${icon} ${currentUserTrust.label_ru}`.trim();
+badge.textContent = `${icon} ${(I18N[currentLang] || I18N.ru)['trust_level_' + currentUserTrust.level] || currentUserTrust.label_ru}`.trim();
 badge.style.display = 'inline-flex';
-badge.title = `Сделок завершено: ${currentUserTrust.completed_trades}`;
+badge.title = (I18N[currentLang] || I18N.ru).trust_trades_done.replace('{n}', currentUserTrust.completed_trades);
 if (progressEl){
 const p = currentUserTrust.progress;
 if (p && p.trades_needed > 0){
-const word = p.trades_needed === 1 ? 'сделка' : (p.trades_needed < 5 ? 'сделки' : 'сделок');
-progressEl.textContent = `До «${p.next_label_ru}»: ещё ${p.trades_needed} ${word}`;
+const nextLabel = (I18N[currentLang] || I18N.ru)['trust_level_' + p.next_level] || p.next_label_ru;
+progressEl.textContent = (I18N[currentLang] || I18N.ru).trust_progress.replace('{level}', nextLabel).replace('{n}', p.trades_needed);
 progressEl.style.display = 'block';
 } else {
 progressEl.style.display = 'none';
@@ -241,9 +241,9 @@ if (typeof haptic === 'function') haptic('error');
 // или "Failed to fetch", если запрос вообще не дошёл до сервера
 // (обрыв связи и т.п.) — показываем понятную фразу вместо этого.
 if (err instanceof TypeError){
-return 'Нет соединения с сервером — проверь интернет и попробуй ещё раз.';
+return (I18N[currentLang] || I18N.ru).err_no_connection;
 }
-return err.message || 'Что-то пошло не так, попробуй ещё раз.';
+return err.message || (I18N[currentLang] || I18N.ru).err_something_wrong;
 }
 
 function showConfirm(message, onOk){
@@ -308,7 +308,7 @@ body: JSON.stringify({ init_data: tg.initData, code: code })
 .then(() => ensureAdminScript())
 .then(() => loadAdminPanel())
 .catch(() => {
-showAlert('Неверный код.');
+showAlert((I18N[currentLang] || I18N.ru).totp_wrong_code);
 switchTab('shop');
 });
 });
@@ -435,6 +435,29 @@ document.body.appendChild(s);
 }
 return adminScriptLoading;
 }
+
+// «3D-рендер для бизнеса» (app-render3d.js, ~35 КБ) открывают редко —
+// грузим только по нажатию на кнопку в профиле.
+let render3dScriptLoading = null;
+function ensureRender3dScript(){
+if (typeof openRender3d === 'function') return Promise.resolve();
+if (!render3dScriptLoading){
+render3dScriptLoading = new Promise((resolve, reject) => {
+const s = document.createElement('script');
+s.src = window.DG_R3D_SRC || 'app-render3d.js';
+s.onload = () => resolve();
+s.onerror = () => { render3dScriptLoading = null; reject(new Error('render3d script')); };
+document.body.appendChild(s);
+});
+}
+return render3dScriptLoading;
+}
+
+document.getElementById('r3dOpenBtn').addEventListener('click', () => {
+ensureRender3dScript()
+.then(() => { if (typeof openRender3d === 'function') openRender3d(); })
+.catch(() => showAlert(errorMessage('network')));
+});
 
 function goToScreen(name){
 displayScreen(name);

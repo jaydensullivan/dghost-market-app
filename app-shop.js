@@ -52,6 +52,7 @@ let pendingBuySkin = null;
 const WEAR_LABELS = { FN: 'FN', MW: 'MW', FT: 'FT', WW: 'WW', BS: 'BS' };
 
 const ERROR_MESSAGES_RU = {
+admin_session_stale: "Для действий с деньгами и настройками нужен свежий вход: закройте мини-апп и откройте снова.",
 support_too_many: "Слишком много сообщений подряд — дождитесь ответа поддержки.",
 garant_required: "Нужен тариф PRO, «Бизнес» или «Гарант».",
 garant_not_approved: "Сначала подай заявку на «Гарант» — её одобрит администрация.",
@@ -119,6 +120,7 @@ payer_name_required: 'Укажи имя и фамилию владельца к�
 };
 
 const ERROR_MESSAGES_UZ = {
+admin_session_stale: "Pul va sozlamalar bilan amallar uchun qayta kirish kerak: mini-ilovani yopib, qayta oching.",
 support_too_many: "Juda ko'p xabar — qo'llab-quvvatlash javobini kuting.",
 garant_required: "PRO, «Biznes» yoki «Kafil» tarifi kerak.",
 garant_not_approved: "Avval «Kafil»ga ariza bering — ma'muriyat ma'qullaydi.",
@@ -186,6 +188,7 @@ payer_name_required: "Karta egasining ismi va familiyasini kiriting.",
 };
 
 const ERROR_MESSAGES_EN = {
+admin_session_stale: "Money and settings actions need a fresh sign-in: close the mini app and open it again.",
 support_too_many: "Too many messages in a row — please wait for support to reply.",
 garant_required: "The Pro, Business or Guarantor plan is required.",
 garant_not_approved: "Apply for the Guarantor plan first — the team will approve it.",
@@ -277,8 +280,8 @@ return dict.bv_error.replace('{sum}', formatCoins(data.threshold || 0));
 if (data.error === 'trust_limit_exceeded'){
 const limitText = data.limit ? formatCoins(data.limit) : null;
 return limitText
-? `Максимальная разовая покупка на твоём уровне доверия — ${limitText}. Свяжись с поддержкой, если нужен лимит побольше.`
-: 'Эта покупка превышает лимит твоего уровня доверия. Свяжись с поддержкой.';
+? (I18N[currentLang] || I18N.ru).trust_buy_limit.replace('{sum}', limitText)
+: (I18N[currentLang] || I18N.ru).trust_buy_limit_generic;
 }
 return null;
 }

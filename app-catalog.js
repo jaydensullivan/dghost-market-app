@@ -382,7 +382,7 @@ const CART_ICON = '<svg class="gi" width="20" height="20" aria-hidden="true"><us
 const actionBtn = isOwn
 ? `<button class="skin-action own" data-open="${skin.id}" type="button">${(I18N[currentLang] || I18N.ru).btn_manage}</button>`
 : `<div class="skin-action-row">
-<button class="skin-cart-btn${inCart ? ' in-cart' : ''}" data-cart-toggle="${skin.id}" type="button" aria-label="Корзина">${CART_ICON}</button>
+<button class="skin-cart-btn${inCart ? ' in-cart' : ''}" data-cart-toggle="${skin.id}" type="button" aria-label="${escapeHtml((I18N[currentLang] || I18N.ru).cart_aria)}">${CART_ICON}</button>
 <button class="skin-action" data-buy="${skin.id}" type="button">${(I18N[currentLang] || I18N.ru).btn_buy}</button>
 </div>`;
 

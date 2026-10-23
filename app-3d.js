@@ -3116,7 +3116,7 @@ if (magic !== 'glTF'){
 const preview = String.fromCharCode.apply(
 null, new Uint8Array(buffer, 0, Math.min(60, buffer.byteLength))
 ).replace(/[^\x20-\x7e]/g, '.');
-magicWarning = `${(buffer.byteLength / 1024).toFixed(0)} КБ · начало: ${preview}`;
+magicWarning = `${(buffer.byteLength / 1024).toFixed(0)} KB · head: ${preview}`;
 console.warn('3D: неожиданное начало файла —', magicWarning);
 }
 if (!stale()) status.textContent = dict.v3_size.replace('{mb}', (buffer.byteLength / 1048576).toFixed(1));
@@ -3440,14 +3440,16 @@ const knifeName = gloveRig ? GLOVE_HANDS_PACK
 renderViewerViews(dict, knifeName, setView, gloveRig);
 
 status.textContent = `${dict.v3_triangles}: ${countTriangles(THREE, object).toLocaleString('ru-RU')}`
-+ (texturesDropped ? ' · без текстур' : '');
++ (texturesDropped ? ' · ' + dict.v3_no_textures : '');
 setTimeout(() => { status.textContent = ''; }, 2500);
 })
 .catch(err => {
 if (stale()) return;
 hideViewerPoster();
 // Путь показываем рядом с причиной — чаще всего ошибка именно в нём.
-status.innerHTML = `${escapeHtml(err.message || dict.v3_failed)}<br><span style="opacity:.7;">${escapeHtml(modelUrl)}</span>`
+// Человеку — понятная фраза на его языке; техническая причина и путь
+// — мелко ниже (по ним разбираем сбой).
+status.innerHTML = `${escapeHtml(dict.v3_failed)}<br><span class="v3-detail">${escapeHtml(err.message || '')} · ${escapeHtml(modelUrl)}</span>`
 + (err.detail ? `<br><span class="v3-detail">${escapeHtml(err.detail)}</span>` : '');
 });
 }

@@ -122,7 +122,7 @@ throw new Error(errorMessage(data.error));
 return r.json();
 })
 .then(data => {
-referralClaimStatus.textContent = `Готово ✓ +${formatCoins(data.claimed)} на баланс`;
+referralClaimStatus.textContent = (I18N[currentLang] || I18N.ru).referral_claimed.replace('{sum}', formatCoins(data.claimed));
 loadReferralInfo();
 loadMe();
 })
@@ -201,7 +201,7 @@ throw new Error(langMessage(TOPUP_ERROR_MESSAGES_RU, TOPUP_ERROR_MESSAGES_UZ, TO
 return r.json();
 })
 .then(data => {
-topupStatus.textContent = `Заявка #${data.id} создана ✓ Теперь пришли скриншот чека прямо в чат с ботом.`;
+topupStatus.textContent = (I18N[currentLang] || I18N.ru).topup_created.replace('{id}', data.id);
 tAmount.value = '';
 if (tg.close) {
 // оставляем мини-апп открытым — пользователь сам
