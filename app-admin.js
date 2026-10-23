@@ -38,6 +38,8 @@ const ADMIN_ONLY_SECTIONS = new Set([
 
 function hasChipPermission(chip){
 if (isOwner) return true;
+// «Поддержка» — и пультовым админам (не полные админы); сервер решает сам.
+if (chip === 'support' && isSupportStaff) return true;
 if (!isAdmin) return false;
 // Владелец видит все чипы всегда. Организатор аукционов
 // (isAuctioneer, не полный админ) — только "Аукцион", без
@@ -81,6 +83,7 @@ document.querySelectorAll('#adminChips .category-chip').forEach(c => c.classList
 chip.classList.add('active');
 applyAdminChipFilter(chip.dataset.adminGroup);
 loadAdminCounts();
+if (chip.dataset.adminGroup === 'support') loadAdminSupport();
 if (chip.dataset.adminGroup === 'overview' && isAdmin){
 startAdminStatsLive();
 } else {
@@ -268,6 +271,11 @@ currentAdminChip = firstAllowed.dataset.adminGroup;
 }
 
 applyAdminChipFilter(currentAdminChip);
+
+if (hasChipPermission('support')) loadAdminSupport();
+
+// Пультовый админ (только поддержка) — остальные разделы ему не нужны.
+if (!isAdmin && !isAuctioneer) return;
 
 loadAdminSkinPicker();
 loadAdminActiveAuctions();
