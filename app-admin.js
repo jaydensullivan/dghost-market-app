@@ -31,7 +31,7 @@ const ADMIN_ONLY_SECTIONS = new Set([
 'adminKycSection','adminTopupsSection','adminP2pSection','adminWithdrawalsSection','adminTopupDetailsSection',
 'adminCommissionSection','adminFinanceSummarySection','adminPromoSection','adminReferralSection',
 'adminPeopleSection','adminDealsSection','adminBalanceSection',
-'adminHoldsSection','adminReportSection','adminCryptoSection','adminDisputesSection',
+'adminHoldsSection','adminReportSection','adminDisputesSection',
 'adminClientsSection','adminFraudSection',
 'adminStatusSection','adminGiveawaySection'
 ]);
@@ -300,7 +300,6 @@ loadAdminSetsList();
 loadAdminKyc();
 loadAdminTopups();
 loadAdminP2pOrders();
-loadAdminCrypto();
 loadAdminWithdrawals();
 loadAdminDisputes();
 loadAdminFraud();
@@ -1275,66 +1274,6 @@ const hours = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 36
 return hours >= 48 ? dict.admin_age_days.replace('{n}', Math.floor(hours / 24)) : dict.admin_age_hours.replace('{n}', hours);
 }
 
-// ---------------- Крипта на ручной проверке ----------------
-// Провайдер (2328.io) прислал недоплату, переплату или AML-блок —
-// раньше это было только сообщением в чате без кнопок.
-
-function loadAdminCrypto(){
-const list = document.getElementById('adminCryptoList');
-const dict = I18N[currentLang] || I18N.ru;
-adminApiFetch('/api/admin/crypto_review')
-.then(data => {
-const items = data.items || [];
-if (!items.length){
-list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.admin_no_requests}</div>`;
-return;
-}
-list.innerHTML = items.map(c => {
-const key = c.kind + ':' + c.id;
-const what = c.kind === 'topup'
-? dict.admin_crypto_topup
-: dict.admin_crypto_lot.replace('{id}', c.skin_id) + (c.skin_title ? ' ' + c.skin_title : '');
-const reason = dict['admin_crypto_reason_' + c.review_reason] || c.review_reason || '';
-return `
-<div class="deal-card" style="flex-direction:column; align-items:stretch;">
-<div class="deal-info">
-<div class="deal-title">${escapeHtml(what)}</div>
-<div class="deal-meta">${escapeHtml(c.username || ('ID ' + c.user_id))} · ${formatCoins(c.amount)} · ${escapeHtml(adminAgeLabel(c.created_at))}</div>
-<div class="deal-meta">⚠️ ${escapeHtml(reason)} · ${escapeHtml(c.order_id)}</div>
-</div>
-<div class="edit-field" style="margin-top:8px;">
-<label>${dict.admin_crypto_credit_amount}</label>
-<input type="number" min="0" value="${Number(c.amount) || 0}" data-crypto-amount="${key}">
-</div>
-<div class="deal-actions" style="margin-top:6px; flex-wrap:wrap;">
-${c.kind === 'skin_order' ? `<button class="deal-action" data-crypto-action="purchase" data-crypto-key="${key}" type="button">${dict.admin_crypto_btn_purchase}</button>` : ''}
-<button class="deal-action${c.kind === 'skin_order' ? ' secondary' : ''}" data-crypto-action="credit" data-crypto-key="${key}" type="button">${dict.admin_crypto_btn_credit}</button>
-<button class="deal-action secondary" data-crypto-action="close" data-crypto-key="${key}" type="button">${dict.admin_crypto_btn_close}</button>
-</div>
-</div>`;
-}).join('');
-})
-.catch(() => { list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.load_failed}</div>`; });
-}
-
-document.getElementById('adminCryptoList').addEventListener('click', (e) => {
-const btn = e.target.closest('[data-crypto-action]');
-if (!btn) return;
-const dict = I18N[currentLang] || I18N.ru;
-const [kind, id] = btn.dataset.cryptoKey.split(':');
-const action = btn.dataset.cryptoAction;
-const amountInput = document.querySelector(`[data-crypto-amount="${btn.dataset.cryptoKey}"]`);
-const amount = amountInput ? Number(amountInput.value) || 0 : 0;
-const ask = dict['admin_crypto_confirm_' + action].replace('{sum}', formatCoins(amount));
-showConfirm(ask, () => {
-btn.disabled = true;
-adminApiFetch('/api/admin/crypto_review/' + kind + '/' + id + '/resolve', { method: 'POST', body: { action: action, amount: amount } })
-.then(data => { if (data && data.message) showToast(data.message); })
-.catch(err => showErrorToast(err))
-.finally(() => { loadAdminCrypto(); loadAdminCounts(); });
-});
-});
-
 // ---------------- Споры ----------------
 // Сделки, где покупатель открыл спор. Решение: вернуть деньги
 // покупателю, выплатить продавцу или отклонить спор (сделка идёт
@@ -1484,12 +1423,7 @@ document.getElementById('adminCommissionSale').textContent = formatCoins(data.co
 document.getElementById('adminCommissionWithdraw').textContent = formatCoins(data.commission_withdraw_total || 0);
 document.getElementById('adminFeatureTogglesSection').style.display = data.is_owner ? '' : 'none';
 document.getElementById('toggleTopupCard').checked = data.topup_card_enabled !== false;
-document.getElementById('toggleTopupCrypto').checked = data.topup_crypto_enabled !== false;
-document.getElementById('toggleTopupStars').checked = data.topup_stars_enabled !== false;
 document.getElementById('toggleWithdrawCard').checked = data.withdraw_card_enabled !== false;
-document.getElementById('toggleWithdrawCrypto').checked = data.withdraw_crypto_enabled !== false;
-document.getElementById('toggleDirectStarsPurchase').checked = data.direct_stars_purchase_enabled === true;
-document.getElementById('toggleDirectCryptoPurchase').checked = data.direct_crypto_purchase_enabled === true;
 document.getElementById('toggleDirectP2pPurchase').checked = data.direct_p2p_purchase_enabled === true;
 // Эквайринг банка: переключатель работает, только когда ключи заданы в Railway.
 const octoToggle = document.getElementById('toggleOcto');
@@ -1497,7 +1431,6 @@ octoToggle.checked = data.octo_enabled !== false;
 octoToggle.disabled = !data.octo_configured;
 document.getElementById('adminOctoState').textContent = (I18N[currentLang] || I18N.ru)[
 !data.octo_configured ? 'admin_octo_no_keys' : (data.octo_test ? 'admin_octo_test' : 'admin_octo_live')];
-document.getElementById('adminStarsRate').value = data.coins_per_star || 200;
 })
 .catch(() => {});
 loadAdminFinanceSummary();
@@ -1514,19 +1447,6 @@ adminApiFetch('/api/admin/toggle_feature', { method: 'POST', body: { feature: fe
 .then(() => { loadProfile(); })
 .catch(() => { checkbox.checked = !checkbox.checked; showAlert((I18N[currentLang] || I18N.ru).admin_change_failed); });
 });
-});
-
-document.getElementById('adminSaveStarsRateBtn').addEventListener('click', () => {
-const status = document.getElementById('adminStarsRateStatus');
-const rate = Number(document.getElementById('adminStarsRate').value);
-if (!rate || rate <= 0){
-status.textContent = (I18N[currentLang] || I18N.ru).admin_need_valid_rate;
-return;
-}
-status.textContent = (I18N[currentLang] || I18N.ru).discount_saving;
-adminApiFetch('/api/admin/stars_rate', { method: 'POST', body: { rate: rate } })
-.then(() => { status.textContent = (I18N[currentLang] || I18N.ru).status_saved_ok; loadAdminSettings(); })
-.catch(err => { status.textContent = friendlyErrorMessage(err); });
 });
 
 loadAdminTopTopupers();
