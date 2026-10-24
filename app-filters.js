@@ -1541,6 +1541,13 @@ buyDetailRow(dict.detail_market, `<span id="buyMarketRowValue" class="mp-row-sta
 ].join('');
 
 buyDetailsTable.innerHTML = rows;
+// Цена рынка из каталога — сразу, без ожидания запроса (он подтянет
+// точную цену и график; если не ответит — эта цена остаётся).
+const cachedMarket = Number(skin.market_price_uzs) || 0;
+if (cachedMarket > 0){
+renderMarketRow({ available: true, market_price_uzs: cachedMarket, diff_percent: (cachedMarket - skin.price) / cachedMarket * 100 });
+document.getElementById('buyMarketRowValue').dataset.cached = '1';
+}
 renderBuyWide(skin, isOwn, rarityMap, wearMap);
 
 const stickersBox = document.getElementById('buyStickers');
@@ -1695,7 +1702,7 @@ const lower = own && typeof data.diff_percent === 'number' && -data.diff_percent
 : '';
 el.innerHTML = escapeHtml(formatCoins(data.market_price_uzs)) + diff + lower;
 el.className = '';
-} else {
+} else if (!el.dataset.cached){
 el.textContent = error ? `${dict.mp_row_error} (${error})` : dict.mp_row_none;
 el.className = 'mp-row-status';
 }
