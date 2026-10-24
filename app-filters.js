@@ -1540,13 +1540,31 @@ ${lotLine}
 </div>`;
 }
 
-function renderMarketPriceBox(data){
+// Нет цены или ошибка загрузки — короткая серая строка вместо пустоты:
+// так видно, что сравнение было, и по тексту ошибки понятно, что не так.
+function marketPriceNote(dict, error){
+return `<div class="mp-note">${escapeHtml(error ? dict.mp_load_failed + ' (' + error + ')' : dict.mp_unavailable)}</div>`;
+}
+
+function marketFetchError(e){
+return String((e && e.message) || e || '').slice(0, 80);
+}
+
+function fetchMarketJson(url){
+return fetch(url).then(r => {
+if (!r.ok) throw new Error('HTTP ' + r.status);
+return r.json();
+});
+}
+
+function renderMarketPriceBox(data, error){
 const box = document.getElementById('marketPriceBox');
+const dict = I18N[currentLang] || I18N.ru;
 if (!data || !data.available){
-box.style.display = 'none';
+box.innerHTML = marketPriceNote(dict, error);
+box.style.display = '';
 return;
 }
-const dict = I18N[currentLang] || I18N.ru;
 const isCsfloat = data.source === 'csfloat';
 const cheaper = data.diff_percent >= 0;
 const pct = Math.abs(data.diff_percent);
@@ -1653,23 +1671,25 @@ const box = document.getElementById('marketPriceBox');
 box.style.display = 'none';
 const badge = document.getElementById('buyMarketBadge');
 if (badge) badge.hidden = true;
-fetch(API_BASE + '/api/market_price?skin_id=' + skinId)
-.then(r => r.json())
+fetchMarketJson(API_BASE + '/api/market_price?skin_id=' + skinId)
 .then(data => {
 // Пользователь мог уже закрыть/сменить лот, пока запрос летал —
 // не показываем устаревшие данные не по тому лоту.
-if (!pendingBuySkin || pendingBuySkin.id !== skinId) return;
+if (!pendingBuySkin || String(pendingBuySkin.id) !== String(skinId)) return;
 renderMarketPriceBox(data);
 renderMarketBadge(data, pendingBuySkin);
 })
-.catch(() => {});
+.catch(e => {
+if (!pendingBuySkin || String(pendingBuySkin.id) !== String(skinId)) return;
+renderMarketPriceBox(null, marketFetchError(e));
+});
 }
 
 // ---------------- Предпросмотр рыночной цены при выставлении ----------------
 
 let sMarketPreviewTimer = null;
 
-function renderSellMarketPreview(data){
+function renderSellMarketPreview(data, error){
 // Два места показа одного и того же ориентира по рынку: полная
 // форма (sMarketPricePreview) и компактное окно быстрой продажи
 // (qsMarketPricePreview) — оба обновляем одинаково, второй элемент
@@ -1678,12 +1698,12 @@ const boxes = ['sMarketPricePreview', 'qsMarketPricePreview']
 .map(id => document.getElementById(id))
 .filter(Boolean);
 
+const dict = I18N[currentLang] || I18N.ru;
 if (!data || !data.available){
-boxes.forEach(box => { box.style.display = 'none'; });
+boxes.forEach(box => { box.innerHTML = marketPriceNote(dict, error); box.style.display = ''; });
 if (typeof renderQuickSellPriceChips === 'function') renderQuickSellPriceChips(0);
 return;
 }
-const dict = I18N[currentLang] || I18N.ru;
 let extra = '';
 if (typeof data.diff_percent === 'number'){
 const cheaper = data.diff_percent >= 0;
@@ -1705,10 +1725,9 @@ const params = new URLSearchParams({ title, wear });
 if (sStattrak.checked) params.set('stattrak', '1');
 const price = sPrice.value.trim();
 if (price) params.set('price', price);
-fetch(API_BASE + '/api/market_price_preview?' + params.toString())
-.then(r => r.json())
-.then(renderSellMarketPreview)
-.catch(() => {});
+fetchMarketJson(API_BASE + '/api/market_price_preview?' + params.toString())
+.then(data => renderSellMarketPreview(data))
+.catch(e => renderSellMarketPreview(null, marketFetchError(e)));
 }
 
 function scheduleSellMarketPreview(){
