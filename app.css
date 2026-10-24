@@ -1039,6 +1039,10 @@ opacity:1;
 border-color:var(--red);
 }
 
+.mp-row-status{ color:var(--muted); font-weight:400; }
+.mp-row-diff{ font-size:12px; font-weight:700; }
+.mp-row-diff.cheaper{ color:#4ade80; }
+.mp-row-diff.pricier{ color:#f87171; }
 .market-price-box .mp-note{ font-size:12px; color:var(--muted); }
 .market-price-box .mp-row{
 display:flex;
@@ -4748,6 +4752,10 @@ background:linear-gradient(to bottom, rgba(0,0,0,0), var(--surface) 14px);
 .inv-foot .inv-picked{ margin-bottom:8px; }
 /* Логотип и кнопки в углах (z-index 50) не рисуются поверх окна инвентаря. */
 body:has(#inventoryOverlay.show) .brand-tl, body:has(#inventoryOverlay.show) .brand-tr{ visibility:hidden; }
+/* Логотип и кнопки шапки (z-index 50) висели поверх окон (z-index 10):
+   закрывали плашку редкости и угол окна лота, «Выставить лот» и др. */
+body:has(.buy-overlay.show) .brand-tl, body:has(.buy-overlay.show) .brand-tr,
+body:has(.edit-overlay.show) .brand-tl, body:has(.edit-overlay.show) .brand-tr{ visibility:hidden; }
 .inv-foot .inv-close{ background:var(--surface); }
 
 /* ============================================================

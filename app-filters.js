@@ -1440,6 +1440,8 @@ buyDetailRow('Float', (skin.float_value !== null && skin.float_value !== undefin
 // Паттерн (paint seed): у Fade, Doppler, Case Hardened от него сильно зависит цена.
 buyDetailRow(dict.detail_pattern, (skin.pattern !== null && skin.pattern !== undefined && skin.pattern !== '') ? '#' + skin.pattern : null),
 buyDetailRow(dict.detail_price, formatCoins(skin.price), 'price'),
+// Рынок — сразу под ценой, видно без прокрутки; обновляется, когда придёт ответ.
+buyDetailRow(dict.detail_market, `<span id="buyMarketRowValue" class="mp-row-status">${dict.mp_row_loading}</span>`, 'market'),
 ].join('');
 
 buyDetailsTable.innerHTML = rows;
@@ -1557,9 +1559,27 @@ return r.json();
 });
 }
 
+// Строка «Рынок» в таблице лота: цена и разница с лотом, «нет данных» или ошибка.
+function renderMarketRow(data, error){
+const el = document.getElementById('buyMarketRowValue');
+if (!el) return;
+const dict = I18N[currentLang] || I18N.ru;
+if (data && data.available){
+const diff = typeof data.diff_percent === 'number'
+? ` <span class="mp-row-diff ${data.diff_percent >= 0 ? 'cheaper' : 'pricier'}">${data.diff_percent >= 0 ? '−' : '+'}${Math.abs(Math.round(data.diff_percent))}%</span>`
+: '';
+el.innerHTML = escapeHtml(formatCoins(data.market_price_uzs)) + diff;
+el.className = '';
+} else {
+el.textContent = error ? `${dict.mp_row_error} (${error})` : dict.mp_row_none;
+el.className = 'mp-row-status';
+}
+}
+
 function renderMarketPriceBox(data, error){
 const box = document.getElementById('marketPriceBox');
 const dict = I18N[currentLang] || I18N.ru;
+renderMarketRow(data, error);
 if (!data || !data.available){
 box.innerHTML = marketPriceNote(dict, error);
 box.style.display = '';
@@ -1719,6 +1739,10 @@ const title = sTitle.value.trim();
 const wear = sWear.value;
 if (!title || !wear){
 document.getElementById('sMarketPricePreview').style.display = 'none';
+// В окне «Выставить лот» не оставляем вечное «загрузка…»: без названия
+// или износа сравнить не с чем.
+const qsBox = document.getElementById('qsMarketPricePreview');
+if (qsBox && qsBox.style.display !== 'none') qsBox.innerHTML = marketPriceNote(I18N[currentLang] || I18N.ru);
 return;
 }
 const params = new URLSearchParams({ title, wear });
