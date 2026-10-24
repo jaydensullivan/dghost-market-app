@@ -651,7 +651,8 @@ return null;
 }
 
 async function sellAllMarketPrice(item, stattrak){
-const params = new URLSearchParams({ title: item.title, wear: item.wear });
+const params = new URLSearchParams({ title: item.title });
+if (item.wear) params.set('wear', item.wear);
 if (stattrak) params.set('stattrak', '1');
 try {
 const r = await fetch(API_BASE + '/api/market_price_preview?' + params.toString());
@@ -672,7 +673,8 @@ try {
 for (let i = 0; i < items.length; i++){
 const item = items[i];
 btn.textContent = dict.inv_sell_all_progress.replace('{n}', i + 1).replace('{total}', items.length);
-if (!item.title || !item.wear || !item.photo_url || !item.asset_id){
+// Износ не нужен: кейсы, капсулы и наклейки тоже выставляются по рынку.
+if (!item.title || !item.photo_url || !item.asset_id){
 skipped++;
 continue;
 }
