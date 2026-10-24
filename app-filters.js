@@ -1870,15 +1870,18 @@ if (typeof renderQuickSellPriceChips === 'function') renderQuickSellPriceChips(d
 function refreshSellMarketPreview(){
 const title = sTitle.value.trim();
 const wear = sWear.value;
-if (!title || !wear){
+// Износ не обязателен: у кейсов, капсул, наклеек, музыкальных наборов и
+// агентов его нет, а цену рынка бот по названию находит.
+if (!title){
 document.getElementById('sMarketPricePreview').style.display = 'none';
 // В окне «Выставить лот» не оставляем вечное «загрузка…»: без названия
-// или износа сравнить не с чем.
+// сравнить не с чем.
 const qsBox = document.getElementById('qsMarketPricePreview');
 if (qsBox && qsBox.style.display !== 'none') qsBox.innerHTML = marketPriceNote(I18N[currentLang] || I18N.ru);
 return;
 }
-const params = new URLSearchParams({ title, wear });
+const params = new URLSearchParams({ title });
+if (wear) params.set('wear', wear);
 if (sStattrak.checked) params.set('stattrak', '1');
 const price = sPrice.value.trim();
 if (price) params.set('price', price);
