@@ -4849,6 +4849,9 @@ border:1px dashed var(--red); background:rgba(123,44,255,0.08);
 .skins-empty.skins-empty-sm{ padding:12px 4px; }
 .skins-empty.skins-empty-md{ padding:16px 4px; }
 button.btn-ghost-link, .edit-sheet > button.btn-ghost-link:last-child{ width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px; }
+/* «Закрыть» внизу окна прилипает к низу (см. .edit-sheet > button[id$="CloseBtn"]) —
+   без подложки он наезжал на содержимое (таблица тарифов PRO). */
+.edit-sheet > button.btn-ghost-link:last-child{ background:var(--surface); }
 button.btn-ghost-link.mt6, .edit-sheet > button.btn-ghost-link.mt6:last-child{ margin-top:6px; }
 button.btn-ghost-link.mt14, .edit-sheet > button.btn-ghost-link.mt14:last-child{ margin-top:14px; }
 .u-mt6{ margin-top:6px; }
@@ -4998,3 +5001,12 @@ body.theme-light .edit-field textarea{ background:#fff; }
 
 /* Выпадающие списки фильтров — как поля ввода, а не системные мелкие. */
 #filtersOverlay select{ width:100%; padding:10px 8px; border-radius:8px; border:1px solid var(--red-dim); background:var(--surface); color:var(--text); font-family:'Inter', sans-serif; font-size:14px; }
+
+/* Кнопка подсказки «Как купить» — основная, как «Купить». */
+#buyGuideContinue{ width:calc(100% - 36px); margin:14px 18px 6px; padding:14px; border:none; border-radius:12px; background:var(--cta-gradient); color:#fff; font-size:15px; font-weight:800; cursor:pointer; }
+
+/* Выпадающие списки в окнах — как поля ввода, а не мелкие системные. */
+.edit-overlay select:not(.wl-select),
+.buy-overlay select:not(.wl-select){ width:100%; padding:10px 8px; border-radius:8px; border:1px solid var(--red-dim); background:var(--surface); color:var(--text); font-family:'Inter', sans-serif; font-size:14px; }
+body.theme-light .bw-chip:not(.muted){ box-shadow:inset 0 0 0 100px rgba(0,0,0,0.22); }
+body.theme-light .bw-chip.muted{ background:rgba(0,0,0,0.06); }
