@@ -3630,6 +3630,7 @@ return String(title || '')
 
 const buy3dBtn = document.getElementById('buy3dBtn');
 const buyArBtn = document.getElementById('buyArBtn');
+const buyPanoBtn = document.getElementById('buyPanoBtn');
 let buy3dEntry = null;
 let buy3dSkin = null;
 
@@ -3637,6 +3638,7 @@ function update3DButton(skin){
 if (!buy3dBtn) return;
 buy3dBtn.style.display = 'none';
 if (buyArBtn) buyArBtn.style.display = 'none';
+if (buyPanoBtn) buyPanoBtn.style.display = 'none';
 buy3dEntry = null;
 buy3dSkin = skin;
 Promise.all([loadModelIndex(), loadPaintIndex()]).then(([map, paintMap]) => {
@@ -3647,6 +3649,8 @@ const entry = modelEntryForSkin(map, paintMap, skin);
 if (!entry || !entry.model) return;
 buy3dEntry = entry;
 buy3dBtn.style.display = '';
+// 360° для Facebook — продавцу этого лота и админу.
+if (buyPanoBtn && (isAdmin || (currentUserId && skin.seller_id === currentUserId))) buyPanoBtn.style.display = '';
 // AR — только на телефоне (на компьютере камеры для стола нет) и только
 // для оружия с раскраской: стол собирает её на сервере.
 if (buyArBtn && entry.skin && !isGloveSkin(entry.skin) && (('ontouchstart' in window) || navigator.maxTouchPoints > 0)) buyArBtn.style.display = '';
@@ -3659,6 +3663,39 @@ if (!buy3dEntry || !buy3dSkin) return;
 const skin = buy3dSkin;
 const title = skin.stattrak ? 'StatTrak™ ' + skin.title : skin.title;
 open3DViewer(buy3dEntry.model, title, buy3dEntry.skin, Number(skin.float_value) || 0, buy3dEntry.weapon || null, 'none', skin.pattern, skin.stickers, skin.photo_url);
+});
+}
+
+// Панорама 360° лота: снимается здесь, в мини-аппе, и уходит боту — он
+// присылает её в чат файлом (фото Telegram сжал бы и стёр метку 360°).
+if (buyPanoBtn){
+buyPanoBtn.addEventListener('click', async () => {
+if (!buy3dEntry || !buy3dSkin || buyPanoBtn.disabled || !tg || !tg.initData) return;
+const skin = buy3dSkin;
+const dict = I18N[currentLang] || I18N.ru;
+const status = document.getElementById('buyStatus');
+const say = (text) => { if (status && pendingBuySkin === skin) status.textContent = text; };
+buyPanoBtn.disabled = true;
+try {
+say(dict.pano_preparing.replace('{p}', '0'));
+const label = (skin.stattrak ? 'StatTrak™ ' : '') + skin.title + ' · ' + formatCoins(skin.price);
+const bytes = await render3DGif(buy3dEntry, Number(skin.float_value) || 0, label,
+p => say(dict.pano_preparing.replace('{p}', Math.round(p * 100))), skin.pattern, 'pano', skin.stickers);
+const r = await fetch(API_BASE + '/api/skins/' + skin.id + '/pano', {
+method: 'POST',
+headers: { 'Content-Type': 'text/plain' },
+body: JSON.stringify({ init_data: tg.initData, image_base64: bytesToBase64(bytes) }),
+});
+const data = await r.json().catch(() => ({}));
+if (!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
+say(dict.pano_sent);
+haptic('success');
+} catch (e) {
+console.warn('3D: панорама 360° не вышла —', e);
+say(dict.pano_error.replace('{e}', String((e && e.message) || e).slice(0, 80)));
+} finally {
+buyPanoBtn.disabled = false;
+}
 });
 }
 
@@ -3791,7 +3828,9 @@ ctx.fillText('DGHOSTMARKET', 12 * k, 18 * k);
 // still: true — вместо GIF один кадр JPEG (SHARE_PHOTO);
 // 'transparent' — один кадр PNG без фона и подписи (сверка со Steam);
 // 'angles' — два PNG без фона: предмет с одной и с другой стороны
-// (картинка поста в канале и миниатюры карточки лота).
+// (картинка поста в канале и миниатюры карточки лота);
+// 'pano' — панорама 360° для Facebook (renderPanoFromScene), title —
+// подпись на табличке в студии.
 // still: 'video' — видео (MP4/WebM) вместо GIF (SHARE_VIDEO).
 async function render3DGif(entry, wear, title, onProgress, seed, still, stickers){
 const video = still === 'video';
@@ -3859,6 +3898,11 @@ for (let i = 0; i < 16; i++) swing.push(side + 0.6 * Math.sin(i / 16 * Math.PI *
 frameShareView(THREE, object, camera, still ? [side + tilt] : swing);
 }
 await setupViewerScene(THREE, renderer, scene, entry.weapon);
+
+if (still === 'pano'){
+object.rotation.y = side + tilt;
+return await renderPanoFromScene(THREE, renderer, scene, object, camera, title, onProgress);
+}
 
 const out = document.createElement('canvas');
 out.width = W;
@@ -3991,6 +4035,248 @@ say(preparing.replace('{p}', '0'));
 }
 const bytes = await render3DGif(buy3dEntry, Number(skin.float_value) || 0, title, progress, skin.pattern, still, skin.stickers);
 return await upload(bytes, still ? 'photo' : 'gif');
+}
+
+// ---------- Панорама 360° для Facebook ----------
+// Скин лота в 3D (его float, паттерн, наклейки) посреди своей студии:
+// фиолетовое небо со звёздами, пол-сетка, подиум с неоновым кольцом,
+// неоновые арки, табличка с названием и логотип за спиной. Шесть граней
+// куба (по 90°) снимаются обычным рендером — тон и цвет как у остальных
+// картинок — и сводятся в развёртку 2:1. В JPEG вписывается метка GPano:
+// по ней Facebook показывает фото как 360°.
+const PANO = { width: 4096, height: 2048, face: 1024, quality: 0.9 };
+
+function panoLabelTexture(THREE, text){
+const c = document.createElement('canvas');
+c.width = 1024;
+c.height = 256;
+const g = c.getContext('2d');
+const grad = g.createLinearGradient(0, 0, 1024, 0);
+grad.addColorStop(0, '#7B2CFF');
+grad.addColorStop(1, '#FF2BD6');
+g.fillStyle = 'rgba(12,8,22,0.92)';
+g.fillRect(0, 0, 1024, 256);
+g.strokeStyle = grad;
+g.lineWidth = 10;
+g.strokeRect(5, 5, 1014, 246);
+g.fillStyle = '#ffffff';
+g.textAlign = 'center';
+g.textBaseline = 'middle';
+let size = 64;
+g.font = `bold ${size}px sans-serif`;
+while (g.measureText(text).width > 960 && size > 28){
+size -= 2;
+g.font = `bold ${size}px sans-serif`;
+}
+g.fillText(text, 512, 112);
+g.font = 'bold 40px monospace';
+g.fillStyle = '#c4a5ff';
+g.fillText('DGHOSTMARKET', 512, 200);
+const tex = new THREE.CanvasTexture(c);
+if ('colorSpace' in tex) tex.colorSpace = THREE.SRGBColorSpace;
+return tex;
+}
+
+function buildPanoStudio(THREE, center, radius, floorY, label){
+const studio = new THREE.Group();
+// Небо: снизу почти чёрное, к зениту — фиолетовое, со звёздами.
+const sky = document.createElement('canvas');
+sky.width = 1024;
+sky.height = 512;
+const sg = sky.getContext('2d');
+const grad = sg.createLinearGradient(0, 0, 0, 512);
+grad.addColorStop(0, '#2b0f52');
+grad.addColorStop(0.45, '#14082a');
+grad.addColorStop(0.62, '#07050d');
+grad.addColorStop(1, '#030207');
+sg.fillStyle = grad;
+sg.fillRect(0, 0, 1024, 512);
+for (let i = 0; i < 260; i++){
+const y = Math.random() * 230;
+sg.fillStyle = `rgba(255,255,255,${0.25 + Math.random() * 0.6})`;
+sg.fillRect(Math.random() * 1024, y, Math.random() < 0.15 ? 2 : 1, 1);
+}
+const skyTex = new THREE.CanvasTexture(sky);
+if ('colorSpace' in skyTex) skyTex.colorSpace = THREE.SRGBColorSpace;
+// Небо рисуется первым и не пишет глубину — ничего не загораживает
+// (иначе по бокам оно перекрывало пол).
+const skyMesh = new THREE.Mesh(
+new THREE.SphereGeometry(radius * 14, 48, 24),
+new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide, toneMapped: false, depthWrite: false })
+);
+skyMesh.renderOrder = -1;
+skyMesh.position.copy(center);
+studio.add(skyMesh);
+
+// Пол: тёмный диск до самого «неба» со свечением в центре. Свечение —
+// цветами вершин кольцевой сетки, а не текстурой: текстура на боковых
+// гранях развёртки размывалась в ровное пятно.
+const floorGeo = new THREE.RingGeometry(radius * 0.001, radius * 12, 96, 48);
+const pos = floorGeo.attributes.position;
+const colors = new Float32Array(pos.count * 3);
+// Цвета вершин — в линейном пространстве (на экране станут светлее).
+const edge = [0.003, 0.002, 0.008], hot = [0.09, 0.03, 0.22];
+for (let k = 0; k < pos.count; k++){
+const d = Math.hypot(pos.getX(k), pos.getY(k)) / radius;
+const t = Math.max(0, 1 - d / 4.5) ** 1.6;
+for (let c = 0; c < 3; c++) colors[k * 3 + c] = edge[c] + (hot[c] - edge[c]) * t;
+}
+floorGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+const floor = new THREE.Mesh(floorGeo, new THREE.MeshBasicMaterial({ vertexColors: true, toneMapped: false }));
+floor.rotation.x = -Math.PI / 2;
+floor.position.set(center.x, floorY, center.z);
+studio.add(floor);
+const grid = new THREE.GridHelper(radius * 24, 96, 0x8a4dff, 0x5b2bb0);
+grid.position.set(center.x, floorY + radius * 0.004, center.z);
+[].concat(grid.material).forEach(m => { m.transparent = true; m.opacity = 0.6; m.toneMapped = false; });
+studio.add(grid);
+
+const neon = (color) => new THREE.MeshBasicMaterial({ color, toneMapped: false });
+// Подиум под предметом и неоновое кольцо по его краю.
+const podR = radius * 0.32;
+const podium = new THREE.Mesh(new THREE.CylinderGeometry(podR, podR * 1.08, radius * 0.06, 64),
+new THREE.MeshBasicMaterial({ color: 0x120a22 }));
+podium.position.set(center.x, floorY + radius * 0.03, center.z);
+studio.add(podium);
+const ring = new THREE.Mesh(new THREE.TorusGeometry(podR * 1.04, radius * 0.008, 8, 96), neon(0xb34dff));
+ring.rotation.x = Math.PI / 2;
+ring.position.set(center.x, floorY + radius * 0.062, center.z);
+studio.add(ring);
+
+// Неоновые арки вокруг — видно, куда ни повернись.
+for (let i = 0; i < 6; i++){
+const a = i / 6 * Math.PI * 2 + Math.PI / 6;
+const arch = new THREE.Mesh(new THREE.TorusGeometry(radius * 0.9, radius * 0.012, 8, 64, Math.PI),
+neon(i % 2 ? 0xff2bd6 : 0x7b2cff));
+arch.position.set(center.x + Math.sin(a) * radius * 2.2, floorY, center.z - Math.cos(a) * radius * 2.2);
+arch.rotation.y = -a;
+studio.add(arch);
+}
+
+// Табличка с названием и ценой — за спиной зрителя (повернись — увидишь).
+const plate = new THREE.Mesh(new THREE.PlaneGeometry(radius * 2.4, radius * 0.6),
+new THREE.MeshBasicMaterial({ map: panoLabelTexture(THREE, label || 'DGhostMarket'), toneMapped: false }));
+plate.position.set(center.x, floorY + radius * 0.9, center.z + radius * 2);
+plate.rotation.y = Math.PI;
+studio.add(plate);
+return studio;
+}
+
+// Сырая разметка XMP с меткой GPano — Facebook по ней узнаёт панораму.
+function panoXmpSegment(w, h){
+const xmp = '<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>'
++ '<x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">'
++ '<rdf:Description rdf:about="" xmlns:GPano="http://ns.google.com/photos/1.0/panorama/"'
++ ' GPano:ProjectionType="equirectangular" GPano:UsePanoramaViewer="True"'
++ ` GPano:FullPanoWidthPixels="${w}" GPano:FullPanoHeightPixels="${h}"`
++ ` GPano:CroppedAreaImageWidthPixels="${w}" GPano:CroppedAreaImageHeightPixels="${h}"`
++ ' GPano:CroppedAreaLeftPixels="0" GPano:CroppedAreaTopPixels="0" GPano:PoseHeadingDegrees="0"/>'
++ '</rdf:RDF></x:xmpmeta><?xpacket end="w"?>';
+const body = new TextEncoder().encode('http://ns.adobe.com/xap/1.0/\0' + xmp);
+const seg = new Uint8Array(4 + body.length);
+seg[0] = 0xFF; seg[1] = 0xE1;
+seg[2] = (body.length + 2) >> 8; seg[3] = (body.length + 2) & 0xFF;
+seg.set(body, 4);
+return seg;
+}
+
+function jpegWithXmp(jpeg, w, h){
+// После SOI (FFD8) и, если есть, JFIF-заголовка APP0.
+let pos = 2;
+if (jpeg[2] === 0xFF && jpeg[3] === 0xE0) pos = 4 + ((jpeg[4] << 8) | jpeg[5]);
+const seg = panoXmpSegment(w, h);
+const outBytes = new Uint8Array(jpeg.length + seg.length);
+outBytes.set(jpeg.subarray(0, pos), 0);
+outBytes.set(seg, pos);
+outBytes.set(jpeg.subarray(pos), pos + seg.length);
+return outBytes;
+}
+
+async function renderPanoFromScene(THREE, renderer, scene, object, camera, label, onProgress){
+const S = PANO.face;
+const box = meshBox(THREE, object);
+const center = box.getCenter(new THREE.Vector3());
+const size = box.getSize(new THREE.Vector3());
+const radius = Math.max(size.x, size.y, size.z) || 1;
+// Точка съёмки — ближе, чем кадр картинки: в грани 90° предмет иначе мелкий.
+const eye = center.clone().add(camera.position.clone().sub(center).multiplyScalar(0.42));
+const floorY = box.min.y - radius * 0.35;
+const studio = buildPanoStudio(THREE, center, radius, floorY, label);
+scene.add(studio);
+
+renderer.setSize(S, S, false);
+renderer.setClearColor(0x000000, 1);
+const cam = new THREE.PerspectiveCamera(90, 1, radius * 0.02, radius * 60);
+cam.position.copy(eye);
+// Базис взгляда: «вперёд» — на предмет, «вверх» — мировой.
+const F = center.clone().sub(eye).setY(0).normalize();
+const U = new THREE.Vector3(0, 1, 0);
+const R = new THREE.Vector3().crossVectors(F, U).normalize();
+const faces = [
+[F, U], [F.clone().negate(), U], [R, U], [R.clone().negate(), U],
+[U, F.clone().negate()], [U.clone().negate(), F],
+];
+const faceData = [];
+const grab = document.createElement('canvas');
+grab.width = grab.height = S;
+const gctx = grab.getContext('2d', { willReadFrequently: true });
+for (const [dir, up] of faces){
+cam.up.copy(up);
+cam.lookAt(eye.clone().add(dir));
+renderer.render(scene, cam);
+gctx.clearRect(0, 0, S, S);
+gctx.drawImage(renderer.domElement, 0, 0, S, S);
+const right = new THREE.Vector3().crossVectors(dir, up).normalize();
+const upOrtho = new THREE.Vector3().crossVectors(right, dir).normalize();
+faceData.push({ f: dir.clone(), r: right, u: upOrtho, px: gctx.getImageData(0, 0, S, S).data });
+if (onProgress) onProgress(faceData.length / 12);
+await new Promise(resolve => setTimeout(resolve, 0));
+}
+scene.remove(studio);
+
+const W = PANO.width, H = PANO.height;
+const out = document.createElement('canvas');
+out.width = W;
+out.height = H;
+const octx = out.getContext('2d');
+const img = octx.createImageData(W, H);
+const dst = img.data;
+const fr = faceData.map(fd => [fd.f.x, fd.f.y, fd.f.z, fd.r.x, fd.r.y, fd.r.z, fd.u.x, fd.u.y, fd.u.z]);
+for (let j = 0; j < H; j++){
+const lat = Math.PI / 2 - (j + 0.5) / H * Math.PI;
+const cl = Math.cos(lat), sl = Math.sin(lat);
+for (let i = 0; i < W; i++){
+const lon = (i + 0.5) / W * Math.PI * 2 - Math.PI;
+// Направление в базисе взгляда (вперёд — центр развёртки) → в мир.
+const lx = cl * Math.sin(lon), ly = sl, lz = cl * Math.cos(lon);
+const dx = lx * R.x + ly * U.x + lz * F.x;
+const dy = lx * R.y + ly * U.y + lz * F.y;
+const dz = lx * R.z + ly * U.z + lz * F.z;
+let best = 0, bestDot = -2;
+for (let k = 0; k < 6; k++){
+const v = fr[k];
+const d = dx * v[0] + dy * v[1] + dz * v[2];
+if (d > bestDot){ bestDot = d; best = k; }
+}
+const v = fr[best];
+const x = (dx * v[3] + dy * v[4] + dz * v[5]) / bestDot;
+const y = (dx * v[6] + dy * v[7] + dz * v[8]) / bestDot;
+const px = Math.min(S - 1, Math.max(0, ((x + 1) / 2 * S) | 0));
+const py = Math.min(S - 1, Math.max(0, ((1 - y) / 2 * S) | 0));
+const src = faceData[best].px;
+const si = (py * S + px) * 4, di = (j * W + i) * 4;
+dst[di] = src[si]; dst[di + 1] = src[si + 1]; dst[di + 2] = src[si + 2]; dst[di + 3] = 255;
+}
+if (j % 64 === 0){
+if (onProgress) onProgress(0.5 + j / H / 2);
+await new Promise(resolve => setTimeout(resolve, 0));
+}
+}
+octx.putImageData(img, 0, 0);
+const blob = await new Promise(resolve => out.toBlob(resolve, 'image/jpeg', PANO.quality));
+if (!blob) throw new Error('не получилось сохранить панораму');
+if (onProgress) onProgress(1);
+return jpegWithXmp(new Uint8Array(await blob.arrayBuffer()), W, H);
 }
 
 // Окно Telegram «выбрать, кому отправить» (Bot API 8.0+).
