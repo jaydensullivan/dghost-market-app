@@ -1036,26 +1036,30 @@ return placement;
 // и выходила почти белой. Если в модели один корпус — не трогаем.
 // Оторванная деталь в модели: у R8 Revolver в корпусе лежит патрон далеко
 // за стволом — в просмотрщике висел отдельным предметом. Если маленькая
-// часть треугольников (до 12%) отделена от остальных разрывом больше 12%
-// длины модели вдоль её длинной оси, её не рисуем.
-function dropStrayParts(geometry){
-if (!geometry || geometry.userData.dgStray) return;
-geometry.userData.dgStray = true;
-const pos = geometry.attributes && geometry.attributes.position;
-const index = geometry.index;
-if (!pos || !index || index.count < 300) return;
-geometry.computeBoundingBox();
-const bb = geometry.boundingBox;
-const ext = [bb.max.x - bb.min.x, bb.max.y - bb.min.y, bb.max.z - bb.min.z];
+// часть треугольников (до 15%) отделена от остальных разрывом больше 12%
+// длины модели вдоль её длинной оси, её не рисуем. Корпус бывает разбит
+// на несколько частей (у body_legacy R8 — две, деталь целиком во второй),
+// поэтому разрыв ищем по всем частям корпуса сразу.
+function dropStrayParts(geometries){
+geometries = geometries.filter(g => g && !g.userData.dgStray && g.index && g.attributes && g.attributes.position);
+geometries.forEach(g => { g.userData.dgStray = true; });
+const tris = geometries.reduce((n, g) => n + g.index.count / 3, 0);
+if (tris < 100) return;
+geometries.forEach(g => g.computeBoundingBox());
+const box = geometries[0].boundingBox.clone();
+geometries.forEach(g => box.union(g.boundingBox));
+const ext = [box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z];
 const axis = ext.indexOf(Math.max(...ext));
 const len = ext[axis] || 1;
-const tris = index.count / 3;
 const lo = new Float32Array(tris), hi = new Float32Array(tris);
-const idx = index.array;
-for (let t = 0; t < tris; t++){
-const a = pos.getComponent(idx[3 * t], axis), b = pos.getComponent(idx[3 * t + 1], axis), c = pos.getComponent(idx[3 * t + 2], axis);
+let t = 0;
+geometries.forEach(g => {
+const pos = g.attributes.position, idx = g.index.array;
+for (let i = 0; i < g.index.count; i += 3, t++){
+const a = pos.getComponent(idx[i], axis), b = pos.getComponent(idx[i + 1], axis), c = pos.getComponent(idx[i + 2], axis);
 lo[t] = Math.min(a, b, c); hi[t] = Math.max(a, b, c);
 }
+});
 // Разрыв — место, которое не перекрывает ни один треугольник (длинные
 // треугольники ствола AWP «разрыва» не дают).
 const order = Array.from({ length: tris }, (_, i) => i).sort((p, q) => lo[p] - lo[q]);
@@ -1067,28 +1071,36 @@ reach = Math.max(reach, hi[order[i]]);
 }
 if (at < 0 || gap < 0.12 * len) return;
 const low = at, high = tris - at;
-if (Math.min(low, high) > 0.12 * tris) return;
+if (Math.min(low, high) > 0.15 * tris) return;
 const keepLow = low > high;
+geometries.forEach(g => {
+const pos = g.attributes.position, idx = g.index.array;
 const kept = [];
-for (let t = 0; t < tris; t++){
-if ((hi[t] < cut) === keepLow) kept.push(idx[3 * t], idx[3 * t + 1], idx[3 * t + 2]);
+for (let i = 0; i < g.index.count; i += 3){
+const h = Math.max(pos.getComponent(idx[i], axis), pos.getComponent(idx[i + 1], axis), pos.getComponent(idx[i + 2], axis));
+if ((h < cut) === keepLow) kept.push(idx[i], idx[i + 1], idx[i + 2]);
 }
-geometry.setIndex(kept);
-geometry.computeBoundingBox();
-geometry.computeBoundingSphere();
+g.setIndex(kept);
+g.computeBoundingBox();
+g.computeBoundingSphere();
+});
 }
 
 function selectModelBody(object, useHd){
 let hasHd = false, hasLegacy = false;
+const bodies = { hd: [], legacy: [] };
 object.traverse(node => {
 const name = String(node.name || '').toLowerCase();
-if (node.isMesh && /body_(hd|legacy)/.test(name)) dropStrayParts(node.geometry);
+const body = node.isMesh && /body_(hd|legacy)/.exec(name);
+if (body) bodies[body[1]].push(node.geometry);
 // Кобура (у Dual Berettas — eholster) — для вида от третьего лица: в
 // просмотрщике висела огромным белым блоком рядом с пистолетами.
 if (name.indexOf('holster') !== -1) node.visible = false;
 if (name.indexOf('body_hd') !== -1) hasHd = true;
 if (name.indexOf('body_legacy') !== -1) hasLegacy = true;
 });
+dropStrayParts(bodies.hd);
+dropStrayParts(bodies.legacy);
 if (!hasHd || !hasLegacy) return false;
 object.traverse(node => {
 const name = String(node.name || '').toLowerCase();
