@@ -201,10 +201,17 @@ body: JSON.stringify({ visitor: vid, src: saved.src, target: saved.target, init_
 let target = null;
 try { target = new URLSearchParams(location.search).get('open'); } catch(e) {}
 if (!target && tg && tg.initDataUnsafe && typeof tg.initDataUnsafe.start_param === 'string') target = tg.initDataUnsafe.start_param;
-if (target !== 'deals' && target !== 'sell' && target !== 'wants') return;
+if (target !== 'deals' && target !== 'sell' && target !== 'wants' && target !== 'search') return;
 setTimeout(() => {
 if (target === 'deals'){
 switchTab('deals');
+} else if (target === 'search'){
+// С главной сайта: поиск скина (?open=search&q=…) — каталог с запросом.
+let q = '';
+try { q = new URLSearchParams(location.search).get('q') || ''; } catch(e) {}
+goToScreen('shop');
+skinSearch.value = q.slice(0, 120);
+skinSearch.dispatchEvent(new Event('input'));
 } else if (target === 'wants'){
 // С сайта (страница цены скина): «Сообщить, когда появится» —
 // «Хочу» с уже вписанным названием (?open=wants&q=…).
