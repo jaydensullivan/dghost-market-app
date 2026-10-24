@@ -52,7 +52,7 @@ function renderAuctionsList(){
 const list = document.getElementById('auctionsList');
 const dict = I18N[currentLang] || I18N.ru;
 if (!auctionsData.length){
-list.innerHTML = `<div class="skins-empty" style="padding:16px 4px;">${dict.auctions_empty}</div>`;
+list.innerHTML = `<div class="skins-empty skins-empty-md">${dict.auctions_empty}</div>`;
 return;
 }
 list.innerHTML = auctionsData.map(auctionCardHtml).join('');

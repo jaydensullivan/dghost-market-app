@@ -161,3 +161,40 @@ const close = buttons[buttons.length - 1];
 if (close && close.offsetParent !== null) close.click();
 });
 })();
+
+// ---------- отчёт об ошибках владельцу ----------
+// Сбой на телефоне (необработанная ошибка, не загрузилась цена рынка…)
+// уходит в бот: владельцу приходит «где, что, на каком устройстве».
+// Одна и та же ошибка — один раз за сессию; тело — текстом, чтобы
+// браузер не делал лишний предварительный запрос (CORS).
+const DG_REPORTED = new Set();
+function dgAppVersion(){
+const el = document.querySelector('script[src*="app-core.js"]');
+const m = el && /[?&]v=(\d+)/.exec(el.getAttribute('src') || '');
+return m ? m[1] : '';
+}
+function reportClientError(where, message){
+try {
+const text = String(message || '').slice(0, 300);
+const key = where + '|' + text;
+if (!text || DG_REPORTED.has(key) || DG_REPORTED.size > 20) return;
+DG_REPORTED.add(key);
+const body = JSON.stringify({
+where: String(where).slice(0, 60), message: text,
+init_data: (window.Telegram && Telegram.WebApp && Telegram.WebApp.initData) || '',
+ua: navigator.userAgent, v: dgAppVersion(),
+screen: (document.querySelector('.screen.active') || {}).id || '',
+});
+fetch(API_BASE + '/api/client_error', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body, keepalive: true }).catch(() => {});
+} catch (e) {}
+}
+window.addEventListener('error', (e) => {
+// Ошибки чужих скриптов (Telegram, расширения) браузер отдаёт как «Script error.» — их не шлём.
+if (!e || !e.message || e.message === 'Script error.') return;
+reportClientError('js', `${e.message} @ ${(e.filename || '').split('/').pop()}:${e.lineno || 0}`);
+});
+window.addEventListener('unhandledrejection', (e) => {
+const r = e && e.reason;
+reportClientError('promise', (r && (r.stack || r.message)) || String(r));
+});
+

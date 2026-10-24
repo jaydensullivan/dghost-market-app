@@ -1958,8 +1958,13 @@ margin-left:auto;
 }
 
 .buy-photo{
-width:200px;
-height:200px;
+width:240px;
+height:240px;
+max-width:70vw;
+max-height:70vw;
+opacity:0;
+transform:scale(0.96);
+transition:opacity .35s ease, transform .35s ease;
 border-radius:10px;
 object-fit:cover;
 margin:0 auto 14px;
@@ -4830,3 +4835,31 @@ border:1px dashed var(--red); background:rgba(123,44,255,0.08);
 .support-draft .pf-set-btn{ margin-top:8px; min-height:40px; }
 .support-actions{ display:flex; gap:8px; margin-top:10px; }
 .support-actions .pf-set-btn{ flex:1; justify-content:center; }
+
+/* Фото лота проявляется, когда загрузилось. */
+.buy-photo.loaded{ opacity:1; transform:none; }
+@media (prefers-reduced-motion: reduce){ .buy-photo{ transition:none; } }
+/* «Горячее» — от −10% к рынку. */
+.trader-badge.hot{ background:linear-gradient(90deg, #ff6a00, #ee0979); color:#fff; border-color:transparent; box-shadow:0 0 12px rgba(238,9,121,0.35); }
+/* «Снизить до …» в строке «Рынок» своего лота. */
+.mp-lower-btn{ display:block; margin:6px 0 0 auto; padding:4px 10px; border-radius:8px; border:1px solid var(--red-dim); background:var(--surface); color:var(--silver); font-size:11px; font-weight:600; cursor:pointer; }
+
+
+/* Общие классы вместо повторяющихся inline-стилей */
+.skins-empty.skins-empty-sm{ padding:12px 4px; }
+.skins-empty.skins-empty-md{ padding:16px 4px; }
+button.btn-ghost-link, .edit-sheet > button.btn-ghost-link:last-child{ width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px; }
+button.btn-ghost-link.mt6, .edit-sheet > button.btn-ghost-link.mt6:last-child{ margin-top:6px; }
+button.btn-ghost-link.mt14, .edit-sheet > button.btn-ghost-link.mt14:last-child{ margin-top:14px; }
+.u-mt6{ margin-top:6px; }
+.u-mt8{ margin-top:8px; }
+.u-mt10{ margin-top:10px; }
+.u-mt16{ margin-top:16px; }
+.u-mb8{ margin-bottom:8px; }
+.u-mb10{ margin-bottom:10px; }
+.u-mb12{ margin-bottom:12px; }
+.u-w100{ width:100%; }
+.u-col-stretch{ flex-direction:column; align-items:stretch; }
+.mp-skel-title{ height:14px; width:70%; margin-bottom:8px; }
+.mp-skel-sub{ height:12px; width:45%; margin-bottom:12px; }
+.mp-skel-chart{ height:70px; }
