@@ -4863,3 +4863,32 @@ button.btn-ghost-link.mt14, .edit-sheet > button.btn-ghost-link.mt14:last-child{
 .mp-skel-title{ height:14px; width:70%; margin-bottom:8px; }
 .mp-skel-sub{ height:12px; width:45%; margin-bottom:12px; }
 .mp-skel-chart{ height:70px; }
+
+/* ---------- карточка лота v2: износ точкой, крупная цена, «Рынок X −N%», «Купить · Торг» ---------- */
+.skin-meta{ display:flex; align-items:center; gap:5px; margin-top:3px; font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); }
+.skin-meta-float{ margin-left:auto; }
+.wear-dot{ width:7px; height:7px; border-radius:50%; flex:none; background:var(--muted); }
+.wear-dot.wear-fn{ background:#4ade80; }
+.wear-dot.wear-mw{ background:#a3e635; }
+.wear-dot.wear-ft{ background:#facc15; }
+.wear-dot.wear-ww{ background:#fb923c; }
+.wear-dot.wear-bs{ background:#ef4444; }
+.skin-card .skin-badge.wear{ display:none; }
+.skin-card .skin-badge.wear ~ .skin-badge.stattrak{ top:5px; }
+.skin-price{ font-size:17px; color:var(--text); }
+.skin-market{ display:flex; flex-wrap:wrap; align-items:center; gap:3px 6px; margin-top:3px; }
+.skin-market-price{ font-size:11px; color:var(--muted); white-space:nowrap; }
+.skin-market .trader-badge{ margin:0; padding:1px 6px; }
+.skin-action.ghost{ background:transparent; border:1px solid var(--red-dim); color:var(--silver); }
+.skin-photo-wrap .skin-cart-btn{ position:absolute; right:4px; bottom:4px; width:30px; height:30px; border:none; border-radius:50%; background:rgba(8,7,13,0.55); }
+.skin-photo-wrap .skin-cart-btn.in-cart{ background:var(--red); color:#0a0708; }
+body.layout-compact #skinsList .skin-badge.wear{ display:block; }
+body.layout-compact #skinsList .skin-badge.wear ~ .skin-badge.stattrak{ top:26px; }
+body.layout-compact #skinsList .skin-meta,
+body.layout-compact #skinsList .skin-market,
+body.layout-compact #skinsList .skin-action.ghost{ display:none; }
+body.layout-large #skinsList .skin-float{ display:none; }
+body.layout-large #skinsList .skin-meta{ font-size:12px; margin-top:4px; }
+body.layout-large #skinsList .skin-badge.wear ~ .skin-badge.stattrak{ top:8px; }
+.skin-price.long{ font-size:14px; }
+.skin-price.has-discount{ font-size:14px; }
