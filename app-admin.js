@@ -103,7 +103,7 @@ adminApiFetch('/api/admin/skins_for_sets')
 .then(data => {
 adminSetSkinsPool = data.items || [];
 if (!adminSetSkinsPool.length){
-picker.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).admin_no_lots}</div>`;
+picker.innerHTML = `<div class="skins-empty skins-empty-sm">${(I18N[currentLang] || I18N.ru).admin_no_lots}</div>`;
 return;
 }
 picker.innerHTML = adminSetSkinsPool.map(s => {
@@ -117,7 +117,7 @@ ${photo}
 }).join('');
 })
 .catch(() => {
-picker.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).load_failed}</div>`;
+picker.innerHTML = `<div class="skins-empty skins-empty-sm">${(I18N[currentLang] || I18N.ru).load_failed}</div>`;
 });
 }
 
@@ -184,7 +184,7 @@ adminApiFetch('/api/admin/sets')
 .then(data => {
 const items = data.items || [];
 if (!items.length){
-list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).admin_no_sets}</div>`;
+list.innerHTML = `<div class="skins-empty skins-empty-sm">${(I18N[currentLang] || I18N.ru).admin_no_sets}</div>`;
 return;
 }
 list.innerHTML = items.map(it => `
@@ -197,7 +197,7 @@ ${it.is_active ? `<div class="deal-actions"><button class="deal-action secondary
 </div>`).join('');
 })
 .catch(() => {
-list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).load_failed}</div>`;
+list.innerHTML = `<div class="skins-empty skins-empty-sm">${(I18N[currentLang] || I18N.ru).load_failed}</div>`;
 });
 }
 
@@ -234,7 +234,7 @@ return d.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', hour: '2-di
 
 function renderHistoryList(items){
 if (!items.length){
-return `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).admin_empty}</div>`;
+return `<div class="skins-empty skins-empty-sm">${(I18N[currentLang] || I18N.ru).admin_empty}</div>`;
 }
 return items.map(it => `
 <div class="deal-card" style="flex-direction:column; align-items:stretch;">
@@ -322,7 +322,7 @@ adminApiFetch('/api/admin/skins_for_auction')
 .then(data => {
 adminAuctionSkins = data.items || [];
 if (!adminAuctionSkins.length){
-picker.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).admin_no_skins}</div>`;
+picker.innerHTML = `<div class="skins-empty skins-empty-sm">${(I18N[currentLang] || I18N.ru).admin_no_skins}</div>`;
 return;
 }
 picker.innerHTML = adminAuctionSkins.map(s => {
@@ -338,7 +338,7 @@ ${photo}
 }).join('');
 })
 .catch(() => {
-picker.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).load_failed}</div>`;
+picker.innerHTML = `<div class="skins-empty skins-empty-sm">${(I18N[currentLang] || I18N.ru).load_failed}</div>`;
 });
 }
 
@@ -442,7 +442,7 @@ const active = data.active || [];
 const proposals = data.proposals || [];
 
 if (!active.length){
-activeList.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.admin_none_active}</div>`;
+activeList.innerHTML = `<div class="skins-empty skins-empty-sm">${dict.admin_none_active}</div>`;
 } else {
 activeList.innerHTML = active.map(a => `
 <div class="deal-card" style="flex-direction:column; align-items:stretch;">
@@ -462,7 +462,7 @@ ${auctionBidsListHtml(a.bids, dict)}
 }
 
 if (!proposals.length){
-proposalsList.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.admin_none_pending}</div>`;
+proposalsList.innerHTML = `<div class="skins-empty skins-empty-sm">${dict.admin_none_pending}</div>`;
 } else {
 proposalsList.innerHTML = proposals.map(p => `
 <div class="deal-card">
@@ -476,7 +476,7 @@ proposalsList.innerHTML = proposals.map(p => `
 }
 })
 .catch(() => {
-activeList.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.load_failed}</div>`;
+activeList.innerHTML = `<div class="skins-empty skins-empty-sm">${dict.load_failed}</div>`;
 proposalsList.innerHTML = '';
 });
 }
@@ -533,7 +533,7 @@ const list = document.getElementById('adminDealsList');
 const dict = I18N[currentLang] || I18N.ru;
 
 if (!adminDealsData.length){
-list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.admin_deals_empty}</div>`;
+list.innerHTML = `<div class="skins-empty skins-empty-sm">${dict.admin_deals_empty}</div>`;
 return;
 }
 
@@ -562,7 +562,7 @@ adminDealsData = data.items || [];
 renderAdminDeals();
 })
 .catch(() => {
-document.getElementById('adminDealsList').innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).load_failed}</div>`;
+document.getElementById('adminDealsList').innerHTML = `<div class="skins-empty skins-empty-sm">${(I18N[currentLang] || I18N.ru).load_failed}</div>`;
 });
 }
 
@@ -612,7 +612,7 @@ const list = document.getElementById('adminHoldsList');
 const dict = I18N[currentLang] || I18N.ru;
 const items = data.items || [];
 if (!items.length){
-list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.admin_holds_empty}</div>`;
+list.innerHTML = `<div class="skins-empty skins-empty-sm">${dict.admin_holds_empty}</div>`;
 return;
 }
 list.innerHTML = items.map(h => `
@@ -624,7 +624,7 @@ list.innerHTML = items.map(h => `
 </div>`).join('');
 })
 .catch(() => {
-document.getElementById('adminHoldsList').innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).load_failed}</div>`;
+document.getElementById('adminHoldsList').innerHTML = `<div class="skins-empty skins-empty-sm">${(I18N[currentLang] || I18N.ru).load_failed}</div>`;
 });
 }
 
@@ -654,7 +654,7 @@ adminStatusBoxHtml(data.pending_withdrawals, dict.admin_status_withdrawals, data
 ].join('');
 })
 .catch(() => {
-grid.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).load_failed}</div>`;
+grid.innerHTML = `<div class="skins-empty skins-empty-sm">${(I18N[currentLang] || I18N.ru).load_failed}</div>`;
 });
 }
 
@@ -675,7 +675,7 @@ adminStatusBoxHtml(data.sold_listings, dict.admin_stats_sold, false),
 ].join('');
 })
 .catch(() => {
-grid.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).load_failed}</div>`;
+grid.innerHTML = `<div class="skins-empty skins-empty-sm">${(I18N[currentLang] || I18N.ru).load_failed}</div>`;
 });
 }
 
@@ -904,7 +904,7 @@ box.innerHTML = `<div class="admin-rf-active">
 <div class="edit-status" id="adminRfActiveStatus"></div>
 <div class="profile-section-title" style="font-size:13px; margin-top:12px;">${dict.admin_gw_participants}</div>
 ${participants.length ? participants.map(p => `<div class="history-row"><span class="history-row-note">#${p.entry} ${escapeHtml(p.username || String(p.user_id))}</span><span>👥 ${p.invites} · 🎟 ${p.tickets}</span></div>`).join('')
-: `<div class="skins-empty" style="padding:12px 4px;">${dict.admin_gw_no_participants}</div>`}
+: `<div class="skins-empty skins-empty-sm">${dict.admin_gw_no_participants}</div>`}
 </div>`;
 const tick = () => {
 const el = document.getElementById('adminRfLeft');
@@ -940,7 +940,7 @@ function renderAdminRaffleHistory(items){
 const dict = I18N[currentLang] || I18N.ru;
 const box = document.getElementById('adminGiveawayHistoryList');
 if (!items || !items.length){
-box.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.admin_rf_history_empty}</div>`;
+box.innerHTML = `<div class="skins-empty skins-empty-sm">${dict.admin_rf_history_empty}</div>`;
 return;
 }
 box.innerHTML = items.map(h => `
@@ -1062,7 +1062,7 @@ totals.textContent = dict.admin_sellers_totals
 .replace('{sum}', formatCoins(data.total_balance || 0))
 .replace('{held}', formatCoins(data.total_held || 0));
 if (!items.length){
-list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.admin_empty}</div>`;
+list.innerHTML = `<div class="skins-empty skins-empty-sm">${dict.admin_empty}</div>`;
 return;
 }
 list.innerHTML = items.map(s => {
@@ -1136,7 +1136,7 @@ adminApiFetch('/api/admin/topups')
 .then(data => {
 const items = data.items || [];
 if (!items.length){
-list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).admin_no_requests}</div>`;
+list.innerHTML = `<div class="skins-empty skins-empty-sm">${(I18N[currentLang] || I18N.ru).admin_no_requests}</div>`;
 return;
 }
 list.innerHTML = items.map(t => `
@@ -1151,7 +1151,7 @@ list.innerHTML = items.map(t => `
 </div>
 </div>`).join('');
 })
-.catch(() => { list.innerHTML = '<div class="skins-empty" style="padding:12px 4px;">Не удалось загрузить</div>'; });
+.catch(() => { list.innerHTML = '<div class="skins-empty skins-empty-sm">Не удалось загрузить</div>'; });
 }
 
 document.getElementById('adminTopupsList').addEventListener('click', (e) => {
@@ -1203,7 +1203,7 @@ adminApiFetch('/api/admin/p2p_orders')
 .then(data => {
 const items = data.items || [];
 if (!items.length){
-list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.admin_no_requests}</div>`;
+list.innerHTML = `<div class="skins-empty skins-empty-sm">${dict.admin_no_requests}</div>`;
 return;
 }
 list.innerHTML = items.map(o => {
@@ -1229,7 +1229,7 @@ ${receipt}
 </div>`;
 }).join('');
 })
-.catch(() => { list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.load_failed}</div>`; });
+.catch(() => { list.innerHTML = `<div class="skins-empty skins-empty-sm">${dict.load_failed}</div>`; });
 }
 
 document.getElementById('adminP2pList').addEventListener('click', (e) => {
@@ -1286,7 +1286,7 @@ adminApiFetch('/api/admin/deals/disputes')
 .then(data => {
 const items = data.items || [];
 if (!items.length){
-list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.admin_no_disputes}</div>`;
+list.innerHTML = `<div class="skins-empty skins-empty-sm">${dict.admin_no_disputes}</div>`;
 return;
 }
 list.innerHTML = items.map(d => {
@@ -1308,7 +1308,7 @@ ${evidence}
 </div>`;
 }).join('');
 })
-.catch(() => { list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.load_failed}</div>`; });
+.catch(() => { list.innerHTML = `<div class="skins-empty skins-empty-sm">${dict.load_failed}</div>`; });
 }
 
 document.getElementById('adminDisputesList').addEventListener('click', (e) => {
@@ -1336,7 +1336,7 @@ adminApiFetch('/api/admin/fraud_flags')
 .then(data => {
 const items = (data.items || []).filter(f => !f.resolved_at);
 if (!items.length){
-list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.admin_no_fraud}</div>`;
+list.innerHTML = `<div class="skins-empty skins-empty-sm">${dict.admin_no_fraud}</div>`;
 return;
 }
 list.innerHTML = items.map(f => `
@@ -1351,7 +1351,7 @@ ${f.details ? `<div class="deal-meta">${escapeHtml(f.details)}</div>` : ''}
 </div>
 </div>`).join('');
 })
-.catch(() => { list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.load_failed}</div>`; });
+.catch(() => { list.innerHTML = `<div class="skins-empty skins-empty-sm">${dict.load_failed}</div>`; });
 }
 
 document.getElementById('adminFraudList').addEventListener('click', (e) => {
@@ -1371,7 +1371,7 @@ adminApiFetch('/api/admin/withdrawals')
 .then(data => {
 const items = data.items || [];
 if (!items.length){
-list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).admin_no_requests}</div>`;
+list.innerHTML = `<div class="skins-empty skins-empty-sm">${(I18N[currentLang] || I18N.ru).admin_no_requests}</div>`;
 return;
 }
 list.innerHTML = items.map(w => `
@@ -1387,7 +1387,7 @@ list.innerHTML = items.map(w => `
 </div>
 </div>`).join('');
 })
-.catch(() => { list.innerHTML = '<div class="skins-empty" style="padding:12px 4px;">Не удалось загрузить</div>'; });
+.catch(() => { list.innerHTML = '<div class="skins-empty skins-empty-sm">Не удалось загрузить</div>'; });
 }
 
 document.getElementById('adminWithdrawalsList').addEventListener('click', (e) => {
@@ -1467,7 +1467,7 @@ adminApiFetch('/api/admin/finance/top_topupers')
 .then(data => {
 const items = data.items || [];
 if (!items.length){
-list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).admin_empty}</div>`;
+list.innerHTML = `<div class="skins-empty skins-empty-sm">${(I18N[currentLang] || I18N.ru).admin_empty}</div>`;
 return;
 }
 list.innerHTML = items.map((it, i) => `
@@ -1478,20 +1478,20 @@ list.innerHTML = items.map((it, i) => `
 </div>
 </div>`).join('');
 })
-.catch(() => { list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${(I18N[currentLang] || I18N.ru).load_failed}</div>`; });
+.catch(() => { list.innerHTML = `<div class="skins-empty skins-empty-sm">${(I18N[currentLang] || I18N.ru).load_failed}</div>`; });
 }
 
 document.getElementById('adminClientHistoryBtn').addEventListener('click', () => {
 const result = document.getElementById('adminClientHistoryResult');
 const id = Number(document.getElementById('adminClientHistoryId').value);
 if (!id){ result.innerHTML = '<div class="shop-hint">Укажи user_id.</div>'; return; }
-result.innerHTML = '<div class="skins-empty" style="padding:12px 4px;">Загрузка...</div>';
+result.innerHTML = '<div class="skins-empty skins-empty-sm">Загрузка...</div>';
 adminApiFetch('/api/admin/finance/client_history?user_id=' + id)
 .then(data => {
 const items = data.items || [];
 const header = `<div class="deal-meta" style="margin-bottom:8px;">${escapeHtml(data.username || ('ID ' + data.user_id))} · баланс ${formatCoins(data.balance)} (в холде ${formatCoins(data.held)})</div>`;
 if (!items.length){
-result.innerHTML = header + `<div class="skins-empty" style="padding:12px 4px;">Транзакций нет</div>`;
+result.innerHTML = header + `<div class="skins-empty skins-empty-sm">Транзакций нет</div>`;
 return;
 }
 const rows = items.map(t => `
@@ -1759,14 +1759,14 @@ ${k.has_photos ? `<div class="kyc-shots">
 <button class="deal-action" data-kyc-decide="approve" data-kyc-id="${k.id}" type="button">${dict.admin_btn_approve}</button>
 <button class="deal-action secondary" data-kyc-decide="reject" data-kyc-id="${k.id}" type="button">${dict.admin_btn_reject}</button>
 </div>
-</div>`).join('') : `<div class="skins-empty" style="padding:12px 4px;">${dict.admin_no_requests}</div>`;
+</div>`).join('') : `<div class="skins-empty skins-empty-sm">${dict.admin_no_requests}</div>`;
 const recent = data.recent || [];
 recentBox.innerHTML = recent.length
 ? `<div class="kyc-recent"><b>${dict.admin_kyc_recent}</b><br>` + recent.map(k =>
 `#${k.id} · id ${k.user_id} · ${k.status === 'verified' ? '✅' : '❌'} ${kycDateLabel(k.reviewed_at)}`).join('<br>') + '</div>'
 : '';
 })
-.catch(() => { list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.load_failed}</div>`; });
+.catch(() => { list.innerHTML = `<div class="skins-empty skins-empty-sm">${dict.load_failed}</div>`; });
 }
 
 document.getElementById('adminKycList').addEventListener('click', (e) => {

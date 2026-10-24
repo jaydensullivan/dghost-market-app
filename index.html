@@ -10,7 +10,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=5"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=92">
+<link rel="stylesheet" href="app.css?v=93">
 </head>
 <body data-tab="shop">
 <!-- Значки интерфейса в едином объёмном стиле (gi-*): <svg class="gi"><use href="#gi-…"/></svg>. -->
@@ -56,7 +56,7 @@
 <div class="edit-sheet">
 <h2 id="changelogTitle" style="margin:0 0 14px;" data-i18n="changelog_title">📣 Что нового</h2>
 <ul id="changelogList" style="margin:0 0 16px; padding-left:20px; color:var(--silver); font-size:14px; line-height:1.6;"></ul>
-<button type="button" id="changelogOkBtn" class="welcome-btn primary" style="width:100%;" data-i18n="btn_got_it">Понятно</button>
+<button type="button" id="changelogOkBtn" class="welcome-btn primary u-w100" data-i18n="btn_got_it">Понятно</button>
 </div>
 </div>
 
@@ -66,7 +66,7 @@
 <div id="agreementTextBox" style="max-height:50vh; overflow-y:auto; text-align:left; font-size:13px; line-height:1.5; color:var(--muted); background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px; white-space:pre-wrap;">Загрузка...</div>
 <div class="legal-links"><a href="#" data-legal-doc="buyer" data-i18n="legal_buyer_offer">Оферта для покупателя</a> · <a href="#" data-legal-doc="seller" data-i18n="legal_seller_offer">Оферта для продавца</a> · <a href="#" data-legal-doc="privacy" data-i18n="legal_privacy">Политика конфиденциальности</a></div>
 <button type="button" id="mandatoryAcceptAgreementBtn" class="welcome-btn primary" style="margin-top:14px; width:100%;" data-i18n="agreement_btn_accept">Принимаю условия</button>
-<div class="edit-status" id="mandatoryAgreementStatus" style="margin-top:8px;"></div>
+<div class="edit-status u-mt8" id="mandatoryAgreementStatus"></div>
 </div>
 </div>
 
@@ -83,9 +83,9 @@
 <input id="mandatoryTradeLink" type="text" placeholder="https://steamcommunity.com/tradeoffer/new/?partner=...&token=...">
 </div>
 <button type="button" id="mandatoryLinkBtn" class="welcome-btn primary" style="margin-top:12px; width:100%;" data-i18n="mandatory_steam_link_btn">Привязать и продолжить</button>
-<div class="edit-status" id="mandatorySteamStatus" style="margin-top:8px;"></div>
+<div class="edit-status u-mt8" id="mandatorySteamStatus"></div>
 <div class="shop-hint" style="margin-top:14px;" data-i18n="mandatory_steam_hint">Нажми кнопку выше — откроется страница Steam с твоей трейд-ссылкой, останется скопировать и вставить сюда.</div>
-<button type="button" id="mandatorySteamLaterBtn" style="width:100%; margin-top:14px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="mandatory_steam_later">Добавить позже</button>
+<button class="btn-ghost-link mt14" type="button" id="mandatorySteamLaterBtn" data-i18n="mandatory_steam_later">Добавить позже</button>
 </div>
 </div>
 
@@ -345,14 +345,14 @@
 </div>
 <div id="sellerStatusNone">
 <div class="shop-hint" style="margin:8px 0 10px;" data-i18n="seller_status_none_hint">Покупать можно всем без ограничений. Чтобы выставлять свои лоты и пользоваться балансом — нужно пройти проверку (ФИО, телефон, страна, адрес).</div>
-<button type="button" id="openKycBtn" class="steam-link-btn" style="width:100%;" data-i18n="seller_btn_become">Стать продавцом</button>
+<button type="button" id="openKycBtn" class="steam-link-btn u-w100" data-i18n="seller_btn_become">Стать продавцом</button>
 </div>
 <div id="sellerStatusPending" style="display:none;">
-<div class="shop-hint" style="margin-top:8px;" data-i18n="seller_status_pending">⏳ Заявка на проверке — обычно рассматривается в течение дня.</div>
+<div class="shop-hint u-mt8" data-i18n="seller_status_pending">⏳ Заявка на проверке — обычно рассматривается в течение дня.</div>
 </div>
 <div id="sellerStatusRejected" style="display:none;">
 <div class="shop-hint" style="color:#e07a7a; margin:8px 0 10px;" data-i18n="seller_status_rejected">❌ Заявка отклонена. Проверь данные и подай заново.</div>
-<button type="button" id="openKycBtnAgain" class="steam-link-btn secondary" style="width:100%;" data-i18n="seller_btn_resubmit">Подать заявку снова</button>
+<button type="button" id="openKycBtnAgain" class="steam-link-btn secondary u-w100" data-i18n="seller_btn_resubmit">Подать заявку снова</button>
 </div>
 <div id="sellerStatusVerified" style="display:none;"></div>
 </div>
@@ -369,7 +369,7 @@
 </summary>
 <div id="totp2faNotSetUp">
 <div class="shop-hint" style="margin:10px 0;" data-i18n="totp_intro_hint">Дополнительная защита через приложение-аутентификатор (Google Authenticator, Microsoft Authenticator и любое другое). Защищает вывод средств и/или вход в админку даже если кто-то получит доступ к твоему Telegram.</div>
-<button type="button" id="setup2faBtn" class="steam-link-btn secondary" style="width:100%;" data-i18n="totp_btn_setup">Настроить</button>
+<button type="button" id="setup2faBtn" class="steam-link-btn secondary u-w100" data-i18n="totp_btn_setup">Настроить</button>
 </div>
 <div id="totp2faSetupBox" style="display:none;">
 <div class="shop-hint" style="margin:10px 0 8px;" data-i18n="totp_setup_hint">Открой приложение-аутентификатор → добавить аккаунт вручную (не по QR) → введи этот ключ:</div>
@@ -380,12 +380,12 @@
 <span data-i18n="btn_copy">Скопировать</span>
 </button>
 </div>
-<div class="edit-field" style="margin-top:10px;">
+<div class="edit-field u-mt10">
 <label data-i18n="totp_label_code">Код из приложения</label>
 <input id="totp2faConfirmCode" type="text" inputmode="numeric" maxlength="6" placeholder="123456">
 </div>
 <button type="button" id="totp2faConfirmBtn" class="welcome-btn primary" style="width:100%; margin-top:8px;" data-i18n="totp_btn_confirm">Подтвердить</button>
-<div class="edit-status" id="totp2faSetupStatus" style="margin-top:6px;"></div>
+<div class="edit-status u-mt6" id="totp2faSetupStatus"></div>
 </div>
 <div id="totp2faToggles" class="pf-toggles" style="display:none;">
 <label class="pf-toggle">🏦 <span data-i18n="totp_toggle_withdraw">Защита вывода средств</span> <input type="checkbox" id="totp2faToggleWithdraw"></label>
@@ -493,7 +493,7 @@
 </button>
 </div>
 <div class="shop-hint" style="display:none;"><span data-i18n="label_invited">Приглашено:</span> <span id="referralInvitedCount">—</span></div>
-<div id="referralDashboard" style="margin-top:10px;"></div>
+<div class="u-mt10" id="referralDashboard"></div>
 <div class="pf-wallet-row">
 <div class="pf-wallet">
 <div class="pf-wallet-head"><span data-i18n="referral_wallet_label">Реферальный кошелёк</span><b id="referralWalletValue">—</b></div>
@@ -561,12 +561,12 @@
 
 <div class="screen-profile" id="screenAuctions" style="display:none; padding:50px 16px 100px;">
 
-<button type="button" class="back-btn" id="auctionsBackBtn" style="margin-bottom:12px;">←</button>
+<button type="button" class="back-btn u-mb12" id="auctionsBackBtn">←</button>
 
 <div class="profile-section-title" style="font-size:16px; margin-bottom:14px;" data-i18n="auctions_title">Аукцион</div>
 
 <div id="auctionsList">
-<div class="skins-empty" style="padding:16px 4px;" data-i18n="auctions_empty">Сейчас нет активных аукционов.</div>
+<div class="skins-empty skins-empty-md" data-i18n="auctions_empty">Сейчас нет активных аукционов.</div>
 </div>
 
 </div>
@@ -579,35 +579,35 @@
 </div>
 <div class="shop-hint" data-i18n="hint_sell_flow">Продал скин — деньги придут покупателю в холд на 7 дней (трейд-бан Steam), затем автоматически на твой баланс.</div>
 <div class="skins-grid" id="myLotsList"></div>
-<button type="button" class="steam-link-btn secondary" id="lotsDealsBtn" style="margin-top:16px;" data-i18n="lots_deals_btn">📜 Мои сделки и обмены</button>
+<button type="button" class="steam-link-btn secondary u-mt16" id="lotsDealsBtn" data-i18n="lots_deals_btn">📜 Мои сделки и обмены</button>
 </div>
 
 <div class="screen-profile" id="screenDeals" style="display:none; padding:50px 16px 100px;">
 
-<button type="button" class="back-btn" id="dealsBackBtn" style="margin-bottom:12px;">←</button>
+<button type="button" class="back-btn u-mb12" id="dealsBackBtn">←</button>
 
 <div class="profile-section-title" style="font-size:16px; margin-bottom:14px;">Мои сделки</div>
 
 <div id="p2pStatusList"></div>
 
 <div id="dealsList">
-<div class="skins-empty" style="padding:16px 4px;">Загрузка...</div>
+<div class="skins-empty skins-empty-md">Загрузка...</div>
 </div>
 
 <div class="profile-section-title" style="margin-top:18px;">🔄 Обмены</div>
 <div id="tradeOffersList">
-<div class="skins-empty" style="padding:16px 4px;">Загрузка...</div>
+<div class="skins-empty skins-empty-md">Загрузка...</div>
 </div>
 
 </div>
 
 <div class="screen-profile" id="screenBuyRequests" style="display:none; padding:50px 16px 100px;">
 
-<button type="button" class="back-btn" id="buyRequestsBackBtn" style="margin-bottom:12px;">←</button>
+<button type="button" class="back-btn u-mb12" id="buyRequestsBackBtn">←</button>
 
 <div class="profile-section-title" style="font-size:16px; margin-bottom:10px;" data-i18n="wants_title">Хочу</div>
 
-<div class="category-chips" id="wantsTabs" style="margin-bottom:12px;">
+<div class="category-chips u-mb12" id="wantsTabs">
 <button type="button" class="category-chip active" data-wants-tab="watch">🔔 <span data-i18n="wants_tab_watch">Слежу</span></button>
 <button type="button" class="category-chip" data-wants-tab="seek">🔍 <span data-i18n="wants_tab_seek">Ищу</span></button>
 </div>
@@ -649,14 +649,14 @@
 </select>
 </div>
 </div>
-<button type="button" id="wishlistAddBtn" class="steam-link-btn" style="width:100%;" data-i18n="wishlist_btn_add">Добавить</button>
-<div class="edit-status" id="wishlistStatus" style="margin-top:6px;"></div>
+<button type="button" id="wishlistAddBtn" class="steam-link-btn u-w100" data-i18n="wishlist_btn_add">Добавить</button>
+<div class="edit-status u-mt6" id="wishlistStatus"></div>
 </div>
 </div>
 </div>
 
 <div id="wantsPaneSeek" style="display:none;">
-<div class="shop-hint" style="margin-bottom:10px;" data-i18n="wants_seek_hint">Публичная заявка: продавцы увидят, что ты ищешь, и смогут предложить свой лот.</div>
+<div class="shop-hint u-mb10" data-i18n="wants_seek_hint">Публичная заявка: продавцы увидят, что ты ищешь, и смогут предложить свой лот.</div>
 <div class="profile-section">
 <div class="profile-section-title" data-i18n="br_create_title">Опубликовать заявку</div>
 <div class="edit-field">
@@ -667,18 +667,18 @@
 <label data-i18n="br_label_max_price">Готов заплатить до, сум (не обязательно)</label>
 <input id="brMaxPriceInput" type="number" min="0" placeholder="1000000">
 </div>
-<button type="button" id="brCreateBtn" class="steam-link-btn secondary" style="width:100%;" data-i18n="br_btn_create">Опубликовать</button>
-<div class="edit-status" id="brCreateStatus" style="margin-top:6px;"></div>
+<button type="button" id="brCreateBtn" class="steam-link-btn secondary u-w100" data-i18n="br_btn_create">Опубликовать</button>
+<div class="edit-status u-mt6" id="brCreateStatus"></div>
 </div>
 
 <div class="profile-section-title" style="margin-top:18px;" data-i18n="br_my_requests_title">Мои заявки</div>
 <div id="myBuyRequestsList">
-<div class="skins-empty" style="padding:16px 4px;">Загрузка...</div>
+<div class="skins-empty skins-empty-md">Загрузка...</div>
 </div>
 
 <div class="profile-section-title" style="margin-top:18px;" data-i18n="br_public_list_title">Заявки других — можно откликнуться</div>
 <div id="publicBuyRequestsList">
-<div class="skins-empty" style="padding:16px 4px;">Загрузка...</div>
+<div class="skins-empty skins-empty-md">Загрузка...</div>
 </div>
 </div>
 
@@ -687,20 +687,20 @@
 <div class="edit-overlay" id="brRespondOverlay" style="z-index:600;">
 <div class="edit-sheet">
 <h2 style="margin:0 0 6px;" data-i18n="br_respond_title">🔍 Откликнуться своим лотом</h2>
-<div id="brRespondTargetInfo" class="shop-hint" style="margin-bottom:10px;"></div>
+<div id="brRespondTargetInfo" class="shop-hint u-mb10"></div>
 <div id="brRespondMySkins" style="max-height:35vh; overflow-y:auto;"></div>
-<div class="edit-field" style="margin-top:10px;">
+<div class="edit-field u-mt10">
 <label data-i18n="br_label_price">Твоя цена, сум</label>
 <input id="brRespondPriceInput" type="number" min="1" placeholder="500000">
 </div>
 <button type="button" id="brRespondSendBtn" class="welcome-btn primary" style="width:100%; margin-top:8px;" disabled data-i18n="br_btn_respond">Откликнуться</button>
-<div class="edit-status" id="brRespondStatus" style="margin-top:6px;"></div>
-<button type="button" id="brRespondCloseBtn" style="width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_close">Закрыть</button>
+<div class="edit-status u-mt6" id="brRespondStatus"></div>
+<button class="btn-ghost-link" type="button" id="brRespondCloseBtn" data-i18n="btn_close">Закрыть</button>
 </div>
 </div>
 
 <div class="screen-profile" id="screenSupport" style="display:none; padding:50px 16px 100px;">
-<button type="button" class="back-btn" id="supportBackBtn" style="margin-bottom:12px;">←</button>
+<button type="button" class="back-btn u-mb12" id="supportBackBtn">←</button>
 <div class="profile-section-title" style="font-size:16px; margin-bottom:4px;" data-i18n="support_title">Поддержка</div>
 <div class="support-note" data-i18n="support_note">Ответим здесь и в Telegram — обычно в течение нескольких часов.</div>
 <div class="support-thread" id="supportThread"><div class="skins-empty" data-i18n="loading">Загрузка...</div></div>
@@ -723,7 +723,7 @@
 
 <div class="screen-profile" id="screenAdmin" style="display:none; padding:50px 16px 100px;">
 
-<button type="button" class="back-btn" id="adminBackBtn" style="margin-bottom:12px;">←</button>
+<button type="button" class="back-btn u-mb12" id="adminBackBtn">←</button>
 
 <div class="profile-section-title" style="font-size:16px; margin-bottom:14px;" data-i18n="admin_title">Панель администратора</div>
 
@@ -742,13 +742,13 @@
 <!-- ===== support ===== -->
 
 <div class="profile-section admin-group" data-group="support" id="adminSupportSection" data-view="support" style="display:none;">
-<div class="category-chips" id="adminSupportTabs" style="margin-bottom:10px;">
+<div class="category-chips u-mb10" id="adminSupportTabs">
 <button type="button" class="category-chip active" data-support-state="open" data-i18n="admin_support_open">Открытые</button>
 <button type="button" class="category-chip" data-support-state="closed" data-i18n="admin_support_closed">Отвеченные и закрытые</button>
 </div>
-<div id="adminSupportList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+<div id="adminSupportList"><div class="skins-empty skins-empty-sm" data-i18n="loading">Загрузка...</div></div>
 <div id="adminSupportTicket" hidden>
-<button type="button" class="back-btn" id="adminSupportBack" style="margin-bottom:10px;">←</button>
+<button type="button" class="back-btn u-mb10" id="adminSupportBack">←</button>
 <div class="support-client" id="adminSupportClient"></div>
 <div class="support-thread" id="adminSupportThread"></div>
 <div class="support-draft" id="adminSupportDraft" hidden></div>
@@ -768,17 +768,17 @@
 <div class="profile-section admin-group" data-group="overview" id="adminStatusSection" data-view="overview">
 <div class="profile-section-title" data-i18n="admin_section_status">Сводка</div>
 <div id="adminStatusGrid" class="admin-status-grid">
-<div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div>
+<div class="skins-empty skins-empty-sm" data-i18n="loading">Загрузка...</div>
 </div>
 </div>
 
-<div class="profile-section admin-group" data-group="overview" id="adminStatsSection" style="margin-top:10px;" data-view="overview">
+<div class="profile-section admin-group u-mt10" data-group="overview" id="adminStatsSection" data-view="overview">
 <div style="display:flex; justify-content:space-between; align-items:center;">
 <div class="profile-section-title" data-i18n="admin_section_stats">Статистика</div>
 <span class="admin-live-dot" title="live"></span>
 </div>
 <div id="adminStatsGrid" class="admin-status-grid">
-<div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div>
+<div class="skins-empty skins-empty-sm" data-i18n="loading">Загрузка...</div>
 </div>
 </div>
 
@@ -786,31 +786,31 @@
 
 <div class="profile-section admin-group" id="adminKycSection" data-group="requests" style="margin-top:10px; display:none;" data-view="requests">
 <div class="profile-section-title" data-i18n="admin_section_kyc">Заявки продавцов</div>
-<div class="shop-hint" style="margin-bottom:8px;" data-i18n="admin_kyc_hint">Сверь ФИО с документом и лицо на селфи с фото в документе. Фото открываются только здесь и в Telegram не пересылаются.</div>
-<div id="adminKycList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+<div class="shop-hint u-mb8" data-i18n="admin_kyc_hint">Сверь ФИО с документом и лицо на селфи с фото в документе. Фото открываются только здесь и в Telegram не пересылаются.</div>
+<div id="adminKycList"><div class="skins-empty skins-empty-sm" data-i18n="loading">Загрузка...</div></div>
 <div id="adminKycRecent"></div>
 </div>
 
 <div class="profile-section admin-group" id="adminTopupsSection" data-group="requests" style="margin-top:10px; display:none;" data-view="requests">
 <div class="profile-section-title" data-i18n="admin_section_topups">Заявки на пополнение</div>
-<div id="adminTopupsList"><div class="skins-empty" style="padding:16px 4px;" data-i18n="loading">Загрузка...</div></div>
+<div id="adminTopupsList"><div class="skins-empty skins-empty-md" data-i18n="loading">Загрузка...</div></div>
 </div>
 
 <div class="profile-section admin-group" id="adminP2pSection" data-group="requests" style="margin-top:10px; display:none;" data-view="requests">
 <div class="profile-section-title" data-i18n="admin_section_p2p">Оплаты картой за лоты</div>
-<div id="adminP2pList"><div class="skins-empty" style="padding:16px 4px;" data-i18n="loading">Загрузка...</div></div>
+<div id="adminP2pList"><div class="skins-empty skins-empty-md" data-i18n="loading">Загрузка...</div></div>
 </div>
 
 <div class="profile-section admin-group" id="adminWithdrawalsSection" data-group="requests" style="margin-top:10px; display:none;" data-view="requests">
 <div class="profile-section-title" data-i18n="admin_section_withdrawals">Заявки на вывод</div>
-<div id="adminWithdrawalsList"><div class="skins-empty" style="padding:16px 4px;" data-i18n="loading">Загрузка...</div></div>
+<div id="adminWithdrawalsList"><div class="skins-empty skins-empty-md" data-i18n="loading">Загрузка...</div></div>
 </div>
 
 <!-- ===== deals ===== -->
 
 <div class="profile-section admin-group" id="adminDisputesSection" data-group="deals" style="margin-top:10px; display:none;" data-view="deals">
 <div class="profile-section-title" data-i18n="admin_section_disputes">Споры</div>
-<div id="adminDisputesList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+<div id="adminDisputesList"><div class="skins-empty skins-empty-sm" data-i18n="loading">Загрузка...</div></div>
 </div>
 
 <div class="profile-section admin-group" id="adminDealsSection" data-group="deals" style="margin-top:10px; display:none;" data-view="deals">
@@ -819,21 +819,21 @@
 <button type="button" class="category-chip active" id="adminDealsGroupFlat" data-i18n="admin_deals_flat">Списком</button>
 <button type="button" class="category-chip" id="adminDealsGroupByUser" data-i18n="admin_deals_by_user">По клиентам</button>
 </div>
-<div id="adminDealsList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+<div id="adminDealsList"><div class="skins-empty skins-empty-sm" data-i18n="loading">Загрузка...</div></div>
 </div>
 
 <div class="profile-section admin-group" id="adminHoldsSection" data-group="deals" style="margin-top:10px; display:none;" data-view="deals">
 <div class="profile-section-title" data-i18n="admin_section_holds">Активные холды</div>
-<div id="adminHoldsList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+<div id="adminHoldsList"><div class="skins-empty skins-empty-sm" data-i18n="loading">Загрузка...</div></div>
 </div>
 
 <!-- ===== showcase ===== -->
 
 <div class="profile-section admin-group" id="adminAuctionSection" data-group="auction" data-view="showcase">
 <div class="profile-section-title" data-i18n="admin_section_auction">Создать аукцион</div>
-<div class="shop-hint" style="margin-bottom:10px;" data-i18n="admin_pick_skin_hint">Выбери лот из списка ниже — после твоего запроса продавцу придёт вопрос, согласен ли он выставить его на торги.</div>
+<div class="shop-hint u-mb10" data-i18n="admin_pick_skin_hint">Выбери лот из списка ниже — после твоего запроса продавцу придёт вопрос, согласен ли он выставить его на торги.</div>
 <div id="adminSkinPicker" class="admin-skin-picker">
-<div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div>
+<div class="skins-empty skins-empty-sm" data-i18n="loading">Загрузка...</div>
 </div>
 <div id="adminSelectedSkin" class="admin-selected-skin" style="display:none;"></div>
 <div class="edit-field">
@@ -860,25 +860,25 @@
 <textarea id="aCustomPostText" class="admin-template-textarea" rows="5" placeholder="Напиши текст поста для канала — уйдёт как есть, без шаблона." required></textarea>
 <div class="admin-emoji-insert-row" id="aEmojiInsertRow"></div>
 </div>
-<button type="button" class="steam-link-btn secondary" id="aPreviewBtn" style="margin-bottom:8px;" data-i18n="admin_btn_preview">👁 Предпросмотр</button>
+<button type="button" class="steam-link-btn secondary u-mb8" id="aPreviewBtn" data-i18n="admin_btn_preview">👁 Предпросмотр</button>
 <div class="admin-post-preview" id="aPreviewBox" style="display:none;"></div>
 <button type="button" id="adminCreateAuctionBtn" class="steam-link-btn" data-i18n="admin_btn_propose_auction">Отправить продавцу запрос</button>
 <div class="edit-status" id="adminAuctionStatus"></div>
 </div>
 
-<div class="profile-section admin-group" id="adminActiveAuctionsSection" data-group="auction" style="margin-top:10px;" data-view="showcase">
+<div class="profile-section admin-group u-mt10" id="adminActiveAuctionsSection" data-group="auction" data-view="showcase">
 <div class="profile-section-title" data-i18n="admin_section_active_auctions">Активные аукционы</div>
-<div id="adminActiveAuctionsList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
-<div class="profile-section-title" style="margin-top:16px;" data-i18n="admin_section_pending_proposals">Ждут ответа продавца</div>
-<div id="adminPendingProposalsList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+<div id="adminActiveAuctionsList"><div class="skins-empty skins-empty-sm" data-i18n="loading">Загрузка...</div></div>
+<div class="profile-section-title u-mt16" data-i18n="admin_section_pending_proposals">Ждут ответа продавца</div>
+<div id="adminPendingProposalsList"><div class="skins-empty skins-empty-sm" data-i18n="loading">Загрузка...</div></div>
 </div>
 
-<div class="profile-section admin-group" id="adminAuctionHistorySection" data-group="auction" style="margin-top:10px;" data-view="showcase">
+<div class="profile-section admin-group u-mt10" id="adminAuctionHistorySection" data-group="auction" data-view="showcase">
 <div class="admin-history-head">
 <div class="profile-section-title" data-i18n="admin_section_auction_history">История аукционов</div>
 <button type="button" class="admin-history-clear" data-clear-history="auction" data-i18n="admin_history_clear">🗑 Очистить</button>
 </div>
-<div id="adminAuctionHistoryList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+<div id="adminAuctionHistoryList"><div class="skins-empty skins-empty-sm" data-i18n="loading">Загрузка...</div></div>
 </div>
 
 <div class="profile-section admin-group" data-group="giveaway" id="adminGiveawaySection" style="display:none;" data-view="showcase">
@@ -934,7 +934,7 @@
 <div class="profile-section-title" data-i18n="admin_section_giveaway_history">История раздач</div>
 <button type="button" class="admin-history-clear" data-clear-history="giveaway" data-i18n="admin_history_clear">🗑 Очистить</button>
 </div>
-<div id="adminGiveawayHistoryList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+<div id="adminGiveawayHistoryList"><div class="skins-empty skins-empty-sm" data-i18n="loading">Загрузка...</div></div>
 </div>
 
 <div class="profile-section admin-group" id="adminSetsSection" data-group="sets" style="display:none;" data-view="showcase">
@@ -952,7 +952,7 @@
 
 <div class="edit-field">
 <label>Скидка</label>
-<div class="btn-row" style="margin-bottom:8px;">
+<div class="btn-row u-mb8">
 <button type="button" class="steam-link-btn secondary set-discount-type-btn active" data-discount-type="percent" style="flex:1;">В процентах</button>
 <button type="button" class="steam-link-btn secondary set-discount-type-btn" data-discount-type="fixed" style="flex:1;">Фикс. цена</button>
 </div>
@@ -961,37 +961,37 @@
 
 <div class="edit-field">
 <label>Выбери минимум 2 лота (недоступные для сетов не показаны)</label>
-<div class="admin-skin-picker" id="setSkinPicker"><div class="skins-empty" style="padding:12px 4px;">Загрузка...</div></div>
+<div class="admin-skin-picker" id="setSkinPicker"><div class="skins-empty skins-empty-sm">Загрузка...</div></div>
 </div>
 
 <div class="edit-status" id="setCreateStatus"></div>
 <button type="button" id="setCreateBtn" class="steam-link-btn">Создать сет</button>
 
-<div class="profile-section-title" style="margin-top:16px;">Существующие сеты</div>
-<div id="adminSetsList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+<div class="profile-section-title u-mt16">Существующие сеты</div>
+<div id="adminSetsList"><div class="skins-empty skins-empty-sm" data-i18n="loading">Загрузка...</div></div>
 </div>
 
 <!-- ===== clients ===== -->
 
 <div class="profile-section admin-group" id="adminSellersSection" data-group="finance" style="margin-top:10px; display:none;" data-view="clients">
 <div class="profile-section-title" data-i18n="admin_sellers_title">Продавцы и балансы</div>
-<div class="shop-hint" style="margin-bottom:8px;" data-i18n="admin_sellers_hint">Все продавцы и все, у кого есть деньги на балансе. Нажми на ID, чтобы скопировать.</div>
-<div class="deal-meta" id="adminSellersTotals" style="margin-bottom:8px;"></div>
+<div class="shop-hint u-mb8" data-i18n="admin_sellers_hint">Все продавцы и все, у кого есть деньги на балансе. Нажми на ID, чтобы скопировать.</div>
+<div class="deal-meta u-mb8" id="adminSellersTotals"></div>
 <div class="edit-field">
 <input id="adminSellersSearch" type="search" autocomplete="off" data-i18n-placeholder="admin_sellers_search" placeholder="Поиск: ID, @username или имя">
 </div>
-<div id="adminSellersList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+<div id="adminSellersList"><div class="skins-empty skins-empty-sm" data-i18n="loading">Загрузка...</div></div>
 </div>
 
 <div class="profile-section admin-group" id="adminClientsSection" data-group="finance" style="margin-top:10px; display:none;" data-view="clients">
 <div class="profile-section-title" data-i18n="admin_client_history">История клиента</div>
-<div class="shop-hint" style="margin-bottom:8px;" data-i18n="admin_client_hint">Баланс и все движения денег пользователя по его Telegram ID.</div>
+<div class="shop-hint u-mb8" data-i18n="admin_client_hint">Баланс и все движения денег пользователя по его Telegram ID.</div>
 <div class="edit-field">
 <label for="adminClientHistoryId">Telegram user_id</label>
 <input id="adminClientHistoryId" type="number" placeholder="123456789">
 </div>
 <button type="button" id="adminClientHistoryBtn" class="steam-link-btn secondary" data-i18n="admin_btn_show">Показать</button>
-<div id="adminClientHistoryResult" style="margin-top:10px;"></div>
+<div class="u-mt10" id="adminClientHistoryResult"></div>
 </div>
 
 <div class="profile-section admin-group" id="adminBalanceSection" data-group="finance" style="margin-top:10px; display:none;" data-view="clients">
@@ -1017,7 +1017,7 @@
 
 <div class="profile-section admin-group" id="adminFraudSection" data-group="clients" style="margin-top:10px; display:none;" data-view="clients">
 <div class="profile-section-title" data-i18n="admin_section_fraud">Антифрод: подозрительное</div>
-<div id="adminFraudList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+<div id="adminFraudList"><div class="skins-empty skins-empty-sm" data-i18n="loading">Загрузка...</div></div>
 </div>
 
 <!-- ===== finance ===== -->
@@ -1036,7 +1036,7 @@
 </div>
 
 <div class="profile-section-title" style="font-size:12px; margin-top:16px;" data-i18n="admin_top10_toppers">Топ-10 по пополнениям</div>
-<div id="adminTopTopupersList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+<div id="adminTopTopupersList"><div class="skins-empty skins-empty-sm" data-i18n="loading">Загрузка...</div></div>
 </div>
 
 <div class="profile-section admin-group" id="adminCommissionSection" data-group="finance" style="margin-top:10px; display:none; background-image:linear-gradient(180deg, rgba(10,7,16,0.7), rgba(10,7,16,0.94)), url('coins-scattered.png'); background-size:cover; background-position:center 15%;" data-view="finance">
@@ -1055,7 +1055,7 @@
 
 <div class="profile-section admin-group" id="adminReportSection" data-group="finance" style="margin-top:10px; display:none;" data-view="finance">
 <div class="profile-section-title" data-i18n="admin_section_report">📊 Отчёт в канал</div>
-<div class="shop-hint" style="margin-bottom:8px;" data-i18n="admin_report_hint">Сделки, комиссии, пополнения и выводы в Excel. Приходит каждый день в 00:05 (Ташкент) за прошлые сутки. Канал задаётся командой /reports_here в закрытом канале или группе; если канал не задан — файл придёт тебе в личку.</div>
+<div class="shop-hint u-mb8" data-i18n="admin_report_hint">Сделки, комиссии, пополнения и выводы в Excel. Приходит каждый день в 00:05 (Ташкент) за прошлые сутки. Канал задаётся командой /reports_here в закрытом канале или группе; если канал не задан — файл придёт тебе в личку.</div>
 <div class="edit-row">
 <button type="button" id="adminReportTodayBtn" class="steam-link-btn" data-i18n="admin_btn_report_today">За сегодня</button>
 <button type="button" id="adminReportYesterdayBtn" class="steam-link-btn secondary" data-i18n="admin_btn_report_yesterday">За вчера</button>
@@ -1070,7 +1070,7 @@
 <button type="button" class="category-chip" data-report-preset="month" data-i18n="admin_report_preset_month">Этот месяц</button>
 <button type="button" class="category-chip" data-report-preset="prev_month" data-i18n="admin_report_preset_prev_month">Прошлый месяц</button>
 </div>
-<button type="button" id="adminReportPeriodBtn" class="steam-link-btn" style="width:100%;" data-i18n="admin_btn_report_period">📅 Отчёт за период</button>
+<button type="button" id="adminReportPeriodBtn" class="steam-link-btn u-w100" data-i18n="admin_btn_report_period">📅 Отчёт за период</button>
 </div>
 <div class="edit-status" id="adminReportStatus"></div>
 </div>
@@ -1101,18 +1101,18 @@
 <div class="admin-perm-chips">
 <label class="admin-perm-chip"><input type="checkbox" id="toggleWithdrawCard"> <span data-i18n="admin_method_p2p_card">П2П (карта)</span></label>
 </div>
-<div class="shop-hint" style="margin-top:8px;" data-i18n="admin_payment_methods_hint">Видно и настраивается только владельцу. Выключенный способ пропадает у клиента из выбора при пополнении/выводе.</div>
+<div class="shop-hint u-mt8" data-i18n="admin_payment_methods_hint">Видно и настраивается только владельцу. Выключенный способ пропадает у клиента из выбора при пополнении/выводе.</div>
 <div style="font-size:12px; color:var(--muted); margin:14px 0 4px;" data-i18n="admin_direct_payment_title">Прямая оплата за лот</div>
 <div class="admin-perm-chips">
 <label class="admin-perm-chip"><input type="checkbox" id="toggleOcto"> 💳 <span data-i18n="admin_octo">Оплата картой через банк (Octo)</span> <span id="adminOctoState" class="shop-hint"></span></label>
 <label class="admin-perm-chip"><input type="checkbox" id="toggleDirectP2pPurchase"> 🏦 <span data-i18n="admin_direct_p2p">Оплата лота напрямую П2П (карта, ручное подтверждение)</span></label>
 </div>
-<div class="shop-hint" style="margin-top:8px;" data-i18n="admin_direct_payment_hint">Покупатель платит за лот картой (П2П). Оплата Stars и криптой убрана; оплаты с баланса у покупателя больше нет.</div>
+<div class="shop-hint u-mt8" data-i18n="admin_direct_payment_hint">Покупатель платит за лот картой (П2П). Оплата Stars и криптой убрана; оплаты с баланса у покупателя больше нет.</div>
 </div>
 
 <div class="profile-section admin-group" id="adminPromoSection" data-group="settings" style="margin-top:10px; display:none;" data-view="settings">
 <div class="profile-section-title" data-i18n="admin_section_promo">Промо: продажи без комиссии</div>
-<div class="shop-hint" id="adminPromoStatus2" style="margin-bottom:10px;"></div>
+<div class="shop-hint u-mb10" id="adminPromoStatus2"></div>
 <div class="edit-field">
 <label for="adminPromoLimit" data-i18n="admin_label_promo_limit">Лимит продаж без комиссии (всего)</label>
 <input id="adminPromoLimit" type="number" min="0" placeholder="0">
@@ -1123,7 +1123,7 @@
 
 <div class="profile-section admin-group" id="adminReferralSection" data-group="settings" style="margin-top:10px; display:none;" data-view="settings">
 <div class="profile-section-title" data-i18n="admin_section_referral_bonus">Реферальный бонус</div>
-<div class="shop-hint" style="margin-bottom:10px;" data-i18n="admin_referral_info_text">Копится автоматически с каждой завершённой покупки приглашённого (после снятия холда), в реферальный кошелёк с потолком 200 000 сум на человека.</div>
+<div class="shop-hint u-mb10" data-i18n="admin_referral_info_text">Копится автоматически с каждой завершённой покупки приглашённого (после снятия холда), в реферальный кошелёк с потолком 200 000 сум на человека.</div>
 <div class="edit-field">
 <label for="adminReferralPercent" data-i18n="admin_label_referral_percent">Процент от цены, %</label>
 <input id="adminReferralPercent" type="number" min="0" max="100" step="0.01" placeholder="0.05">
@@ -1134,33 +1134,33 @@
 
 <div class="profile-section admin-group" data-group="settings" id="admin3dSection" style="margin-top:10px; display:none;" data-view="settings">
 <div class="profile-section-title" data-i18n="d3_section">3D-рендер (тест)</div>
-<div class="shop-hint" data-i18n="d3_hint" style="margin-bottom:10px;"></div>
+<div class="shop-hint u-mb10" data-i18n="d3_hint"></div>
 <div id="d3CanvasWrap" class="d3-canvas-wrap"><canvas id="d3Canvas"></canvas></div>
 <div id="d3Table" class="d3-table"></div>
-<button type="button" id="d3RunBtn" class="steam-link-btn" style="margin-top:10px;" data-i18n="d3_run">Запустить тест</button>
+<button type="button" id="d3RunBtn" class="steam-link-btn u-mt10" data-i18n="d3_run">Запустить тест</button>
 <div class="edit-field" style="margin-top:12px;">
 <label for="d3ModelUrl" data-i18n="v3_url_label">Путь к модели (.glb)</label>
 <input id="d3ModelUrl" type="text" value="models/ak47.glb" autocomplete="off">
 </div>
-<div class="edit-field" style="margin-top:8px;">
+<div class="edit-field u-mt8">
 <label for="d3SkinDir" data-i18n="v3_skin_dir">Папка раскраски (models/skins/…)</label>
 <input id="d3SkinDir" type="text" value="models/skins/cu_ak47_cobra" autocomplete="off">
 </div>
-<div class="edit-field" style="margin-top:8px;">
+<div class="edit-field u-mt8">
 <label for="d3WeaponDir" data-i18n="v3_weapon_dir">Папка ствола (models/weapons/…)</label>
 <input id="d3WeaponDir" type="text" value="models/weapons/ak47" autocomplete="off">
 </div>
-<div class="edit-field" style="margin-top:8px;">
+<div class="edit-field u-mt8">
 <label for="d3MaskChannel" data-i18n="v3_mask_channel">Канал маски покраски</label>
 <select id="d3MaskChannel" class="wl-select">
 <option value="none" selected>Без маски (красить всё)</option><option value="r">R</option><option value="g">G</option><option value="b">B</option><option value="debug">Показать маску</option>
 </select>
 </div>
-<div class="edit-field" style="margin-top:8px;">
+<div class="edit-field u-mt8">
 <label for="d3Float" data-i18n="v3_float">Float (0 — новый, 1 — убитый)</label>
 <input id="d3Float" type="number" min="0" max="1" step="0.01" value="0.15">
 </div>
-<button type="button" id="d3ViewBtn" class="steam-link-btn" style="margin-top:8px;" data-i18n="v3_open">Открыть просмотрщик</button>
+<button type="button" id="d3ViewBtn" class="steam-link-btn u-mt8" data-i18n="v3_open">Открыть просмотрщик</button>
 <div class="edit-status" id="d3Status"></div>
 </div>
 
@@ -1168,7 +1168,7 @@
 
 <div class="profile-section admin-group" id="adminPeopleSection" data-group="people" style="margin-top:10px; display:none;" data-view="people">
 <div class="profile-section-title" data-i18n="admin_section_people">Админы и организаторы аукционов</div>
-<div id="adminPeopleList" style="margin-bottom:12px;"></div>
+<div class="u-mb12" id="adminPeopleList"></div>
 <div class="edit-field">
 <label for="adminNewPersonId" data-i18n="admin_label_user_id">Telegram user_id</label>
 <input id="adminNewPersonId" type="number" placeholder="123456789">
@@ -1191,8 +1191,8 @@
 <input id="totp2faPromptCode" type="text" inputmode="numeric" maxlength="6" placeholder="123456">
 </div>
 <button type="button" id="totp2faPromptOkBtn" class="welcome-btn primary" style="width:100%; margin-top:8px;" data-i18n="totp_btn_confirm">Подтвердить</button>
-<div class="edit-status" id="totp2faPromptStatus" style="margin-top:6px;"></div>
-<button type="button" id="totp2faPromptCancelBtn" style="width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_cancel">Отмена</button>
+<div class="edit-status u-mt6" id="totp2faPromptStatus"></div>
+<button class="btn-ghost-link" type="button" id="totp2faPromptCancelBtn" data-i18n="btn_cancel">Отмена</button>
 </div>
 </div>
 
@@ -1224,7 +1224,7 @@
 <div class="shop-hint" id="proEventLeft"></div>
 <button type="button" class="pf-btn pro-buy" id="proEventSubmit"></button>
 <div class="edit-status" id="proEventStatus"></div>
-<button type="button" id="proEventCloseBtn" style="width:100%; margin-top:6px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_close">Закрыть</button>
+<button class="btn-ghost-link mt6" type="button" id="proEventCloseBtn" data-i18n="btn_close">Закрыть</button>
 </div>
 </div>
 
@@ -1232,7 +1232,7 @@
 <div class="edit-sheet r3d-sheet">
 <h2 style="margin:0 0 8px;" id="r3dTitle">3D-рендер для бизнеса</h2>
 <div id="r3dBody"></div>
-<button type="button" id="r3dCloseBtn" style="width:100%; margin-top:6px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_close">Закрыть</button>
+<button class="btn-ghost-link mt6" type="button" id="r3dCloseBtn" data-i18n="btn_close">Закрыть</button>
 </div>
 </div>
 
@@ -1249,32 +1249,32 @@
 <div class="pro-how-text" id="proHowText"></div>
 </details>
 <div class="edit-status" id="proPlansStatus"></div>
-<button type="button" id="proPlansCloseBtn" style="width:100%; margin-top:6px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_close">Закрыть</button>
+<button class="btn-ghost-link mt6" type="button" id="proPlansCloseBtn" data-i18n="btn_close">Закрыть</button>
 </div>
 </div>
 
 <div class="edit-overlay" id="buyerVerifyOverlay">
 <div class="edit-sheet">
 <h2 style="margin:0 0 6px;" data-i18n="bv_title">🔐 Подтверди аккаунт</h2>
-<div class="shop-hint" id="bvHint" style="margin-bottom:12px;"></div>
+<div class="shop-hint u-mb12" id="bvHint"></div>
 <div class="bv-row"><span id="bvSteamMark">❌</span><span class="bv-label" data-i18n="bv_steam">Аккаунт Steam</span><button type="button" id="bvSteamBtn" class="steam-link-btn secondary" data-i18n="steam_login_btn">🔐 Войти через Steam</button></div>
 <div class="bv-row"><span id="bvPhoneMark">❌</span><span class="bv-label" data-i18n="bv_phone">Номер телефона</span><button type="button" id="bvPhoneBtn" class="steam-link-btn secondary" data-i18n="bv_phone_btn">📱 Подтвердить</button></div>
-<div class="edit-status" id="bvStatus" style="margin-top:8px;"></div>
-<button type="button" id="bvCloseBtn" style="width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_close">Закрыть</button>
+<div class="edit-status u-mt8" id="bvStatus"></div>
+<button class="btn-ghost-link" type="button" id="bvCloseBtn" data-i18n="btn_close">Закрыть</button>
 </div>
 </div>
 
 <div class="edit-overlay" id="kycOverlay">
 <div class="edit-sheet">
 <h2 style="margin:0 0 6px;" data-i18n="kyc_title">🪪 Заявка на роль продавца</h2>
-<div class="shop-hint" style="margin-bottom:12px;" data-i18n="kyc_hint">Нужно для AML/KYC-проверки. Номер подтверждается через Telegram, документ и селфи видит только админ.</div>
+<div class="shop-hint u-mb12" data-i18n="kyc_hint">Нужно для AML/KYC-проверки. Номер подтверждается через Telegram, документ и селфи видит только админ.</div>
 <div class="edit-field">
 <label data-i18n="kyc_label_fullname">ФИО (как в документе)</label>
 <input id="kycFullName" type="text" placeholder="Иванов Иван Иванович" data-i18n-placeholder="kyc_placeholder_fullname">
 </div>
 <div class="edit-field">
 <label data-i18n="kyc_label_phone">Номер телефона</label>
-<button type="button" id="kycPhoneBtn" class="steam-link-btn secondary" style="width:100%;" data-i18n="kyc_btn_phone">📱 Подтвердить номер через Telegram</button>
+<button type="button" id="kycPhoneBtn" class="steam-link-btn secondary u-w100" data-i18n="kyc_btn_phone">📱 Подтвердить номер через Telegram</button>
 <div class="kyc-phone-ok" id="kycPhoneOk" style="display:none;"></div>
 </div>
 <div class="edit-field">
@@ -1314,8 +1314,8 @@
 </div>
 <div class="shop-hint" style="margin:6px 0 10px;" data-i18n="kyc_photo_hint">Данные на фото должны читаться, лицо — совпадать с фото в документе.</div>
 <button type="button" id="kycSubmitBtn" class="welcome-btn primary" style="width:100%; margin-top:6px;" data-i18n="kyc_btn_submit">Отправить заявку</button>
-<div class="edit-status" id="kycStatus" style="margin-top:8px;"></div>
-<button type="button" id="kycCloseBtn" style="width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_cancel">Отмена</button>
+<div class="edit-status u-mt8" id="kycStatus"></div>
+<button class="btn-ghost-link" type="button" id="kycCloseBtn" data-i18n="btn_cancel">Отмена</button>
 </div>
 </div>
 
@@ -1357,8 +1357,8 @@
 <div class="buy-guarantee p2p-guarantee">🛡 <span data-i18n="p2p_guarantee">Деньги у гаранта: продавец получит их только после того, как ты получишь скин. Не передал за 24 ч — вернём.</span></div>
 <div class="topup-warning" data-i18n="p2p_skin_warning">⚠️ Переведи ровно эту сумму на реквизиты выше, приложи скриншот чека и нажми «Отправил, подтверждаю».</div>
 <button type="button" id="p2pSkinSentBtn" class="welcome-btn primary" style="width:100%; margin-top:12px;" disabled data-i18n="p2p_skin_sent_btn">Отправил, подтверждаю</button>
-<div class="edit-status" id="p2pSkinStatus" style="margin-top:8px;"></div>
-<button type="button" id="p2pSkinCloseBtn" style="width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_cancel">Отмена</button>
+<div class="edit-status u-mt8" id="p2pSkinStatus"></div>
+<button class="btn-ghost-link" type="button" id="p2pSkinCloseBtn" data-i18n="btn_cancel">Отмена</button>
 </div>
 </div>
 
@@ -1398,11 +1398,11 @@
 <div style="margin:-20px -20px 16px; padding:20px; border-radius:14px 14px 0 0; background-image:linear-gradient(180deg, rgba(10,7,16,0.55), rgba(10,7,16,0.92)), url('coins-scattered.png'); background-size:cover; background-position:center 25%;">
 <h2 data-i18n="section_withdraw" style="margin:0;">Вывод средств</h2>
 </div>
-<div class="shop-hint" style="margin-bottom:10px;" data-i18n="withdraw_hint">Минимум — <span id="withdrawMinLabel">50,000</span> сум. Комиссия за вывод — <span id="withdrawFeeLabel">2.5</span>%. Деньги переводятся вручную на указанные реквизиты в течение некоторого времени.</div>
+<div class="shop-hint u-mb10" data-i18n="withdraw_hint">Минимум — <span id="withdrawMinLabel">50,000</span> сум. Комиссия за вывод — <span id="withdrawFeeLabel">2.5</span>%. Деньги переводятся вручную на указанные реквизиты в течение некоторого времени.</div>
 <div class="edit-field">
 <label for="wAmount" data-i18n="label_amount_sum">Сумма, сум</label>
 <input id="wAmount" type="number" min="1" placeholder="50000">
-<div class="shop-hint" id="withdrawPayoutPreview" style="margin-top:6px;"></div>
+<div class="shop-hint u-mt6" id="withdrawPayoutPreview"></div>
 </div>
 <div class="edit-field" id="withdrawCardField">
 <label for="wDetails" data-i18n="label_card_uzcard_humo">Карта Uzcard/Humo</label>
@@ -1461,13 +1461,13 @@
 <div class="edit-overlay" id="tradeMakeOverlay" style="z-index:600;">
 <div class="edit-sheet">
 <h2 style="margin:0 0 6px;" data-i18n="trade_make_title">🔄 Предложить обмен</h2>
-<div id="tradeMakeTargetInfo" class="shop-hint" style="margin-bottom:10px;"></div>
+<div id="tradeMakeTargetInfo" class="shop-hint u-mb10"></div>
 <div class="shop-hint" style="margin-bottom:6px;" data-i18n="trade_make_pick_hint">Выбери свой лот для обмена:</div>
 <div id="tradeMakeMySkins" style="max-height:35vh; overflow-y:auto;"></div>
 
 <div id="tradeMakeCashRow" style="display:none; margin-top:10px;">
 <div class="shop-hint" id="tradeMakeCashHint"></div>
-<div class="edit-field" style="margin-top:6px;">
+<div class="edit-field u-mt6">
 <label data-i18n="trade_make_label_cash">Доплата, сум</label>
 <input id="tradeMakeCashInput" type="number" min="0" placeholder="0">
 </div>
@@ -1481,15 +1481,15 @@
 </div>
 
 <button type="button" id="tradeMakeSendBtn" class="welcome-btn primary" style="width:100%; margin-top:10px;" disabled data-i18n="trade_make_btn_send">Отправить предложение</button>
-<div class="edit-status" id="tradeMakeStatus" style="margin-top:6px;"></div>
-<button type="button" id="tradeMakeCloseBtn" style="width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_close">Закрыть</button>
+<div class="edit-status u-mt6" id="tradeMakeStatus"></div>
+<button class="btn-ghost-link" type="button" id="tradeMakeCloseBtn" data-i18n="btn_close">Закрыть</button>
 </div>
 </div>
 
 <div class="edit-overlay" id="discountOverlay" style="z-index:600;">
 <div class="edit-sheet">
 <h2 style="margin:0 0 6px;" data-i18n="discount_title">🏷️ Скидка</h2>
-<div id="discountCurrentInfo" class="shop-hint" style="margin-bottom:10px;"></div>
+<div id="discountCurrentInfo" class="shop-hint u-mb10"></div>
 
 <div class="edit-field">
 <label data-i18n="discount_label_type">Тип скидки</label>
@@ -1513,8 +1513,8 @@
 <div class="shop-hint" id="discountCategoryHint" style="margin-top:14px;" data-i18n="discount_category_hint">Или применить сразу ко всем своим активным лотам этой же модели ({category}):</div>
 <button type="button" id="discountApplyCategoryBtn" class="steam-link-btn secondary" style="width:100%; margin-top:8px;" data-i18n="discount_btn_apply_category">Применить ко всей категории</button>
 
-<div class="edit-status" id="discountStatus" style="margin-top:8px;"></div>
-<button type="button" id="discountCloseBtn" style="width:100%; margin-top:10px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_close">Закрыть</button>
+<div class="edit-status u-mt8" id="discountStatus"></div>
+<button class="btn-ghost-link" type="button" id="discountCloseBtn" data-i18n="btn_close">Закрыть</button>
 </div>
 </div>
 
@@ -1527,14 +1527,14 @@
 <div id="tradeDetailsItem" style="display:flex; gap:10px; align-items:center; margin:10px 0; padding:10px; background:rgba(255,255,255,0.03); border-radius:10px;"></div>
 <div id="tradeDetailsPartiesLine" style="display:flex; align-items:center; justify-content:center; gap:10px; margin:14px 0; font-family:'Inter', sans-serif; font-size:12px; color:var(--silver);"></div>
 <div id="tradeDetailsTimeline" style="max-height:45vh; overflow-y:auto; padding:4px 2px;"></div>
-<button type="button" id="tradeDetailsCloseBtn" style="width:100%; margin-top:14px; background:none; border:none; color:var(--muted); padding:10px;">Закрыть</button>
+<button class="btn-ghost-link mt14" type="button" id="tradeDetailsCloseBtn">Закрыть</button>
 </div>
 </div>
 
 <div class="edit-overlay" id="disputeOverlay">
 <div class="edit-sheet" style="max-height:85vh; overflow-y:auto;">
 <h2 id="disputeTitle">Открыть спор</h2>
-<div class="shop-hint" id="disputeIntro" style="margin-bottom:12px;"></div>
+<div class="shop-hint u-mb12" id="disputeIntro"></div>
 <div class="edit-field">
 <label id="disputeReasonLabel"></label>
 <textarea id="disputeReason" rows="3" maxlength="1000"></textarea>
@@ -1569,7 +1569,7 @@
 <div class="edit-overlay" id="reviewOverlay" style="z-index:20;">
 <div class="edit-sheet">
 <h2 id="reviewTitle"></h2>
-<div class="shop-hint" id="reviewHint" style="margin-bottom:12px;"></div>
+<div class="shop-hint u-mb12" id="reviewHint"></div>
 <div class="rv-stars" id="reviewStars">
 <button type="button" data-star="1">★</button><button type="button" data-star="2">★</button><button type="button" data-star="3">★</button><button type="button" data-star="4">★</button><button type="button" data-star="5">★</button>
 </div>
@@ -1642,7 +1642,7 @@
 <div class="edit-overlay" id="historyOverlay">
 <div class="edit-sheet" style="max-height:80vh; overflow-y:auto;">
 <h2 data-i18n="history_title">История операций</h2>
-<div id="historyList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+<div id="historyList"><div class="skins-empty skins-empty-sm" data-i18n="loading">Загрузка...</div></div>
 <div class="edit-actions">
 <button type="button" id="historyCloseBtn" data-i18n="btn_cancel">Закрыть</button>
 </div>
@@ -1660,6 +1660,7 @@
 <option value="new" data-i18n="sort_new">Сначала новые</option>
 <option value="price_asc" data-i18n="sort_price_asc">Цена: сначала дешёвые</option>
 <option value="price_desc" data-i18n="sort_price_desc">Цена: сначала дорогие</option>
+<option value="deal" data-i18n="sort_deal">Выгоднее к рынку</option>
 </select>
 </div>
 
@@ -1691,7 +1692,7 @@
 <div class="edit-field">
 <label data-i18n="filters_saved_title">Сохранённые фильтры</label>
 <div id="savedFiltersList" style="margin-bottom:6px;"></div>
-<button type="button" id="saveCurrentFilterBtn" class="steam-link-btn secondary" style="width:100%;" data-i18n="filters_btn_save_current">💾 Сохранить текущий фильтр</button>
+<button type="button" id="saveCurrentFilterBtn" class="steam-link-btn secondary u-w100" data-i18n="filters_btn_save_current">💾 Сохранить текущий фильтр</button>
 </div>
 
 <div class="edit-actions">
@@ -1966,7 +1967,7 @@
 <div id="legalText" class="legal-text">Загрузка...</div>
 <div id="legalAccept" class="legal-accept" style="display:none;">
 <label class="legal-check"><input type="checkbox" id="legalAcceptCheck"> <span id="legalAcceptLabel"></span></label>
-<button type="button" id="legalAcceptBtn" class="welcome-btn primary" style="width:100%;" disabled data-i18n="legal_accept_continue">Принять и продолжить</button>
+<button type="button" id="legalAcceptBtn" class="welcome-btn primary u-w100" disabled data-i18n="legal_accept_continue">Принять и продолжить</button>
 <div class="edit-status" id="legalAcceptStatus"></div>
 </div>
 </div>
@@ -1979,7 +1980,7 @@
 <button type="button" id="setsCloseBtn" class="buy-close-btn" style="position:static;">✕</button>
 </div>
 <div class="edit-status" id="setsStatus"></div>
-<div id="setsList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
+<div id="setsList"><div class="skins-empty skins-empty-sm" data-i18n="loading">Загрузка...</div></div>
 </div>
 </div>
 
@@ -2243,36 +2244,36 @@
 <div class="music-note" data-i18n="music_note">Превью пластинки с YouTube</div>
 <div class="music-frame" id="musicFrameBox"></div>
 <button type="button" id="musicOpenYoutube" class="steam-link-btn secondary" style="width:100%; margin-top:10px;" data-i18n="music_open_youtube">Не играет? Открыть на YouTube</button>
-<button type="button" id="musicCloseBtn" style="width:100%; margin-top:6px; background:none; border:none; color:var(--muted); padding:10px;" data-i18n="btn_close">Закрыть</button>
+<button class="btn-ghost-link mt6" type="button" id="musicCloseBtn" data-i18n="btn_close">Закрыть</button>
 </div>
 </div>
-<script src="app-core.js?v=14"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=5', en: 'app-i18n-en.js?v=5' };</script>
-<script src="app-i18n.js?v=130"></script>
+<script src="app-core.js?v=15"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=6', en: 'app-i18n-en.js?v=6' };</script>
+<script src="app-i18n.js?v=131"></script>
 <script src="app-navigation.js?v=25"></script>
 <script src="app-shop.js?v=38"></script>
 <script src="app-legal.js?v=3"></script>
-<script src="app-deals.js?v=23"></script>
-<script src="app-catalog.js?v=27"></script>
-<script src="app-cart.js?v=9"></script>
-<script src="app-filters.js?v=52"></script>
+<script src="app-deals.js?v=24"></script>
+<script src="app-catalog.js?v=28"></script>
+<script src="app-cart.js?v=10"></script>
+<script src="app-filters.js?v=53"></script>
 <script src="app-music.js?v=1"></script>
 <script src="app-steam.js?v=7"></script>
 <script src="app-topup.js?v=5"></script>
-<script src="app-history.js?v=9"></script>
+<script src="app-history.js?v=10"></script>
 <script src="app-referral.js?v=8"></script>
 <script src="app-withdraw.js?v=30"></script>
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
-<script>window.DG_ADMIN_SRC = 'app-admin.js?v=27';</script>
+<script>window.DG_ADMIN_SRC = 'app-admin.js?v=28';</script>
 <!-- 3D-просмотрщик (210 КБ) грузится после открытия витрины — ensure3DScript в app-navigation.js. -->
 <script>window.DG_3D_SRC = 'app-3d.js?v=104';</script>
-<script src="app-auctions.js?v=8"></script>
+<script src="app-auctions.js?v=9"></script>
 <script src="app-reviews.js?v=4"></script>
 <script src="app-notifications.js?v=3"></script>
 <script src="app-telegram.js?v=15"></script>
 <script src="app-raffle.js?v=11"></script>
 <script src="app-home.js?v=10"></script>
-<script src="app-support.js?v=2"></script>
+<script src="app-support.js?v=3"></script>
 <script src="app-pro.js?v=16"></script>
 <script>window.DG_R3D_SRC = 'app-render3d.js?v=4';</script>
 </body>

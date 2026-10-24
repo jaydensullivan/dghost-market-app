@@ -90,7 +90,7 @@ const items = cart.map(id => lastSkins.find(s => s.id === id)).filter(Boolean);
 
 const balanceEl = document.getElementById('cartBalanceHint');
 if (!items.length){
-list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.cart_empty}</div>`;
+list.innerHTML = `<div class="skins-empty skins-empty-sm">${dict.cart_empty}</div>`;
 document.getElementById('cartTotalAmount').textContent = formatCoins(0);
 document.getElementById('cartCheckoutBtn').disabled = true;
 balanceEl.textContent = '';

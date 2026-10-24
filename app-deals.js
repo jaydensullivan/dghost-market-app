@@ -305,7 +305,7 @@ const dict = I18N[currentLang] || I18N.ru;
 const dealsList = document.getElementById('dealsList');
 loadP2pStatus();
 if (!tg || !tg.initData){
-dealsList.innerHTML = `<div class="skins-empty" style="padding:16px 4px;">${dict.open_via_telegram}</div>`;
+dealsList.innerHTML = `<div class="skins-empty skins-empty-md">${dict.open_via_telegram}</div>`;
 return;
 }
 fetch(API_BASE + '/api/deals?init_data=' + encodeURIComponent(tg.initData))
@@ -313,14 +313,14 @@ fetch(API_BASE + '/api/deals?init_data=' + encodeURIComponent(tg.initData))
 .then(data => {
 lastDeals = (data && data.items) || [];
 if (!lastDeals.length){
-dealsList.innerHTML = `<div class="skins-empty" style="padding:16px 4px;">${dict.no_active_deals}</div>`;
+dealsList.innerHTML = `<div class="skins-empty skins-empty-md">${dict.no_active_deals}</div>`;
 return;
 }
 dealsList.innerHTML = lastDeals.map(dealCardHtml).join('');
 lastDeals.forEach(deal => loadDealTimelineInline(null, deal.id));
 })
 .catch(() => {
-dealsList.innerHTML = '<div class="skins-empty" style="padding:16px 4px;">' + (I18N[currentLang] || I18N.ru).deals_load_failed + '</div>';
+dealsList.innerHTML = '<div class="skins-empty skins-empty-md">' + (I18N[currentLang] || I18N.ru).deals_load_failed + '</div>';
 });
 }
 
@@ -392,13 +392,13 @@ fetch(API_BASE + '/api/trade_offers?init_data=' + encodeURIComponent(tg.initData
 const items = (data && data.items) || [];
 const active = items.filter(o => o.status !== 'declined' && o.status !== 'cancelled' && o.status !== 'expired');
 if (!active.length){
-el.innerHTML = `<div class="skins-empty" style="padding:16px 4px;">${dict.trade_none}</div>`;
+el.innerHTML = `<div class="skins-empty skins-empty-md">${dict.trade_none}</div>`;
 return;
 }
 el.innerHTML = active.map(tradeOfferCardHtml).join('');
 })
 .catch(() => {
-el.innerHTML = `<div class="skins-empty" style="padding:16px 4px;">${dict.load_failed}</div>`;
+el.innerHTML = `<div class="skins-empty skins-empty-md">${dict.load_failed}</div>`;
 });
 }
 
