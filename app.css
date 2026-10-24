@@ -26,7 +26,7 @@ body.theme-light{
 --cta-gradient:linear-gradient(135deg, #7B2CFF, #FF2BD6);
 --red:#7B2CFF;
 --red-glow:#7c22c9;
---red-dim:#ece1fb;
+--red-dim:#dccdf3;
 --text:#241f2b;
 --muted:#6b5d78;
 --silver:#241f2b;
@@ -4961,3 +4961,40 @@ background:radial-gradient(ellipse at 50% 55%, var(--rarity-glow), transparent 6
 .skin-market .trader-badge{ flex:none; white-space:nowrap; }
 .skin-hot-badge{ position:absolute; left:5px; bottom:5px; display:flex; align-items:center; gap:3px; padding:3px 8px; border-radius:7px; font-size:11px; font-weight:800; color:#fff; background:linear-gradient(90deg, #ff6a00, #ee0979); box-shadow:0 0 10px rgba(238,9,121,0.35); }
 body.layout-compact #skinsList .skin-hot-badge{ display:none; }
+
+/* ---------- Светлая схема Telegram: доработки ----------
+   Тёмная картинка фона давала серый «мутный» фон; у тёмных по задумке
+   блоков (герой профиля, баланс, шапка лота) текст брался из светлой
+   палитры — тёмный на тёмном. Такие блоки оставляем тёмными и даём им
+   свою светлую палитру текста; остальное — светлые подложки и зелёный
+   потемнее, чтобы читался на белом. */
+body.theme-light .princess-bg{ opacity:0.06; }
+body.theme-light .brand-tr .balance-pill{ background:rgba(255,255,255,0.96); box-shadow:0 2px 10px rgba(60,20,110,0.08); }
+body.theme-light .bottom-nav{ background:rgba(255,255,255,0.96); }
+body.theme-light .back-btn{ background:#fff; }
+body.theme-light .market-price-box{ background:#fff; border-color:var(--red-dim); }
+body.theme-light .pf-hero,
+body.theme-light .pf-balance,
+body.theme-light .buy-hero,
+body.theme-light .promo-slide{ --text:#F2F0F5; --silver:#F2F0F5; --muted:#cbbfdc; color:var(--text); }
+body.theme-light .pf-balance{ background:linear-gradient(135deg, #3b1d6e, #160f26); }
+body.theme-light .market-price-box .mp-diff.cheaper,
+body.theme-light .mp-row-diff.cheaper,
+body.theme-light .mp-spark-change.down,
+body.theme-light .pf-status.ok,
+body.theme-light .raffle-in,
+body.theme-light .buy-guide-link,
+body.theme-light .viewer3d-exact,
+body.theme-light .skin-price-off{ color:#15803d; }
+body.theme-light .trader-badge.below,
+body.theme-light .buy-market-badge.cheaper{ color:#15803d; background:rgba(22,163,74,0.10); border-color:rgba(22,163,74,0.35); }
+body.theme-light .trader-badge.above,
+body.theme-light .mp-spark-change.up{ color:#b45309; }
+body.theme-light .trader-badge.hot{ color:#fff; background:linear-gradient(90deg, #ff6a00, #ee0979); border-color:transparent; }
+body.theme-light .buy-hero .buy-market-badge.cheaper{ color:#4ade80; background:rgba(46,204,113,0.16); border-color:rgba(74,222,128,0.35); }
+body.theme-light .wl-select,
+body.theme-light .edit-field input,
+body.theme-light .edit-field textarea{ background:#fff; }
+
+/* Выпадающие списки фильтров — как поля ввода, а не системные мелкие. */
+#filtersOverlay select{ width:100%; padding:10px 8px; border-radius:8px; border:1px solid var(--red-dim); background:var(--surface); color:var(--text); font-family:'Inter', sans-serif; font-size:14px; }

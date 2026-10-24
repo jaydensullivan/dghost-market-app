@@ -289,6 +289,8 @@ currentTheme = id;
 document.documentElement.setAttribute('data-theme', id);
 storageSet('dg_theme', id);
 renderThemeSwitch();
+// Шапка Telegram — в цвет фона новой темы.
+if (typeof applyTelegramChrome === 'function') applyTelegramChrome();
 }
 
 function applyCardView(view){
