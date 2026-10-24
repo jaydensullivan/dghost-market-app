@@ -4375,40 +4375,52 @@ update3DButton(pendingBuySkin);
 // (float, паттерн, наклейки) с двух сторон и шлёт боту: тот меняет
 // картинку поста в канале на «осмотр» с двумя ракурсами, а карточка
 // лота на планшете и компьютере показывает их миниатюрами. Один раз на
-// лот (бот запоминает angles_at) и не больше трёх лотов за запуск, чтобы
-// не нагружать телефон.
+// лот (бот запоминает angles_at), до трёх попыток и не больше трёх лотов
+// за запуск, чтобы не нагружать телефон.
 const LOT_ANGLES_PER_RUN = 3;
-const LOT_ANGLES_TRIED_KEY = 'dghost_lot_angles_tried';
-const lotAnglesTried = new Set();
+// Попыток на лот за все запуски: сбой (телефон не потянул, сеть) — пробуем
+// снова при следующем открытии, но не бесконечно.
+const LOT_ANGLES_MAX_TRIES = 3;
+const LOT_ANGLES_TRIES_KEY = 'dghost_lot_angles_tries';
+const lotAnglesThisRun = new Set();
 let lotAnglesBusy = false;
 
-function lotAnglesTriedStored(){
-try { return JSON.parse(localStorage.getItem(LOT_ANGLES_TRIED_KEY) || '[]'); } catch (e) { return []; }
+function lotAnglesTries(){
+try { return JSON.parse(localStorage.getItem(LOT_ANGLES_TRIES_KEY) || '{}') || {}; } catch (e) { return {}; }
 }
 
-function rememberLotAnglesTried(id){
-lotAnglesTried.add(id);
+function setLotAnglesTries(id, count){
 try {
-const list = lotAnglesTriedStored().filter(x => x !== id).concat(id).slice(-200);
-localStorage.setItem(LOT_ANGLES_TRIED_KEY, JSON.stringify(list));
+const tries = lotAnglesTries();
+tries[id] = count;
+const ids = Object.keys(tries);
+if (ids.length > 200) ids.slice(0, ids.length - 200).forEach(k => { delete tries[k]; });
+localStorage.setItem(LOT_ANGLES_TRIES_KEY, JSON.stringify(tries));
 } catch (e) {}
 }
 
 async function uploadOwnLotAngles(skins){
 if (lotAnglesBusy || !tg || !tg.initData || !currentUserId || !Array.isArray(skins)) return;
 if (get3DMode() === 'off') return;
-const stored = new Set(lotAnglesTriedStored());
+const tries = lotAnglesTries();
 const todo = skins.filter(s => s && s.seller_id === currentUserId && !s.angles_at
-&& !lotAnglesTried.has(s.id) && !stored.has(s.id))
-.slice(0, Math.max(0, LOT_ANGLES_PER_RUN - lotAnglesTried.size));
+&& !lotAnglesThisRun.has(s.id) && (tries[s.id] || 0) < LOT_ANGLES_MAX_TRIES)
+.slice(0, Math.max(0, LOT_ANGLES_PER_RUN - lotAnglesThisRun.size));
 if (!todo.length) return;
 lotAnglesBusy = true;
 try {
 const [map, paintMap] = await Promise.all([loadModelIndex(), loadPaintIndex()]);
 for (const skin of todo){
-rememberLotAnglesTried(skin.id);
+lotAnglesThisRun.add(skin.id);
 const entry = modelEntryForSkin(map, paintMap, skin);
-if (!entry || !entry.model) continue;
+if (!entry || !entry.model){
+// 3D этого скина нет — пробовать снова незачем.
+setLotAnglesTries(skin.id, LOT_ANGLES_MAX_TRIES);
+continue;
+}
+// Попытку записываем до рендера: если телефон закроет мини-апп
+// посреди него, она тоже засчитается.
+setLotAnglesTries(skin.id, (tries[skin.id] || 0) + 1);
 try {
 const shots = await render3DGif(entry, Number(skin.float_value) || 0, '', null, skin.pattern, 'angles', skin.stickers);
 const r = await fetch(API_BASE + '/api/skins/' + skin.id + '/angles', {
@@ -4416,9 +4428,13 @@ method: 'POST',
 headers: { 'Content-Type': 'text/plain' },
 body: JSON.stringify({ init_data: tg.initData, images: shots.map(bytesToBase64) }),
 });
-if (r.ok) skin.angles_at = 'sent';
+if (!r.ok) throw new Error('HTTP ' + r.status);
+skin.angles_at = 'sent';
+setLotAnglesTries(skin.id, LOT_ANGLES_MAX_TRIES);
 } catch (e) {
 console.warn('3D: ракурсы лота #' + skin.id + ' не вышли —', e);
+// Владельцу — почему не вышло (телефон, модель, сеть).
+if (typeof reportClientError === 'function') reportClientError('lot_angles', '#' + skin.id + ' ' + (skin.title || '') + ': ' + String((e && e.message) || e).slice(0, 200));
 }
 }
 } catch (e) {
