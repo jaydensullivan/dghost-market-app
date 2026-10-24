@@ -379,13 +379,15 @@ const inCart = cart.includes(skin.id);
 
 const CART_ICON = '<svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-cart"/></svg>';
 
-// Свой лот — «Управлять»; чужой — корзина + «Купить».
+// Свой лот — «Управлять»; чужой — «Купить» + «Торг» (корзина — значком на фото).
 const actionBtn = isOwn
 ? `<button class="skin-action own" data-open="${skin.id}" type="button">${(I18N[currentLang] || I18N.ru).btn_manage}</button>`
 : `<div class="skin-action-row">
-<button class="skin-cart-btn${inCart ? ' in-cart' : ''}" data-cart-toggle="${skin.id}" type="button" aria-label="${escapeHtml((I18N[currentLang] || I18N.ru).cart_aria)}">${CART_ICON}</button>
 <button class="skin-action" data-buy="${skin.id}" type="button">${(I18N[currentLang] || I18N.ru).btn_buy}</button>
+<button class="skin-action ghost" data-bargain="${skin.id}" type="button">${(I18N[currentLang] || I18N.ru).btn_bargain}</button>
 </div>`;
+const cartBtn = isOwn ? ''
+: `<button class="skin-cart-btn${inCart ? ' in-cart' : ''}" data-cart-toggle="${skin.id}" type="button" aria-label="${escapeHtml((I18N[currentLang] || I18N.ru).cart_aria)}">${CART_ICON}</button>`;
 
 const favBtn = isOwn ? ''
 : `<button type="button" class="skin-fav${isFavSkin(skin) ? ' on' : ''}" data-fav="${skin.id}" aria-label="${escapeHtml((I18N[currentLang] || I18N.ru).fav_aria || 'Хочу')}"><svg class="gi" width="18" height="18" aria-hidden="true"><use href="#gi-heart"/></svg></button>`;
@@ -405,25 +407,41 @@ const title = skin.stattrak
 
 const priceHtml = skin.original_price
 ? `<div class="skin-price has-discount"><span class="skin-price-old">${formatCoins(skin.original_price)}</span><span class="skin-price-now">${formatCoins(skin.price)}</span> <span class="skin-price-off">-${skin.discount_type === 'percent' ? skin.discount_value + '%' : formatCoins(skin.discount_value)}</span></div>`
-: `<div class="skin-price">${formatCoins(skin.price)}</div>`;
+: `<div class="skin-price${String(Math.round(skin.price)).length >= 9 ? ' long' : ''}">${formatCoins(skin.price)}</div>`;
 
-// Бейдж «Трейдер»: только если рыночная цена уже пришла в данных лота
-// (market_price_uzs / market_price). Иначе бейдж не рисуется.
+// Строка «Рынок X» с чипом «−N%» (как на GamerPay): только если рыночная
+// цена уже пришла в данных лота (market_price_uzs / market_price).
 let traderBadge = '';
+let marketLine = '';
 const marketPrice = Number(skin.market_price_uzs || skin.market_price) || 0;
 if (marketPrice > 0 && skin.price > 0){
 const pct = Math.round((skin.price / marketPrice - 1) * 100);
 // «Дешевле рынка» — всем; «дороже рынка» — только продавцу на его лоте
 // (покупателей это отпугивает, а продавцу — подсказка снизить цену).
 const ownLot = currentUserId && skin.seller_id === currentUserId;
-if (pct <= -TRADER_BADGE_MIN_PCT || (ownLot && pct >= TRADER_BADGE_MIN_PCT)){
 const d = I18N[currentLang] || I18N.ru;
+if (pct <= 0 || ownLot){
+marketLine = `<span class="skin-market-price">${d.card_market} ${formatCoins(marketPrice)}</span>`;
+}
+if (pct <= -TRADER_BADGE_MIN_PCT || (ownLot && pct >= TRADER_BADGE_MIN_PCT)){
 // От −10% к рынку — «Горячее»: яркая плашка, такие лоты разбирают первыми.
 const hot = pct <= -HOT_DEAL_PCT;
-const label = hot ? d.trader_hot : (pct < 0 ? d.trader_below : d.trader_above);
+// Рядом с ценой рынка хватает короткого «−6%»; «Горячее» — словом.
+const label = hot ? d.trader_hot : (pct < 0 ? '−{p}%' : '+{p}%');
 traderBadge = `<div class="trader-badge ${pct < 0 ? 'below' : 'above'}${hot ? ' hot' : ''}">${pct < 0 ? FIRE_ICON : ''}${label.replace('{p}', Math.abs(pct))}</div>`;
 }
 }
+const marketHtml = (marketLine || traderBadge)
+? `<div class="skin-market">${marketLine}${traderBadge}</div>`
+: '';
+
+// Износ цветной точкой + float справа — одной строкой под названием.
+const metaFloat = (skin.float_value !== null && skin.float_value !== undefined)
+? `<span class="skin-meta-float">${Number(skin.float_value).toFixed(4)}</span>`
+: '';
+const metaHtml = (skin.wear || metaFloat)
+? `<div class="skin-meta">${skin.wear ? `<span class="wear-dot wear-${escapeHtml(String(skin.wear).toLowerCase())}"></span>${escapeHtml(WEAR_LABELS[skin.wear] || skin.wear)}` : ''}${metaFloat}</div>`
+: '';
 
 // Float и наклейки видны только в шаблонах «Компакт»/«Крупная» (см. app.css).
 const floatLine = (skin.float_value !== null && skin.float_value !== undefined)
@@ -440,13 +458,15 @@ return `
 ${photo}
 ${(wearBadge || stBadge) ? `<div class="skin-badges">${wearBadge}${stBadge}</div>` : ''}
 ${favBtn}
+${cartBtn}
 </div>
 ${weaponType}
 <div class="skin-title">${title}</div>
+${metaHtml}
 ${floatLine}
 ${stickerStrip}
 ${priceHtml}
-${traderBadge}
+${marketHtml}
 ${actionBtn}
 </div>`;
 }
@@ -660,6 +680,23 @@ const openBtn = e.target.closest('[data-open]');
 if (openBtn){
 const skin = lastSkins.find(s => String(s.id) === openBtn.dataset.open);
 if (skin) openBuySheet(skin);
+return;
+}
+const bargainBtn = e.target.closest('[data-bargain]');
+if (bargainBtn){
+const skin = lastSkins.find(s => String(s.id) === bargainBtn.dataset.bargain);
+if (!skin) return;
+openBuySheet(skin);
+// «Торг» — сразу поле своей цены в окне лота.
+if (buyMakeOfferBtn.style.display !== 'none'){
+buyMakeOfferBtn.click();
+// Поле цены — в самом низу окна, над панелью кнопок; цена рынка
+// догружается и сдвигает его, поэтому докручиваем ещё раз.
+const sheet = buyOfferInput.closest('.buy-sheet');
+const toBottom = () => { if (sheet) sheet.scrollTop = sheet.scrollHeight; };
+toBottom();
+setTimeout(toBottom, 700);
+}
 return;
 }
 const cartBtn = e.target.closest('[data-cart-toggle]');
