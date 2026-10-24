@@ -162,18 +162,14 @@ const photo = deal.photo_url
 ? `<img class="deal-photo" src="${escapeHtml(deal.photo_url)}" alt="">`
 : `<div class="deal-photo" style="display:flex;align-items:center;justify-content:center;">${TARGET_ICON}</div>`;
 
-let statusHtml = '';
 // Блоки под прогрессом: последний шаг, памятка, подсказки.
 let extraHtml = '';
 let actionHtml = '';
 
 if (deal.role === 'selling'){
 if (deal.sent_at && deal.confirmed_at){
-statusHtml = `<div class="deal-status sent">${dict.status_hold_running}</div>`;
 } else if (deal.sent_at){
-statusHtml = `<div class="deal-status sent">${dict.status_waiting_buyer_confirm}</div>`;
 } else {
-statusHtml = `<div class="deal-status pending">${dict.status_need_to_send}</div>`;
 if (deal.trade_requested_at){
 // Покупатель уже прислал обмен с этим предметом — продавцу только
 // принять его в Steam и подтвердить в Steam Guard.
@@ -201,19 +197,15 @@ actionHtml += `<button class="deal-action secondary" data-inspect-skin="${deal.i
 }
 } else {
 if (deal.confirmed_at){
-statusHtml = `<div class="deal-status done">${dict.status_confirmed}</div>`;
 actionHtml = deal.my_review
 ? `<div class="deal-my-review">${dict.rv_yours}: ${'★'.repeat(deal.my_review.rating)}${'☆'.repeat(5 - deal.my_review.rating)}</div>`
 : `<button class="deal-action" data-rate-seller="${deal.id}" type="button">${dict.btn_rate_seller}</button>`;
 } else if (deal.disputed_at){
-statusHtml = `<div class="deal-status pending" style="color:#e0555a;">${dict.status_disputed}</div>`;
 actionHtml = `<button class="deal-action secondary" data-add-evidence="${deal.id}" type="button">${dict.btn_add_evidence}</button>`;
 } else if (deal.sent_at){
-statusHtml = `<div class="deal-status sent">${dict.status_seller_sent}</div>`;
 actionHtml = `<button class="deal-action" data-mark-received="${deal.id}" type="button">${dict.btn_received}</button>
 <button class="deal-action secondary" data-mark-disputed="${deal.id}" type="button">${dict.btn_not_received}</button>`;
 } else {
-statusHtml = `<div class="deal-status pending">${dict.status_waiting_send}</div>`;
 if (deal.request_trade_url){
 if (deal.trade_requested_at){
 actionHtml = `<button class="deal-action secondary" data-request-trade="${deal.id}" type="button">${dict.btn_request_again}</button>`;
@@ -230,22 +222,10 @@ ${tradeRequestOpened.has(deal.id) ? `<button class="deal-action" data-request-do
 }
 }
 
-const countdownLabel = deal.role === 'selling'
-? dict.countdown_credit
-: dict.countdown_hold;
-const countdownHtml = deal.release_at
-? `<div class="deal-meta">${countdownLabel}${formatDealCountdown(deal.release_at)}</div>`
-: '';
-
 const roleLabel = deal.role === 'selling' ? dict.role_selling : dict.role_buying;
 const counterpartyLabel = deal.role === 'selling' ? dict.detail_buyer : dict.detail_seller;
 
 const messageBtn = `<button class="deal-action secondary" data-relay="${deal.id}" type="button">${dict.btn_message}</button>`;
-
-const sellerLabel = deal.role === 'selling' ? (I18N[currentLang] || I18N.ru).trade_you : (I18N[currentLang] || I18N.ru).trade_seller;
-const buyerLabel = deal.role === 'buying' ? (I18N[currentLang] || I18N.ru).trade_you : (I18N[currentLang] || I18N.ru).trade_buyer;
-const isDone = !!deal.confirmed_at;
-const lineClass = isDone ? 'trade-party-line done' : 'trade-party-line';
 
 return `
 <div class="deal-card" style="flex-direction:column; align-items:stretch;">

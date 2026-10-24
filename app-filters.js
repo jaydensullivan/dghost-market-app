@@ -51,11 +51,6 @@ document.getElementById('inspectOverlay').classList.remove('show');
 
 // ---------------- Детали сделки (Trade Details) ----------------
 
-function getOrderStatusLabel(status){
-const dict = I18N[currentLang] || I18N.ru;
-return dict['order_status_' + status] || status;
-}
-
 function openTradeDetails(skinId){
 const deal = lastDeals.find(d => d.id === skinId);
 if (!deal || !tg || !tg.initData) return;

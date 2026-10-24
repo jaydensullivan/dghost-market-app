@@ -1475,7 +1475,6 @@ adminApiFetch('/api/admin/withdrawals/' + rejectBtn.dataset.wReject + '/reject',
 function loadAdminSettings(){
 adminApiFetch('/api/admin/settings')
 .then(data => {
-const parts = (data.topup_details || '').split(' ');
 document.getElementById('adminCardHolder').value = '';
 document.getElementById('adminCardNumber').value = data.topup_details || '';
 document.getElementById('adminPromoLimit').value = data.promo_limit || 0;
