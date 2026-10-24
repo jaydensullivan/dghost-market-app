@@ -3789,7 +3789,9 @@ ctx.fillText('DGHOSTMARKET', 12 * k, 18 * k);
 }
 
 // still: true — вместо GIF один кадр JPEG (SHARE_PHOTO);
-// 'transparent' — один кадр PNG без фона и подписи (сверка со Steam).
+// 'transparent' — один кадр PNG без фона и подписи (сверка со Steam);
+// 'angles' — два PNG без фона: предмет с одной и с другой стороны
+// (картинка поста в канале и миниатюры карточки лота).
 // still: 'video' — видео (MP4/WebM) вместо GIF (SHARE_VIDEO).
 async function render3DGif(entry, wear, title, onProgress, seed, still, stickers){
 const video = still === 'video';
@@ -3834,7 +3836,11 @@ if (/(^|\/)models\/cases\//.test(String(entry.model || ''))) await applyCaseDeca
 // у стандартного оружия.
 selectModelBody(object, false);
 scene.add(object);
-fitObjectToView(THREE, gltf.scene, camera);
+// Для ракурсов поста нож кладём горизонтально, как ствол: на широкой
+// картинке вертикальный нож получается мелким.
+const wasFlat = window.DGHOST_KNIFE_FLAT;
+if (still === 'angles') window.DGHOST_KNIFE_FLAT = true;
+try { fitObjectToView(THREE, gltf.scene, camera); } finally { window.DGHOST_KNIFE_FLAT = wasFlat; }
 if (glove) await applyGloveSkin(THREE, object, entry.skin);
 else if (painted) applySkinToModel(THREE, object, skin, wear, weapon, 'none', seed, stickerAtlas);
 // С наклейками — вид с той стороны, где они наклеены (дулом влево, как
@@ -3843,7 +3849,11 @@ else if (painted) applySkinToModel(THREE, object, skin, wear, weapon, 'none', se
 const side = glove ? 0 : stickerAtlas ? -Math.PI / 2 : Math.PI / 2;
 const tilt = glove ? 0.25 : stickerAtlas ? -0.3 : 0.3;
 // Кадр — по всем углам покачивания (у картинки — по её одному ракурсу).
-if (still !== 'transparent'){
+// Вторая сторона — поворот на пол-оборота, наклон зеркально.
+const otherSide = side + Math.PI - tilt;
+if (still === 'angles'){
+frameShareView(THREE, object, camera, [side + tilt, otherSide]);
+} else if (still !== 'transparent'){
 const swing = [];
 for (let i = 0; i < 16; i++) swing.push(side + 0.6 * Math.sin(i / 16 * Math.PI * 2));
 frameShareView(THREE, object, camera, still ? [side + tilt] : swing);
@@ -3854,6 +3864,18 @@ const out = document.createElement('canvas');
 out.width = W;
 out.height = H;
 const ctx = out.getContext('2d', { willReadFrequently: true });
+
+if (still === 'angles'){
+const shots = [];
+for (const angle of [side + tilt, otherSide]){
+object.rotation.y = angle;
+renderer.render(scene, camera);
+const png = await new Promise(resolve => glCanvas.toBlob(resolve, 'image/png'));
+if (!png) throw new Error('не получилось сохранить картинку');
+shots.push(new Uint8Array(await png.arrayBuffer()));
+}
+return shots;
+}
 
 if (still){
 // Тот же ракурс, что в середине покачивания GIF, чуть повёрнутый к камере.
@@ -4347,3 +4369,64 @@ if (typeof pendingBuySkin !== 'undefined' && pendingBuySkin
 && document.getElementById('buyOverlay') && document.getElementById('buyOverlay').classList.contains('show')){
 update3DButton(pendingBuySkin);
 }
+
+// ---------- Два ракурса своего лота ----------
+// Продавец выставил лот — его мини-апп в фоне снимает 3D этого предмета
+// (float, паттерн, наклейки) с двух сторон и шлёт боту: тот меняет
+// картинку поста в канале на «осмотр» с двумя ракурсами, а карточка
+// лота на планшете и компьютере показывает их миниатюрами. Один раз на
+// лот (бот запоминает angles_at) и не больше трёх лотов за запуск, чтобы
+// не нагружать телефон.
+const LOT_ANGLES_PER_RUN = 3;
+const LOT_ANGLES_TRIED_KEY = 'dghost_lot_angles_tried';
+const lotAnglesTried = new Set();
+let lotAnglesBusy = false;
+
+function lotAnglesTriedStored(){
+try { return JSON.parse(localStorage.getItem(LOT_ANGLES_TRIED_KEY) || '[]'); } catch (e) { return []; }
+}
+
+function rememberLotAnglesTried(id){
+lotAnglesTried.add(id);
+try {
+const list = lotAnglesTriedStored().filter(x => x !== id).concat(id).slice(-200);
+localStorage.setItem(LOT_ANGLES_TRIED_KEY, JSON.stringify(list));
+} catch (e) {}
+}
+
+async function uploadOwnLotAngles(skins){
+if (lotAnglesBusy || !tg || !tg.initData || !currentUserId || !Array.isArray(skins)) return;
+if (get3DMode() === 'off') return;
+const stored = new Set(lotAnglesTriedStored());
+const todo = skins.filter(s => s && s.seller_id === currentUserId && !s.angles_at
+&& !lotAnglesTried.has(s.id) && !stored.has(s.id))
+.slice(0, Math.max(0, LOT_ANGLES_PER_RUN - lotAnglesTried.size));
+if (!todo.length) return;
+lotAnglesBusy = true;
+try {
+const [map, paintMap] = await Promise.all([loadModelIndex(), loadPaintIndex()]);
+for (const skin of todo){
+rememberLotAnglesTried(skin.id);
+const entry = modelEntryForSkin(map, paintMap, skin);
+if (!entry || !entry.model) continue;
+try {
+const shots = await render3DGif(entry, Number(skin.float_value) || 0, '', null, skin.pattern, 'angles', skin.stickers);
+const r = await fetch(API_BASE + '/api/skins/' + skin.id + '/angles', {
+method: 'POST',
+headers: { 'Content-Type': 'text/plain' },
+body: JSON.stringify({ init_data: tg.initData, images: shots.map(bytesToBase64) }),
+});
+if (r.ok) skin.angles_at = 'sent';
+} catch (e) {
+console.warn('3D: ракурсы лота #' + skin.id + ' не вышли —', e);
+}
+}
+} catch (e) {
+console.warn('3D: ракурсы лотов —', e);
+} finally {
+lotAnglesBusy = false;
+}
+}
+
+// Лоты могли загрузиться раньше этого файла (он грузится отдельно).
+setTimeout(() => { if (typeof lastSkins !== 'undefined') uploadOwnLotAngles(lastSkins); }, 1500);

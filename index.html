@@ -10,7 +10,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=5"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=94">
+<link rel="stylesheet" href="app.css?v=95">
 </head>
 <body data-tab="shop">
 <!-- Значки интерфейса в едином объёмном стиле (gi-*): <svg class="gi"><use href="#gi-…"/></svg>. -->
@@ -1818,6 +1818,8 @@
 <div class="buy-subtitle" id="buySubtitle"></div>
 <div class="buy-market-badge" id="buyMarketBadge" hidden></div>
 </div>
+<!-- Планшет и компьютер (≥ 900px): карточка лота в две колонки, см. renderBuyWide. -->
+<div class="buy-wide" id="buyWide"></div>
 <!-- Продавец — сразу под названием: проверенный ли, сколько сделок и споров. -->
 <div id="sellerStatsBox" class="seller-stats-top" style="display:none;"></div>
 
@@ -2248,15 +2250,15 @@
 </div>
 </div>
 <script src="app-core.js?v=15"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=7', en: 'app-i18n-en.js?v=7' };</script>
-<script src="app-i18n.js?v=132"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=8', en: 'app-i18n-en.js?v=8' };</script>
+<script src="app-i18n.js?v=133"></script>
 <script src="app-navigation.js?v=25"></script>
 <script src="app-shop.js?v=38"></script>
 <script src="app-legal.js?v=3"></script>
 <script src="app-deals.js?v=24"></script>
-<script src="app-catalog.js?v=29"></script>
+<script src="app-catalog.js?v=30"></script>
 <script src="app-cart.js?v=10"></script>
-<script src="app-filters.js?v=53"></script>
+<script src="app-filters.js?v=54"></script>
 <script src="app-music.js?v=1"></script>
 <script src="app-steam.js?v=7"></script>
 <script src="app-topup.js?v=5"></script>
@@ -2266,7 +2268,7 @@
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
 <script>window.DG_ADMIN_SRC = 'app-admin.js?v=28';</script>
 <!-- 3D-просмотрщик (210 КБ) грузится после открытия витрины — ensure3DScript в app-navigation.js. -->
-<script>window.DG_3D_SRC = 'app-3d.js?v=104';</script>
+<script>window.DG_3D_SRC = 'app-3d.js?v=105';</script>
 <script src="app-auctions.js?v=9"></script>
 <script src="app-reviews.js?v=4"></script>
 <script src="app-notifications.js?v=3"></script>
