@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="app-web.js?v=4"></script>
+<script src="app-web.js?v=5"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
 <link rel="stylesheet" href="app.css?v=89">
 </head>
@@ -801,12 +801,6 @@
 <div id="adminP2pList"><div class="skins-empty" style="padding:16px 4px;" data-i18n="loading">Загрузка...</div></div>
 </div>
 
-<div class="profile-section admin-group" id="adminCryptoSection" data-group="requests" style="margin-top:10px; display:none;" data-view="requests">
-<div class="profile-section-title" data-i18n="admin_section_crypto">Крипта на ручной проверке</div>
-<div class="shop-hint" style="margin-bottom:8px;" data-i18n="admin_crypto_hint">Недоплата, переплата или блок AML у провайдера. Сверь поступление в кабинете 2328.io и реши здесь.</div>
-<div id="adminCryptoList"><div class="skins-empty" style="padding:12px 4px;" data-i18n="loading">Загрузка...</div></div>
-</div>
-
 <div class="profile-section admin-group" id="adminWithdrawalsSection" data-group="requests" style="margin-top:10px; display:none;" data-view="requests">
 <div class="profile-section-title" data-i18n="admin_section_withdrawals">Заявки на вывод</div>
 <div id="adminWithdrawalsList"><div class="skins-empty" style="padding:16px 4px;" data-i18n="loading">Загрузка...</div></div>
@@ -1102,29 +1096,18 @@
 <div style="font-size:12px; color:var(--muted); margin-bottom:4px;" data-i18n="admin_label_topup">Пополнение</div>
 <div class="admin-perm-chips">
 <label class="admin-perm-chip"><input type="checkbox" id="toggleTopupCard"> <span data-i18n="admin_method_p2p_card">П2П (карта)</span></label>
-<label class="admin-perm-chip" style="display:none;"><input type="checkbox" id="toggleTopupCrypto"> <span data-i18n="admin_method_crypto">Крипто</span></label>
-<label class="admin-perm-chip" style="display:none;"><input type="checkbox" id="toggleTopupStars"> ⭐ Stars</label>
 </div>
 <div style="font-size:12px; color:var(--muted); margin:10px 0 4px;" data-i18n="section_withdraw">Вывод</div>
 <div class="admin-perm-chips">
 <label class="admin-perm-chip"><input type="checkbox" id="toggleWithdrawCard"> <span data-i18n="admin_method_p2p_card">П2П (карта)</span></label>
-<label class="admin-perm-chip" style="display:none;"><input type="checkbox" id="toggleWithdrawCrypto"> <span data-i18n="admin_method_crypto">Крипто</span></label>
 </div>
 <div class="shop-hint" style="margin-top:8px;" data-i18n="admin_payment_methods_hint">Видно и настраивается только владельцу. Выключенный способ пропадает у клиента из выбора при пополнении/выводе.</div>
-<div class="edit-field" style="margin-top:10px; display:none;">
-<label for="adminStarsRate" data-i18n="admin_stars_rate_label">Курс: сум за 1 ★</label>
-<input id="adminStarsRate" type="number" min="1" placeholder="200">
-</div>
-<button type="button" id="adminSaveStarsRateBtn" class="steam-link-btn secondary" style="display:none;" data-i18n="admin_btn_save_rate">Сохранить курс</button>
-<div class="edit-status" id="adminStarsRateStatus"></div>
 <div style="font-size:12px; color:var(--muted); margin:14px 0 4px;" data-i18n="admin_direct_payment_title">Прямая оплата за лот</div>
 <div class="admin-perm-chips">
-<label class="admin-perm-chip" style="display:none;"><input type="checkbox" id="toggleDirectStarsPurchase"> ⭐ <span data-i18n="admin_direct_stars">Оплата лота напрямую через Stars</span></label>
-<label class="admin-perm-chip" style="display:none;"><input type="checkbox" id="toggleDirectCryptoPurchase"> 💳 <span data-i18n="admin_direct_crypto">Оплата лота напрямую криптой</span></label>
 <label class="admin-perm-chip"><input type="checkbox" id="toggleOcto"> 💳 <span data-i18n="admin_octo">Оплата картой через банк (Octo)</span> <span id="adminOctoState" class="shop-hint"></span></label>
 <label class="admin-perm-chip"><input type="checkbox" id="toggleDirectP2pPurchase"> 🏦 <span data-i18n="admin_direct_p2p">Оплата лота напрямую П2П (карта, ручное подтверждение)</span></label>
 </div>
-<div class="shop-hint" style="margin-top:8px;" data-i18n="admin_direct_payment_hint">Покупатель всегда сам выбирает способ оплаты на карточке лота — Stars, крипта или П2П. Здесь включаются/выключаются конкретные варианты; оплаты с баланса у покупателя больше нет.</div>
+<div class="shop-hint" style="margin-top:8px;" data-i18n="admin_direct_payment_hint">Покупатель платит за лот картой (П2П). Оплата Stars и криптой убрана; оплаты с баланса у покупателя больше нет.</div>
 </div>
 
 <div class="profile-section admin-group" id="adminPromoSection" data-group="settings" style="margin-top:10px; display:none;" data-view="settings">
@@ -2264,8 +2247,8 @@
 </div>
 </div>
 <script src="app-core.js?v=14"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=2', en: 'app-i18n-en.js?v=2' };</script>
-<script src="app-i18n.js?v=127"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=3', en: 'app-i18n-en.js?v=3' };</script>
+<script src="app-i18n.js?v=128"></script>
 <script src="app-navigation.js?v=25"></script>
 <script src="app-shop.js?v=38"></script>
 <script src="app-legal.js?v=3"></script>
@@ -2276,13 +2259,13 @@
 <script src="app-music.js?v=1"></script>
 <script src="app-steam.js?v=7"></script>
 <script src="app-topup.js?v=5"></script>
-<script src="app-history.js?v=8"></script>
+<script src="app-history.js?v=9"></script>
 <script src="app-referral.js?v=8"></script>
 <script src="app-withdraw.js?v=29"></script>
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
-<script>window.DG_ADMIN_SRC = 'app-admin.js?v=26';</script>
+<script>window.DG_ADMIN_SRC = 'app-admin.js?v=27';</script>
 <!-- 3D-просмотрщик (210 КБ) грузится после открытия витрины — ensure3DScript в app-navigation.js. -->
-<script>window.DG_3D_SRC = 'app-3d.js?v=103';</script>
+<script>window.DG_3D_SRC = 'app-3d.js?v=104';</script>
 <script src="app-auctions.js?v=8"></script>
 <script src="app-reviews.js?v=4"></script>
 <script src="app-notifications.js?v=3"></script>
