@@ -413,6 +413,7 @@ const priceHtml = skin.original_price
 // цена уже пришла в данных лота (market_price_uzs / market_price).
 let traderBadge = '';
 let marketLine = '';
+let hotBadge = '';
 const marketPrice = Number(skin.market_price_uzs || skin.market_price) || 0;
 if (marketPrice > 0 && skin.price > 0){
 const pct = Math.round((skin.price / marketPrice - 1) * 100);
@@ -426,8 +427,10 @@ marketLine = `<span class="skin-market-price">${d.card_market} ${formatCoins(mar
 if (pct <= -TRADER_BADGE_MIN_PCT || (ownLot && pct >= TRADER_BADGE_MIN_PCT)){
 // От −10% к рынку — «Горячее»: яркая плашка, такие лоты разбирают первыми.
 const hot = pct <= -HOT_DEAL_PCT;
-// Рядом с ценой рынка хватает короткого «−6%»; «Горячее» — словом.
-const label = hot ? d.trader_hot : (pct < 0 ? '−{p}%' : '+{p}%');
+if (hot) hotBadge = `<div class="skin-hot-badge">${FIRE_ICON}${d.hot_badge}</div>`;
+// Рядом с ценой рынка — короткий чип «−6%»; «Горячее» (от −10%) — тот же
+// чип, только яркий: строка «Рынок» всегда в одну строку, карточки ровные.
+const label = pct < 0 ? '−{p}%' : '+{p}%';
 traderBadge = `<div class="trader-badge ${pct < 0 ? 'below' : 'above'}${hot ? ' hot' : ''}">${pct < 0 ? FIRE_ICON : ''}${label.replace('{p}', Math.abs(pct))}</div>`;
 }
 }
@@ -459,6 +462,7 @@ ${photo}
 ${(wearBadge || stBadge) ? `<div class="skin-badges">${wearBadge}${stBadge}</div>` : ''}
 ${favBtn}
 ${cartBtn}
+${hotBadge}
 </div>
 ${weaponType}
 <div class="skin-title">${title}</div>
