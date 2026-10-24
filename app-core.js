@@ -1,12 +1,23 @@
 const tg = window.Telegram ? window.Telegram.WebApp : null;
 
+// Шапка Telegram (и её кнопки ✕ / ⋯) — в цвет фона мини-аппа, а не
+// чисто чёрная: на #000000 новый Telegram для iOS после окон и
+// возврата в мини-апп рисовал кнопки белыми кружками. Цвет повторно
+// ставим после событий, на которых Telegram его сбрасывает.
 function applyTelegramTheme(){
 const isLight = tg && tg.colorScheme === 'light';
 document.body.classList.toggle('theme-light', isLight);
-if (tg){
-try { tg.setBackgroundColor(isLight ? '#f6f3fa' : '#000000'); } catch(e) {}
-try { tg.setHeaderColor(isLight ? '#f6f3fa' : '#000000'); } catch(e) {}
+applyTelegramChrome();
 }
+
+function applyTelegramChrome(){
+if (!tg) return;
+const isLight = tg.colorScheme === 'light';
+const bg = (getComputedStyle(document.body).getPropertyValue('--bg') || '').trim();
+const color = /^#[0-9a-f]{6}$/i.test(bg) ? bg : (isLight ? '#f6f3fa' : '#0b0811');
+try { tg.setBackgroundColor(color); } catch(e) {}
+try { tg.setHeaderColor(color); } catch(e) {}
+try { if (tg.setBottomBarColor) tg.setBottomBarColor(color); } catch(e) {}
 }
 
 if (tg) {
@@ -14,6 +25,9 @@ tg.ready();
 tg.expand();
 applyTelegramTheme();
 tg.onEvent('themeChanged', applyTelegramTheme);
+['activated', 'popupClosed', 'fullscreenChanged', 'viewportChanged'].forEach(name => {
+try { tg.onEvent(name, applyTelegramChrome); } catch(e) {}
+});
 }
 
 // Объёмные значки gi-* есть только в index.html (спрайт); во встраиваемом
