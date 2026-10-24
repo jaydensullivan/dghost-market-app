@@ -615,6 +615,7 @@ lastSkins = Array.isArray(list) ? list : [];
 applyFiltersAndRender();
 if (typeof restoreCart === 'function') restoreCart();
 if (typeof renderMyLots === 'function') renderMyLots();
+if (typeof uploadOwnLotAngles === 'function') uploadOwnLotAngles(lastSkins);
 if (typeof renderPromo === 'function') renderPromo();
 if (deepLinkSkinId){
 const targetId = deepLinkSkinId;

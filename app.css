@@ -4892,3 +4892,60 @@ body.layout-large #skinsList .skin-meta{ font-size:12px; margin-top:4px; }
 body.layout-large #skinsList .skin-badge.wear ~ .skin-badge.stattrak{ top:8px; }
 .skin-price.long{ font-size:14px; }
 .skin-price.has-discount{ font-size:14px; }
+
+/* ---------- Карточка лота на планшете и компьютере (≥ 900px) ----------
+   renderBuyWide (app-filters.js): слева фото и ракурсы, справа float на
+   шкале износа, паттерн, наклейки, цена и таблица лота. */
+.buy-wide{ display:none; }
+@media (min-width:900px){
+.buy-overlay{ align-items:center; }
+.buy-sheet{ max-width:1100px; max-height:calc(94vh - 84px); border-radius:18px 18px 0 0; }
+.buy-sticky-bar{ max-width:1100px; flex-wrap:nowrap; align-items:center; border-radius:0 0 18px 18px; }
+.buy-sticky-bar #buyMakeOfferBtn, .buy-sticky-bar #buySendOfferBtn, .buy-sticky-bar #buyMakeTradeBtn,
+.buy-sticky-bar .buy-main-btn{ flex:1 1 0; }
+/* Цена и «Купить» — в карточке справа, внизу только остальные действия. */
+.buy-sticky-bar #buyOpenPayBtn, .buy-sticky-bar #buyGuarantee{ display:none !important; }
+.buy-sheet #buyHero{ display:none; }
+.buy-wide{ display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:18px; padding:22px 24px 6px; }
+.bw-head{ grid-column:1 / -1; padding-right:48px; }
+.bw-head h2{ margin:0; font-size:30px; line-height:1.15; font-weight:800; color:var(--text); }
+.bw-sep{ color:var(--red); font-weight:400; }
+.bw-paint{ color:var(--red-glow); }
+.bw-chips{ display:flex; gap:8px; margin-top:10px; }
+.bw-chip{ padding:4px 12px; border-radius:8px; font-size:13px; font-weight:700; color:#fff; background:var(--chip, var(--red)); }
+.bw-chip.muted{ background:rgba(255,255,255,0.08); color:var(--text); }
+.bw-gallery{ display:flex; gap:10px; min-width:0; }
+.bw-main{ flex:1; min-width:0; height:min(52vh, 460px); border-radius:14px; border:1px solid var(--red-dim); display:flex; align-items:center; justify-content:center;
+background:radial-gradient(ellipse at 50% 55%, var(--rarity-glow), transparent 65%), linear-gradient(180deg,#1a1230,#0c0816); overflow:hidden; }
+.bw-main img{ width:92%; height:92%; object-fit:contain; filter:drop-shadow(0 18px 30px rgba(0,0,0,0.55)); }
+.bw-thumbs{ display:flex; flex-direction:column; gap:8px; width:84px; flex:none; }
+.bw-thumb{ padding:4px; border-radius:10px; border:1px solid var(--red-dim); background:rgba(255,255,255,0.03); cursor:pointer; aspect-ratio:4 / 3; }
+.bw-thumb.on{ border-color:var(--red); box-shadow:0 0 0 2px rgba(168,85,247,0.25); }
+.bw-thumb img{ width:100%; height:100%; object-fit:contain; }
+.bw-side{ display:flex; flex-direction:column; gap:12px; min-width:0; }
+.bw-row{ display:flex; gap:10px; padding:12px 14px; border-radius:12px; border:1px solid var(--red-dim); background:rgba(255,255,255,0.02); }
+.bw-cell{ flex:1; min-width:0; }
+.bw-float{ flex:1; }
+.bw-label{ font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); margin-bottom:4px; }
+.bw-value{ font-size:16px; font-weight:700; color:var(--text); overflow-wrap:anywhere; }
+.bw-value.mono{ font-family:'JetBrains Mono', monospace; font-size:15px; }
+.bw-bar{ position:relative; height:6px; margin:10px 0 4px; border-radius:3px; background:linear-gradient(90deg,#4ade80 0%,#a3e635 7%,#facc15 15%,#fb923c 38%,#ef4444 45%,#b91c1c 100%); }
+.bw-bar i{ position:absolute; top:-5px; width:0; height:0; margin-left:-6px; border-left:6px solid transparent; border-right:6px solid transparent; border-top:7px solid #fff; }
+.bw-zones{ position:relative; height:14px; font-size:10px; font-weight:600; color:var(--muted); }
+.bw-zones span{ position:absolute; top:0; text-align:center; white-space:nowrap; border-left:1px solid rgba(255,255,255,0.12); }
+.bw-zones span:first-child{ border-left:0; }
+.bw-stickers{ align-items:center; justify-content:space-between; }
+.bw-stickers .bw-label{ margin:0; }
+.bw-slots{ display:flex; gap:6px; }
+.bw-slot{ width:46px; height:36px; border-radius:8px; border:1px dashed var(--red-dim); display:flex; align-items:center; justify-content:center; color:var(--muted); }
+.bw-slot::after{ content:'+'; }
+.bw-slot.filled{ border-style:solid; background:rgba(255,255,255,0.04); }
+.bw-slot.filled::after{ content:none; }
+.bw-slot img{ width:100%; height:100%; object-fit:contain; }
+.bw-pricebox{ padding:14px; border-radius:14px; border:1px solid var(--red); background:linear-gradient(180deg, rgba(139,92,246,0.10), rgba(139,92,246,0.02)); }
+.bw-price{ font-family:'JetBrains Mono', monospace; font-size:30px; font-weight:800; color:var(--text); margin:2px 0 12px; }
+.bw-buy{ width:100%; padding:14px; border:none; border-radius:12px; background:var(--cta-gradient); color:#fff; font-size:16px; font-weight:800; letter-spacing:0.03em; text-transform:uppercase; cursor:pointer; }
+.bw-guarantee{ margin:10px 0 2px; font-size:12px; color:var(--muted); line-height:1.4; }
+#buyWideSpecs .buy-details-table{ margin:12px 0 0; }
+.buy-sheet .buy-actions-row{ justify-content:flex-start; padding-left:24px; }
+}

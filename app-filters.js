@@ -1354,6 +1354,96 @@ box.style.display = 'none';
 });
 }
 
+// ---------- Карточка лота на планшете и компьютере (≥ 900px) ----------
+// Как на маркетах: слева большое фото и миниатюры (фото Steam и два
+// 3D-ракурса лота, если мини-апп продавца их уже снял), справа — float на
+// шкале износа (всеми цифрами), паттерн, наклейки, цена с кнопкой и
+// таблица лота (её саму переносим сюда, со строкой «Рынок»). На телефоне
+// блок скрыт — там прежнее окно.
+const BUY_WIDE_QUERY = window.matchMedia('(min-width: 900px)');
+const BW_WEAR_ZONES = [['FN', 0, 0.07], ['MW', 0.07, 0.15], ['FT', 0.15, 0.38], ['WW', 0.38, 0.45], ['BS', 0.45, 1]];
+
+function placeBuyDetailsTable(){
+const slot = document.getElementById('buyWideSpecs');
+if (BUY_WIDE_QUERY.matches && slot){
+if (buyDetailsTable.parentElement !== slot) slot.appendChild(buyDetailsTable);
+} else {
+const row = document.querySelector('#buyOverlay .buy-actions-row');
+if (row && row.nextElementSibling !== buyDetailsTable) row.after(buyDetailsTable);
+}
+}
+BUY_WIDE_QUERY.addEventListener('change', placeBuyDetailsTable);
+
+function renderBuyWide(skin, isOwn, rarityMap, wearMap){
+const box = document.getElementById('buyWide');
+if (!box) return;
+const dict = I18N[currentLang] || I18N.ru;
+const bare = String(skin.title || '').replace(/^★\s*/, '');
+const cut = bare.indexOf(' | ');
+const weapon = (skin.title || '').startsWith('★') ? '★ ' : '';
+const head = weapon + (skin.stattrak ? 'StatTrak™ ' : '') + (cut > 0 ? bare.slice(0, cut) : bare);
+const paint = cut > 0 ? bare.slice(cut + 3) : '';
+const rarityColor = RARITY_GLOW_STRONG[skin.rarity] || 'rgba(139,92,246,0.8)';
+const chips = [
+skin.rarity ? `<span class="bw-chip" style="--chip:${rarityColor}">${escapeHtml(rarityMap[skin.rarity] || skin.rarity)}</span>` : '',
+skin.wear ? `<span class="bw-chip muted">${escapeHtml(wearMap[skin.wear] || skin.wear)}</span>` : '',
+].join('');
+
+const angles = skin.angles_at
+? [1, 2].map(n => `${API_BASE}/lot-angles/${skin.id}_${n}.webp?v=${encodeURIComponent(skin.angles_at)}`)
+: [];
+const images = angles.concat(skin.photo_url ? [skin.photo_url] : []);
+const thumbs = images.length > 1
+? `<div class="bw-thumbs">${images.map((src, i) => `<button type="button" class="bw-thumb${i ? '' : ' on'}" data-bw-img="${escapeHtml(src)}"><img src="${escapeHtml(src)}" alt="" loading="lazy"></button>`).join('')}</div>`
+: '';
+
+const hasFloat = skin.float_value !== null && skin.float_value !== undefined && skin.float_value !== '';
+const fl = hasFloat ? Number(skin.float_value) : null;
+const floatBlock = hasFloat ? `<div class="bw-cell bw-float">
+<div class="bw-label">Float</div>
+<div class="bw-value mono">${escapeHtml(String(skin.float_value))}</div>
+<div class="bw-bar"><i style="left:${Math.min(100, Math.max(0, fl * 100))}%"></i></div>
+<div class="bw-zones">${BW_WEAR_ZONES.map(([code, a, b]) => `<span style="left:${a * 100}%;width:${(b - a) * 100}%">${code}</span>`).join('')}</div>
+</div>` : '';
+
+const stickers = (skin.stickers || []).filter(st => st && st.image).slice(0, 5);
+const slots = stickers.length
+? stickers.map(st => `<span class="bw-slot filled" title="${escapeHtml(st.name || '')}"><img src="${escapeHtml(st.image)}" alt=""></span>`).join('')
+: '<span class="bw-slot"></span>'.repeat(4);
+
+box.innerHTML = `<div class="bw-head"><h2>${escapeHtml(head)}${paint ? ` <span class="bw-sep">|</span> <span class="bw-paint">${escapeHtml(paint)}</span>` : ''}</h2><div class="bw-chips">${chips}</div></div>
+<div class="bw-gallery">
+<div class="bw-main" style="--rarity-glow:${RARITY_GLOW[skin.rarity] || 'rgba(139,92,246,0.35)'}">${images.length ? `<img id="buyWideMain" src="${escapeHtml(images[0])}" alt="">` : ''}</div>
+${thumbs}
+</div>
+<div class="bw-side">
+${floatBlock ? `<div class="bw-row">${floatBlock}</div>` : ''}
+<div class="bw-row">
+<div class="bw-cell"><div class="bw-label">${escapeHtml(dict.detail_pattern)}</div><div class="bw-value">${skin.pattern !== null && skin.pattern !== undefined && skin.pattern !== '' ? '#' + escapeHtml(String(skin.pattern)) : '—'}</div></div>
+<div class="bw-cell"><div class="bw-label">${escapeHtml(dict.detail_wear)}</div><div class="bw-value">${escapeHtml(skin.wear ? (wearMap[skin.wear] || skin.wear) : '—')}</div></div>
+</div>
+<div class="bw-row bw-stickers"><div class="bw-label">${escapeHtml(dict.st_title)}${stickers.length ? '' : ' · ' + escapeHtml(dict.bw_no_stickers)}</div><div class="bw-slots">${slots}</div></div>
+<div class="bw-pricebox">
+<div class="bw-label">${escapeHtml(dict.detail_price)}</div>
+<div class="bw-price">${formatCoins(skin.price)}</div>
+${isOwn ? '' : `<button type="button" class="bw-buy" data-bw-buy>🛒 ${escapeHtml(dict.btn_buy)}</button><div class="bw-guarantee">🛡 ${escapeHtml(dict.buy_guarantee)}</div>`}
+<div id="buyWideSpecs"></div>
+</div>
+</div>`;
+placeBuyDetailsTable();
+}
+
+document.getElementById('buyWide').addEventListener('click', (e) => {
+const thumb = e.target.closest('[data-bw-img]');
+if (thumb){
+const main = document.getElementById('buyWideMain');
+if (main) main.src = thumb.dataset.bwImg;
+document.querySelectorAll('#buyWide .bw-thumb').forEach(b => b.classList.toggle('on', b === thumb));
+return;
+}
+if (e.target.closest('[data-bw-buy]')) document.getElementById('buyOpenPayBtn').click();
+});
+
 function openBuySheet(skin){
 // Гость в браузере может рассмотреть лот; купить — только после входа
 // (кнопки действий перехватывает app-web.js).
@@ -1441,7 +1531,8 @@ const rows = [
 buyDetailRow(dict.detail_wear, skin.wear ? (wearMap[skin.wear] || skin.wear) : null),
 buyDetailRow(dict.detail_rarity, skin.rarity ? (rarityMap[skin.rarity] || skin.rarity) : null),
 buyDetailRow('StatTrak', skin.stattrak ? dict.value_yes : null),
-buyDetailRow('Float', (skin.float_value !== null && skin.float_value !== undefined) ? formatFloat(skin.float_value) : null),
+// Float — всеми цифрами, что есть у лота (без округления).
+buyDetailRow('Float', (skin.float_value !== null && skin.float_value !== undefined && skin.float_value !== '') ? String(skin.float_value) : null),
 // Паттерн (paint seed): у Fade, Doppler, Case Hardened от него сильно зависит цена.
 buyDetailRow(dict.detail_pattern, (skin.pattern !== null && skin.pattern !== undefined && skin.pattern !== '') ? '#' + skin.pattern : null),
 buyDetailRow(dict.detail_price, formatCoins(skin.price), 'price'),
@@ -1450,6 +1541,7 @@ buyDetailRow(dict.detail_market, `<span id="buyMarketRowValue" class="mp-row-sta
 ].join('');
 
 buyDetailsTable.innerHTML = rows;
+renderBuyWide(skin, isOwn, rarityMap, wearMap);
 
 const stickersBox = document.getElementById('buyStickers');
 const stickersMarkup = stickersHtml(skin.stickers, 'full');
