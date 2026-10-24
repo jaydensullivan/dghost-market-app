@@ -918,12 +918,20 @@ return out;
 // Матовой краской они выходили пастельными; металлом с шероховатостью
 // ствола — тёмными. Полированный металл и более яркие отражения дают
 // насыщенный цвет, как на картинках Steam.
-// knifeEnvIntensity: у ножей отражения слабее. Сверка с CSFloat (снимки
-// осмотра из самой игры) по 42 ножам Fade/Doppler/Marble/Slaughter: клинки
-// выходили светлее на ~21; шероховатость 0.45 → 0.3 (как у огнестрела) и
-// отражения 5 → 3 дают 68.9 → 76.5. Прежние 0.45 подбирались по картинкам
-// Steam — они светлее, чем игра.
-const ANODIZED = { metalness: 1, roughness: 0.3, envIntensity: 5, knifeEnvIntensity: 3 };
+// knifeRoughness: клинки ножей в игре светлее, с белёсыми бликами — сверка
+// со Steam по 60 Doppler/Gamma Doppler/Marble Fade: 71.1 → 73.2 (на
+// анодированном огнестреле 0.45 хуже — там остаётся 0.3).
+// knifeFade: Fade (стиль 5) на ножах при этом выходил светлее игры на ~20 —
+// сверка с CSFloat (снимки осмотра из игры): шероховатость 0.3 и отражения 3
+// дают 63.0 → 75.4 (18 ножей) и 72.4 → 78.0 (6 других ножей). Doppler, Tiger
+// Tooth и Slaughter с этими значениями хуже (75.9 → 73.3) — им 0.45 и 5.
+const ANODIZED = { metalness: 1, roughness: 0.3, knifeRoughness: 0.45, envIntensity: 5,
+knifeFade: { roughness: 0.3, envIntensity: 3 } };
+function anodizedLook(skin, weaponName){
+if (!isKnifeName(weaponName)) return { roughness: ANODIZED.roughness, envIntensity: ANODIZED.envIntensity };
+if (skin.params.paint_style === 5) return ANODIZED.knifeFade;
+return { roughness: ANODIZED.knifeRoughness, envIntensity: ANODIZED.envIntensity };
+}
 function isAnodized(params){
 return [3, 4, 5].indexOf(params.paint_style) !== -1;
 }
@@ -1200,7 +1208,7 @@ uColorRough: { value: colorVec4(THREE, skin.params.color_roughness) },
 uHasColorMetal: { value: Array.isArray(skin.params.color_metalness) ? 1 : 0 },
 uHasColorRough: { value: Array.isArray(skin.params.color_roughness) ? 1 : 0 },
 uHasSkinMetal: { value: skin.metalness ? 1 : 0 },
-uPaintRoughness: { value: ANODIZED.roughness },
+uPaintRoughness: { value: anodizedLook(skin, weaponName).roughness },
 uHasPaintRoughness: { value: isAnodized(skin.params) || legacyCaseHardened(skin) ? 1 : 0 },
 uUseColors: { value: skin.solid || skinUsesColorMask(skin.params) ? 1 : 0 },
 uColors: { value: skinColors(THREE, skin.params) },
@@ -1303,7 +1311,7 @@ material.roughness = 1.0;
 } else if (weapon && weapon.rough) material.roughnessMap = weapon.rough;
 // Сила отражений — из набора света (в three r160 у сцены её ещё нет).
 material.envMapIntensity = (isAnodized(skin.params) || legacyCaseHardened(skin)
-? (isKnifeName(weaponName) ? ANODIZED.knifeEnvIntensity : ANODIZED.envIntensity) : 1) * lightPreset().env;
+? anodizedLook(skin, weaponName).envIntensity : 1) * lightPreset().env;
 
 // Рельеф и затенение из комплекта скина — новый формат отдаёт их
 // отдельными слоями, и с ними металл перестаёт быть плоским.
