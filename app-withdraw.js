@@ -860,7 +860,11 @@ qsFloatRow.style.display = 'none';
 qsPrice.value = '';
 qsStatus.textContent = '';
 qsAutoPriced = false;
-document.getElementById('qsMarketPricePreview').style.display = 'none';
+// Ориентир по рынку виден сразу («загрузка…»), а не появляется из ниоткуда.
+const qsMarketBox = document.getElementById('qsMarketPricePreview');
+const qsDict = I18N[currentLang] || I18N.ru;
+qsMarketBox.innerHTML = `<div class="mp-row"><span>${qsDict.mp_preview_ref}</span><span class="mp-row-status">${qsDict.mp_row_loading}</span></div>`;
+qsMarketBox.style.display = '';
 renderQuickSellPriceChips(0);
 
 quickSellOverlay.classList.add('show');
