@@ -238,6 +238,7 @@ const DEFAULT_THEME = 'midnight';
 // Бейдж «Трейдер»: показываем, если цена лота отличается от рыночной
 // не меньше чем на столько процентов.
 const TRADER_BADGE_MIN_PCT = 3;
+const HOT_DEAL_PCT = 10;
 
 function storageGet(key){
 try { return localStorage.getItem(key); } catch(e) { return null; }
@@ -417,7 +418,10 @@ const pct = Math.round((skin.price / marketPrice - 1) * 100);
 const ownLot = currentUserId && skin.seller_id === currentUserId;
 if (pct <= -TRADER_BADGE_MIN_PCT || (ownLot && pct >= TRADER_BADGE_MIN_PCT)){
 const d = I18N[currentLang] || I18N.ru;
-traderBadge = `<div class="trader-badge ${pct < 0 ? 'below' : 'above'}">${pct < 0 ? FIRE_ICON : ''}${(pct < 0 ? d.trader_below : d.trader_above).replace('{p}', Math.abs(pct))}</div>`;
+// От −10% к рынку — «Горячее»: яркая плашка, такие лоты разбирают первыми.
+const hot = pct <= -HOT_DEAL_PCT;
+const label = hot ? d.trader_hot : (pct < 0 ? d.trader_below : d.trader_above);
+traderBadge = `<div class="trader-badge ${pct < 0 ? 'below' : 'above'}${hot ? ' hot' : ''}">${pct < 0 ? FIRE_ICON : ''}${label.replace('{p}', Math.abs(pct))}</div>`;
 }
 }
 
@@ -549,6 +553,13 @@ if (sort === 'price_asc'){
 filtered.sort((a, b) => a.price - b.price);
 } else if (sort === 'price_desc'){
 filtered.sort((a, b) => b.price - a.price);
+} else if (sort === 'deal'){
+// Выгоднее к рынку: по отношению цены лота к рынку; без рыночной цены — в конце.
+const ratio = s => {
+const market = Number(s.market_price_uzs || s.market_price) || 0;
+return market > 0 ? s.price / market : Infinity;
+};
+filtered.sort((a, b) => ratio(a) - ratio(b) || b.id - a.id);
 } else if (sort === 'auto'){
 const sinkFiller = currentCategory === 'all' && !q;
 const popular = currentShopTab === 'popular';

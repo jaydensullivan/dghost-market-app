@@ -204,7 +204,7 @@ const list = document.getElementById('historyList');
 const dict = I18N[currentLang] || I18N.ru;
 
 if (!historyItems.length && !historyRequests.length){
-list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${dict.history_empty}</div>`;
+list.innerHTML = `<div class="skins-empty skins-empty-sm">${dict.history_empty}</div>`;
 return;
 }
 
@@ -242,7 +242,7 @@ if (period){ historyPeriod = Number(period.dataset.hPeriod); renderHistory(); }
 function loadHistory(){
 const list = document.getElementById('historyList');
 if (!tg || !tg.initData){
-list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${errorMessage('unauthorized')}</div>`;
+list.innerHTML = `<div class="skins-empty skins-empty-sm">${errorMessage('unauthorized')}</div>`;
 return;
 }
 fetch(API_BASE + '/api/transactions?init_data=' + encodeURIComponent(tg.initData))

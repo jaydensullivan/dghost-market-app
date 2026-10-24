@@ -47,7 +47,7 @@ return API_BASE + '/api/support/photo?id=' + id + '&init_data=' + encodeURICompo
 function renderSupportMessages(el, messages, mine, clientLabel){
 const dict = supportDict();
 if (!messages.length){
-el.innerHTML = `<div class="skins-empty" style="padding:16px 4px;">${escapeHtml(dict.support_empty)}</div>`;
+el.innerHTML = `<div class="skins-empty skins-empty-md">${escapeHtml(dict.support_empty)}</div>`;
 return;
 }
 el.innerHTML = messages.map(m => {
@@ -113,7 +113,7 @@ supportUnread = 0;
 updateSupportBadges();
 })
 .catch(() => {
-document.getElementById('supportThread').innerHTML = `<div class="skins-empty" style="padding:16px 4px;">${escapeHtml(supportDict().load_failed || '')}</div>`;
+document.getElementById('supportThread').innerHTML = `<div class="skins-empty skins-empty-md">${escapeHtml(supportDict().load_failed || '')}</div>`;
 })
 .finally(() => {
 // Пока экран открыт — подтягиваем ответы раз в 15 секунд.
@@ -269,7 +269,7 @@ supportApi('/api/support/staff/tickets?state=' + adminSupportState)
 setSupportStaffBadge(data.open_count || 0);
 const items = data.tickets || [];
 if (!items.length){
-list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${escapeHtml(dict.admin_support_empty)}</div>`;
+list.innerHTML = `<div class="skins-empty skins-empty-sm">${escapeHtml(dict.admin_support_empty)}</div>`;
 return;
 }
 list.innerHTML = items.map(t => `<button type="button" class="support-ticket" data-support-ticket="${t.id}">
@@ -279,7 +279,7 @@ list.innerHTML = items.map(t => `<button type="button" class="support-ticket" da
 </button>`).join('');
 })
 .catch(err => {
-list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${escapeHtml(err.message)}</div>`;
+list.innerHTML = `<div class="skins-empty skins-empty-sm">${escapeHtml(err.message)}</div>`;
 });
 }
 
@@ -290,7 +290,7 @@ document.getElementById('adminSupportList').hidden = true;
 document.getElementById('adminSupportTabs').style.display = 'none';
 document.getElementById('adminSupportTicket').hidden = false;
 const thread = document.getElementById('adminSupportThread');
-thread.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${escapeHtml(dict.loading || '')}</div>`;
+thread.innerHTML = `<div class="skins-empty skins-empty-sm">${escapeHtml(dict.loading || '')}</div>`;
 supportApi('/api/support/staff/ticket?id=' + id)
 .then(data => {
 const c = data.client;
@@ -316,7 +316,7 @@ document.getElementById('adminSupportClose').style.display = open ? '' : 'none';
 document.getElementById('adminSupportReopen').style.display = open ? 'none' : '';
 })
 .catch(err => {
-thread.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${escapeHtml(err.message)}</div>`;
+thread.innerHTML = `<div class="skins-empty skins-empty-sm">${escapeHtml(err.message)}</div>`;
 });
 }
 

@@ -256,7 +256,7 @@ fetch(API_BASE + '/api/buy_requests/mine?init_data=' + encodeURIComponent(tg.ini
 .then(data => {
 const items = (data && data.items) || [];
 if (!items.length){
-el.innerHTML = `<div class="skins-empty" style="padding:16px 4px;">${dict.br_no_my_requests}</div>`;
+el.innerHTML = `<div class="skins-empty skins-empty-md">${dict.br_no_my_requests}</div>`;
 return;
 }
 el.innerHTML = items.map(req => {
@@ -280,7 +280,7 @@ return `
 items.forEach(req => loadBuyRequestResponses(req.id));
 })
 .catch(() => {
-el.innerHTML = `<div class="skins-empty" style="padding:16px 4px;">${dict.load_failed}</div>`;
+el.innerHTML = `<div class="skins-empty skins-empty-md">${dict.load_failed}</div>`;
 });
 }
 
@@ -373,7 +373,7 @@ fetch(API_BASE + '/api/buy_requests')
 .then(data => {
 const items = ((data && data.items) || []).filter(r => r.buyer_id !== currentUserId);
 if (!items.length){
-el.innerHTML = `<div class="skins-empty" style="padding:16px 4px;">${dict.br_no_public_requests}</div>`;
+el.innerHTML = `<div class="skins-empty skins-empty-md">${dict.br_no_public_requests}</div>`;
 return;
 }
 el.innerHTML = items.map(req => `
@@ -389,7 +389,7 @@ el.innerHTML = items.map(req => `
 `).join('');
 })
 .catch(() => {
-el.innerHTML = `<div class="skins-empty" style="padding:16px 4px;">${dict.load_failed}</div>`;
+el.innerHTML = `<div class="skins-empty skins-empty-md">${dict.load_failed}</div>`;
 });
 }
 
@@ -1062,18 +1062,18 @@ function loadSetsList(){
 const list = document.getElementById('setsList');
 const status = document.getElementById('setsStatus');
 status.textContent = '';
-list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${escapeHtml((I18N[currentLang] || I18N.ru).loading)}</div>`;
+list.innerHTML = `<div class="skins-empty skins-empty-sm">${escapeHtml((I18N[currentLang] || I18N.ru).loading)}</div>`;
 fetch(API_BASE + '/api/sets')
 .then(r => r.json())
 .then(data => {
 const items = data.items || [];
 if (!items.length){
-list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${escapeHtml((I18N[currentLang] || I18N.ru).sets_empty)}</div>`;
+list.innerHTML = `<div class="skins-empty skins-empty-sm">${escapeHtml((I18N[currentLang] || I18N.ru).sets_empty)}</div>`;
 return;
 }
 list.innerHTML = items.map(renderSetCard).join('');
 })
-.catch(() => { list.innerHTML = `<div class="skins-empty" style="padding:12px 4px;">${escapeHtml((I18N[currentLang] || I18N.ru).load_failed)}</div>`; });
+.catch(() => { list.innerHTML = `<div class="skins-empty skins-empty-sm">${escapeHtml((I18N[currentLang] || I18N.ru).load_failed)}</div>`; });
 }
 
 document.getElementById('setsList').addEventListener('click', (e) => {
@@ -1403,7 +1403,12 @@ const rarityMap = currentLang === 'uz' ? RARITY_LABEL_UZ : (currentLang === 'en'
 const wearMap = currentLang === 'uz' ? WEAR_LABEL_FULL_UZ : (currentLang === 'en' ? WEAR_LABEL_FULL_EN : WEAR_LABEL_FULL);
 
 if (skin.photo_url){
+// Фото проявляется плавно, когда загрузится (а не появляется рывком).
+buyPhoto.classList.remove('loaded');
+buyPhoto.onload = () => buyPhoto.classList.add('loaded');
+buyPhoto.onerror = () => buyPhoto.classList.add('loaded');
 buyPhoto.src = skin.photo_url;
+if (buyPhoto.complete) buyPhoto.classList.add('loaded');
 buyPhoto.style.display = '';
 } else {
 buyPhoto.removeAttribute('src');
@@ -1552,11 +1557,35 @@ function marketFetchError(e){
 return String((e && e.message) || e || '').slice(0, 80);
 }
 
+// Сравнение с рынком ходит во внешний сервис (CSFloat) — не ждём вечно:
+// через 15 с показываем ошибку, и она уходит владельцу в отчёт.
+const MARKET_FETCH_TIMEOUT_MS = 15000;
 function fetchMarketJson(url){
-return fetch(url).then(r => {
+const ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+const timer = ctrl ? setTimeout(() => ctrl.abort(), MARKET_FETCH_TIMEOUT_MS) : null;
+return fetch(url, ctrl ? { signal: ctrl.signal } : {}).then(r => {
 if (!r.ok) throw new Error('HTTP ' + r.status);
 return r.json();
-});
+}).catch(e => {
+const reason = e && e.name === 'AbortError' ? 'timeout' : marketFetchError(e);
+if (typeof reportClientError === 'function') reportClientError('market_price', reason + ' · ' + url.replace(/^https?:\/\/[^/]+/, '').slice(0, 120));
+throw new Error(reason);
+}).finally(() => { if (timer) clearTimeout(timer); });
+}
+
+// Пока ответ не пришёл — серые заглушки той же формы, что блок с графиком.
+function marketPriceSkeleton(){
+return '<div class="skel-block mp-skel-title"></div>'
++ '<div class="skel-block mp-skel-sub"></div>'
++ '<div class="skel-block mp-skel-chart"></div>';
+}
+
+// Своя цена заметно выше рынка — предложить цену «рынок −3%» в одно нажатие.
+const MARKET_LOWER_TO_PCT = 3;
+function marketLowerPrice(market){
+const target = market * (1 - MARKET_LOWER_TO_PCT / 100);
+const step = target >= 1000000 ? 10000 : target >= 100000 ? 1000 : 100;
+return Math.max(step, Math.floor(target / step) * step);
 }
 
 // Строка «Рынок» в таблице лота: цена и разница с лотом, «нет данных» или ошибка.
@@ -1568,7 +1597,11 @@ if (data && data.available){
 const diff = typeof data.diff_percent === 'number'
 ? ` <span class="mp-row-diff ${data.diff_percent >= 0 ? 'cheaper' : 'pricier'}">${data.diff_percent >= 0 ? '−' : '+'}${Math.abs(Math.round(data.diff_percent))}%</span>`
 : '';
-el.innerHTML = escapeHtml(formatCoins(data.market_price_uzs)) + diff;
+const own = pendingBuySkin && currentUserId && pendingBuySkin.seller_id === currentUserId;
+const lower = own && typeof data.diff_percent === 'number' && -data.diff_percent >= MARKET_LOWER_TO_PCT
+? ` <button type="button" class="mp-lower-btn" data-mp-lower="${marketLowerPrice(data.market_price_uzs)}">${escapeHtml(dict.mp_lower_to.replace('{price}', formatCoins(marketLowerPrice(data.market_price_uzs))))}</button>`
+: '';
+el.innerHTML = escapeHtml(formatCoins(data.market_price_uzs)) + diff + lower;
 el.className = '';
 } else {
 el.textContent = error ? `${dict.mp_row_error} (${error})` : dict.mp_row_none;
@@ -1688,7 +1721,8 @@ badge.hidden = false;
 
 function loadMarketPriceComparison(skinId){
 const box = document.getElementById('marketPriceBox');
-box.style.display = 'none';
+box.innerHTML = marketPriceSkeleton();
+box.style.display = '';
 const badge = document.getElementById('buyMarketBadge');
 if (badge) badge.hidden = true;
 fetchMarketJson(API_BASE + '/api/market_price?skin_id=' + skinId)
@@ -2819,6 +2853,16 @@ if (typeof loadFavQueries === 'function') loadFavQueries();
 .catch(err => showErrorToast(err))
 .finally(() => { watchBusy = false; });
 }
+
+// «Снизить до …» в строке «Рынок» своего лота: открываем правку цены с готовым значением.
+document.getElementById('buyDetailsTable').addEventListener('click', (e) => {
+const btn = e.target.closest('[data-mp-lower]');
+if (!btn) return;
+haptic('light');
+if (buyPriceEdit.style.display === 'none') buyEditPriceBtn.click();
+buyNewPriceInput.value = btn.dataset.mpLower;
+buyNewPriceInput.focus();
+});
 
 document.getElementById('buyWatchBtn').addEventListener('click', () => {
 if (pendingBuySkin) openWatchSheet(pendingBuySkin);
