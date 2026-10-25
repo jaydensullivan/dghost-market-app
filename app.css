@@ -4907,7 +4907,7 @@ body.layout-large #skinsList .skin-badge.wear ~ .skin-badge.stattrak{ top:8px; }
 .buy-sticky-bar #buyMakeOfferBtn, .buy-sticky-bar #buySendOfferBtn, .buy-sticky-bar #buyMakeTradeBtn,
 .buy-sticky-bar .buy-main-btn{ flex:1 1 0; }
 /* Цена и «Купить» — в карточке справа, внизу только остальные действия. */
-.buy-sticky-bar #buyOpenPayBtn, .buy-sticky-bar #buyGuarantee{ display:none !important; }
+.buy-sticky-bar #buyOpenPayBtn, .buy-sticky-bar #buyGuarantee, .buy-sticky-bar #buyTradeLock{ display:none !important; }
 .buy-sheet #buyHero{ display:none; }
 .buy-wide{ display:grid; grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); gap:18px; padding:22px 24px 6px; }
 .bw-head{ grid-column:1 / -1; padding-right:48px; }
@@ -5051,3 +5051,19 @@ body.theme-light .cart-balance-hint.cart-short{ color:#dc2626; }
 .buy-more-menu .buy-action-btn svg{ width:20px; height:20px; flex:none; }
 .buy-more-menu .buy-action-btn:hover{ background:rgba(139,92,246,0.10); }
 .buy-more.open > #buyMoreBtn{ color:var(--text); }
+
+/* Трейд-бан Steam: таймер на фото карточки, кнопка вместо «Купить», блок в окне лота. */
+.skin-lock-badge{ position:absolute; left:5px; bottom:5px; display:flex; align-items:center; gap:3px; padding:3px 8px; border-radius:7px; font-size:11px; font-weight:800; font-variant-numeric:tabular-nums; color:#fff; background:rgba(8,7,13,0.78); border:1px solid rgba(251,191,36,0.55); }
+.skin-action.locked{ background:transparent; border:1px solid rgba(251,191,36,0.55); color:#fbbf24; }
+.skin-card > .skin-action.locked{ margin-top:auto; }
+body.theme-light .skin-action.locked{ color:#b45309; border-color:rgba(180,83,9,0.45); }
+.trade-lock-box{ margin:0 0 10px; padding:12px; border-radius:12px; border:1px solid rgba(251,191,36,0.45); background:rgba(251,191,36,0.08); }
+.trade-lock-box .tl-head{ font-weight:700; color:var(--text); }
+.trade-lock-box .tl-left{ font-family:'JetBrains Mono', monospace; font-variant-numeric:tabular-nums; color:#fbbf24; }
+body.theme-light .trade-lock-box .tl-left{ color:#b45309; }
+.trade-lock-box .tl-text{ margin:6px 0 10px; font-size:13px; line-height:1.4; color:var(--muted); }
+.trade-lock-box .buy-main-btn{ width:100%; }
+.trade-lock-box .buy-main-btn:disabled{ opacity:0.75; cursor:default; }
+.bw-lock{ margin:0 0 10px; font-weight:700; color:var(--text); }
+.bw-lock b{ font-family:'JetBrains Mono', monospace; color:#fbbf24; font-variant-numeric:tabular-nums; }
+body.theme-light .bw-lock b{ color:#b45309; }

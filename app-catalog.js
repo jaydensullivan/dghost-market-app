@@ -381,6 +381,13 @@ const inCart = cart.includes(skin.id);
 
 const CART_ICON = '<svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-cart"/></svg>';
 
+// Трейд-бан Steam: на фото — таймер, у чужого лота вместо «Купить» / «Торг»
+// одна кнопка с таймером (открывает лот: там «В «Хочу»»), без корзины.
+const lockUntil = tradeLockUntil(skin);
+const lockBadge = lockUntil
+? `<div class="skin-lock-badge">🔒 <span data-unlock="${lockUntil}">${tradeLockLeft(lockUntil)}</span></div>`
+: '';
+
 // Свой лот — «Управлять»; чужой — «Купить» + «Торг» (корзина — значком на фото).
 const actionBtn = isOwn
 ? `<button class="skin-action own" data-open="${skin.id}" type="button">${(I18N[currentLang] || I18N.ru).btn_manage}</button>`
@@ -388,7 +395,8 @@ const actionBtn = isOwn
 <button class="skin-action" data-buy="${skin.id}" type="button">${(I18N[currentLang] || I18N.ru).btn_buy}</button>
 <button class="skin-action ghost" data-bargain="${skin.id}" type="button">${(I18N[currentLang] || I18N.ru).btn_bargain}</button>
 </div>`;
-const cartBtn = isOwn ? ''
+const lockedAction = `<button class="skin-action locked" data-open="${skin.id}" type="button">🔒 ${escapeHtml((I18N[currentLang] || I18N.ru).tl_title)}</button>`;
+const cartBtn = (isOwn || lockUntil) ? ''
 : `<button class="skin-cart-btn${inCart ? ' in-cart' : ''}" data-cart-toggle="${skin.id}" type="button" aria-label="${escapeHtml((I18N[currentLang] || I18N.ru).cart_aria)}">${CART_ICON}</button>`;
 
 const favBtn = isOwn ? ''
@@ -464,7 +472,7 @@ ${photo}
 ${(wearBadge || stBadge) ? `<div class="skin-badges">${wearBadge}${stBadge}</div>` : ''}
 ${favBtn}
 ${cartBtn}
-${hotBadge}
+${lockBadge || hotBadge}
 </div>
 ${weaponType}
 <div class="skin-title">${title}</div>
@@ -473,7 +481,7 @@ ${floatLine}
 ${stickerStrip}
 ${priceHtml}
 ${marketHtml}
-${actionBtn}
+${lockUntil && !isOwn ? lockedAction : actionBtn}
 </div>`;
 }
 
