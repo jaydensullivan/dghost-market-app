@@ -5067,3 +5067,13 @@ body.theme-light .trade-lock-box .tl-left{ color:#b45309; }
 .bw-lock{ margin:0 0 10px; font-weight:700; color:var(--text); }
 .bw-lock b{ font-family:'JetBrains Mono', monospace; color:#fbbf24; font-variant-numeric:tabular-nums; }
 body.theme-light .bw-lock b{ color:#b45309; }
+
+/* Инвентарь: карточки одной высоты в ряду, как в каталоге — у строки
+   оружия и названия постоянное место (у кейсов и брелоков строки оружия
+   нет), кнопки всегда внизу на одной линии и во всю ширину. */
+.inventory-grid{ align-items:stretch; }
+.inventory-grid .inv-item{ align-items:stretch; height:100%; }
+.inventory-grid .inv-item-body{ flex:1; display:flex; flex-direction:column; width:100%; }
+.inventory-grid .inv-item-weapon{ min-height:1.2em; }
+.inventory-grid .inv-item-skin{ min-height:2.5em; }
+.inventory-grid .inv-item-actions{ margin-top:auto; padding-top:9px; }
