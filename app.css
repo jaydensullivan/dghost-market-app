@@ -5077,3 +5077,23 @@ body.theme-light .bw-lock b{ color:#b45309; }
 .inventory-grid .inv-item-weapon{ min-height:1.2em; }
 .inventory-grid .inv-item-skin{ min-height:2.5em; }
 .inventory-grid .inv-item-actions{ margin-top:auto; padding-top:9px; }
+
+/* ---------- Компьютер (≥ 1024px): как на Buff / CSFloat ----------
+   Мини-апп в обычном браузере растягивался на весь экран — две огромные
+   карточки в ряд. Здесь: содержимое не шире 1440px по центру, каталог —
+   плотная сетка (сколько влезет колонок), меню снизу — компактной
+   панелью, шапка — по краям той же колонки. */
+@media (min-width:1024px){
+#screenShop, .screen-profile{ max-width:1440px; margin-left:auto !important; margin-right:auto !important; padding-left:24px !important; padding-right:24px !important; }
+/* Профиль, сделки, поддержка — карточки под телефон: не шире 960px. */
+.screen-profile{ max-width:960px; }
+.brand-tl{ left:max(18px, calc((100vw - 1440px) / 2 + 24px)); }
+.brand-tr{ right:max(18px, calc((100vw - 1440px) / 2 + 24px)) !important; }
+#skinsList, body.layout-compact #skinsList, body.layout-large #skinsList{ grid-template-columns:repeat(auto-fill, minmax(185px, 1fr)); gap:12px; }
+body.layout-compact #skinsList{ grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:8px; }
+body.layout-large #skinsList{ grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px; }
+#skinsList .skin-photo-wrap{ aspect-ratio:4 / 3; }
+.shop-tabs{ max-width:620px; }
+.bottom-nav{ left:50%; right:auto; transform:translateX(-50%); width:min(560px, 100vw); border:1px solid var(--red-dim); border-bottom:none; border-radius:16px 16px 0 0; }
+.inventory-grid{ grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); }
+}
