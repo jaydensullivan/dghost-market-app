@@ -337,7 +337,7 @@ return `
 ${photo}
 </div>
 <div class="inv-item-body">
-${weapon ? `<div class="inv-item-weapon">${escapeHtml(weapon)}</div>` : ''}
+<div class="inv-item-weapon">${weapon ? escapeHtml(weapon) : ''}</div>
 <div class="inv-item-skin">${escapeHtml(skin)}</div>
 ${floatBlock}
 ${price ? `<div class="inv-item-price">≈ ${formatCoins(price)}</div>` : ''}
