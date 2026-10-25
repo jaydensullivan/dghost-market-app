@@ -10,7 +10,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=5"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=101">
+<link rel="stylesheet" href="app.css?v=102">
 </head>
 <body data-tab="shop">
 <!-- Значки интерфейса в едином объёмном стиле (gi-*): <svg class="gi"><use href="#gi-…"/></svg>. -->
@@ -2226,6 +2226,7 @@
 <details class="inv-protect-hint">
 <summary data-i18n="inv_protect_q">Не видишь скин?</summary>
 <p data-i18n="inv_protect_text">Предметы, полученные через обмен или Торговую площадку Steam, 7 дней находятся под защитой Steam (Trade Protection). В это время Steam их не показывает, и выставить их нельзя. Они появятся здесь сами, когда защита закончится — нажми «Обновить».</p>
+<button type="button" class="steam-link-btn secondary" id="invProtectedBtn" data-i18n="inv_protected_btn">🔒 Показать предметы под защитой</button>
 </details>
 
 <div class="edit-status" id="inventoryStatus">Загрузка...</div>
@@ -2275,8 +2276,8 @@
 </div>
 </div>
 <script src="app-core.js?v=18"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=13', en: 'app-i18n-en.js?v=13' };</script>
-<script src="app-i18n.js?v=138"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=14', en: 'app-i18n-en.js?v=14' };</script>
+<script src="app-i18n.js?v=139"></script>
 <script src="app-navigation.js?v=25"></script>
 <script src="app-shop.js?v=39"></script>
 <script src="app-legal.js?v=3"></script>
@@ -2289,7 +2290,7 @@
 <script src="app-topup.js?v=5"></script>
 <script src="app-history.js?v=10"></script>
 <script src="app-referral.js?v=8"></script>
-<script src="app-withdraw.js?v=32"></script>
+<script src="app-withdraw.js?v=33"></script>
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
 <script>window.DG_ADMIN_SRC = 'app-admin.js?v=28';</script>
 <!-- 3D-просмотрщик (210 КБ) грузится после открытия витрины — ensure3DScript в app-navigation.js. -->

@@ -424,7 +424,7 @@ inventoryOverlay.querySelector('.inventory-sheet').scrollTop = 0;
 loadInventory(false);
 }
 
-function loadInventory(forceRefresh){
+function loadInventory(forceRefresh, protectedItems){
 const dict = I18N[currentLang] || I18N.ru;
 // Скелетоны вместо пустой сетки; текст оставляем только для
 // ручного обновления — там полезно знать, что идёт запрос к Steam.
@@ -432,6 +432,8 @@ inventoryStatus.textContent = forceRefresh ? dict.inventory_refreshing : '';
 inventoryGrid.innerHTML = skeletonCardsHtml(6, 'inv');
 let url = API_BASE + '/api/steam/inventory?init_data=' + encodeURIComponent(tg.initData);
 if (forceRefresh) url += '&refresh=1';
+// Предметы под защитой обмена Steam — через Steamwebapi (см. бот).
+if (protectedItems) url += '&protected=1';
 // WebView Telegram (и некоторые браузеры) могут закэшировать GET по
 // этому же URL — тогда повторный клик "Обновить" покажет тот же
 // самый старый ответ вместо нового сетевого запроса. Добавляем
@@ -453,6 +455,11 @@ return r.json();
 })
 .then(data => {
 lastInventoryItems = data.items || [];
+if (protectedItems){
+const found = lastInventoryItems.filter(it => it.tradable === false && it.tradable_after).length;
+showToast(data.protected_error && !found ? dict.inv_protected_unavailable
+: found ? dict.inv_protected_found.replace('{n}', found) : dict.inv_protected_none, { type: data.protected_error && !found ? 'error' : 'success' });
+}
 // После обновления выбранные остаются выбранными, если они ещё есть.
 invPicked = invPicked.filter(p => lastInventoryItems.some(it => invKey(it) === invKey(p)));
 renderInventory();
@@ -470,9 +477,14 @@ showToast(msg, { type: 'error' });
 return;
 }
 inventoryStatus.textContent = '';
-renderErrorState(inventoryGrid, msg, () => loadInventory(forceRefresh));
+renderErrorState(inventoryGrid, msg, () => loadInventory(forceRefresh, protectedItems));
 });
 }
+
+document.getElementById('invProtectedBtn').addEventListener('click', () => {
+if (!tg || !tg.initData) return;
+loadInventory(true, true);
+});
 
 openInventoryBtn.addEventListener('click', () => {
 if (!tg || !tg.initData) return;
