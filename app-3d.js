@@ -3643,6 +3643,7 @@ return String(title || '')
 const buy3dBtn = document.getElementById('buy3dBtn');
 const buyArBtn = document.getElementById('buyArBtn');
 const buyPanoBtn = document.getElementById('buyPanoBtn');
+const buyAnglesBtn = document.getElementById('buyAnglesBtn');
 let buy3dEntry = null;
 let buy3dSkin = null;
 
@@ -3651,6 +3652,7 @@ if (!buy3dBtn) return;
 buy3dBtn.style.display = 'none';
 if (buyArBtn) buyArBtn.style.display = 'none';
 if (buyPanoBtn) buyPanoBtn.style.display = 'none';
+if (buyAnglesBtn) buyAnglesBtn.style.display = 'none';
 buy3dEntry = null;
 buy3dSkin = skin;
 Promise.all([loadModelIndex(), loadPaintIndex()]).then(([map, paintMap]) => {
@@ -3663,6 +3665,9 @@ buy3dEntry = entry;
 buy3dBtn.style.display = '';
 // 360° для Facebook — продавцу этого лота и админу.
 if (buyPanoBtn && (isAdmin || (currentUserId && skin.seller_id === currentUserId))) buyPanoBtn.style.display = '';
+// Снять ракурсы заново (например, после исправления 3D) — только админу:
+// у продавца они снимаются сами один раз.
+if (buyAnglesBtn && isAdmin) buyAnglesBtn.style.display = '';
 // AR — только на телефоне (на компьютере камеры для стола нет) и только
 // для оружия с раскраской: стол собирает её на сервере.
 if (buyArBtn && entry.skin && !isGloveSkin(entry.skin) && (('ontouchstart' in window) || navigator.maxTouchPoints > 0)) buyArBtn.style.display = '';
@@ -3707,6 +3712,36 @@ console.warn('3D: панорама 360° не вышла —', e);
 say(dict.pano_error.replace('{e}', String((e && e.message) || e).slice(0, 80)));
 } finally {
 buyPanoBtn.disabled = false;
+}
+});
+}
+
+// Ракурсы лота заново: бот перезапишет картинки и картинку постов.
+if (buyAnglesBtn){
+buyAnglesBtn.addEventListener('click', async () => {
+if (!buy3dEntry || !buy3dSkin || buyAnglesBtn.disabled || !tg || !tg.initData) return;
+const skin = buy3dSkin;
+const dict = I18N[currentLang] || I18N.ru;
+const status = document.getElementById('buyStatus');
+const say = (text) => { if (status && pendingBuySkin === skin) status.textContent = text; };
+buyAnglesBtn.disabled = true;
+try {
+say(dict.angles_preparing);
+const shots = await render3DGif(buy3dEntry, Number(skin.float_value) || 0, '', null, skin.pattern, 'angles', skin.stickers);
+const r = await fetch(API_BASE + '/api/skins/' + skin.id + '/angles', {
+method: 'POST',
+headers: { 'Content-Type': 'text/plain' },
+body: JSON.stringify({ init_data: tg.initData, images: shots.map(bytesToBase64) }),
+});
+const data = await r.json().catch(() => ({}));
+if (!r.ok) throw new Error(data.error || ('HTTP ' + r.status));
+say(dict.angles_sent);
+haptic('success');
+} catch (e) {
+console.warn('3D: ракурсы лота не обновились —', e);
+say(dict.angles_error.replace('{e}', String((e && e.message) || e).slice(0, 80)));
+} finally {
+buyAnglesBtn.disabled = false;
 }
 });
 }
@@ -4089,88 +4124,177 @@ if ('colorSpace' in tex) tex.colorSpace = THREE.SRGBColorSpace;
 return tex;
 }
 
-function buildPanoStudio(THREE, center, radius, floorY, label){
-const studio = new THREE.Group();
-// Небо: снизу почти чёрное, к зениту — фиолетовое, со звёздами.
-const sky = document.createElement('canvas');
-sky.width = 1024;
-sky.height = 512;
-const sg = sky.getContext('2d');
-const grad = sg.createLinearGradient(0, 0, 0, 512);
-grad.addColorStop(0, '#2b0f52');
-grad.addColorStop(0.45, '#14082a');
-grad.addColorStop(0.62, '#07050d');
-grad.addColorStop(1, '#030207');
-sg.fillStyle = grad;
-sg.fillRect(0, 0, 1024, 512);
-for (let i = 0; i < 260; i++){
-const y = Math.random() * 230;
-sg.fillStyle = `rgba(255,255,255,${0.25 + Math.random() * 0.6})`;
-sg.fillRect(Math.random() * 1024, y, Math.random() < 0.15 ? 2 : 1, 1);
+function panoCanvasTexture(THREE, canvas){
+const tex = new THREE.CanvasTexture(canvas);
+if ('colorSpace' in tex) tex.colorSpace = THREE.SRGBColorSpace;
+return tex;
 }
-const skyTex = new THREE.CanvasTexture(sky);
-if ('colorSpace' in skyTex) skyTex.colorSpace = THREE.SRGBColorSpace;
-// Небо рисуется первым и не пишет глубину — ничего не загораживает
-// (иначе по бокам оно перекрывало пол).
-const skyMesh = new THREE.Mesh(
-new THREE.SphereGeometry(radius * 14, 48, 24),
-new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide, toneMapped: false, depthWrite: false })
-);
-skyMesh.renderOrder = -1;
-skyMesh.position.copy(center);
-studio.add(skyMesh);
 
-// Пол: тёмный диск до самого «неба» со свечением в центре. Свечение —
-// цветами вершин кольцевой сетки, а не текстурой: текстура на боковых
-// гранях развёртки размывалась в ровное пятно.
-const floorGeo = new THREE.RingGeometry(radius * 0.001, radius * 12, 96, 48);
-const pos = floorGeo.attributes.position;
-const colors = new Float32Array(pos.count * 3);
-// Цвета вершин — в линейном пространстве (на экране станут светлее).
-const edge = [0.003, 0.002, 0.008], hot = [0.09, 0.03, 0.22];
-for (let k = 0; k < pos.count; k++){
-const d = Math.hypot(pos.getX(k), pos.getY(k)) / radius;
-const t = Math.max(0, 1 - d / 4.5) ** 1.6;
-for (let c = 0; c < 3; c++) colors[k * 3 + c] = edge[c] + (hot[c] - edge[c]) * t;
+function panoLoadImage(src){
+return new Promise(resolve => {
+const img = new Image();
+img.onload = () => resolve(img);
+img.onerror = () => resolve(null);
+img.src = src;
+});
 }
-floorGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-const floor = new THREE.Mesh(floorGeo, new THREE.MeshBasicMaterial({ vertexColors: true, toneMapped: false }));
+
+// Тёмный выставочный зал: стены с неоновыми полосами, глянцевый пол с
+// отражением предмета, подиум со световым лучом, логотип и табличка с
+// названием и ценой. Всё — без текстур с мелкими деталями на полу: на
+// стыках граней развёртки они давали заметные швы.
+async function buildPanoStudio(THREE, center, radius, floorY, label, object, forward){
+const studio = new THREE.Group();
+const basic = (opts) => new THREE.MeshBasicMaterial(Object.assign({ toneMapped: false }, opts));
+const wallR = radius * 7, wallH = radius * 5.5;
+
+// Стены: почти чёрные, книзу темнее; по кругу — 16 вертикальных
+// неоновых полос с мягким ореолом, через одну фиолетовые и розовые.
+const wc = document.createElement('canvas');
+wc.width = 4096;
+wc.height = 1024;
+const wg = wc.getContext('2d');
+const wgrad = wg.createLinearGradient(0, 0, 0, 1024);
+wgrad.addColorStop(0, '#120a20');
+wgrad.addColorStop(0.55, '#0b0714');
+wgrad.addColorStop(1, '#050309');
+wg.fillStyle = wgrad;
+wg.fillRect(0, 0, 4096, 1024);
+for (let i = 0; i < 16; i++){
+const x = (i + 0.5) * 256;
+const rgb = i % 2 ? '255,43,214' : '123,44,255';
+const halo = wg.createLinearGradient(x - 90, 0, x + 90, 0);
+halo.addColorStop(0, `rgba(${rgb},0)`);
+halo.addColorStop(0.5, `rgba(${rgb},0.28)`);
+halo.addColorStop(1, `rgba(${rgb},0)`);
+wg.fillStyle = halo;
+wg.fillRect(x - 90, 120, 180, 760);
+wg.fillStyle = `rgb(${rgb})`;
+wg.fillRect(x - 7, 150, 14, 700);
+wg.fillStyle = 'rgba(255,255,255,0.85)';
+wg.fillRect(x - 2, 160, 4, 680);
+}
+const walls = new THREE.Mesh(new THREE.CylinderGeometry(wallR, wallR, wallH, 128, 1, true),
+basic({ map: panoCanvasTexture(THREE, wc), side: THREE.BackSide }));
+walls.position.set(center.x, floorY + wallH / 2, center.z);
+studio.add(walls);
+
+// Потолок с кольцевым светильником.
+const cc = document.createElement('canvas');
+cc.width = cc.height = 1024;
+const cg = cc.getContext('2d');
+cg.fillStyle = '#07040d';
+cg.fillRect(0, 0, 1024, 1024);
+const ringGlow = cg.createRadialGradient(512, 512, 120, 512, 512, 260);
+ringGlow.addColorStop(0, 'rgba(180,120,255,0)');
+ringGlow.addColorStop(0.55, 'rgba(180,120,255,0.55)');
+ringGlow.addColorStop(0.62, 'rgba(255,255,255,0.95)');
+ringGlow.addColorStop(0.7, 'rgba(180,120,255,0.45)');
+ringGlow.addColorStop(1, 'rgba(180,120,255,0)');
+cg.fillStyle = ringGlow;
+cg.fillRect(0, 0, 1024, 1024);
+const ceiling = new THREE.Mesh(new THREE.CircleGeometry(wallR, 128),
+basic({ map: panoCanvasTexture(THREE, cc), side: THREE.DoubleSide }));
+ceiling.rotation.x = Math.PI / 2;
+ceiling.position.set(center.x, floorY + wallH, center.z);
+studio.add(ceiling);
+
+// Отражение предмета в полу: его зеркальная копия под полом, пол над
+// ней полупрозрачный — выходит тёмный глянец.
+if (object){
+object.updateMatrixWorld(true);
+const mirror = object.clone();
+mirror.matrixAutoUpdate = false;
+mirror.matrix.makeScale(1, -1, 1).premultiply(new THREE.Matrix4().makeTranslation(0, 2 * floorY, 0)).multiply(object.matrixWorld);
+studio.add(mirror);
+}
+
+// Пол: глянцевый, к центру светлее (свечение подиума), к стенам — в
+// черноту. Цвета вершин — в линейном пространстве.
+const edge = [0.002, 0.0015, 0.004], hot = [0.035, 0.014, 0.085];
+// Больше колец — чтобы свечение было плавным, а не «лучами» от центра.
+const floorRing = new THREE.RingGeometry(radius * 0.001, wallR, 128, 64);
+const rpos = floorRing.attributes.position;
+const rcol = new Float32Array(rpos.count * 3);
+for (let k = 0; k < rpos.count; k++){
+const d = Math.hypot(rpos.getX(k), rpos.getY(k)) / radius;
+const t = Math.max(0, 1 - d / 4) ** 2;
+for (let c = 0; c < 3; c++) rcol[k * 3 + c] = edge[c] + (hot[c] - edge[c]) * t;
+}
+floorRing.setAttribute('color', new THREE.BufferAttribute(rcol, 3));
+const floor = new THREE.Mesh(floorRing, basic({ vertexColors: true, transparent: true, opacity: object ? 0.82 : 1 }));
 floor.rotation.x = -Math.PI / 2;
 floor.position.set(center.x, floorY, center.z);
 studio.add(floor);
-const grid = new THREE.GridHelper(radius * 24, 96, 0x8a4dff, 0x5b2bb0);
-grid.position.set(center.x, floorY + radius * 0.004, center.z);
-[].concat(grid.material).forEach(m => { m.transparent = true; m.opacity = 0.6; m.toneMapped = false; });
-studio.add(grid);
 
-const neon = (color) => new THREE.MeshBasicMaterial({ color, toneMapped: false });
-// Подиум под предметом и неоновое кольцо по его краю.
-const podR = radius * 0.32;
-const podium = new THREE.Mesh(new THREE.CylinderGeometry(podR, podR * 1.08, radius * 0.06, 64),
-new THREE.MeshBasicMaterial({ color: 0x120a22 }));
-podium.position.set(center.x, floorY + radius * 0.03, center.z);
+// Подиум: тёмный диск с неоновым кантом и световым лучом вверх.
+const podR = radius * 0.34, podH = radius * 0.05;
+const pc = document.createElement('canvas');
+pc.width = pc.height = 512;
+const pg = pc.getContext('2d');
+const ptop = pg.createRadialGradient(256, 256, 0, 256, 256, 256);
+ptop.addColorStop(0, '#5a2fa8');
+ptop.addColorStop(0.6, '#24124a');
+ptop.addColorStop(1, '#140a28');
+pg.fillStyle = ptop;
+pg.fillRect(0, 0, 512, 512);
+const podium = new THREE.Mesh(new THREE.CylinderGeometry(podR, podR * 1.06, podH, 96),
+[basic({ color: 0x0d0818 }), basic({ map: panoCanvasTexture(THREE, pc) }), basic({ color: 0x0d0818 })]);
+podium.position.set(center.x, floorY + podH / 2, center.z);
 studio.add(podium);
-const ring = new THREE.Mesh(new THREE.TorusGeometry(podR * 1.04, radius * 0.008, 8, 96), neon(0xb34dff));
-ring.rotation.x = Math.PI / 2;
-ring.position.set(center.x, floorY + radius * 0.062, center.z);
-studio.add(ring);
+const rim = new THREE.Mesh(new THREE.TorusGeometry(podR * 1.01, radius * 0.007, 8, 128), basic({ color: 0xc58cff }));
+rim.rotation.x = Math.PI / 2;
+rim.position.set(center.x, floorY + podH, center.z);
+studio.add(rim);
+const bc = document.createElement('canvas');
+bc.width = 64;
+bc.height = 256;
+const bg = bc.getContext('2d');
+const beamGrad = bg.createLinearGradient(0, 256, 0, 0);
+beamGrad.addColorStop(0, 'rgba(170,110,255,0.32)');
+beamGrad.addColorStop(1, 'rgba(170,110,255,0)');
+bg.fillStyle = beamGrad;
+bg.fillRect(0, 0, 64, 256);
+const beamH = radius * 1.6;
+const beam = new THREE.Mesh(new THREE.CylinderGeometry(podR * 0.95, podR, beamH, 64, 1, true),
+basic({ map: panoCanvasTexture(THREE, bc), transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending }));
+beam.position.set(center.x, floorY + podH + beamH / 2, center.z);
+studio.add(beam);
 
-// Неоновые арки вокруг — видно, куда ни повернись.
-for (let i = 0; i < 6; i++){
-const a = i / 6 * Math.PI * 2 + Math.PI / 6;
-const arch = new THREE.Mesh(new THREE.TorusGeometry(radius * 0.9, radius * 0.012, 8, 64, Math.PI),
-neon(i % 2 ? 0xff2bd6 : 0x7b2cff));
-arch.position.set(center.x + Math.sin(a) * radius * 2.2, floorY, center.z - Math.cos(a) * radius * 2.2);
-arch.rotation.y = -a;
-studio.add(arch);
+const logo = await panoLoadImage('logo.webp');
+const lc = document.createElement('canvas');
+lc.width = 1024;
+lc.height = 512;
+const lg = lc.getContext('2d');
+if (logo){
+const k = Math.min(900 / logo.width, 330 / logo.height);
+lg.drawImage(logo, 512 - logo.width * k / 2, 10, logo.width * k, logo.height * k);
 }
-
-// Табличка с названием и ценой — за спиной зрителя (повернись — увидишь).
-const plate = new THREE.Mesh(new THREE.PlaneGeometry(radius * 2.4, radius * 0.6),
-new THREE.MeshBasicMaterial({ map: panoLabelTexture(THREE, label || 'DGhostMarket'), toneMapped: false }));
-plate.position.set(center.x, floorY + radius * 0.9, center.z + radius * 2);
-plate.rotation.y = Math.PI;
-studio.add(plate);
+lg.font = 'bold 96px sans-serif';
+while (lg.measureText('DGHOSTMARKET').width > 980) lg.font = lg.font.replace(/\d+/, n => n - 4);
+lg.textAlign = 'center';
+lg.textBaseline = 'middle';
+lg.shadowColor = '#b34dff';
+lg.shadowBlur = 30;
+lg.fillStyle = '#ffffff';
+lg.fillText('DGHOSTMARKET', 512, logo ? 430 : 256);
+// Логотип — на стене слева, название и цена — справа и за спиной
+// (впереди стену загородил бы сам предмет).
+const right = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
+const onWall = (mesh, dir, h) => {
+// Ближе стены: края плоской таблички иначе уходили в изогнутую стену.
+mesh.position.set(center.x + dir.x * wallR * 0.88, floorY + h, center.z + dir.z * wallR * 0.88);
+mesh.lookAt(center.x, floorY + h, center.z);
+studio.add(mesh);
+};
+const logoTex = panoCanvasTexture(THREE, lc);
+onWall(new THREE.Mesh(new THREE.PlaneGeometry(radius * 6, radius * 3), basic({ map: logoTex, transparent: true })),
+right.clone().negate(), wallH * 0.55);
+const labelTex = panoLabelTexture(THREE, label || 'DGhostMarket');
+onWall(new THREE.Mesh(new THREE.PlaneGeometry(radius * 5.6, radius * 1.4), basic({ map: labelTex, transparent: true })),
+right, wallH * 0.45);
+onWall(new THREE.Mesh(new THREE.PlaneGeometry(radius * 5.6, radius * 1.4), basic({ map: labelTex, transparent: true })),
+forward.clone().negate(), wallH * 0.45);
 return studio;
 }
 
@@ -4213,8 +4337,6 @@ const radius = Math.max(size.x, size.y, size.z) || 1;
 // Точка съёмки — ближе, чем кадр картинки: в грани 90° предмет иначе мелкий.
 const eye = center.clone().add(camera.position.clone().sub(center).multiplyScalar(0.42));
 const floorY = box.min.y - radius * 0.35;
-const studio = buildPanoStudio(THREE, center, radius, floorY, label);
-scene.add(studio);
 
 renderer.setSize(S, S, false);
 renderer.setClearColor(0x000000, 1);
@@ -4223,6 +4345,8 @@ cam.position.copy(eye);
 // Базис взгляда: «вперёд» — на предмет, «вверх» — мировой.
 const F = center.clone().sub(eye).setY(0).normalize();
 const U = new THREE.Vector3(0, 1, 0);
+const studio = await buildPanoStudio(THREE, center, radius, floorY, label, object, F);
+scene.add(studio);
 const R = new THREE.Vector3().crossVectors(F, U).normalize();
 const faces = [
 [F, U], [F.clone().negate(), U], [R, U], [R.clone().negate(), U],

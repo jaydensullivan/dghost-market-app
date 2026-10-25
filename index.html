@@ -10,7 +10,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=5"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=98">
+<link rel="stylesheet" href="app.css?v=99">
 </head>
 <body data-tab="shop">
 <!-- Значки интерфейса в едином объёмном стиле (gi-*): <svg class="gi"><use href="#gi-…"/></svg>. -->
@@ -586,17 +586,17 @@
 
 <button type="button" class="back-btn u-mb12" id="dealsBackBtn">←</button>
 
-<div class="profile-section-title" style="font-size:16px; margin-bottom:14px;">Мои сделки</div>
+<div class="profile-section-title" style="font-size:16px; margin-bottom:14px;" data-i18n="deals_screen_title">Мои сделки</div>
 
 <div id="p2pStatusList"></div>
 
 <div id="dealsList">
-<div class="skins-empty skins-empty-md">Загрузка...</div>
+<div class="skins-empty skins-empty-md" data-i18n="loading">Загрузка...</div>
 </div>
 
-<div class="profile-section-title" style="margin-top:18px;">🔄 Обмены</div>
+<div class="profile-section-title" style="margin-top:18px;" data-i18n="trades_section_title">🔄 Обмены</div>
 <div id="tradeOffersList">
-<div class="skins-empty skins-empty-md">Загрузка...</div>
+<div class="skins-empty skins-empty-md" data-i18n="loading">Загрузка...</div>
 </div>
 
 </div>
@@ -673,12 +673,12 @@
 
 <div class="profile-section-title" style="margin-top:18px;" data-i18n="br_my_requests_title">Мои заявки</div>
 <div id="myBuyRequestsList">
-<div class="skins-empty skins-empty-md">Загрузка...</div>
+<div class="skins-empty skins-empty-md" data-i18n="loading">Загрузка...</div>
 </div>
 
 <div class="profile-section-title" style="margin-top:18px;" data-i18n="br_public_list_title">Заявки других — можно откликнуться</div>
 <div id="publicBuyRequestsList">
-<div class="skins-empty skins-empty-md">Загрузка...</div>
+<div class="skins-empty skins-empty-md" data-i18n="loading">Загрузка...</div>
 </div>
 </div>
 
@@ -938,36 +938,36 @@
 </div>
 
 <div class="profile-section admin-group" id="adminSetsSection" data-group="sets" style="display:none;" data-view="showcase">
-<div class="profile-section-title">Создать сет</div>
+<div class="profile-section-title" data-i18n="admin_sets_create_title">Создать сет</div>
 
 <div class="edit-field">
-<label for="setTitle">Название сета</label>
+<label for="setTitle" data-i18n="admin_sets_name">Название сета</label>
 <input id="setTitle" type="text" maxlength="100" placeholder="Asiimov Set">
 </div>
 
 <div class="edit-field">
-<label for="setDescription">Описание (необязательно)</label>
+<label for="setDescription" data-i18n="label_description">Описание (необязательно)</label>
 <input id="setDescription" type="text" maxlength="500" placeholder="Три предмета в стиле Asiimov">
 </div>
 
 <div class="edit-field">
-<label>Скидка</label>
+<label data-i18n="admin_sets_discount">Скидка</label>
 <div class="btn-row u-mb8">
-<button type="button" class="steam-link-btn secondary set-discount-type-btn active" data-discount-type="percent" style="flex:1;">В процентах</button>
-<button type="button" class="steam-link-btn secondary set-discount-type-btn" data-discount-type="fixed" style="flex:1;">Фикс. цена</button>
+<button type="button" class="steam-link-btn secondary set-discount-type-btn active" data-discount-type="percent" style="flex:1;" data-i18n="admin_sets_percent">В процентах</button>
+<button type="button" class="steam-link-btn secondary set-discount-type-btn" data-discount-type="fixed" style="flex:1;" data-i18n="admin_sets_fixed">Фикс. цена</button>
 </div>
 <input id="setDiscountValue" type="number" min="0" placeholder="10 (значит -10%)">
 </div>
 
 <div class="edit-field">
-<label>Выбери минимум 2 лота (недоступные для сетов не показаны)</label>
+<label data-i18n="admin_sets_pick">Выбери минимум 2 лота (недоступные для сетов не показаны)</label>
 <div class="admin-skin-picker" id="setSkinPicker"><div class="skins-empty skins-empty-sm">Загрузка...</div></div>
 </div>
 
 <div class="edit-status" id="setCreateStatus"></div>
-<button type="button" id="setCreateBtn" class="steam-link-btn">Создать сет</button>
+<button type="button" id="setCreateBtn" class="steam-link-btn" data-i18n="admin_sets_create_title">Создать сет</button>
 
-<div class="profile-section-title u-mt16">Существующие сеты</div>
+<div class="profile-section-title u-mt16" data-i18n="admin_sets_list_title">Существующие сеты</div>
 <div id="adminSetsList"><div class="skins-empty skins-empty-sm" data-i18n="loading">Загрузка...</div></div>
 </div>
 
@@ -1092,7 +1092,7 @@
 </div>
 
 <div class="profile-section admin-group" id="adminFeatureTogglesSection" data-group="settings" style="margin-top:10px; display:none;" data-view="settings">
-<div class="profile-section-title">Доступность функций</div>
+<div class="profile-section-title" data-i18n="admin_features_title">Доступность функций</div>
 <div style="font-size:12px; color:var(--muted); margin-bottom:4px;" data-i18n="admin_label_topup">Пополнение</div>
 <div class="admin-perm-chips">
 <label class="admin-perm-chip"><input type="checkbox" id="toggleTopupCard"> <span data-i18n="admin_method_p2p_card">П2П (карта)</span></label>
@@ -1836,6 +1836,10 @@
 <svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-cube"/></svg>
 <span data-i18n="btn_pano">360°</span>
 </button>
+<button type="button" id="buyAnglesBtn" class="buy-action-btn" style="display:none;">
+<svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-refresh"/></svg>
+<span data-i18n="btn_angles">Ракурсы</span>
+</button>
 <button type="button" id="buyArBtn" class="buy-action-btn" style="display:none;">
 <svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-ar"/></svg>
 <span data-i18n="btn_ar">На столе</span>
@@ -2254,8 +2258,8 @@
 </div>
 </div>
 <script src="app-core.js?v=17"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=10', en: 'app-i18n-en.js?v=10' };</script>
-<script src="app-i18n.js?v=135"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=11', en: 'app-i18n-en.js?v=11' };</script>
+<script src="app-i18n.js?v=136"></script>
 <script src="app-navigation.js?v=25"></script>
 <script src="app-shop.js?v=38"></script>
 <script src="app-legal.js?v=3"></script>
@@ -2272,7 +2276,7 @@
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
 <script>window.DG_ADMIN_SRC = 'app-admin.js?v=28';</script>
 <!-- 3D-просмотрщик (210 КБ) грузится после открытия витрины — ensure3DScript в app-navigation.js. -->
-<script>window.DG_3D_SRC = 'app-3d.js?v=108';</script>
+<script>window.DG_3D_SRC = 'app-3d.js?v=109';</script>
 <script src="app-auctions.js?v=9"></script>
 <script src="app-reviews.js?v=4"></script>
 <script src="app-notifications.js?v=3"></script>
