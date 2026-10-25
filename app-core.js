@@ -213,3 +213,45 @@ const r = e && e.reason;
 reportClientError('promise', (r && (r.stack || r.message)) || String(r));
 });
 
+// ---------- трейд-бан Steam у лота ----------
+// Продавец может выставить предмет, который Steam ещё не даёт передать
+// (до 7 дней после покупки или обмена). До tradable_after лот виден с
+// таймером, но не покупается — покупатель ставит его в «Хочу».
+function tradeLockUntil(skin){
+const t = skin && skin.tradable_after ? Date.parse(skin.tradable_after) : NaN;
+return t > Date.now() ? t : 0;
+}
+
+// «2 д 04:12:55» / «4:12:55» — сколько осталось.
+function tradeLockLeft(until){
+const dict = (typeof I18N !== 'undefined' && I18N[currentLang]) || {};
+let s = Math.max(0, Math.floor((until - Date.now()) / 1000));
+const d = Math.floor(s / 86400); s -= d * 86400;
+const h = Math.floor(s / 3600); s -= h * 3600;
+const m = Math.floor(s / 60); s -= m * 60;
+const hms = h + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+return d ? (dict.tl_days || '{d} д').replace('{d}', d) + ' ' + hms : hms;
+}
+
+// «31.10 12:00» — по часам телефона.
+function tradeLockDate(until){
+const t = new Date(until);
+return String(t.getDate()).padStart(2, '0') + '.' + String(t.getMonth() + 1).padStart(2, '0')
++ ' ' + String(t.getHours()).padStart(2, '0') + ':' + String(t.getMinutes()).padStart(2, '0');
+}
+
+// Все таймеры на странице (<span data-unlock="мс">) — раз в секунду. Бан
+// снялся — перерисовываем каталог и открытый лот: там снова «Купить».
+setInterval(() => {
+const els = document.querySelectorAll('[data-unlock]');
+if (!els.length) return;
+let expired = false;
+els.forEach(el => {
+const until = Number(el.dataset.unlock);
+if (until > Date.now()) el.textContent = tradeLockLeft(until);
+else expired = true;
+});
+if (!expired) return;
+if (typeof applyFiltersAndRender === 'function') applyFiltersAndRender();
+if (typeof applyBuyTradeLock === 'function' && typeof pendingBuySkin !== 'undefined' && pendingBuySkin) applyBuyTradeLock(pendingBuySkin);
+}, 1000);

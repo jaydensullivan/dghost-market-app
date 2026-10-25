@@ -1426,7 +1426,7 @@ ${floatBlock ? `<div class="bw-row">${floatBlock}</div>` : ''}
 <div class="bw-pricebox">
 <div class="bw-label">${escapeHtml(dict.detail_price)}</div>
 <div class="bw-price">${formatCoins(skin.price)}</div>
-${isOwn ? '' : `<button type="button" class="bw-buy" data-bw-buy>🛒 ${escapeHtml(dict.btn_buy)}</button><div class="bw-guarantee">🛡 ${escapeHtml(dict.buy_guarantee)}</div>`}
+${isOwn ? '' : (tradeLockUntil(skin) ? `<div class="bw-lock">🔒 ${escapeHtml(dict.tl_title)} · <b data-unlock="${tradeLockUntil(skin)}">${tradeLockLeft(tradeLockUntil(skin))}</b></div><button type="button" class="bw-buy" data-bw-watch>${escapeHtml(dict.tl_watch_btn)}</button>` : `<button type="button" class="bw-buy" data-bw-buy>🛒 ${escapeHtml(dict.btn_buy)}</button><div class="bw-guarantee">🛡 ${escapeHtml(dict.buy_guarantee)}</div>`)}
 <div id="buyWideSpecs"></div>
 </div>
 </div>`;
@@ -1442,6 +1442,47 @@ document.querySelectorAll('#buyWide .bw-thumb').forEach(b => b.classList.toggle(
 return;
 }
 if (e.target.closest('[data-bw-buy]')) document.getElementById('buyOpenPayBtn').click();
+if (e.target.closest('[data-bw-watch]')) document.getElementById('buyTradeLockWatch').click();
+});
+
+// Лот в трейд-бане Steam: вместо «Купить» / «Предложить цену» / обмена —
+// таймер и «В «Хочу»». Свой лот — тот же таймер с пояснением. Бан снялся
+// (таймер в app-core.js) — вызывается снова и возвращает кнопки.
+function applyBuyTradeLock(skin){
+const box = document.getElementById('buyTradeLock');
+if (!box) return;
+const dict = I18N[currentLang] || I18N.ru;
+const until = tradeLockUntil(skin);
+const isOwn = currentUserId && skin.seller_id === currentUserId;
+box.style.display = until ? '' : 'none';
+if (!isOwn){
+document.getElementById('buyOpenPayBtn').style.display = until ? 'none' : '';
+buyMakeOfferBtn.style.display = until ? 'none' : '';
+document.getElementById('buyMakeTradeBtn').style.display = until ? 'none' : '';
+document.getElementById('buyGuarantee').style.display = until ? 'none' : '';
+}
+const left = document.getElementById('buyTradeLockLeft');
+if (!until){
+delete left.dataset.unlock;
+return;
+}
+left.dataset.unlock = String(until);
+left.textContent = tradeLockLeft(until);
+document.getElementById('buyTradeLockText').textContent =
+(isOwn ? dict.tl_text_own : dict.tl_text_buyer).replace('{date}', tradeLockDate(until));
+const watch = document.getElementById('buyTradeLockWatch');
+watch.style.display = isOwn ? 'none' : '';
+const inWants = typeof favQueries !== 'undefined' && favQueries && favQueries.has(watchKey(skin));
+watch.textContent = inWants ? dict.tl_watch_on : dict.tl_watch_btn;
+watch.disabled = inWants;
+}
+
+document.getElementById('buyTradeLockWatch').addEventListener('click', () => {
+const skin = pendingBuySkin;
+if (!skin) return;
+openWatchSheet(skin);
+// «Хочу» сохраняется запросом — подпись кнопки обновим, когда он вернётся.
+setTimeout(() => { if (pendingBuySkin === skin) applyBuyTradeLock(skin); }, 1500);
 });
 
 function openBuySheet(skin){
@@ -1596,6 +1637,7 @@ buyOfferEdit.style.display = 'none';
 buyOfferInput.value = '';
 
 buyStatus.textContent = '';
+applyBuyTradeLock(skin);
 if (typeof update3DButton === 'function') update3DButton(skin);
 buyOverlay.classList.add('show');
 

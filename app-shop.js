@@ -260,6 +260,10 @@ return langMessage(ERROR_MESSAGES_RU, ERROR_MESSAGES_UZ, ERROR_MESSAGES_EN, code
 }
 
 function purchaseTrustLimitMessage(data){
+if (data.error === 'trade_locked'){
+const until = Date.parse(data.tradable_after);
+return (I18N[currentLang] || I18N.ru).tl_error.replace('{date}', until ? tradeLockDate(until) : '—');
+}
 if (data.error === 'new_account_limit'){
 const dict = I18N[currentLang] || I18N.ru;
 return dict.aml_new_account_limit

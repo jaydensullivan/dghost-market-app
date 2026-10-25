@@ -10,7 +10,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=5"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=100">
+<link rel="stylesheet" href="app.css?v=101">
 </head>
 <body data-tab="shop">
 <!-- Значки интерфейса в едином объёмном стиле (gi-*): <svg class="gi"><use href="#gi-…"/></svg>. -->
@@ -1897,6 +1897,12 @@
 <div class="buy-sticky-bar">
 <div class="edit-status buy-status-line" id="buyStatus"></div>
 <button type="button" id="buyCancel" style="display:none;" data-i18n="btn_cancel">Отмена</button>
+<!-- Лот в трейд-бане Steam: таймер вместо «Купить» (см. applyBuyTradeLock). -->
+<div class="trade-lock-box" id="buyTradeLock" style="display:none;">
+<div class="tl-head">🔒 <span data-i18n="tl_title">Трейд-бан Steam</span> · <b class="tl-left" id="buyTradeLockLeft"></b></div>
+<div class="tl-text" id="buyTradeLockText"></div>
+<button type="button" class="buy-main-btn" id="buyTradeLockWatch" data-i18n="tl_watch_btn">🔔 В «Хочу» — сообщить, когда выйдет</button>
+</div>
 <!-- Гарантия сделки — прямо над кнопкой покупки (совет Советника). -->
 <div class="buy-guarantee" id="buyGuarantee" style="display:none;">🛡 <span data-i18n="buy_guarantee">Деньги у гаранта: если продавец не передаст скин за 24 ч — вернём. Продавец получит оплату только после доставки.</span></div>
 <!-- Одна основная кнопка: способ оплаты выбирается в отдельном окне. -->
@@ -2268,22 +2274,22 @@
 <button class="btn-ghost-link mt6" type="button" id="musicCloseBtn" data-i18n="btn_close">Закрыть</button>
 </div>
 </div>
-<script src="app-core.js?v=17"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=12', en: 'app-i18n-en.js?v=12' };</script>
-<script src="app-i18n.js?v=137"></script>
+<script src="app-core.js?v=18"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=13', en: 'app-i18n-en.js?v=13' };</script>
+<script src="app-i18n.js?v=138"></script>
 <script src="app-navigation.js?v=25"></script>
-<script src="app-shop.js?v=38"></script>
+<script src="app-shop.js?v=39"></script>
 <script src="app-legal.js?v=3"></script>
 <script src="app-deals.js?v=24"></script>
-<script src="app-catalog.js?v=32"></script>
+<script src="app-catalog.js?v=33"></script>
 <script src="app-cart.js?v=10"></script>
-<script src="app-filters.js?v=57"></script>
+<script src="app-filters.js?v=58"></script>
 <script src="app-music.js?v=1"></script>
 <script src="app-steam.js?v=7"></script>
 <script src="app-topup.js?v=5"></script>
 <script src="app-history.js?v=10"></script>
 <script src="app-referral.js?v=8"></script>
-<script src="app-withdraw.js?v=31"></script>
+<script src="app-withdraw.js?v=32"></script>
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
 <script>window.DG_ADMIN_SRC = 'app-admin.js?v=28';</script>
 <!-- 3D-просмотрщик (210 КБ) грузится после открытия витрины — ensure3DScript в app-navigation.js. -->

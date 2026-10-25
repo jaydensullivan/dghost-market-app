@@ -305,6 +305,8 @@ inventoryGrid.innerHTML = list.map(({ item, i }) => {
 const photo = item.photo_url ? `<img src="${escapeHtml(item.photo_url)}" alt="" loading="lazy">` : '';
 const wearText = item.wear ? WEAR_LABELS[item.wear] || '' : '';
 const isTradable = item.tradable !== false;
+const lockUntil = invLockUntil(item);
+const sellable = isTradable || !!lockUntil;
 const rarityClass = RARITY_CLASS[item.rarity] || 'rarity-consumer';
 const hasFloat = item.float_value !== null && item.float_value !== undefined;
 const picked = isInvPicked(item);
@@ -320,13 +322,15 @@ const floatBlock = hasFloat
 const badges = [];
 if (wearText) badges.push(`<span class="inv-badge">${wearText}</span>`);
 if (item.stattrak) badges.push('<span class="inv-badge st">ST™</span>');
-if (!isTradable) badges.push('<span class="inv-badge ban">🔒</span>');
+if (!isTradable) badges.push(lockUntil
+? `<span class="inv-badge ban">🔒 <span data-unlock="${lockUntil}">${tradeLockLeft(lockUntil)}</span></span>`
+: '<span class="inv-badge ban">🔒</span>');
 
-const pickLabel = !isTradable && !pickMode ? '🔒'
+const pickLabel = !sellable && !pickMode ? '🔒'
 : picked ? dict.inv_picked_btn : dict.inv_pick;
 
 return `
-<div class="inv-item ${rarityClass}${isTradable ? '' : ' inv-item-banned'}${picked ? ' selected' : ''}" data-idx="${i}">
+<div class="inv-item ${rarityClass}${sellable ? '' : ' inv-item-banned'}${picked ? ' selected' : ''}" data-idx="${i}">
 <div class="inv-item-photo">
 <div class="inv-badges">${badges.join('')}</div>
 <button type="button" class="skin-fav inv-fav${isFavSkin(item) ? ' on' : ''}" data-inv-fav="${i}" aria-label="${escapeHtml((I18N[currentLang] || I18N.ru).watch_aria)}">${HEART_SVG}</button>
@@ -339,7 +343,7 @@ ${floatBlock}
 ${price ? `<div class="inv-item-price">≈ ${formatCoins(price)}</div>` : ''}
 <div class="inv-item-actions">
 <button type="button" class="inv-more" data-inv-more="${i}">${dict.inv_more}</button>
-<button type="button" class="inv-pick${picked ? ' on' : ''}" data-inv-pick="${i}"${!isTradable && !pickMode ? ' disabled' : ''}>${pickLabel}</button>
+<button type="button" class="inv-pick${picked ? ' on' : ''}" data-inv-pick="${i}"${!sellable && !pickMode ? ' disabled' : ''}>${pickLabel}</button>
 </div>
 </div>
 </div>`;
@@ -362,12 +366,24 @@ document.getElementById('invPickedThumbs').innerHTML = invPicked.map(item => `
 + '<button type="button" class="inv-thumb add" id="invPickMore">+</button>';
 }
 
+// Предмет в трейд-бане, который можно выставить: Steam сказал, когда бан
+// снимется, и это не дальше 8 дней (так же проверяет бот). Иначе 0.
+const INV_LOCK_MAX_MS = 8 * 24 * 3600 * 1000;
+function invLockUntil(item){
+if (!item || item.tradable !== false || !item.tradable_after) return 0;
+const t = Date.parse(item.tradable_after);
+return t > Date.now() && t - Date.now() <= INV_LOCK_MAX_MS ? t : 0;
+}
+
 function toggleInvPick(item){
 const dict = I18N[currentLang] || I18N.ru;
-if (item.tradable === false){
+const lockUntil = invLockUntil(item);
+if (item.tradable === false && !lockUntil){
 showAlert(dict.inv_trade_ban);
 return;
 }
+// В трейд-бане, но Steam сказал, когда снимется, — выставить можно, с таймером.
+if (lockUntil && !isInvPicked(item)) showToast(dict.tl_inv_hint.replace('{date}', tradeLockDate(lockUntil)));
 if (isInvPicked(item)){
 invPicked = invPicked.filter(p => invKey(p) !== invKey(item));
 } else if (invPicked.length >= INV_PICK_MAX){
@@ -553,7 +569,9 @@ const rows = [
 ['Float', hasFloat ? formatFloat(item.float_value) : '—'],
 [dict.inv_detail_pattern, item.pattern ? '#' + item.pattern : '—'],
 [dict.inv_detail_rarity, item.rarity || '—'],
-[dict.inv_detail_trade, item.tradable === false ? dict.inv_detail_banned : dict.inv_detail_ok],
+[dict.inv_detail_trade, item.tradable === false
+? (invLockUntil(item) ? dict.inv_detail_banned + ' · ' + tradeLockDate(invLockUntil(item)) : dict.inv_detail_banned)
+: dict.inv_detail_ok],
 ];
 const rarityClass = RARITY_CLASS[item.rarity] || 'rarity-consumer';
 document.getElementById('invDetailBody').innerHTML = `
@@ -563,7 +581,7 @@ ${rows.map(([k, v]) => `<div class="raffle-proof-row"><span>${k}</span><b>${esca
 ${stickersHtml(item.stickers, 'full')}`;
 const pickBtn = document.getElementById('invDetailPick');
 pickBtn.textContent = isInvPicked(item) ? dict.inv_picked_btn : dict.inv_pick;
-pickBtn.disabled = item.tradable === false && !inventoryPickHandler;
+pickBtn.disabled = item.tradable === false && !invLockUntil(item) && !inventoryPickHandler;
 const btn3d = document.getElementById('invDetail3d');
 btn3d.style.display = 'none';
 ensure3DScript().then(() => loadModelIndex()).then(map => {
