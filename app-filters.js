@@ -2966,6 +2966,31 @@ buyNewPriceInput.value = btn.dataset.mpLower;
 buyNewPriceInput.focus();
 });
 
+// «Ещё» в окне лота: видна, только если в меню есть хоть одна видимая
+// кнопка (их показывают и прячут другие файлы — следим за style).
+(function(){
+const wrap = document.getElementById('buyMoreWrap');
+const menu = document.getElementById('buyMoreMenu');
+const btn = document.getElementById('buyMoreBtn');
+if (!wrap || !menu || !btn) return;
+const setOpen = (open) => { wrap.classList.toggle('open', open); btn.setAttribute('aria-expanded', open ? 'true' : 'false'); };
+const sync = () => {
+const any = [...menu.children].some(b => b.style.display !== 'none');
+wrap.style.display = any ? '' : 'none';
+if (!any) setOpen(false);
+};
+new MutationObserver(sync).observe(menu, { subtree: true, attributes: true, attributeFilter: ['style'] });
+sync();
+btn.addEventListener('click', (e) => { e.stopPropagation(); setOpen(!wrap.classList.contains('open')); });
+// Пункт выбран — меню закрываем (его обработчик уже сработал).
+menu.addEventListener('click', () => setOpen(false));
+document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) setOpen(false); });
+// Окно лота закрылось — меню тоже.
+const overlay = document.getElementById('buyOverlay');
+if (overlay) new MutationObserver(() => { if (!overlay.classList.contains('show')) setOpen(false); })
+.observe(overlay, { attributes: true, attributeFilter: ['class'] });
+})();
+
 document.getElementById('buyWatchBtn').addEventListener('click', () => {
 if (pendingBuySkin) openWatchSheet(pendingBuySkin);
 });

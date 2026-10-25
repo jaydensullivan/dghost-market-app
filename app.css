@@ -5042,3 +5042,12 @@ body.theme-light .cart-balance-hint.cart-short{ color:#dc2626; }
 .support-tg-link{ position:relative; }
 .pf-info-btn::after,
 .support-tg-link::after{ content:""; position:absolute; inset:-10px; }
+
+/* «Ещё» в окне лота: редкие действия выпадающим списком под кнопкой. */
+.buy-more{ position:relative; }
+.buy-more-menu{ display:none; position:absolute; top:100%; right:0; z-index:20; min-width:200px; margin-top:4px; padding:6px; border-radius:12px; border:1px solid var(--red-dim); background:var(--surface); box-shadow:0 12px 32px rgba(0,0,0,0.35); }
+.buy-more.open .buy-more-menu{ display:flex; flex-direction:column; }
+.buy-more-menu .buy-action-btn{ flex-direction:row; gap:10px; width:100%; padding:10px 12px; border-radius:8px; font-size:11px; text-align:left; color:var(--text); }
+.buy-more-menu .buy-action-btn svg{ width:20px; height:20px; flex:none; }
+.buy-more-menu .buy-action-btn:hover{ background:rgba(139,92,246,0.10); }
+.buy-more.open > #buyMoreBtn{ color:var(--text); }
