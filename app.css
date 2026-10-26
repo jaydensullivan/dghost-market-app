@@ -4305,6 +4305,29 @@ background:rgba(255,255,255,.03);
 .inv-protect-hint summary{ cursor:pointer; font-size:13px; color:var(--silver); }
 .inv-protect-hint summary::before{ content:"ℹ️ "; }
 .inv-protect-hint p{ margin:8px 0 0; font-size:12px; line-height:1.5; color:var(--muted); }
+.inv-link-sell-btn{ margin-top:10px; padding:8px 12px; border-radius:10px; border:1px solid var(--accent); background:rgba(168,85,247,.14); color:var(--text); font-size:13px; cursor:pointer; }
+
+/* Steam скрыл N предметов (защита обмена) — предложить добавить по ссылке. */
+.inv-hidden{
+display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+margin:0 0 10px; padding:10px 12px; border-radius:12px;
+border:1px solid rgba(245,158,11,.45); background:rgba(245,158,11,.1);
+font-size:13px; line-height:1.4; color:var(--text);
+}
+.inv-hidden button{ padding:7px 12px; border-radius:10px; border:0; background:var(--accent); color:#fff; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; }
+
+/* Лот по инспект-ссылке. */
+.ls-hint{ margin:6px 0 12px; font-size:12px; line-height:1.5; color:var(--muted); }
+.ls-when{ display:grid; grid-template-columns:1fr 110px; gap:10px; }
+.ls-when input{ color-scheme:dark; min-height:42px; }
+.theme-light .ls-when input{ color-scheme:light; }
+.ls-preview{ margin-top:14px; padding-top:12px; border-top:1px solid var(--border, rgba(255,255,255,.08)); }
+.ls-owner{ margin:8px 0 10px; font-size:12px; line-height:1.45; color:var(--muted); }
+.ls-owner.ok{ color:#4ade80; }
+.ls-owner.bad{ color:#f87171; }
+#lsCheckBtn{ width:100%; margin-top:4px; }
+/* Открывается поверх окна инвентаря (оно тоже .edit-overlay). */
+#linkSellOverlay{ z-index:11; }
 
 /* Кнопка «Закрыть»/«Отмена» внизу листа видна всегда: длинный список
    (уведомления, история) прокручивается под ней, а не уводит её вниз. */
