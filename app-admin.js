@@ -28,7 +28,7 @@ return r.json();
 }
 
 const ADMIN_ONLY_SECTIONS = new Set([
-'adminKycSection','adminTopupsSection','adminP2pSection','adminWithdrawalsSection','adminTopupDetailsSection',
+'adminKycSection','adminTopupsSection','adminP2pSection','adminDepositsSection','adminWithdrawalsSection','adminTopupDetailsSection',
 'adminCommissionSection','adminFinanceSummarySection','adminPromoSection','adminReferralSection',
 'adminPeopleSection','adminDealsSection','adminBalanceSection',
 'adminHoldsSection','adminReportSection','adminDisputesSection',
@@ -300,6 +300,7 @@ loadAdminSetsList();
 loadAdminKyc();
 loadAdminTopups();
 loadAdminP2pOrders();
+loadAdminDeposits();
 loadAdminWithdrawals();
 loadAdminDisputes();
 loadAdminFraud();
@@ -1195,6 +1196,28 @@ loadAdminTopups();
 // Покупатель оплатил лот переводом на карту и приложил чек. Раньше
 // решение было только кнопками под сообщением в чате — если его
 // пропустить, заявка висела неделями. Теперь они видны и здесь.
+
+// Депозиты «Гаранта»: кто внёс, сколько покрыто открытыми сделками.
+function loadAdminDeposits(){
+const list = document.getElementById('adminDepositsList');
+if (!list) return;
+const dict = I18N[currentLang] || I18N.ru;
+adminApiFetch('/api/admin/garant_deposits')
+.then(data => {
+const items = (data && data.items) || [];
+if (!items.length){
+list.innerHTML = `<div class="skins-empty skins-empty-md">${escapeHtml(dict.admin_dep_empty)}</div>`;
+return;
+}
+list.innerHTML = items.map(d => `
+<div class="deal-card">
+<div class="deal-title">${escapeHtml(d.username || ('ID ' + d.user_id))} · ${formatCoins(d.amount)}</div>
+<div class="deal-meta">${escapeHtml(dict.admin_dep_cover.replace('{free}', formatCoins(d.free_cover)).replace('{open}', formatCoins(d.open_exposure)))}</div>
+<div class="deal-meta">${escapeHtml(d.card_masked || '—')}${d.card_holder ? ' · ' + escapeHtml(d.card_holder) : ''} · ${escapeHtml(d.active ? dict.admin_dep_on : dict.admin_dep_off)}</div>
+</div>`).join('');
+})
+.catch(err => { list.innerHTML = `<div class="skins-empty skins-empty-md">${escapeHtml(friendlyErrorMessage(err))}</div>`; });
+}
 
 function loadAdminP2pOrders(){
 const list = document.getElementById('adminP2pList');

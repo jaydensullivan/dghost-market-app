@@ -120,6 +120,7 @@ return fetch(API_BASE + '/api/pro?init_data=' + encodeURIComponent(tg.initData))
 if (data && !data.error){
 proStatus = data;
 renderProCard();
+renderDeposit();
 if (proPlansOverlay && proPlansOverlay.classList.contains('show')) renderProPlans();
 }
 return proStatus;
@@ -500,6 +501,102 @@ section.classList.toggle('locked', !allowed);
 lock.hidden = allowed;
 lock.textContent = allowed ? '' : psDict().ps_tier_needed.replace('{tier}', proTierName(tier));
 }
+
+// ---------- «Гарант» с депозитом: депозит и карта продавца ----------
+// Бот присылает garant.deposit в /api/pro: сумма, покрытие, лимит на
+// сделку, карта маской. Блок виден, когда тариф «Гарант» одобрен и
+// подключён (или депозит уже есть).
+
+function depositInfo(){
+const g = (proStatus && proStatus.garant) || {};
+return g.deposit || null;
+}
+
+function renderDeposit(){
+const box = document.getElementById('proDeposit');
+if (!box) return;
+const d = depositInfo();
+const show = !!(d && (d.garant || d.amount > 0));
+box.hidden = !show;
+if (!show) return;
+const dict = I18N[currentLang] || I18N.ru;
+const rows = [
+[dict.pro_dep_amount, d.amount ? formatCoins(d.amount) : dict.pro_dep_none],
+[dict.pro_dep_cover, formatCoins(d.free_cover || 0) + (d.open_exposure ? ' · ' + dict.pro_dep_open.replace('{sum}', formatCoins(d.open_exposure)) : '')],
+[dict.pro_dep_per_deal, formatCoins(d.per_deal_max || 0)],
+[dict.pro_dep_card, d.card_masked ? `${d.card_masked} · ${d.card_holder || ''}` : '—'],
+];
+const state = d.active ? `<div class="ps-note" style="color:#7CF2A5;">${escapeHtml(dict.pro_dep_active)}</div>`
+: `<div class="ps-note" style="color:#f87171;">${escapeHtml(d.amount && d.amount < d.min ? dict.pro_dep_below_min.replace('{min}', formatCoins(d.min)) : dict.pro_dep_off.replace('{min}', formatCoins(d.min)))}</div>`;
+document.getElementById('proDepositInfo').innerHTML = rows.map(([k, v]) => `<div class="raffle-proof-row"><span>${escapeHtml(k)}</span><b>${escapeHtml(String(v))}</b></div>`).join('') + state;
+const amountEl = document.getElementById('depAmount');
+if (!amountEl.value) amountEl.value = d.amount || d.min || '';
+document.getElementById('depWithdrawBtn').hidden = !(d.amount > 0);
+}
+
+function depositSave(){
+const dict = I18N[currentLang] || I18N.ru;
+const status = document.getElementById('depStatus');
+const btn = document.getElementById('depSaveBtn');
+const body = {
+init_data: tg.initData,
+amount: Number(document.getElementById('depAmount').value) || 0,
+card: document.getElementById('depCard').value.replace(/\D/g, ''),
+card_holder: document.getElementById('depHolder').value.trim(),
+};
+btn.disabled = true;
+status.textContent = dict.loading;
+fetch(API_BASE + '/api/garant/deposit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+.then(async r => {
+const data = await r.json().catch(() => ({}));
+if (!r.ok){
+if (data.error === 'deposit_below_min') throw new Error(dict.pro_dep_below_min.replace('{min}', formatCoins(data.min || 0)));
+if (data.error === 'insufficient_balance') throw new Error(dict.pro_dep_need_balance.replace('{need}', formatCoins(data.need || 0)).replace('{have}', formatCoins(data.available || 0)));
+if (data.error === 'deposit_below_exposure') throw new Error(dict.pro_dep_below_exposure.replace('{sum}', formatCoins(data.open_exposure || 0)));
+throw new Error(errorMessage(data.error));
+}
+return data;
+})
+.then(data => {
+if (proStatus) proStatus.garant = Object.assign({}, proStatus.garant, { deposit: data });
+status.textContent = dict.pro_dep_saved;
+haptic('success');
+renderDeposit();
+if (typeof loadProfile === 'function') loadProfile();
+})
+.catch(err => { status.textContent = friendlyErrorMessage(err); })
+.finally(() => { btn.disabled = false; });
+}
+
+function depositWithdraw(){
+const dict = I18N[currentLang] || I18N.ru;
+const status = document.getElementById('depStatus');
+showConfirm(dict.pro_dep_withdraw_q, () => {
+fetch(API_BASE + '/api/garant/deposit/withdraw', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ init_data: tg.initData }) })
+.then(async r => {
+const data = await r.json().catch(() => ({}));
+if (!r.ok){
+if (data.error === 'deposit_in_use') throw new Error(dict.pro_dep_in_use.replace('{sum}', formatCoins(data.open_exposure || 0)));
+throw new Error(errorMessage(data.error));
+}
+return data;
+})
+.then(data => {
+if (proStatus) proStatus.garant = Object.assign({}, proStatus.garant, { deposit: data });
+document.getElementById('depAmount').value = '';
+status.textContent = dict.pro_dep_withdrawn;
+renderDeposit();
+if (typeof loadProfile === 'function') loadProfile();
+})
+.catch(err => { status.textContent = friendlyErrorMessage(err); });
+});
+}
+
+document.getElementById('depSaveBtn').addEventListener('click', depositSave);
+document.getElementById('depWithdrawBtn').addEventListener('click', depositWithdraw);
+document.getElementById('depCard').addEventListener('input', (e) => {
+e.target.value = e.target.value.replace(/\D/g, '').slice(0, 16).replace(/(\d{4})(?=\d)/g, '$1 ');
+});
 
 function renderProSettings(){
 const box = document.getElementById('proSettings');

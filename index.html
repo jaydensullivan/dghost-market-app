@@ -416,6 +416,33 @@
 </div>
 <div class="pro-channels-status" id="proChannelsStatus"></div>
 </div>
+<!-- «Гарант» с депозитом: депозит продавца страхует оплату на его карту
+     (app-pro.js, бот: /api/garant/deposit). -->
+<div class="pro-settings" id="proDeposit" hidden>
+<div class="pro-channels-title" data-i18n="pro_dep_title">🛡 Депозит гаранта</div>
+<div class="pro-channels-hint" data-i18n="pro_dep_hint">Покупатели платят прямо на твою карту, а депозит на площадке страхует сделку. Одна сделка — не больше половины депозита, все открытые — не больше депозита. Комиссия списывается с баланса.</div>
+<div class="ps-section" id="proDepositInfo"></div>
+<div class="ps-section">
+<div class="edit-field">
+<label for="depAmount" data-i18n="pro_dep_amount_label">Сумма депозита, сум</label>
+<input id="depAmount" type="number" min="0" step="100000" placeholder="5000000">
+</div>
+<div class="edit-field">
+<label for="depCard" data-i18n="pro_dep_card_label">Карта для переводов (16 цифр, на своё имя)</label>
+<input id="depCard" type="text" inputmode="numeric" autocomplete="off" maxlength="19" placeholder="8600 0000 0000 0000">
+</div>
+<div class="edit-field">
+<label for="depHolder" data-i18n="pro_dep_holder_label">Имя и фамилия, как на карте</label>
+<input id="depHolder" type="text" autocomplete="cc-name" maxlength="80">
+</div>
+<div class="ps-btns">
+<button type="button" class="pf-btn" id="depSaveBtn" data-i18n="pro_dep_save">Внести / изменить</button>
+<button type="button" class="pf-btn" id="depWithdrawBtn" data-i18n="pro_dep_withdraw" hidden>Вернуть на баланс</button>
+</div>
+<div class="ps-note" data-i18n="pro_dep_note">Депозит замораживается на твоём балансе. Вернуть его можно, когда нет открытых сделок с оплатой на карту.</div>
+<div class="edit-status" id="depStatus"></div>
+</div>
+</div>
 <!-- «Моя подписка»: лимиты, формат постов, логотип, подпись,
      автопубликация (app-pro.js, бот: /api/pro/settings, /api/pro/logo). -->
 <div class="pro-settings" id="proSettings" hidden>
@@ -799,6 +826,11 @@
 <div class="profile-section admin-group" id="adminP2pSection" data-group="requests" style="margin-top:10px; display:none;" data-view="requests">
 <div class="profile-section-title" data-i18n="admin_section_p2p">Оплаты картой за лоты</div>
 <div id="adminP2pList"><div class="skins-empty skins-empty-md" data-i18n="loading">Загрузка...</div></div>
+</div>
+
+<div class="profile-section admin-group" id="adminDepositsSection" data-group="finance" style="margin-top:10px; display:none;" data-view="finance">
+<div class="profile-section-title" data-i18n="admin_section_deposits">Депозиты гарантов</div>
+<div id="adminDepositsList"><div class="skins-empty skins-empty-md" data-i18n="loading">Загрузка...</div></div>
 </div>
 
 <div class="profile-section admin-group" id="adminWithdrawalsSection" data-group="requests" style="margin-top:10px; display:none;" data-view="requests">
@@ -1322,7 +1354,7 @@
 
 <div class="edit-overlay" id="p2pSkinOverlay">
 <div class="edit-sheet">
-<h2 style="margin:0 0 14px;" data-i18n="p2p_skin_title">🏦 Оплата П2П</h2>
+<h2 style="margin:0 0 14px;" id="p2pSkinTitle" data-i18n="p2p_skin_title">🏦 Оплата П2П</h2>
 <div class="topup-details-box" id="p2pSkinDetailsBox">
 <div class="topup-details-text" id="p2pSkinDetailsText">Загрузка реквизитов...</div>
 <button type="button" id="p2pSkinCopyBtn" class="topup-copy-btn">
@@ -1355,7 +1387,8 @@
 <input type="file" id="p2pSkinReceiptInput" accept="image/*" style="color:var(--silver);">
 <img id="p2pSkinReceiptPreview" style="display:none; max-width:100%; max-height:180px; margin-top:8px; border-radius:8px;">
 </div>
-<div class="buy-guarantee p2p-guarantee">🛡 <span data-i18n="p2p_guarantee">Деньги у гаранта: продавец получит их только после того, как ты получишь скин. Не передал за 24 ч — вернём.</span></div>
+<div class="buy-guarantee p2p-guarantee" id="p2pGuaranteeBox">🛡 <span data-i18n="p2p_guarantee">Деньги у гаранта: продавец получит их только после того, как ты получишь скин. Не передал за 24 ч — вернём.</span></div>
+<div class="buy-guarantee p2p-guarantee" id="p2pSellerGuaranteeBox" hidden>🤝 <span data-i18n="p2p_seller_guarantee">Перевод уходит продавцу напрямую. Сделка застрахована его депозитом на площадке: не передал скин — вернём из депозита.</span></div>
 <div class="topup-warning" data-i18n="p2p_skin_warning">⚠️ Переведи ровно эту сумму на реквизиты выше, приложи скриншот чека и нажми «Отправил, подтверждаю».</div>
 <button type="button" id="p2pSkinSentBtn" class="welcome-btn primary" style="width:100%; margin-top:12px;" disabled data-i18n="p2p_skin_sent_btn">Отправил, подтверждаю</button>
 <div class="edit-status u-mt8" id="p2pSkinStatus"></div>
@@ -1940,6 +1973,8 @@
 <button type="button" id="buyConfirmBalance" class="save" style="display:none;">💰 <span data-i18n="buy_pay_balance">С баланса</span> · <span id="buyPrice">—</span><span class="pay-balance-left"><span data-i18n="buy_balance_available">доступно</span> <span id="buyBalanceAvailable">—</span></span></button>
 <button type="button" id="buyConfirmCard" class="save" style="display:none;">💳 <span data-i18n="buy_pay_card">Оплатить картой</span><span class="pay-balance-left">Uzcard · Humo</span></button>
 <button type="button" id="buyConfirmP2P" class="save" style="display:none;" data-i18n="buy_pay_p2p">🏦 Оплатить П2П (карта)</button>
+<!-- «Гарант» с депозитом: перевод прямо продавцу, сделку страхует его депозит. -->
+<button type="button" id="buyConfirmSellerCard" class="save" style="display:none;">🤝 <span data-i18n="buy_pay_seller_card">На карту продавца</span><span class="pay-balance-left" data-i18n="buy_pay_seller_card_sub">депозит гаранта</span></button>
 </div>
 <div class="legal-note"><span data-i18n="legal_pay_note">Нажимая кнопку оплаты, вы принимаете</span> <a href="#" data-legal-doc="buyer" data-i18n="legal_pay_note_link">Оферту для покупателя</a></div>
 </div>
@@ -2341,15 +2376,15 @@
 </div>
 </div>
 <script src="app-core.js?v=18"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=16', en: 'app-i18n-en.js?v=16' };</script>
-<script src="app-i18n.js?v=141"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=17', en: 'app-i18n-en.js?v=17' };</script>
+<script src="app-i18n.js?v=142"></script>
 <script src="app-navigation.js?v=25"></script>
-<script src="app-shop.js?v=40"></script>
+<script src="app-shop.js?v=41"></script>
 <script src="app-legal.js?v=3"></script>
 <script src="app-deals.js?v=24"></script>
 <script src="app-catalog.js?v=33"></script>
 <script src="app-cart.js?v=10"></script>
-<script src="app-filters.js?v=59"></script>
+<script src="app-filters.js?v=60"></script>
 <script src="app-music.js?v=1"></script>
 <script src="app-steam.js?v=7"></script>
 <script src="app-topup.js?v=5"></script>
@@ -2357,7 +2392,7 @@
 <script src="app-referral.js?v=8"></script>
 <script src="app-withdraw.js?v=35"></script>
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
-<script>window.DG_ADMIN_SRC = 'app-admin.js?v=28';</script>
+<script>window.DG_ADMIN_SRC = 'app-admin.js?v=29';</script>
 <!-- 3D-просмотрщик (210 КБ) грузится после открытия витрины — ensure3DScript в app-navigation.js. -->
 <script>window.DG_3D_SRC = 'app-3d.js?v=111';</script>
 <script src="app-auctions.js?v=9"></script>
@@ -2367,7 +2402,7 @@
 <script src="app-raffle.js?v=11"></script>
 <script src="app-home.js?v=10"></script>
 <script src="app-support.js?v=3"></script>
-<script src="app-pro.js?v=16"></script>
+<script src="app-pro.js?v=17"></script>
 <script>window.DG_R3D_SRC = 'app-render3d.js?v=4';</script>
 </body>
 </html>
