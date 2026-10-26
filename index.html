@@ -10,7 +10,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=5"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=104">
+<link rel="stylesheet" href="app.css?v=105">
 </head>
 <body data-tab="shop">
 <!-- Значки интерфейса в едином объёмном стиле (gi-*): <svg class="gi"><use href="#gi-…"/></svg>. -->
@@ -2106,6 +2106,55 @@
 </div>
 </div>
 
+<!-- Лот по инспект-ссылке: предмет под защитой обмена, в инвентаре его не видно. -->
+<div class="edit-overlay" id="linkSellOverlay">
+<div class="edit-sheet">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+<h2 style="margin:0;" data-i18n="ls_title">Лот по инспект-ссылке</h2>
+<button type="button" id="linkSellCloseBtn" class="buy-close-btn" style="position:static;">✕</button>
+</div>
+<p class="ls-hint" data-i18n="ls_hint">Для предмета, который Steam скрывает (трейд-бан или защита обмена). В Steam открой предмет → «Осмотреть в игре…» → скопируй ссылку.</p>
+
+<div class="edit-field">
+<label for="lsLink" data-i18n="ls_link_label">Инспект-ссылка</label>
+<input id="lsLink" type="text" placeholder="steam://rungame/730/…" autocomplete="off" spellcheck="false">
+</div>
+
+<div class="ls-when">
+<div class="edit-field">
+<label for="lsDate" data-i18n="ls_date_label">Когда снимется бан (как в Steam)</label>
+<input id="lsDate" type="date">
+</div>
+<div class="edit-field">
+<label for="lsTime" data-i18n="ls_time_label">Время</label>
+<input id="lsTime" type="time">
+</div>
+</div>
+
+<button type="button" id="lsCheckBtn" class="steam-link-btn" data-i18n="ls_check">Проверить предмет</button>
+
+<div class="ls-preview" id="lsPreview" style="display:none;">
+<div class="qs-photo" id="lsPhoto"></div>
+<div class="qs-name" id="lsName"></div>
+<div class="qs-sub" id="lsSub"></div>
+<div class="inv-item-wearbar" id="lsWearBar" style="display:none;"><div class="inv-item-wearbar-mark" id="lsWearMark"></div></div>
+<div class="inv-item-floatrow" id="lsFloatRow" style="display:none;"></div>
+<div class="ls-owner" id="lsOwner"></div>
+<div id="lsMarketPricePreview" class="market-price-box" style="display:none;"></div>
+<div class="edit-field">
+<label for="lsPrice" data-i18n="label_price_sum">Цена, сум</label>
+<input id="lsPrice" type="number" min="1" placeholder="5000">
+</div>
+</div>
+
+<div class="edit-actions">
+<button type="button" id="linkSellCancel" data-i18n="btn_cancel">Отмена</button>
+<button type="button" id="linkSellConfirm" class="save" data-i18n="btn_list_skin" disabled>Выставить</button>
+</div>
+<div class="edit-status" id="linkSellStatus"></div>
+</div>
+</div>
+
 <div class="edit-overlay" id="quickSellOverlay">
 <div class="edit-sheet">
 <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
@@ -2231,12 +2280,18 @@
 </select></label>
 </div>
 
-<!-- Steam 7 дней не показывает в публичном инвентаре предметы,
-полученные через обмен или Торговую площадку (Trade Protection), —
-без подсказки это выглядит как пропавший скин. -->
+<!-- Steam 7 дней не показывает сторонним предметы, полученные через
+обмен или Торговую площадку (Trade Protection). Steam говорит, сколько
+предметов всего, — разница и есть скрытые; их можно выставить по
+инспект-ссылке из Steam. -->
+<div class="inv-hidden" id="invHidden" style="display:none;">
+<span id="invHiddenText"></span>
+<button type="button" id="invHiddenAddBtn" data-i18n="inv_hidden_add">Добавить по ссылке</button>
+</div>
 <details class="inv-protect-hint">
 <summary data-i18n="inv_protect_q">Не видишь скин?</summary>
-<p data-i18n="inv_protect_text">Предметы, полученные через обмен или Торговую площадку Steam, 7 дней находятся под защитой Steam (Trade Protection). В это время Steam их не показывает, и выставить их нельзя. Они появятся здесь сами, когда защита закончится — нажми «Обновить».</p>
+<p data-i18n="inv_protect_text">Предметы, полученные через обмен или Торговую площадку Steam, 7 дней находятся под защитой Steam (Trade Protection). В это время Steam не показывает их сторонним сервисам, но выставить такой предмет можно по инспект-ссылке: в Steam открой предмет → «Осмотреть в игре…» → скопируй ссылку. Лот будет с таймером до конца защиты.</p>
+<button type="button" id="invLinkSellBtn" class="inv-link-sell-btn" data-i18n="inv_hidden_add">Добавить по ссылке</button>
 </details>
 
 <div class="edit-status" id="inventoryStatus">Загрузка...</div>
@@ -2286,10 +2341,10 @@
 </div>
 </div>
 <script src="app-core.js?v=18"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=14', en: 'app-i18n-en.js?v=14' };</script>
-<script src="app-i18n.js?v=139"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=15', en: 'app-i18n-en.js?v=15' };</script>
+<script src="app-i18n.js?v=140"></script>
 <script src="app-navigation.js?v=25"></script>
-<script src="app-shop.js?v=39"></script>
+<script src="app-shop.js?v=40"></script>
 <script src="app-legal.js?v=3"></script>
 <script src="app-deals.js?v=24"></script>
 <script src="app-catalog.js?v=33"></script>
@@ -2300,7 +2355,7 @@
 <script src="app-topup.js?v=5"></script>
 <script src="app-history.js?v=10"></script>
 <script src="app-referral.js?v=8"></script>
-<script src="app-withdraw.js?v=33"></script>
+<script src="app-withdraw.js?v=34"></script>
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
 <script>window.DG_ADMIN_SRC = 'app-admin.js?v=28';</script>
 <!-- 3D-просмотрщик (210 КБ) грузится после открытия витрины — ensure3DScript в app-navigation.js. -->

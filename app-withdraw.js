@@ -453,9 +453,11 @@ return r.json();
 })
 .then(data => {
 lastInventoryItems = data.items || [];
+lastInventoryHidden = Number(data.hidden_count) || 0;
 // После обновления выбранные остаются выбранными, если они ещё есть.
 invPicked = invPicked.filter(p => lastInventoryItems.some(it => invKey(it) === invKey(p)));
 renderInventory();
+renderInvHidden();
 loadInvPrices();
 })
 .catch(err => {
@@ -473,6 +475,229 @@ inventoryStatus.textContent = '';
 renderErrorState(inventoryGrid, msg, () => loadInventory(forceRefresh));
 });
 }
+
+// ---------- предметы, скрытые Steam: лот по инспект-ссылке ----------
+// Steam до 7 дней не показывает сторонним предметы после обмена или
+// покупки (Trade Protection), но считает их в общем числе — разница и
+// есть скрытые. Такой предмет выставляется по инспект-ссылке из Steam:
+// сервер по ней узнаёт владельца, float, паттерн, название и картинку.
+
+let lastInventoryHidden = 0;
+
+function renderInvHidden(){
+const box = document.getElementById('invHidden');
+const dict = I18N[currentLang] || I18N.ru;
+const show = lastInventoryHidden > 0 && !inventoryPickHandler;
+box.style.display = show ? '' : 'none';
+if (show) document.getElementById('invHiddenText').textContent = dict.inv_hidden_n.replace('{n}', lastInventoryHidden);
+}
+
+const linkSellOverlay = document.getElementById('linkSellOverlay');
+const lsLink = document.getElementById('lsLink');
+const lsDate = document.getElementById('lsDate');
+const lsTime = document.getElementById('lsTime');
+const lsPrice = document.getElementById('lsPrice');
+const lsStatus = document.getElementById('linkSellStatus');
+const lsConfirm = document.getElementById('linkSellConfirm');
+// Что показала проверка: { link, item } — выставляем только проверенную ссылку.
+let lsChecked = null;
+
+function lsPad(n){
+return String(n).padStart(2, '0');
+}
+
+// По умолчанию — через 7 дней от сейчас: ровно столько длится защита
+// обмена, если предмет получен только что. Продавец сверяет с датой в Steam.
+function lsDefaultWhen(){
+const d = new Date(Date.now() + 7 * 86400000);
+lsDate.value = d.getFullYear() + '-' + lsPad(d.getMonth() + 1) + '-' + lsPad(d.getDate());
+lsTime.value = lsPad(d.getHours()) + ':' + lsPad(d.getMinutes());
+}
+
+function lsWhen(){
+if (!lsDate.value) return null;
+const t = new Date(lsDate.value + 'T' + (lsTime.value || '23:59'));
+return isNaN(t.getTime()) ? null : t;
+}
+
+function lsLinkValid(link){
+return /^steam:\/\/rungame\/730\//.test(link) && link.includes('+csgo_econ_action_preview');
+}
+
+function lsReset(){
+lsChecked = null;
+document.getElementById('lsPreview').style.display = 'none';
+lsConfirm.disabled = true;
+}
+
+function openLinkSell(){
+if (!tg || !tg.initData) return;
+const dict = I18N[currentLang] || I18N.ru;
+if (sellerKycStatus !== 'verified'){
+showAlert(dict.sell_need_kyc);
+return;
+}
+if (steamLoginRequired && !steamVerified){
+showConfirm(dict.steam_login_required_q, startSteamLogin);
+return;
+}
+if (!hasSteamLink){
+showAlert(dict.sell_need_trade_link);
+return;
+}
+lsLink.value = '';
+lsPrice.value = '';
+lsStatus.textContent = '';
+lsDefaultWhen();
+lsReset();
+linkSellOverlay.classList.add('show');
+setTimeout(() => lsLink.focus(), 50);
+}
+
+function closeLinkSell(){
+linkSellOverlay.classList.remove('show');
+}
+
+document.getElementById('invHiddenAddBtn').addEventListener('click', openLinkSell);
+document.getElementById('invLinkSellBtn').addEventListener('click', openLinkSell);
+document.getElementById('linkSellCloseBtn').addEventListener('click', closeLinkSell);
+document.getElementById('linkSellCancel').addEventListener('click', closeLinkSell);
+// Ссылку поменяли — прошлая проверка больше не считается.
+lsLink.addEventListener('input', () => { if (lsChecked && lsLink.value.trim() !== lsChecked.link) lsReset(); });
+
+async function lsCheck(){
+const dict = I18N[currentLang] || I18N.ru;
+const link = lsLink.value.trim();
+if (!lsLinkValid(link)){
+lsStatus.textContent = dict.ls_need_link;
+return;
+}
+const when = lsWhen();
+if (!when || when.getTime() <= Date.now()){
+lsStatus.textContent = dict.ls_need_date;
+return;
+}
+const btn = document.getElementById('lsCheckBtn');
+btn.disabled = true;
+lsStatus.textContent = dict.ls_checking;
+lsReset();
+try {
+const r = await fetch(API_BASE + '/api/steam/inspect'
++ '?init_data=' + encodeURIComponent(tg.initData)
++ '&inspect_link=' + encodeURIComponent(link)
++ '&_t=' + Date.now(), { cache: 'no-store' });
+const data = await r.json().catch(() => ({}));
+if (!r.ok || !data.ok){
+lsStatus.textContent = errorMessage(data.error || 'inspect_unavailable');
+return;
+}
+if (!data.title || !data.image){
+lsStatus.textContent = dict.ls_unknown_item;
+return;
+}
+lsStatus.textContent = '';
+lsRenderPreview(data, when);
+if (data.owner_ok){
+lsChecked = { link, item: data };
+lsConfirm.disabled = false;
+}
+const market = await sellAllMarketPrice({ title: data.title, wear: data.wear }, !!data.stattrak);
+const box = document.getElementById('lsMarketPricePreview');
+if (market && lsChecked && lsChecked.link === link){
+box.innerHTML = `<div class="mp-row"><span>${dict.mp_preview_ref}</span><span>${escapeHtml(formatCoins(market))}</span></div>`;
+box.style.display = '';
+if (!lsPrice.value) lsPrice.value = String(qsRoundPrice(market * (1 - SELL_ALL_DISCOUNT / 100)));
+} else {
+box.style.display = 'none';
+}
+} catch (e){
+lsStatus.textContent = errorMessage('inspect_unavailable');
+} finally {
+btn.disabled = false;
+}
+}
+
+function lsRenderPreview(data, when){
+const dict = I18N[currentLang] || I18N.ru;
+const photo = document.getElementById('lsPhoto');
+photo.style.backgroundImage = RARITY_BG[data.rarity] ? `url('${RARITY_BG[data.rarity]}')` : 'none';
+photo.innerHTML = `<img src="${escapeHtml(data.image)}" alt="">`;
+const name = document.getElementById('lsName');
+name.textContent = (data.stattrak ? 'ST™ ' : '') + (data.souvenir ? 'Souvenir ' : '') + data.title;
+name.className = 'qs-name' + (data.stattrak ? ' stattrak' : '');
+document.getElementById('lsSub').textContent = [data.wear ? WEAR_LABELS[data.wear] || '' : '', data.weapon_type].filter(Boolean).join(' · ');
+const hasFloat = data.float_value !== null && data.float_value !== undefined;
+document.getElementById('lsWearBar').style.display = hasFloat ? '' : 'none';
+const floatRow = document.getElementById('lsFloatRow');
+floatRow.style.display = hasFloat ? 'flex' : 'none';
+if (hasFloat){
+document.getElementById('lsWearMark').style.left = (Math.min(1, Math.max(0, data.float_value)) * 100).toFixed(2) + '%';
+floatRow.innerHTML = `<span>${formatFloat(data.float_value)}</span>${data.pattern ? `<span>#${escapeHtml(String(data.pattern))}</span>` : ''}`;
+}
+const owner = document.getElementById('lsOwner');
+owner.className = 'ls-owner ' + (data.owner_ok ? 'ok' : 'bad');
+owner.textContent = data.owner_ok ? dict.ls_owner_ok.replace('{date}', tradeLockDate(when.getTime()))
+: data.owner_ok === false ? dict.ls_owner_bad : dict.ls_owner_unknown;
+document.getElementById('lsMarketPricePreview').style.display = 'none';
+document.getElementById('lsPreview').style.display = '';
+}
+
+document.getElementById('lsCheckBtn').addEventListener('click', lsCheck);
+
+function submitLinkSell(){
+const dict = I18N[currentLang] || I18N.ru;
+const link = lsLink.value.trim();
+if (!lsChecked || lsChecked.link !== link){
+lsStatus.textContent = dict.ls_need_check;
+return;
+}
+const when = lsWhen();
+if (!when || when.getTime() <= Date.now()){
+lsStatus.textContent = dict.ls_need_date;
+return;
+}
+const price = Number(lsPrice.value);
+if (!price || price <= 0){
+lsStatus.textContent = dict.skin_fill_title_price;
+return;
+}
+if (!sellerOfferAccepted){
+openSellerOffer(submitLinkSell);
+return;
+}
+lsConfirm.disabled = true;
+lsStatus.textContent = dict.addskin_publishing;
+fetch(API_BASE + '/api/skins_by_link', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData, inspect_link: link, tradable_after: when.toISOString(), price: price, description: '' })
+})
+.then(async r => {
+const data = await r.json().catch(() => ({}));
+if (!r.ok){
+if (data.error === 'seller_offer_required') sellerOfferAccepted = false;
+if (data.error === 'price_too_high'){
+throw new Error(dict.price_too_high.replace('{max}', formatCoins(data.max_allowed)).replace('{market}', formatCoins(data.market_price_uzs)));
+}
+throw new Error(errorMessage(data.error));
+}
+return data;
+})
+.then(() => {
+haptic('success');
+showToast(dict.ls_done);
+closeLinkSell();
+lastInventoryHidden = Math.max(0, lastInventoryHidden - 1);
+renderInvHidden();
+loadSkins();
+})
+.catch(err => {
+lsStatus.textContent = friendlyErrorMessage(err);
+lsConfirm.disabled = false;
+});
+}
+
+document.getElementById('linkSellConfirm').addEventListener('click', submitLinkSell);
 
 openInventoryBtn.addEventListener('click', () => {
 if (!tg || !tg.initData) return;
