@@ -1606,6 +1606,8 @@ stickersBox.style.display = 'none';
 // (принудительная отмена — спам/обман), но не видит "Изменить цену"
 // и "Предложить цену" на чужом.
 buyRemoveBtn.style.display = (isOwn || isAdmin) ? '' : 'none';
+// «Осмотреть в игре» — у лотов из Steam есть ссылка осмотра.
+document.getElementById('buyInspectBtn').style.display = skin.inspect_link ? '' : 'none';
 document.getElementById('buyWatchBtn').style.display = isOwn ? 'none' : '';
 if (typeof updateMusicKitButton === 'function') updateMusicKitButton(skin);
 document.getElementById('buyPaymentMethods').style.display = isOwn ? 'none' : 'flex';
@@ -3035,6 +3037,22 @@ if (overlay) new MutationObserver(() => { if (!overlay.classList.contains('show'
 
 document.getElementById('buyWatchBtn').addEventListener('click', () => {
 if (pendingBuySkin) openWatchSheet(pendingBuySkin);
+});
+
+// «Осмотреть в игре»: ссылка steam:// открывается только на компьютере с
+// запущенной CS2, поэтому копируем её в буфер и пробуем открыть — на
+// телефоне человек перешлёт себе, на ПК откроется сразу.
+document.getElementById('buyInspectBtn').addEventListener('click', () => {
+const skin = pendingBuySkin;
+if (!skin || !skin.inspect_link) return;
+const dict = I18N[currentLang] || I18N.ru;
+const link = String(skin.inspect_link);
+const copied = (navigator.clipboard && navigator.clipboard.writeText)
+? navigator.clipboard.writeText(link).catch(() => {}) : Promise.resolve();
+copied.then(() => {
+showToast(dict.inspect_game_hint);
+try { window.location.href = link; } catch (e) {}
+});
 });
 
 // Самозанятым и ИП — поле ИНН/ПИНФЛ (для сплита оплаты банком).

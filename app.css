@@ -5097,3 +5097,7 @@ body.layout-large #skinsList{ grid-template-columns:repeat(auto-fill, minmax(280
 .bottom-nav{ left:50%; right:auto; transform:translateX(-50%); width:min(560px, 100vw); border:1px solid var(--red-dim); border-bottom:none; border-radius:16px 16px 0 0; }
 .inventory-grid{ grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); }
 }
+
+/* Просмотрщик: «Левая рука» — зеркалим кадр (анимация CS2 правой руки). */
+#viewer3dCanvas.mirror{ transform:scaleX(-1); }
+#viewer3dMirrorBtn.active{ color:var(--red); }
