@@ -18,14 +18,42 @@
 // Если модули почему-то не заведутся (старый WebView), откатываемся
 // на классическую сборку r128 — лучше хоть что-то, чем ничего.
 const THREE_VERSION = '0.160.0';
-const THREE_ESM = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/build/three.module.js`;
+// Минифицированная сборка: 0,66 МБ вместо 1,27 — быстрее первое открытие.
+const THREE_ESM = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/build/three.module.min.js`;
 const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/examples/jsm/`;
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 77;
+const APP3D_VERSION = 78;
 
 let threeLoading = null;
+
+// ---------- телеметрия 3D ----------
+// Боту уходит: открыли просмотрщик, за сколько пришёл первый кадр
+// (ready), закрыли раньше (abandon), «в руках», ошибка, скриншот —
+// с режимом и устройством. Сводка — в админке, раздел «3D-рендер».
+// Тело текстом, чтобы браузер не делал предварительный запрос.
+let d3Caps = null;
+let d3Session = null;
+function d3Track(event, extra){
+try {
+if (typeof API_BASE === 'undefined') return;
+if (!d3Caps){
+const c = probe3DCapabilities();
+d3Caps = { webgl: c.webgl, renderer: c.renderer, memory: c.memory, platform: (tg && tg.platform) || 'web' };
+}
+const body = JSON.stringify(Object.assign({
+event, init_data: (tg && tg.initData) || '', mode: get3DMode() || 'full', device: d3Caps,
+v: String(APP3D_VERSION), skin_id: d3Session ? d3Session.skinId : null,
+}, extra || {}));
+fetch(API_BASE + '/api/3d_event', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body, keepalive: true }).catch(() => {});
+} catch (e) {}
+}
+function d3Ready(){
+if (!d3Session || d3Session.ready) return;
+d3Session.ready = true;
+d3Track('ready', { ms: Math.round(performance.now() - d3Session.t0) });
+}
 
 function loadScript(src){
 return new Promise((resolve, reject) => {
@@ -219,6 +247,30 @@ document.getElementById('d3Table').innerHTML = rows.map(([k, v]) =>
 `<div class="d3-row"><span>${escapeHtml(k)}</span><b>${escapeHtml(String(v))}</b></div>`).join('');
 }
 
+// Сводка телеметрии 3D за неделю — над тестом устройства в админке.
+function loadD3Stats(){
+const box = document.getElementById('d3Stats');
+if (!box || !tg || !tg.initData || typeof isAdmin === 'undefined' || !isAdmin) return;
+fetch(API_BASE + '/api/admin/3d_stats?init_data=' + encodeURIComponent(tg.initData))
+.then(r => r.ok ? r.json() : null)
+.then(s => {
+const dict = I18N[currentLang] || I18N.ru;
+if (!s) return;
+if (!s.opens){ box.innerHTML = `<div class="d3-row"><span>${escapeHtml(dict.d3_stats_empty)}</span></div>`; return; }
+const sec = ms => (ms == null ? '—' : (ms / 1000).toFixed(1));
+const modes = Object.entries(s.modes || {}).map(([k, v]) => `${k} ${v}`).join(', ') || '—';
+const renderers = (s.renderers || []).map(([k, v]) => `${k} (${v})`).join(', ') || '—';
+const lines = [
+dict.d3_stats_title.replace('{opens}', s.opens).replace('{users}', s.users).replace('{abandoned}', s.abandoned).replace('{errors}', s.errors),
+dict.d3_stats_speed.replace('{median}', sec(s.ready_ms_median)).replace('{p90}', sec(s.ready_ms_p90)).replace('{hands}', s.hands).replace('{handsMs}', sec(s.hands_ms_median)).replace('{shots}', s.shots),
+dict.d3_stats_devices.replace('{modes}', modes).replace('{webgl1}', s.webgl1_share == null ? '—' : s.webgl1_share).replace('{renderers}', renderers),
+];
+box.innerHTML = lines.map(t => `<div class="d3-row"><span>${escapeHtml(t)}</span></div>`).join('');
+})
+.catch(() => {});
+}
+loadD3Stats();
+
 const d3RunBtn = document.getElementById('d3RunBtn');
 
 if (d3RunBtn){
@@ -411,8 +463,19 @@ object.rotation.x += Math.PI / 2;
 object.updateMatrixWorld(true);
 }
 
-function fitObjectToView(THREE, object, camera){
+// На компьютере кадр просмотрщика широкий: вертикальный нож занимал в
+// нём узкую полоску. Кладём его горизонтально, остриём вправо.
+function layKnifeWide(THREE, object, camera){
+if (!camera || !(camera.aspect > 1.2)) return;
+const size = meshBox(THREE, object).getSize(new THREE.Vector3());
+if (size.y <= Math.max(size.x, size.z)) return;
+object.rotation.z -= Math.PI / 2;
+object.updateMatrixWorld(true);
+}
+
+function fitObjectToView(THREE, object, camera, inViewer){
 layModelFlat(THREE, object);
+if (inViewer) layKnifeWide(THREE, object, camera);
 // Считаем габариты ТОЛЬКО по мешам: в экспорте CS2 есть пустые
 // узлы и вспомогательные точки далеко от ствола, из-за них общий
 // бокс раздувается и модель получается крошечной в кадре.
@@ -3076,6 +3139,8 @@ renderer.dispose();
 
 function open3DViewer(modelUrl, title, skinDir, wearValue, weaponDir, maskChannel, seed, stickers, posterUrl){
 const loadId = ++viewer3dLoadId;
+d3Session = { skinId: (typeof buy3dSkin !== 'undefined' && buy3dSkin && buy3dSkin.id) || null, t0: performance.now(), ready: false };
+d3Track('open');
 // Фото лота сразу, пока качается и собирается 3D (на мобильном
 // интернете это секунды); гаснет, когда раскраска легла.
 showViewerPoster(posterUrl);
@@ -3178,8 +3243,8 @@ if (/(^|\/)models\/cases\//.test(String(modelUrl || ''))) applyCaseDecals(THREE,
 // у стандартного оружия.
 selectModelBody(object, false);
 scene.add(object);
-const baseDistance = fitObjectToView(THREE, gltf.scene, camera);
-if (!skinDir) hideViewerPoster();
+const baseDistance = fitObjectToView(THREE, gltf.scene, camera, true);
+if (!skinDir){ hideViewerPoster(); d3Ready(); }
 
 setupViewerScene(THREE, renderer, scene, weaponDir);
 
@@ -3191,6 +3256,7 @@ if (skinDir && isGloveSkin(skinDir)){
 applyGloveSkin(THREE, object, skinDir).then(() => {
 if (stale()) return;
 hideViewerPoster();
+d3Ready();
 status.textContent = dict.v3_skin_on;
 setTimeout(() => { status.textContent = ''; }, 3000);
 }).catch(err => {
@@ -3207,6 +3273,7 @@ if (stale()) return;
 if (!skin.pattern && !skin.solid) throw new Error('не загрузился узор');
 applySkinToModel(THREE, object, skin, wearValue, weapon, maskChannel, seed, atlas);
 hideViewerPoster();
+d3Ready();
 setupWearSlider(wearValue, () => [object, hands && hands.ih.knifeGroup]);
 // AR — только с раскраской: без неё на столе стоял бы серый ствол.
 if (viewer3d && viewer3d.object === object && arBtn && arSupported()){
@@ -3400,6 +3467,67 @@ viewer3d.raf = requestAnimationFrame(animate);
 
 viewer3d = { renderer, scene, camera, object, raf: 0, stopTilt };
 animate();
+
+// «Скриншот»: кадр просмотрщика — в чат с ботом картинкой (в Telegram)
+// или файлом на компьютер (в браузере). Фон у холста прозрачный —
+// подкладываем тёмный; «левая рука» — зеркалим, как на экране.
+const shotBtn = document.getElementById('viewer3dShotBtn');
+const mirrorBtn = document.getElementById('viewer3dMirrorBtn');
+if (mirrorBtn){
+mirrorBtn.hidden = true;
+mirrorBtn.classList.remove('active');
+canvas.classList.remove('mirror');
+mirrorBtn.onclick = () => {
+const on = canvas.classList.toggle('mirror');
+mirrorBtn.classList.toggle('active', on);
+};
+}
+if (shotBtn){
+shotBtn.hidden = false;
+shotBtn.onclick = async () => {
+const shotDict = I18N[currentLang] || I18N.ru;
+if (shotBtn.disabled || !viewer3d || viewer3d.renderer !== renderer) return;
+shotBtn.disabled = true;
+try {
+renderer.render(scene, hands ? hands.camera : camera);
+const out = document.createElement('canvas');
+out.width = canvas.width;
+out.height = canvas.height;
+const g = out.getContext('2d');
+g.fillStyle = '#0b0811';
+g.fillRect(0, 0, out.width, out.height);
+if (canvas.classList.contains('mirror')){ g.translate(out.width, 0); g.scale(-1, 1); }
+g.drawImage(canvas, 0, 0);
+const blob = await new Promise(resolve => out.toBlob(resolve, 'image/jpeg', 0.92));
+if (!blob) throw new Error('no blob');
+const skinId = d3Session && d3Session.skinId;
+if (tg && tg.initData && skinId){
+const bytes = new Uint8Array(await blob.arrayBuffer());
+const r = await fetch(API_BASE + '/api/skins/' + skinId + '/shot', {
+method: 'POST',
+headers: { 'Content-Type': 'text/plain' },
+body: JSON.stringify({ init_data: tg.initData, image_base64: bytesToBase64(bytes), v: String(APP3D_VERSION) }),
+});
+if (!r.ok) throw new Error('HTTP ' + r.status);
+status.textContent = shotDict.v3_shot_sent;
+if (typeof haptic === 'function') haptic('success');
+} else {
+const a = document.createElement('a');
+a.href = URL.createObjectURL(blob);
+a.download = String(title || 'skin').replace(/[^\w\s|★-]+/g, '').trim() + '.jpg';
+a.click();
+setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+d3Track('shot');
+}
+} catch (err) {
+console.warn('3D: скриншот не вышел —', err);
+status.textContent = shotDict.v3_shot_failed;
+} finally {
+shotBtn.disabled = false;
+setTimeout(() => { if (status.textContent === shotDict.v3_shot_sent || status.textContent === shotDict.v3_shot_failed) status.textContent = ''; }, 3000);
+}
+};
+}
 // Отражения той карты, что сейчас выбрана фоном.
 const bgStage = document.querySelector('.viewer3d-stage');
 applyViewerEnvironment((bgStage && bgStage.getAttribute('data-bg-image')) || 'inspect');
@@ -3425,8 +3553,10 @@ if (!clipId){
 if (hands){ scene.remove(hands.ih.root); hands = null; }
 object.visible = true;
 markViewerView('3d');
+if (mirrorBtn){ mirrorBtn.hidden = true; mirrorBtn.classList.remove('active'); canvas.classList.remove('mirror'); }
 return;
 }
+const handsT0 = performance.now();
 const animDir = 'models/anim/' + knifeName + '/';
 status.textContent = dict.v3_hands_loading;
 markViewerView(clipId);
@@ -3451,6 +3581,8 @@ scene.add(ih.root);
 object.visible = false;
 hands = { ih, camera: handsCamera, t: 0 };
 status.textContent = '';
+if (mirrorBtn) mirrorBtn.hidden = false;
+d3Track('hands', { ms: Math.round(performance.now() - handsT0) });
 } catch (err) {
 console.warn('3D: руки не загрузились —', err);
 status.textContent = dict.v3_hands_failed;
@@ -3469,6 +3601,8 @@ setTimeout(() => { status.textContent = ''; }, 2500);
 .catch(err => {
 if (stale()) return;
 hideViewerPoster();
+d3Track('error', { ms: d3Session ? Math.round(performance.now() - d3Session.t0) : null });
+if (typeof reportClientError === 'function') reportClientError('3d_open', String((err && err.message) || err) + ' · ' + modelUrl);
 // Путь показываем рядом с причиной — чаще всего ошибка именно в нём.
 // Человеку — понятная фраза на его языке; техническая причина и путь
 // — мелко ниже (по ним разбираем сбой).
@@ -3479,6 +3613,14 @@ status.innerHTML = `${escapeHtml(dict.v3_failed)}<br><span class="v3-detail">${e
 
 document.getElementById('viewer3dCloseBtn').addEventListener('click', () => {
 viewer3dLoadId++;
+if (d3Session && !d3Session.ready) d3Track('abandon', { ms: Math.round(performance.now() - d3Session.t0) });
+d3Session = null;
+const shotBtn = document.getElementById('viewer3dShotBtn');
+const mirrorBtn = document.getElementById('viewer3dMirrorBtn');
+if (shotBtn) shotBtn.hidden = true;
+if (mirrorBtn){ mirrorBtn.hidden = true; mirrorBtn.classList.remove('active'); }
+const canvas = document.getElementById('viewer3dCanvas');
+if (canvas) canvas.classList.remove('mirror');
 setViewerFullscreen(false);
 viewer3dOverlay.classList.remove('show');
 dispose3DViewer();

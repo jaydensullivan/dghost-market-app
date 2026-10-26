@@ -10,7 +10,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=5"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=103">
+<link rel="stylesheet" href="app.css?v=104">
 </head>
 <body data-tab="shop">
 <!-- Значки интерфейса в едином объёмном стиле (gi-*): <svg class="gi"><use href="#gi-…"/></svg>. -->
@@ -1135,6 +1135,7 @@
 <div class="profile-section admin-group" data-group="settings" id="admin3dSection" style="margin-top:10px; display:none;" data-view="settings">
 <div class="profile-section-title" data-i18n="d3_section">3D-рендер (тест)</div>
 <div class="shop-hint u-mb10" data-i18n="d3_hint"></div>
+<div id="d3Stats" class="d3-table u-mb10"></div>
 <div id="d3CanvasWrap" class="d3-canvas-wrap"><canvas id="d3Canvas"></canvas></div>
 <div id="d3Table" class="d3-table"></div>
 <button type="button" id="d3RunBtn" class="steam-link-btn u-mt10" data-i18n="d3_run">Запустить тест</button>
@@ -1595,6 +1596,12 @@
 <button type="button" class="viewer3d-icon" id="viewer3dArBtn" aria-label="AR — на столе" data-i18n-aria-label="v3_ar" hidden>
 <svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-ar"/></svg>
 </button>
+<button type="button" class="viewer3d-icon" id="viewer3dMirrorBtn" aria-label="Левая рука" data-i18n-aria-label="v3_mirror" hidden>
+<svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-hand"/></svg>
+</button>
+<button type="button" class="viewer3d-icon" id="viewer3dShotBtn" aria-label="Скриншот" data-i18n-aria-label="v3_shot" hidden>
+<svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-image"/></svg>
+</button>
 <button type="button" class="viewer3d-icon" id="viewer3dTiltBtn" aria-label="Наклон телефона" data-i18n-aria-label="v3_tilt" hidden>
 <svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-phone"/></svg>
 </button>
@@ -1849,6 +1856,10 @@
 <span data-i18n="btn_more">Ещё</span>
 </button>
 <div class="buy-more-menu" id="buyMoreMenu" role="menu">
+<button type="button" id="buyInspectBtn" class="buy-action-btn" style="display:none;">
+<svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-eye"/></svg>
+<span data-i18n="btn_inspect_game">Осмотреть в игре</span>
+</button>
 <button type="button" id="buyPanoBtn" class="buy-action-btn" style="display:none;">
 <svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-cube"/></svg>
 <span data-i18n="btn_pano">360°</span>
@@ -2275,15 +2286,15 @@
 </div>
 </div>
 <script src="app-core.js?v=18"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=13', en: 'app-i18n-en.js?v=13' };</script>
-<script src="app-i18n.js?v=138"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=14', en: 'app-i18n-en.js?v=14' };</script>
+<script src="app-i18n.js?v=139"></script>
 <script src="app-navigation.js?v=25"></script>
 <script src="app-shop.js?v=39"></script>
 <script src="app-legal.js?v=3"></script>
 <script src="app-deals.js?v=24"></script>
 <script src="app-catalog.js?v=33"></script>
 <script src="app-cart.js?v=10"></script>
-<script src="app-filters.js?v=58"></script>
+<script src="app-filters.js?v=59"></script>
 <script src="app-music.js?v=1"></script>
 <script src="app-steam.js?v=7"></script>
 <script src="app-topup.js?v=5"></script>
@@ -2293,7 +2304,7 @@
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
 <script>window.DG_ADMIN_SRC = 'app-admin.js?v=28';</script>
 <!-- 3D-просмотрщик (210 КБ) грузится после открытия витрины — ensure3DScript в app-navigation.js. -->
-<script>window.DG_3D_SRC = 'app-3d.js?v=109';</script>
+<script>window.DG_3D_SRC = 'app-3d.js?v=110';</script>
 <script src="app-auctions.js?v=9"></script>
 <script src="app-reviews.js?v=4"></script>
 <script src="app-notifications.js?v=3"></script>
