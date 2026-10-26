@@ -521,7 +521,9 @@ return isNaN(t.getTime()) ? null : t;
 }
 
 function lsLinkValid(link){
-return /^steam:\/\/rungame\/730\//.test(link) && link.includes('+csgo_econ_action_preview');
+// Steam даёт два вида: steam://rungame/730/<steamid>/+csgo… (старый) и
+// steam://run/730//+csgo… (новый, из «Осмотреть в игре…»).
+return /^steam:\/\/(rungame|run)\/730\//.test(link) && link.includes('+csgo_econ_action_preview');
 }
 
 function lsReset(){
@@ -597,7 +599,9 @@ return;
 }
 lsStatus.textContent = '';
 lsRenderPreview(data, when);
-if (data.owner_ok){
+// Владелец в ссылке есть не всегда (новый формат Steam его не несёт):
+// тогда бот сверит предмет с инвентарём, когда снимется бан.
+if (data.owner_ok !== false){
 lsChecked = { link, item: data };
 lsConfirm.disabled = false;
 }
@@ -635,9 +639,9 @@ document.getElementById('lsWearMark').style.left = (Math.min(1, Math.max(0, data
 floatRow.innerHTML = `<span>${formatFloat(data.float_value)}</span>${data.pattern ? `<span>#${escapeHtml(String(data.pattern))}</span>` : ''}`;
 }
 const owner = document.getElementById('lsOwner');
-owner.className = 'ls-owner ' + (data.owner_ok ? 'ok' : 'bad');
+owner.className = 'ls-owner ' + (data.owner_ok ? 'ok' : data.owner_ok === false ? 'bad' : '');
 owner.textContent = data.owner_ok ? dict.ls_owner_ok.replace('{date}', tradeLockDate(when.getTime()))
-: data.owner_ok === false ? dict.ls_owner_bad : dict.ls_owner_unknown;
+: data.owner_ok === false ? dict.ls_owner_bad : dict.ls_owner_unknown.replace('{date}', tradeLockDate(when.getTime()));
 document.getElementById('lsMarketPricePreview').style.display = 'none';
 document.getElementById('lsPreview').style.display = '';
 }
