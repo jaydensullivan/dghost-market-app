@@ -1624,8 +1624,11 @@ buyPrice.textContent = formatCoins(skin.price);
 document.getElementById('buyBalanceAvailable').textContent = formatCoins(myAvailableBalance);
 buyConfirmP2P.style.display = (!isOwn && directP2pPurchaseEnabled) ? '' : 'none';
 buyConfirmCard.style.display = (!isOwn && hostedPayMethods.length) ? '' : 'none';
+// Продавец с депозитом «Гаранта» — можно перевести прямо ему (seller_card_ok от бота).
+const sellerCardOk = !isOwn && !!skin.seller_card_ok;
+document.getElementById('buyConfirmSellerCard').style.display = sellerCardOk ? '' : 'none';
 document.getElementById('buyNoPaymentHint').style.display =
-(!isOwn && !canPayFromBalance && !directP2pPurchaseEnabled && !hostedPayMethods.length) ? '' : 'none';
+(!isOwn && !canPayFromBalance && !directP2pPurchaseEnabled && !hostedPayMethods.length && !sellerCardOk) ? '' : 'none';
 buyEditPriceBtn.style.display = isOwn ? '' : 'none';
 document.getElementById('buyDiscountBtn').style.display = isOwn ? '' : 'none';
 buySavePriceBtn.style.display = 'none';
@@ -2745,6 +2748,61 @@ buyConfirmCard.disabled = false;
 });
 });
 
+// Кому уходит перевод: 'platform' — на карту площадки (решает админ),
+// 'seller' — на карту продавца с депозитом «Гаранта» (решает продавец).
+let p2pPayTo = 'platform';
+
+function openP2pOverlay(data, payTo){
+const dict = I18N[currentLang] || I18N.ru;
+p2pPayTo = payTo;
+document.getElementById('p2pSkinTitle').textContent = payTo === 'seller' ? dict.p2p_seller_title : dict.p2p_skin_title;
+document.getElementById('p2pGuaranteeBox').hidden = payTo === 'seller';
+document.getElementById('p2pSellerGuaranteeBox').hidden = payTo !== 'seller';
+buyStatus.textContent = '';
+pendingP2pOrderId = data.order_id;
+p2pReceiptBase64 = null;
+p2pSkinReceiptInput.value = '';
+p2pSkinReceiptPreview.style.display = 'none';
+try { p2pSkinPayerName.value = localStorage.getItem('dg_payer_name') || ''; } catch (e) { p2pSkinPayerName.value = ''; }
+p2pSkinDetailsText.textContent = data.card_details || (payTo === 'seller' ? '' : p2pCardDetails) || dict.p2p_no_details;
+p2pCardNumber = p2pExtractCardNumber(p2pSkinDetailsText.textContent);
+p2pSkinCardCopy.hidden = !p2pCardNumber;
+p2pSkinAmount.textContent = formatCoins(data.amount);
+p2pAmountValue = Number(data.amount) || 0;
+startP2pTimer(data.reserved_until);
+p2pSkinSentBtn.disabled = true;
+p2pSkinStatus.textContent = '';
+buyOverlay.classList.remove('show');
+p2pSkinOverlay.classList.add('show');
+}
+
+const buyConfirmSellerCard = document.getElementById('buyConfirmSellerCard');
+buyConfirmSellerCard.addEventListener('click', () => {
+if (!pendingBuySkin || !tg || !tg.initData) return;
+const skinId = pendingBuySkin.id;
+buyConfirmSellerCard.disabled = true;
+buyStatus.textContent = (I18N[currentLang] || I18N.ru).status_reserving;
+fetch(API_BASE + '/api/skins/' + skinId + '/seller_card_reserve', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+})
+.then(async r => {
+if (!r.ok){
+const data = await r.json().catch(() => ({}));
+throw new Error(purchaseTrustLimitMessage(data) || errorMessage(data.error));
+}
+return r.json();
+})
+.then(data => openP2pOverlay(data, 'seller'))
+.catch(err => {
+buyStatus.textContent = friendlyErrorMessage(err);
+})
+.finally(() => {
+buyConfirmSellerCard.disabled = false;
+});
+});
+
 buyConfirmP2P.addEventListener('click', () => {
 if (!pendingBuySkin || !tg || !tg.initData) return;
 
@@ -2764,24 +2822,7 @@ throw new Error(purchaseTrustLimitMessage(data) || (data.error === 'feature_disa
 }
 return r.json();
 })
-.then(data => {
-buyStatus.textContent = '';
-pendingP2pOrderId = data.order_id;
-p2pReceiptBase64 = null;
-p2pSkinReceiptInput.value = '';
-p2pSkinReceiptPreview.style.display = 'none';
-try { p2pSkinPayerName.value = localStorage.getItem('dg_payer_name') || ''; } catch (e) { p2pSkinPayerName.value = ''; }
-p2pSkinDetailsText.textContent = data.card_details || p2pCardDetails || (I18N[currentLang] || I18N.ru).p2p_no_details;
-p2pCardNumber = p2pExtractCardNumber(p2pSkinDetailsText.textContent);
-p2pSkinCardCopy.hidden = !p2pCardNumber;
-p2pSkinAmount.textContent = formatCoins(data.amount);
-p2pAmountValue = Number(data.amount) || 0;
-startP2pTimer(data.reserved_until);
-p2pSkinSentBtn.disabled = true;
-p2pSkinStatus.textContent = '';
-buyOverlay.classList.remove('show');
-p2pSkinOverlay.classList.add('show');
-})
+.then(data => openP2pOverlay(data, 'platform'))
 .catch(err => {
 buyStatus.textContent = friendlyErrorMessage(err);
 })
@@ -2883,7 +2924,7 @@ p2pSkinStatus.textContent = '';
 p2pSkinOverlay.classList.remove('show');
 pendingP2pOrderId = null;
 stopP2pTimer();
-showAlert(dict.p2p_skin_sent_alert);
+showAlert(p2pPayTo === 'seller' ? dict.p2p_seller_sent_alert : dict.p2p_skin_sent_alert);
 // Сразу показываем, где теперь смотреть статус оплаты.
 if (typeof goToScreen === 'function') goToScreen('deals');
 })
