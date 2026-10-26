@@ -24,7 +24,7 @@ const THREE_ADDONS = `https://cdn.jsdelivr.net/npm/three@${THREE_VERSION}/exampl
 const THREE_LEGACY = 'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js';
 const THREE_LEGACY_GLTF = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
 const D3_MODE_KEY = 'dg3d_mode';
-const APP3D_VERSION = 78;
+const APP3D_VERSION = 79;
 
 let threeLoading = null;
 
@@ -455,8 +455,14 @@ return box;
 // смотрится на телефоне. Горизонтально, рукоятью влево, как на CSFloat,
 // кладём только для сверки (tools/steam-compare ставит
 // window.DGHOST_KNIFE_FLAT). У стволов вертикаль не самая длинная сторона.
+// Класть на бок можно только оружие: агенты, кейсы и перчатки стоят как
+// есть (вызывающий код ставит object.userData.upright).
+function keepsUpright(object){
+return !!(object && object.userData && object.userData.upright);
+}
+
 function layModelFlat(THREE, object){
-if (!window.DGHOST_KNIFE_FLAT) return;
+if (!window.DGHOST_KNIFE_FLAT || keepsUpright(object)) return;
 const size = meshBox(THREE, object).getSize(new THREE.Vector3());
 if (size.y <= Math.max(size.x, size.z)) return;
 object.rotation.x += Math.PI / 2;
@@ -466,7 +472,7 @@ object.updateMatrixWorld(true);
 // На компьютере кадр просмотрщика широкий: вертикальный нож занимал в
 // нём узкую полоску. Кладём его горизонтально, остриём вправо.
 function layKnifeWide(THREE, object, camera){
-if (!camera || !(camera.aspect > 1.2)) return;
+if (!camera || !(camera.aspect > 1.2) || keepsUpright(object)) return;
 const size = meshBox(THREE, object).getSize(new THREE.Vector3());
 if (size.y <= Math.max(size.x, size.z)) return;
 object.rotation.z -= Math.PI / 2;
@@ -3243,6 +3249,8 @@ if (/(^|\/)models\/cases\//.test(String(modelUrl || ''))) applyCaseDecals(THREE,
 // у стандартного оружия.
 selectModelBody(object, false);
 scene.add(object);
+// Агент, кейс, перчатки — стоят вертикально, на бок кладём только оружие.
+gltf.scene.userData.upright = /(^|\/)models\/(agents|cases|gloves)\//.test(String(modelUrl || ''));
 const baseDistance = fitObjectToView(THREE, gltf.scene, camera, true);
 if (!skinDir){ hideViewerPoster(); d3Ready(); }
 
@@ -4068,6 +4076,7 @@ scene.add(object);
 // картинке вертикальный нож получается мелким.
 const wasFlat = window.DGHOST_KNIFE_FLAT;
 if (still === 'angles') window.DGHOST_KNIFE_FLAT = true;
+gltf.scene.userData.upright = /(^|\/)models\/(agents|cases|gloves)\//.test(String(entry.model || ''));
 try { fitObjectToView(THREE, gltf.scene, camera); } finally { window.DGHOST_KNIFE_FLAT = wasFlat; }
 if (glove) await applyGloveSkin(THREE, object, entry.skin);
 else if (painted) applySkinToModel(THREE, object, skin, wear, weapon, 'none', seed, stickerAtlas);
