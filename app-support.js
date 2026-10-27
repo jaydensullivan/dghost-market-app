@@ -361,3 +361,13 @@ supportApi('/api/support/staff/status', { task_id: adminSupportTicketId, action:
 
 document.getElementById('adminSupportClose').addEventListener('click', () => changeAdminSupportStatus('close'));
 document.getElementById('adminSupportReopen').addEventListener('click', () => changeAdminSupportStatus('reopen'));
+
+// Ссылка «или в Telegram: @dghostmarketsupportbot» — обычный <a> на t.me.
+// Внутри Telegram на iPhone такой переход иногда молча не срабатывает,
+// поэтому открываем чат бота поддержки через Telegram явно.
+document.addEventListener('click', (e) => {
+const link = e.target.closest('a.support-tg-link');
+if (!link || !tg || typeof tg.openTelegramLink !== 'function') return;
+e.preventDefault();
+tg.openTelegramLink(link.href);
+});
