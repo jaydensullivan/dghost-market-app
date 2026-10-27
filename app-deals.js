@@ -779,6 +779,23 @@ navigator.clipboard?.writeText(url).catch(() => {});
 showToast(dict.steam_link_copied, { type: 'error', duration: 7000 });
 }
 
+// Переход на другую страницу внутри мини-аппа обрывает фоновые запросы.
+// Если сейчас отправляются 3D-ракурсы нового лота (app-3d.js,
+// uploadOwnLotAngles), ждём их до 20 секунд, потом уходим.
+function navigateWhenIdle(url){
+const busy = () => typeof lotAnglesBusy !== 'undefined' && lotAnglesBusy;
+if (!busy()){ location.href = url; return; }
+const dict = I18N[currentLang] || I18N.ru;
+showToast(dict.angles_saving, { type: 'info', duration: 4000 });
+const started = Date.now();
+const timer = setInterval(() => {
+if (!busy() || Date.now() - started > 20000){
+clearInterval(timer);
+location.href = url;
+}
+}, 400);
+}
+
 // Запасной путь: на части iPhone Telegram получает openLink, но окно
 // браузера не открывает. Под кнопкой — «Не открылось? Открыть здесь»:
 // переходник go.html открывается прямо в мини-аппе (back=1 — с кнопкой
@@ -794,7 +811,7 @@ btn.className = 'btn-ghost-link open-here-link';
 btn.style.marginTop = '8px';
 btn.textContent = dict.open_here;
 btn.addEventListener('click', () => {
-location.href = location.origin + '/go.html?back=1&to=' + encodeURIComponent(url);
+navigateWhenIdle(location.origin + '/go.html?back=1&to=' + encodeURIComponent(url));
 });
 anchorEl.after(btn);
 }

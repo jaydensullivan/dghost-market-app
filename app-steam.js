@@ -266,7 +266,7 @@ status.textContent = dict.steam_login_opening;
 // Telegram получает openLink, но окно браузера не показывает — а переход
 // внутри мини-аппа работает всегда. После Steam бот сам вернёт сюда.
 if (!window.DG_WEB){
-location.href = url + '&inapp=1';
+navigateWhenIdle(url + '&inapp=1');
 return;
 }
 if (tg.openLink) tg.openLink(url); else window.open(url, '_blank');
