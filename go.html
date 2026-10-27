@@ -58,6 +58,19 @@ navigator.clipboard.writeText(to).then(done, function(){ prompt('Скопиру�
 prompt('Скопируй ссылку:', to);
 }
 });
+// back=1 — переходник открыт прямо в мини-аппе (Telegram не открыл
+// браузер): не уводим сразу, а даём кнопку «Вернуться в маркет».
+var back = new URLSearchParams(location.search).get('back') === '1';
+if (back){
+title.textContent = 'Переход в Steam';
+document.getElementById('hint').textContent = 'Нажми «Открыть в Steam». Чтобы потом вернуться в маркет — закрой и снова открой мини-апп (или нажми «Вернуться в маркет» здесь).';
+var ret = document.createElement('a');
+ret.className = 'btn secondary';
+ret.href = '/';
+ret.textContent = '← Вернуться в маркет';
+copy.after(ret);
+return;
+}
 setTimeout(function(){ location.replace(to); }, 300);
 })();
 </script>

@@ -763,18 +763,40 @@ return url;
 // На телефоне ссылки Steam идут через go.html: на iPhone с приложением
 // Steam Telegram отдаёт ссылку обмена приложению, и она молча теряется,
 // а переход со своей страницы остаётся в браузере.
-function openSteamLink(url){
+function openSteamLink(url, anchorEl){
 const dict = I18N[currentLang] || I18N.ru;
+const target = url;
 if (!IS_DESKTOP && /^https:\/\/steamcommunity\.com\//.test(url)){
 url = location.origin + '/go.html?to=' + encodeURIComponent(url);
 }
 try {
 if (tg && tg.openLink) tg.openLink(url);
 else window.open(url, '_blank');
+showOpenHereLink(anchorEl, target);
 return;
 } catch (e) {}
 navigator.clipboard?.writeText(url).catch(() => {});
 showToast(dict.steam_link_copied, { type: 'error', duration: 7000 });
+}
+
+// Запасной путь: на части iPhone Telegram получает openLink, но окно
+// браузера не открывает. Под кнопкой — «Не открылось? Открыть здесь»:
+// переходник go.html открывается прямо в мини-аппе (back=1 — с кнопкой
+// «Вернуться в маркет»). В веб-версии не нужен — там обычное окно.
+function showOpenHereLink(anchorEl, url){
+if (window.DG_WEB || !anchorEl || !anchorEl.parentNode || !/^https:\/\/steamcommunity\.com\//.test(url)) return;
+const next = anchorEl.nextElementSibling;
+if (next && next.classList.contains('open-here-link')) return;
+const dict = I18N[currentLang] || I18N.ru;
+const btn = document.createElement('button');
+btn.type = 'button';
+btn.className = 'btn-ghost-link open-here-link';
+btn.style.marginTop = '8px';
+btn.textContent = dict.open_here;
+btn.addEventListener('click', () => {
+location.href = location.origin + '/go.html?back=1&to=' + encodeURIComponent(url);
+});
+anchorEl.after(btn);
 }
 
 // Расширение DGhost Trade (extension/) на компьютере находит предмет по
@@ -796,7 +818,7 @@ pendingDeliveryCheck = deal.id;
 haptic('light');
 showToast(dict.dlv_hint, { type: 'info', duration: 5000 });
 showTradeLinkFallback(deal.id, url);
-openSteamLink(url);
+openSteamLink(url, document.querySelector(`[data-open-trade="${deal.id}"]`));
 }
 
 // Запасной путь: на части телефонов Telegram молча не открывает ссылку
@@ -915,7 +937,7 @@ if (!deal.trade_requested_at){
 tradeRequestOpened.add(deal.id);
 reqBtn.insertAdjacentHTML('afterend', `<button class="deal-action" data-request-done="${deal.id}" type="button">${dict.btn_request_done}</button>`);
 }
-openSteamLink(steamTradeUrl(deal.request_trade_url) || deal.request_trade_url);
+openSteamLink(steamTradeUrl(deal.request_trade_url) || deal.request_trade_url, reqBtn);
 return;
 }
 
@@ -942,7 +964,7 @@ const deal = lastDeals.find(d => d.id === Number(incomingBtn.dataset.openIncomin
 if (!deal || !deal.incoming_offers_url) return;
 haptic('light');
 showToast(dict.hint_seller_accept, { type: 'info', duration: 7000 });
-openSteamLink(deal.incoming_offers_url);
+openSteamLink(deal.incoming_offers_url, incomingBtn);
 return;
 }
 

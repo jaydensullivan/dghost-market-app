@@ -306,6 +306,7 @@ trade_link_copied: "Trade link copied — paste it into your browser's address b
 trade_ext_hint: "💡 With the DGhost Trade extension the trade is created for you — just confirm it in Steam Guard.",
 trade_ext_link: "Install",
 steam_link_copied: "Couldn't open Steam — the trade link is copied, paste it into your browser.",
+open_here: "Didn't open? Open here",
 v3_weapon_dir: "Weapon folder (models/weapons/…)",
 v3_mask_channel: "Paint mask channel",
 v3_skin_dir: "Skin folder (models/skins/…)",
