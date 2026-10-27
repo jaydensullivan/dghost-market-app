@@ -132,6 +132,14 @@ return fetch(API_BASE + '/api/kyc/phone?init_data=' + encodeURIComponent(tg.init
 .catch(() => '');
 }
 
+// Окно «Поделиться номером» (requestContact) есть с Telegram WebApp 6.9.
+// В более старых версиях вызов молча ничего не делает.
+function canRequestContact(){
+if (!tg || typeof tg.requestContact !== 'function') return false;
+if (typeof tg.isVersionAtLeast === 'function') return tg.isVersionAtLeast('6.9');
+return true;
+}
+
 function pollKycPhone(){
 clearInterval(kycPhonePollTimer);
 let tries = 0;
@@ -209,8 +217,10 @@ bindKycPhotoInput('selfie');
 
 document.getElementById('kycPhoneBtn').addEventListener('click', () => {
 const dict = I18N[currentLang] || I18N.ru;
-if (!tg || !tg.requestContact){
-showAlert(dict.kyc_phone_unsupported);
+if (!canRequestContact()){
+// Старый Telegram: окно «Поделиться номером» не откроется — сразу
+// предлагаем запасной путь через чат бота (/phone).
+kycStatus.textContent = dict.kyc_phone_fallback;
 return;
 }
 // Контакт уходит боту в чат; бот проверяет, что номер принадлежит
