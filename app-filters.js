@@ -217,6 +217,7 @@ bindKycPhotoInput('selfie');
 
 document.getElementById('kycPhoneBtn').addEventListener('click', () => {
 const dict = I18N[currentLang] || I18N.ru;
+if (typeof dgButtonDiag === 'function') dgButtonDiag('phone_kyc', 'canRequestContact=' + canRequestContact());
 if (!canRequestContact()){
 // Старый Telegram: окно «Поделиться номером» не откроется — сразу
 // предлагаем запасной путь через чат бота (/phone).
