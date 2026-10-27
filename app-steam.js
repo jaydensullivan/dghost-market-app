@@ -250,9 +250,10 @@ if (typeof reportClientError === 'function') reportClientError('diag:' + action,
 } catch (e) {}
 }
 
-function startSteamLogin(){
+function startSteamLogin(statusEl){
 const dict = I18N[currentLang] || I18N.ru;
-const status = document.getElementById('steamLoginStatus');
+// Окно покупателя передаёт свою строку статуса — там же покажем запасную ссылку.
+const status = (statusEl instanceof HTMLElement) ? statusEl : document.getElementById('steamLoginStatus');
 if (!tg || !tg.initData){ dgButtonDiag('steam_login', 'no_init_data'); status.textContent = errorMessage('unauthorized'); return; }
 // Ссылку открываем прямо в нажатии: раньше мини-апп сначала ждал ответ
 // сервера и только потом звал openLink — Telegram на iPhone такие
@@ -262,7 +263,26 @@ const url = API_BASE + '/steam/start?init_data=' + encodeURIComponent(tg.initDat
 dgButtonDiag('steam_login');
 status.textContent = dict.steam_login_waiting;
 if (tg.openLink) tg.openLink(url); else window.open(url, '_blank');
+showSteamInAppFallback(status, url);
 pollSteamStatus();
+}
+
+// Запасной путь: Telegram на части iPhone получает openLink, но окно
+// браузера не показывает. Тогда вход идёт прямо внутри мини-аппа
+// (inapp=1): после Steam бот сам вернёт человека в мини-апп.
+function showSteamInAppFallback(status, url){
+if (window.DG_WEB || !status || !status.parentNode) return;
+const dict = I18N[currentLang] || I18N.ru;
+let link = status.parentNode.querySelector('.steam-inapp-link');
+if (!link){
+link = document.createElement('button');
+link.type = 'button';
+link.className = 'btn-ghost-link steam-inapp-link';
+link.style.marginTop = '8px';
+status.after(link);
+}
+link.textContent = dict.steam_login_inapp;
+link.onclick = () => { location.href = url + '&inapp=1'; };
 }
 
 document.getElementById('steamLoginBtn').addEventListener('click', startSteamLogin);
@@ -311,7 +331,7 @@ refreshBuyerVerify();
 }, 3000);
 }
 
-document.getElementById('bvSteamBtn').addEventListener('click', startSteamLogin);
+document.getElementById('bvSteamBtn').addEventListener('click', () => startSteamLogin(document.getElementById('bvStatus')));
 
 document.getElementById('bvPhoneBtn').addEventListener('click', () => {
 const dict = I18N[currentLang] || I18N.ru;
