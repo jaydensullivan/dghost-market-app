@@ -230,15 +230,36 @@ showToast(dict.steam_login_ok, { type: 'success' });
 }, 3000);
 }
 
+// Диагностика «кнопка ничего не делает»: при нажатии сообщаем серверу,
+// где открыт мини-апп и какую команду Telegram вызвали. Владельцу придёт
+// уведомление в бота — по нему видно причину (версия Telegram, веб-версия,
+// пустой initData). Одно сообщение на кнопку за сессию.
+function dgButtonDiag(action, extra){
+try {
+const w = window.Telegram && Telegram.WebApp;
+const info = [
+'web=' + (window.DG_WEB ? 'yes' : 'no'),
+'platform=' + ((w && w.platform) || '-'),
+'version=' + ((w && w.version) || '-'),
+'initData=' + ((w && w.initData) ? w.initData.length : 0),
+'openLink=' + (w && typeof w.openLink),
+'requestContact=' + (w && typeof w.requestContact),
+extra || '',
+].join(' ');
+if (typeof reportClientError === 'function') reportClientError('diag:' + action, info);
+} catch (e) {}
+}
+
 function startSteamLogin(){
 const dict = I18N[currentLang] || I18N.ru;
 const status = document.getElementById('steamLoginStatus');
-if (!tg || !tg.initData){ status.textContent = errorMessage('unauthorized'); return; }
+if (!tg || !tg.initData){ dgButtonDiag('steam_login', 'no_init_data'); status.textContent = errorMessage('unauthorized'); return; }
 // Ссылку открываем прямо в нажатии: раньше мини-апп сначала ждал ответ
 // сервера и только потом звал openLink — Telegram на iPhone такие
 // «запоздалые» открытия молча игнорирует, и кнопка «ничего не делала».
 // /steam/start сам проверяет initData, выдаёт токен и ведёт на Steam.
 const url = API_BASE + '/steam/start?init_data=' + encodeURIComponent(tg.initData);
+dgButtonDiag('steam_login');
 status.textContent = dict.steam_login_waiting;
 if (tg.openLink) tg.openLink(url); else window.open(url, '_blank');
 pollSteamStatus();
@@ -294,6 +315,7 @@ document.getElementById('bvSteamBtn').addEventListener('click', startSteamLogin)
 
 document.getElementById('bvPhoneBtn').addEventListener('click', () => {
 const dict = I18N[currentLang] || I18N.ru;
+dgButtonDiag('phone_bv', 'canRequestContact=' + canRequestContact());
 if (!canRequestContact()){ document.getElementById('bvStatus').textContent = dict.kyc_phone_fallback; return; }
 document.getElementById('bvStatus').textContent = dict.kyc_phone_checking;
 tg.requestContact(() => {});
