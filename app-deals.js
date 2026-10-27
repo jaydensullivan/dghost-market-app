@@ -813,7 +813,22 @@ btn.textContent = dict.open_here;
 btn.addEventListener('click', () => {
 navigateWhenIdle(location.origin + '/go.html?back=1&to=' + encodeURIComponent(url));
 });
-anchorEl.after(btn);
+// Обычная ссылка (<a target="_blank">) — Telegram обрабатывает её иначе,
+// чем команду openLink, и может открыть сразу в Safari или в приложении
+// Steam. Показываем первой; «Открыть здесь» — если и она не сработает.
+const link = document.createElement('a');
+link.className = 'btn-ghost-link open-here-link';
+link.style.display = 'block';
+link.style.marginTop = '8px';
+link.href = url;
+link.target = '_blank';
+link.rel = 'noopener';
+link.textContent = dict.open_in_browser;
+link.addEventListener('click', () => {
+if (typeof dgButtonDiag === 'function') dgButtonDiag('browser_link');
+});
+anchorEl.after(link);
+link.after(btn);
 }
 
 // Расширение DGhost Trade (extension/) на компьютере находит предмет по

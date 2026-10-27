@@ -311,6 +311,7 @@ trade_ext_hint: "💡 С расширением DGhost Trade обмен со с�
 trade_ext_link: "Установить",
 steam_link_copied: "Не удалось открыть Steam — ссылка на обмен скопирована, вставь её в браузер.",
 open_here: "Не открылось? Открыть здесь",
+open_in_browser: "Открыть в браузере (Safari)",
 angles_saving: "Сохраняю 3D-ракурсы лота — секунду…",
 v3_weapon_dir: "Папка ствола (models/weapons/…)",
 v3_mask_channel: "Канал маски покраски",
