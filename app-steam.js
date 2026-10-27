@@ -234,19 +234,14 @@ function startSteamLogin(){
 const dict = I18N[currentLang] || I18N.ru;
 const status = document.getElementById('steamLoginStatus');
 if (!tg || !tg.initData){ status.textContent = errorMessage('unauthorized'); return; }
-status.textContent = dict.steam_login_opening;
-fetch(API_BASE + '/api/steam/login_start', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ init_data: tg.initData })
-})
-.then(r => { if (!r.ok) throw new Error(); return r.json(); })
-.then(data => {
+// Ссылку открываем прямо в нажатии: раньше мини-апп сначала ждал ответ
+// сервера и только потом звал openLink — Telegram на iPhone такие
+// «запоздалые» открытия молча игнорирует, и кнопка «ничего не делала».
+// /steam/start сам проверяет initData, выдаёт токен и ведёт на Steam.
+const url = API_BASE + '/steam/start?init_data=' + encodeURIComponent(tg.initData);
 status.textContent = dict.steam_login_waiting;
-if (tg.openLink) tg.openLink(data.url); else window.open(data.url, '_blank');
+if (tg.openLink) tg.openLink(url); else window.open(url, '_blank');
 pollSteamStatus();
-})
-.catch(() => { status.textContent = dict.load_failed; });
 }
 
 document.getElementById('steamLoginBtn').addEventListener('click', startSteamLogin);
@@ -299,7 +294,7 @@ document.getElementById('bvSteamBtn').addEventListener('click', startSteamLogin)
 
 document.getElementById('bvPhoneBtn').addEventListener('click', () => {
 const dict = I18N[currentLang] || I18N.ru;
-if (!tg || !tg.requestContact){ showAlert(dict.kyc_phone_unsupported); return; }
+if (!canRequestContact()){ document.getElementById('bvStatus').textContent = dict.kyc_phone_fallback; return; }
 document.getElementById('bvStatus').textContent = dict.kyc_phone_checking;
 tg.requestContact(() => {});
 // Если номер так и не пришёл — подсказываем запасной путь (/phone).
