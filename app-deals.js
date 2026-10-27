@@ -174,14 +174,17 @@ if (deal.trade_requested_at){
 // Покупатель уже прислал обмен с этим предметом — продавцу только
 // принять его в Steam и подтвердить в Steam Guard.
 extraHtml += tradeSafetyHtml(deal);
-actionHtml = `<button class="deal-action" data-open-incoming="${deal.id}" type="button">${dict.btn_open_incoming}</button>
+actionHtml = `<a class="deal-action" data-open-incoming="${deal.id}" href="${escapeHtml(deal.incoming_offers_url || 'https://steamcommunity.com/my/tradeoffers/')}" target="_blank" rel="noopener">${dict.btn_open_incoming}</a>
 <button class="deal-action" data-accepted-trade="${deal.id}" type="button">${dict.btn_accepted_trade}</button>`;
 } else {
 // Кнопка обмена — только если у покупателя есть ссылка. Иначе
 // показываем причину, чтобы продавец не искал кнопку впустую.
 if (deal.partner_trade_link){
 extraHtml += tradeSafetyHtml(deal);
-actionHtml = `<button class="deal-action" data-open-trade="${deal.id}" type="button">${dict.btn_open_trade}</button>`;
+const tradeHref = dealTradeUrl(deal);
+actionHtml = tradeHref
+? `<a class="deal-action" data-open-trade="${deal.id}" href="${escapeHtml(tradeHref)}" target="_blank" rel="noopener">${dict.btn_open_trade}</a>`
+: `<button class="deal-action" data-open-trade="${deal.id}" type="button">${dict.btn_open_trade}</button>`;
 if (IS_DESKTOP && deal.asset_id){
 extraHtml += `<div class="deal-hint">${dict.trade_ext_hint} <a href="#" data-trade-ext>${dict.trade_ext_link}</a></div>`;
 }
@@ -208,13 +211,13 @@ actionHtml = `<button class="deal-action" data-mark-received="${deal.id}" type="
 } else {
 if (deal.request_trade_url){
 if (deal.trade_requested_at){
-actionHtml = `<button class="deal-action secondary" data-request-trade="${deal.id}" type="button">${dict.btn_request_again}</button>`;
+actionHtml = `<a class="deal-action secondary" data-request-trade="${deal.id}" href="${escapeHtml(requestTradeHref(deal))}" target="_blank" rel="noopener">${dict.btn_request_again}</a>`;
 } else {
 // Главный шаг покупателя после оплаты — отдельным заметным блоком.
 extraHtml += `<div class="deal-last-step">
 <div class="deal-last-step-title">${dict.last_step_title}</div>
 <div class="deal-last-step-text">${dict.last_step_text}</div>
-<button class="deal-action deal-last-step-btn" data-request-trade="${deal.id}" type="button">${dict.btn_request_trade}</button>
+<a class="deal-action deal-last-step-btn" data-request-trade="${deal.id}" href="${escapeHtml(requestTradeHref(deal))}" target="_blank" rel="noopener">${dict.btn_request_trade}</a>
 ${tradeRequestOpened.has(deal.id) ? `<button class="deal-action" data-request-done="${deal.id}" type="button">${dict.btn_request_done}</button>` : ''}
 </div>`;
 }
@@ -763,16 +766,14 @@ return url;
 // На телефоне ссылки Steam идут через go.html: на iPhone с приложением
 // Steam Telegram отдаёт ссылку обмена приложению, и она молча теряется,
 // а переход со своей страницы остаётся в браузере.
-function openSteamLink(url, anchorEl){
+function openSteamLink(url){
 const dict = I18N[currentLang] || I18N.ru;
-const target = url;
 if (!IS_DESKTOP && /^https:\/\/steamcommunity\.com\//.test(url)){
 url = location.origin + '/go.html?to=' + encodeURIComponent(url);
 }
 try {
 if (tg && tg.openLink) tg.openLink(url);
 else window.open(url, '_blank');
-showOpenHereLink(anchorEl, target);
 return;
 } catch (e) {}
 navigator.clipboard?.writeText(url).catch(() => {});
@@ -796,51 +797,30 @@ location.href = url;
 }, 400);
 }
 
-// Запасной путь: на части iPhone Telegram получает openLink, но окно
-// браузера не открывает. Под кнопкой — «Не открылось? Открыть здесь»:
-// переходник go.html открывается прямо в мини-аппе (back=1 — с кнопкой
-// «Вернуться в маркет»). В веб-версии не нужен — там обычное окно.
-function showOpenHereLink(anchorEl, url){
-if (window.DG_WEB || !anchorEl || !anchorEl.parentNode || !/^https:\/\/steamcommunity\.com\//.test(url)) return;
-const next = anchorEl.nextElementSibling;
-if (next && next.classList.contains('open-here-link')) return;
-const dict = I18N[currentLang] || I18N.ru;
-const btn = document.createElement('button');
-btn.type = 'button';
-btn.className = 'btn-ghost-link open-here-link';
-btn.style.marginTop = '8px';
-btn.textContent = dict.open_here;
-btn.addEventListener('click', () => {
-navigateWhenIdle(location.origin + '/go.html?back=1&to=' + encodeURIComponent(url));
-});
-// Обычная ссылка (<a target="_blank">) — Telegram обрабатывает её иначе,
-// чем команду openLink, и может открыть сразу в Safari или в приложении
-// Steam. Показываем первой; «Открыть здесь» — если и она не сработает.
-const link = document.createElement('a');
-link.className = 'btn-ghost-link open-here-link';
-link.style.display = 'block';
-link.style.marginTop = '8px';
-link.href = url;
-link.target = '_blank';
-link.rel = 'noopener';
-link.textContent = dict.open_in_browser;
-link.addEventListener('click', () => {
-if (typeof dgButtonDiag === 'function') dgButtonDiag('browser_link');
-});
-anchorEl.after(link);
-link.after(btn);
-}
 
 // Расширение DGhost Trade (extension/) на компьютере находит предмет по
 // dghost_asset и создаёт обмен само; Steam лишние параметры игнорирует.
 const IS_DESKTOP = !/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 const TRADE_EXTENSION_URL = 'https://app.dghostmarket.com/extension/';
 
-function openSteamTrade(deal){
+// Ссылка обмена с покупателем; asset/deal — для расширения на компьютере.
+function dealTradeUrl(deal){
 let url = steamTradeUrl(deal.partner_trade_link);
 if (url && deal.asset_id){
 url += '&dghost_asset=' + encodeURIComponent(deal.asset_id) + '&dghost_deal=' + encodeURIComponent(deal.id);
 }
+return url;
+}
+
+// Покупателю — «запросить предмет» (обмен с продавцом, предмет указан).
+function requestTradeHref(deal){
+return steamTradeUrl(deal.request_trade_url) || deal.request_trade_url || '';
+}
+
+// fromLink — нажали обычную ссылку <a target="_blank">: Telegram сам
+// открывает её в Safari или в приложении Steam, здесь только подсказки.
+function openSteamTrade(deal, fromLink){
+const url = dealTradeUrl(deal);
 const dict = I18N[currentLang] || I18N.ru;
 if (!url){
 showToast(dict.dlv_no_link, { type: 'error', duration: 6000 });
@@ -850,7 +830,7 @@ pendingDeliveryCheck = deal.id;
 haptic('light');
 showToast(dict.dlv_hint, { type: 'info', duration: 5000 });
 showTradeLinkFallback(deal.id, url);
-openSteamLink(url, document.querySelector(`[data-open-trade="${deal.id}"]`));
+if (!fromLink) openSteamLink(url);
 }
 
 // Запасной путь: на части телефонов Telegram молча не открывает ссылку
@@ -916,7 +896,7 @@ document.addEventListener('click', (e) => {
 const btn = e.target.closest('[data-open-trade]');
 if (!btn) return;
 const deal = lastDeals.find(d => d.id === Number(btn.dataset.openTrade));
-if (deal) openSteamTrade(deal);
+if (deal) openSteamTrade(deal, btn.tagName === 'A');
 });
 
 // Вернулись из Steam — сразу проверяем, доехал ли предмет.
@@ -969,7 +949,7 @@ if (!deal.trade_requested_at){
 tradeRequestOpened.add(deal.id);
 reqBtn.insertAdjacentHTML('afterend', `<button class="deal-action" data-request-done="${deal.id}" type="button">${dict.btn_request_done}</button>`);
 }
-openSteamLink(steamTradeUrl(deal.request_trade_url) || deal.request_trade_url, reqBtn);
+if (reqBtn.tagName !== 'A') openSteamLink(requestTradeHref(deal));
 return;
 }
 
@@ -996,7 +976,7 @@ const deal = lastDeals.find(d => d.id === Number(incomingBtn.dataset.openIncomin
 if (!deal || !deal.incoming_offers_url) return;
 haptic('light');
 showToast(dict.hint_seller_accept, { type: 'info', duration: 7000 });
-openSteamLink(deal.incoming_offers_url, incomingBtn);
+if (incomingBtn.tagName !== 'A') openSteamLink(deal.incoming_offers_url);
 return;
 }
 

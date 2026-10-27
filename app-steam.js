@@ -121,16 +121,9 @@ btnEl: document.getElementById('mandatoryLinkBtn'),
 });
 });
 
-// Страница Steam, где лежит трейд-ссылка. Открываем через тот же
-// переходник, что и обмен в «Сделках» (openSteamLink → go.html): на
-// iPhone с приложением Steam Telegram отдаёт ссылку steamcommunity.com
-// приложению, и она молча теряется — кнопка «не работала».
-const STEAM_TRADE_PRIVACY_URL = 'https://steamcommunity.com/my/tradeoffers/privacy';
-function openSteamTradeLinkPage(e){
-openSteamLink(STEAM_TRADE_PRIVACY_URL, e && e.currentTarget);
-}
-
-openSteamTradeUrlBtn.addEventListener('click', openSteamTradeLinkPage);
+// «Открыть Steam» / «Открыть страницу Steam с трейд-ссылкой» — обычные
+// ссылки в index.html (<a target="_blank">): Telegram сам открывает их в
+// Safari или в приложении Steam, обработчик не нужен.
 
 document.getElementById('mandatoryAcceptAgreementBtn').addEventListener('click', () => {
 if (!tg || !tg.initData) return;
@@ -166,7 +159,6 @@ btn.disabled = false;
 });
 });
 
-document.getElementById('mandatoryOpenSteamBtn').addEventListener('click', openSteamTradeLinkPage);
 
 document.getElementById('mandatorySteamLaterBtn').addEventListener('click', () => {
 steamLinkSkippedThisSession = true;
@@ -230,37 +222,16 @@ showToast(dict.steam_login_ok, { type: 'success' });
 }, 3000);
 }
 
-// Диагностика «кнопка ничего не делает»: при нажатии сообщаем серверу,
-// где открыт мини-апп и какую команду Telegram вызвали. Владельцу придёт
-// уведомление в бота — по нему видно причину (версия Telegram, веб-версия,
-// пустой initData). Одно сообщение на кнопку за сессию.
-function dgButtonDiag(action, extra){
-try {
-const w = window.Telegram && Telegram.WebApp;
-const info = [
-'web=' + (window.DG_WEB ? 'yes' : 'no'),
-'platform=' + ((w && w.platform) || '-'),
-'version=' + ((w && w.version) || '-'),
-'initData=' + ((w && w.initData) ? w.initData.length : 0),
-'openLink=' + (w && typeof w.openLink),
-'requestContact=' + (w && typeof w.requestContact),
-extra || '',
-].join(' ');
-if (typeof reportClientError === 'function') reportClientError('diag:' + action, info);
-} catch (e) {}
-}
-
 function startSteamLogin(statusEl){
 const dict = I18N[currentLang] || I18N.ru;
 // Окно покупателя передаёт свою строку статуса — там же покажем запасную ссылку.
 const status = (statusEl instanceof HTMLElement) ? statusEl : document.getElementById('steamLoginStatus');
-if (!tg || !tg.initData){ dgButtonDiag('steam_login', 'no_init_data'); status.textContent = errorMessage('unauthorized'); return; }
+if (!tg || !tg.initData){ status.textContent = errorMessage('unauthorized'); return; }
 // Ссылку открываем прямо в нажатии: раньше мини-апп сначала ждал ответ
 // сервера и только потом звал openLink — Telegram на iPhone такие
 // «запоздалые» открытия молча игнорирует, и кнопка «ничего не делала».
 // /steam/start сам проверяет initData, выдаёт токен и ведёт на Steam.
 const url = API_BASE + '/steam/start?init_data=' + encodeURIComponent(tg.initData);
-dgButtonDiag('steam_login');
 status.textContent = dict.steam_login_opening;
 // В Telegram вход открываем прямо в мини-аппе (inapp=1): на части iPhone
 // Telegram получает openLink, но окно браузера не показывает — а переход
@@ -325,7 +296,6 @@ document.getElementById('bvSteamBtn').addEventListener('click', () => startSteam
 
 document.getElementById('bvPhoneBtn').addEventListener('click', () => {
 const dict = I18N[currentLang] || I18N.ru;
-dgButtonDiag('phone_bv', 'canRequestContact=' + canRequestContact());
 // Кнопку «Поделиться номером» бот присылает и в чат — она работает,
 // даже если Telegram проигнорирует окно requestContact.
 requestPhoneButtonInChat(document.getElementById('bvStatus'));

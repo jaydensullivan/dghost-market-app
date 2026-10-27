@@ -230,7 +230,6 @@ bindKycPhotoInput('selfie');
 
 document.getElementById('kycPhoneBtn').addEventListener('click', () => {
 const dict = I18N[currentLang] || I18N.ru;
-if (typeof dgButtonDiag === 'function') dgButtonDiag('phone_kyc', 'canRequestContact=' + canRequestContact());
 // Кнопку «Поделиться номером» бот присылает и в чат — она работает,
 // даже если Telegram проигнорирует окно requestContact.
 requestPhoneButtonInChat(kycStatus);
