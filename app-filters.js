@@ -140,6 +140,19 @@ if (typeof tg.isVersionAtLeast === 'function') return tg.isVersionAtLeast('6.9')
 return true;
 }
 
+// Просим бота прислать в чат кнопку «Поделиться номером» и пишем об этом
+// в строке статуса. Ошибку сети не показываем — остаётся окно Telegram.
+function requestPhoneButtonInChat(statusEl){
+const dict = I18N[currentLang] || I18N.ru;
+if (statusEl) statusEl.textContent = dict.kyc_phone_sent;
+if (!tg || !tg.initData) return;
+fetch(API_BASE + '/api/kyc/phone_request', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+}).catch(() => {});
+}
+
 function pollKycPhone(){
 clearInterval(kycPhonePollTimer);
 let tries = 0;
@@ -218,18 +231,17 @@ bindKycPhotoInput('selfie');
 document.getElementById('kycPhoneBtn').addEventListener('click', () => {
 const dict = I18N[currentLang] || I18N.ru;
 if (typeof dgButtonDiag === 'function') dgButtonDiag('phone_kyc', 'canRequestContact=' + canRequestContact());
+// Кнопку «Поделиться номером» бот присылает и в чат — она работает,
+// даже если Telegram проигнорирует окно requestContact.
+requestPhoneButtonInChat(kycStatus);
 if (!canRequestContact()){
-// Старый Telegram: окно «Поделиться номером» не откроется — сразу
-// предлагаем запасной путь через чат бота (/phone).
-kycStatus.textContent = dict.kyc_phone_fallback;
+pollKycPhone();
 return;
 }
 // Контакт уходит боту в чат; бот проверяет, что номер принадлежит
 // самому пользователю, и сохраняет его — мини-апп лишь забирает итог.
 // На части iPhone колбэк приходит с sent=false, хотя номер ушёл, или не
-// приходит вовсе — опрашиваем в любом случае, а через ~40 с подсказываем
-// запасной путь (/phone в чате бота).
-kycStatus.textContent = dict.kyc_phone_checking;
+// приходит вовсе — опрашиваем в любом случае.
 pollKycPhone();
 tg.requestContact(() => {});
 });

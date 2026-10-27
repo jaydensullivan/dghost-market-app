@@ -261,29 +261,19 @@ if (!tg || !tg.initData){ dgButtonDiag('steam_login', 'no_init_data'); status.te
 // /steam/start сам проверяет initData, выдаёт токен и ведёт на Steam.
 const url = API_BASE + '/steam/start?init_data=' + encodeURIComponent(tg.initData);
 dgButtonDiag('steam_login');
-status.textContent = dict.steam_login_waiting;
+status.textContent = dict.steam_login_opening;
+// В Telegram вход открываем прямо в мини-аппе (inapp=1): на части iPhone
+// Telegram получает openLink, но окно браузера не показывает — а переход
+// внутри мини-аппа работает всегда. После Steam бот сам вернёт сюда.
+if (!window.DG_WEB){
+location.href = url + '&inapp=1';
+return;
+}
 if (tg.openLink) tg.openLink(url); else window.open(url, '_blank');
-showSteamInAppFallback(status, url);
+status.textContent = dict.steam_login_waiting;
 pollSteamStatus();
 }
 
-// Запасной путь: Telegram на части iPhone получает openLink, но окно
-// браузера не показывает. Тогда вход идёт прямо внутри мини-аппа
-// (inapp=1): после Steam бот сам вернёт человека в мини-апп.
-function showSteamInAppFallback(status, url){
-if (window.DG_WEB || !status || !status.parentNode) return;
-const dict = I18N[currentLang] || I18N.ru;
-let link = status.parentNode.querySelector('.steam-inapp-link');
-if (!link){
-link = document.createElement('button');
-link.type = 'button';
-link.className = 'btn-ghost-link steam-inapp-link';
-link.style.marginTop = '8px';
-status.after(link);
-}
-link.textContent = dict.steam_login_inapp;
-link.onclick = () => { location.href = url + '&inapp=1'; };
-}
 
 document.getElementById('steamLoginBtn').addEventListener('click', startSteamLogin);
 
@@ -336,9 +326,10 @@ document.getElementById('bvSteamBtn').addEventListener('click', () => startSteam
 document.getElementById('bvPhoneBtn').addEventListener('click', () => {
 const dict = I18N[currentLang] || I18N.ru;
 dgButtonDiag('phone_bv', 'canRequestContact=' + canRequestContact());
-if (!canRequestContact()){ document.getElementById('bvStatus').textContent = dict.kyc_phone_fallback; return; }
-document.getElementById('bvStatus').textContent = dict.kyc_phone_checking;
-tg.requestContact(() => {});
+// Кнопку «Поделиться номером» бот присылает и в чат — она работает,
+// даже если Telegram проигнорирует окно requestContact.
+requestPhoneButtonInChat(document.getElementById('bvStatus'));
+if (canRequestContact()) tg.requestContact(() => {});
 // Если номер так и не пришёл — подсказываем запасной путь (/phone).
 setTimeout(() => {
 if (document.getElementById('buyerVerifyOverlay').classList.contains('show')
