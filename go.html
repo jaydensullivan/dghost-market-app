@@ -19,9 +19,9 @@ p{ color:var(--muted); margin:0 0 20px; }
 </head>
 <body>
 <main>
-<h1 id="title">Открываю обмен в Steam…</h1>
+<h1 id="title">Открываю Steam…</h1>
 <p id="hint">Если страница не открылась сама, нажми кнопку ниже.</p>
-<a class="btn" id="go" href="#">Открыть обмен</a>
+<a class="btn" id="go" href="#">Открыть в Steam</a>
 <button class="btn secondary" id="copy" type="button">Скопировать ссылку</button>
 </main>
 <script>
@@ -46,6 +46,10 @@ copy.style.display = 'none';
 return;
 }
 go.href = to;
+// Страница трейд-ссылки (а не обмен) — подсказка, что делать дальше.
+if (/\/tradeoffers\/privacy/.test(to)){
+document.getElementById('hint').textContent = 'Войди в Steam, если попросит. Внизу страницы скопируй трейд-ссылку и вставь её в мини-апп. Если страница не открылась сама, нажми кнопку ниже.';
+}
 copy.addEventListener('click', function(){
 var done = function(){ copy.textContent = 'Скопировано — вставь в браузер'; };
 if (navigator.clipboard && navigator.clipboard.writeText){
