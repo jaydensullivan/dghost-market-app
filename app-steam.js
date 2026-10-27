@@ -300,9 +300,15 @@ document.getElementById('bvSteamBtn').addEventListener('click', startSteamLogin)
 document.getElementById('bvPhoneBtn').addEventListener('click', () => {
 const dict = I18N[currentLang] || I18N.ru;
 if (!tg || !tg.requestContact){ showAlert(dict.kyc_phone_unsupported); return; }
-tg.requestContact(() => {
 document.getElementById('bvStatus').textContent = dict.kyc_phone_checking;
-});
+tg.requestContact(() => {});
+// Если номер так и не пришёл — подсказываем запасной путь (/phone).
+setTimeout(() => {
+if (document.getElementById('buyerVerifyOverlay').classList.contains('show')
+&& document.getElementById('bvPhoneBtn').style.display !== 'none'){
+document.getElementById('bvStatus').textContent = dict.kyc_phone_fallback;
+}
+}, 40000);
 });
 
 document.getElementById('bvCloseBtn').addEventListener('click', () => {

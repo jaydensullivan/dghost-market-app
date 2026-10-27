@@ -138,6 +138,11 @@ let tries = 0;
 kycPhonePollTimer = setInterval(() => {
 if (++tries > 20 || !kycOverlay.classList.contains('show')){
 clearInterval(kycPhonePollTimer);
+// Номер так и не пришёл — подсказываем запасной путь через чат бота.
+if (tries > 20 && kycOverlay.classList.contains('show')){
+const dict = I18N[currentLang] || I18N.ru;
+kycStatus.textContent = dict.kyc_phone_fallback;
+}
 return;
 }
 fetchKycPhone().then(phone => {
@@ -210,12 +215,12 @@ return;
 }
 // Контакт уходит боту в чат; бот проверяет, что номер принадлежит
 // самому пользователю, и сохраняет его — мини-апп лишь забирает итог.
-tg.requestContact((sent) => {
-if (sent){
+// На части iPhone колбэк приходит с sent=false, хотя номер ушёл, или не
+// приходит вовсе — опрашиваем в любом случае, а через ~40 с подсказываем
+// запасной путь (/phone в чате бота).
 kycStatus.textContent = dict.kyc_phone_checking;
 pollKycPhone();
-}
-});
+tg.requestContact(() => {});
 });
 
 function openKycOverlay(){
