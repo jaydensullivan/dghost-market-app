@@ -5124,3 +5124,8 @@ body.layout-large #skinsList{ grid-template-columns:repeat(auto-fill, minmax(280
 /* Просмотрщик: «Левая рука» — зеркалим кадр (анимация CS2 правой руки). */
 #viewer3dCanvas.mirror{ transform:scaleX(-1); }
 #viewer3dMirrorBtn.active{ color:var(--red); }
+
+/* Кнопки-ссылки на Steam: обычная ссылка <a target="_blank"> — Telegram
+   открывает её сразу в Safari или в приложении Steam (команду openLink
+   на части iPhone он игнорирует). Выглядят как кнопки. */
+a.pf-btn, a.steam-link-btn{ text-decoration:none; display:flex; align-items:center; justify-content:center; gap:6px; box-sizing:border-box; }

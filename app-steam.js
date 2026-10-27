@@ -121,16 +121,9 @@ btnEl: document.getElementById('mandatoryLinkBtn'),
 });
 });
 
-// Страница Steam, где лежит трейд-ссылка. Открываем через тот же
-// переходник, что и обмен в «Сделках» (openSteamLink → go.html): на
-// iPhone с приложением Steam Telegram отдаёт ссылку steamcommunity.com
-// приложению, и она молча теряется — кнопка «не работала».
-const STEAM_TRADE_PRIVACY_URL = 'https://steamcommunity.com/my/tradeoffers/privacy';
-function openSteamTradeLinkPage(e){
-openSteamLink(STEAM_TRADE_PRIVACY_URL, e && e.currentTarget);
-}
-
-openSteamTradeUrlBtn.addEventListener('click', openSteamTradeLinkPage);
+// «Открыть Steam» / «Открыть страницу Steam с трейд-ссылкой» — обычные
+// ссылки в index.html (<a target="_blank">): Telegram сам открывает их в
+// Safari или в приложении Steam, обработчик не нужен.
 
 document.getElementById('mandatoryAcceptAgreementBtn').addEventListener('click', () => {
 if (!tg || !tg.initData) return;
@@ -166,7 +159,6 @@ btn.disabled = false;
 });
 });
 
-document.getElementById('mandatoryOpenSteamBtn').addEventListener('click', openSteamTradeLinkPage);
 
 document.getElementById('mandatorySteamLaterBtn').addEventListener('click', () => {
 steamLinkSkippedThisSession = true;
