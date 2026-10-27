@@ -307,6 +307,8 @@ trade_ext_hint: "💡 DGhost Trade kengaytmasi bilan almashuv o'zi yaratiladi �
 trade_ext_link: "O'rnatish",
 steam_link_copied: "Steam ochilmadi — almashuv havolasi nusxalandi, uni brauzerga qo'ying.",
 open_here: "Ochilmadimi? Shu yerda ochish",
+open_in_browser: "Brauzerda ochish (Safari)",
+angles_saving: "Lotning 3D-burchaklari saqlanmoqda — bir soniya…",
 v3_weapon_dir: "Qurol papkasi (models/weapons/…)",
 v3_mask_channel: "Bo'yoq niqobi kanali",
 v3_skin_dir: "Bo'yoq papkasi (models/skins/…)",
