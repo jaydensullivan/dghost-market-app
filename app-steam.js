@@ -126,8 +126,8 @@ btnEl: document.getElementById('mandatoryLinkBtn'),
 // iPhone с приложением Steam Telegram отдаёт ссылку steamcommunity.com
 // приложению, и она молча теряется — кнопка «не работала».
 const STEAM_TRADE_PRIVACY_URL = 'https://steamcommunity.com/my/tradeoffers/privacy';
-function openSteamTradeLinkPage(){
-openSteamLink(STEAM_TRADE_PRIVACY_URL);
+function openSteamTradeLinkPage(e){
+openSteamLink(STEAM_TRADE_PRIVACY_URL, e && e.currentTarget);
 }
 
 openSteamTradeUrlBtn.addEventListener('click', openSteamTradeLinkPage);

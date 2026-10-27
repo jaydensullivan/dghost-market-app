@@ -77,6 +77,13 @@ document.getElementById('referralShareBtn').addEventListener('click', () => {
 if (!referralLinkRaw) return;
 const dict = I18N[currentLang] || I18N.ru;
 const url = 'https://t.me/share/url?url=' + encodeURIComponent(referralLinkRaw) + '&text=' + encodeURIComponent(dict.rd_share_text);
+// На части iPhone Telegram молча игнорирует openTelegramLink — поэтому
+// ссылку сразу кладём и в буфер обмена: её можно вставить в любой чат.
+if (navigator.clipboard && navigator.clipboard.writeText){
+navigator.clipboard.writeText(referralLinkRaw)
+.then(() => showToast(dict.gw_invite_copied, { type: 'success', duration: 5000 }))
+.catch(() => {});
+}
 if (tg && tg.openTelegramLink) tg.openTelegramLink(url);
 else window.open(url, '_blank');
 });
