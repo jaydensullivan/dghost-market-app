@@ -474,6 +474,9 @@ isAdmin = !!data.is_admin;
 isOwner = !!data.is_owner;
 adminPermissions = data.admin_permissions || [];
 isAuctioneer = !!data.is_auctioneer;
+// До applySupportMe: кнопка «Открыть» из бота поддержки сразу ведёт в
+// админку, а запрос кода 2FA там смотрит на этот статус.
+totp2faStatus = data.totp || totp2faStatus;
 applySupportMe(data);
 // Admin — в меню аватара; в нижней навигации только пять вкладок.
 document.getElementById('headerMenuAdmin').style.display = (isAdmin || isAuctioneer || isSupportStaff) ? '' : 'none';
@@ -552,6 +555,9 @@ isAdmin = !!data.is_admin;
 isOwner = !!data.is_owner;
 adminPermissions = data.admin_permissions || [];
 isAuctioneer = !!data.is_auctioneer;
+// До applySupportMe: кнопка «Открыть» из бота поддержки сразу ведёт в
+// админку, а запрос кода 2FA там смотрит на этот статус.
+totp2faStatus = data.totp || totp2faStatus;
 applySupportMe(data);
 document.getElementById('headerMenuAdmin').style.display = (isAdmin || isAuctioneer || isSupportStaff) ? '' : 'none';
 if (isAdmin || isAuctioneer || isSupportStaff) ensureAdminScript().catch(() => {});
