@@ -15,6 +15,8 @@ let directP2pPurchaseEnabled = false;
 // Оплата картой на странице банка (эквайринг; бот: payment_methods, kind hosted).
 let hostedPayMethods = [];
 let sellerKycStatus = 'none';
+// Вывод без паспорта — после продаж гарантам («Продать гаранту», /api/me).
+let instantCanWithdraw = false;
 // Сколько можно потратить с баланса (balance − held) — для кнопки «С баланса».
 let myAvailableBalance = 0;
 let currentUserTrust = null;

@@ -52,6 +52,17 @@ let pendingBuySkin = null;
 const WEAR_LABELS = { FN: 'FN', MW: 'MW', FT: 'FT', WW: 'WW', BS: 'BS' };
 
 const ERROR_MESSAGES_RU = {
+phone_required: "Подтверди номер телефона.",
+item_not_in_inventory: "Этого скина нет в твоём инвентаре Steam.",
+no_market_price: "Для этого скина нет цены рынка — продать гаранту пока нельзя.",
+garant_unavailable: "Этот гарант сейчас не принимает заявки.",
+discount_below_garant: "Гарант берёт с большей скидкой.",
+price_outside_garant: "Сумма не подходит под условия гаранта.",
+week_limit: "Достигнут лимит продаж гарантам за 7 дней.",
+request_pending: "По этому скину уже есть заявка, дождись ответа.",
+bad_discount: "Скидка — от 5 до 15%.",
+inventory_unavailable: "Steam сейчас не отдаёт инвентарь, попробуй позже.",
+seller_unavailable: "Продавец больше не может продать — заявка не принята.",
 admin_session_stale: "Для действий с деньгами и настройками нужен свежий вход: закройте мини-апп и откройте снова.",
 admin_2fa_required: "Нужен код 2FA: откройте админку заново и введите код.",
 support_too_many: "Слишком много сообщений подряд — дождитесь ответа поддержки.",
@@ -135,6 +146,17 @@ payer_name_required: 'Укажи имя и фамилию владельца к�
 };
 
 const ERROR_MESSAGES_UZ = {
+phone_required: "Telefon raqamini tasdiqlang.",
+item_not_in_inventory: "Bu skin Steam inventaringizda yo‘q.",
+no_market_price: "Bu skin uchun bozor narxi yo‘q — hozircha kafilga sotib bo‘lmaydi.",
+garant_unavailable: "Bu kafil hozir ariza qabul qilmayapti.",
+discount_below_garant: "Kafil kattaroq chegirma bilan oladi.",
+price_outside_garant: "Summa kafil shartlariga mos emas.",
+week_limit: "7 kunlik kafilga sotish limiti tugadi.",
+request_pending: "Bu skin bo‘yicha ariza bor, javobni kuting.",
+bad_discount: "Chegirma — 5 dan 15% gacha.",
+inventory_unavailable: "Steam hozir inventarni bermayapti, keyinroq urinib ko‘ring.",
+seller_unavailable: "Sotuvchi endi sota olmaydi — ariza qabul qilinmadi.",
 admin_session_stale: "Pul va sozlamalar bilan amallar uchun qayta kirish kerak: mini-ilovani yopib, qayta oching.",
 admin_2fa_required: "2FA kodi kerak: admin panelni qayta oching va kodni kiriting.",
 support_too_many: "Juda ko'p xabar — qo'llab-quvvatlash javobini kuting.",
@@ -218,6 +240,17 @@ payer_name_required: "Karta egasining ismi va familiyasini kiriting.",
 };
 
 const ERROR_MESSAGES_EN = {
+phone_required: "Confirm your phone number.",
+item_not_in_inventory: "This skin isn't in your Steam inventory.",
+no_market_price: "There's no market price for this skin — it can't be sold to a guarantor yet.",
+garant_unavailable: "This guarantor isn't taking requests right now.",
+discount_below_garant: "This guarantor takes a bigger discount.",
+price_outside_garant: "The amount doesn't fit the guarantor's terms.",
+week_limit: "You've reached the 7-day limit for sales to guarantors.",
+request_pending: "There's already a request for this skin — wait for the reply.",
+bad_discount: "The discount must be 5–15%.",
+inventory_unavailable: "Steam isn't returning the inventory right now, try later.",
+seller_unavailable: "The seller can no longer sell — request not accepted.",
 admin_session_stale: "Money and settings actions need a fresh sign-in: close the mini app and open it again.",
 admin_2fa_required: "2FA code needed: open the admin panel again and enter the code.",
 support_too_many: "Too many messages in a row — please wait for support to reply.",
@@ -492,6 +525,7 @@ topupCardEnabled = data.topup_card_enabled !== false;
 directP2pPurchaseEnabled = data.direct_p2p_purchase_enabled === true;
 hostedPayMethods = Array.isArray(data.payment_methods) ? data.payment_methods.filter(m => m && m.kind === 'hosted') : [];
 sellerKycStatus = data.seller_kyc_status || 'none';
+instantCanWithdraw = !!data.instant_can_withdraw;
 saleFeePercent = data.sale_fee_percent ?? saleFeePercent;
 withdrawFeePercent = data.withdraw_fee_percent ?? withdrawFeePercent;
 applyTranslations();
@@ -504,7 +538,7 @@ withdrawCardEnabled = data.withdraw_card_enabled !== false;
 currentUserTrust = data.trust || null;
 renderTrustBadge();
 if (typeof updateTopupMethods === 'function') updateTopupMethods();
-document.getElementById('openTopupBtn').style.display = topupCardEnabled ? '' : 'none';
+document.getElementById('openTopupBtn').style.display = (topupCardEnabled && sellerKycStatus === 'verified') ? '' : 'none';
 document.getElementById('openWithdrawBtn').style.display = withdrawCardEnabled ? '' : 'none';
 if (data.language && data.language !== currentLang){
 ensureLanguage(data.language).then(() => applyServerLanguage(data.language)).catch(() => {});
@@ -572,6 +606,7 @@ topupCardEnabled = data.topup_card_enabled !== false;
 directP2pPurchaseEnabled = data.direct_p2p_purchase_enabled === true;
 hostedPayMethods = Array.isArray(data.payment_methods) ? data.payment_methods.filter(m => m && m.kind === 'hosted') : [];
 sellerKycStatus = data.seller_kyc_status || 'none';
+instantCanWithdraw = !!data.instant_can_withdraw;
 saleFeePercent = data.sale_fee_percent ?? saleFeePercent;
 withdrawFeePercent = data.withdraw_fee_percent ?? withdrawFeePercent;
 applyTranslations();
@@ -584,7 +619,7 @@ withdrawCardEnabled = data.withdraw_card_enabled !== false;
 currentUserTrust = data.trust || null;
 renderTrustBadge();
 if (typeof updateTopupMethods === 'function') updateTopupMethods();
-document.getElementById('openTopupBtn').style.display = topupCardEnabled ? '' : 'none';
+document.getElementById('openTopupBtn').style.display = (topupCardEnabled && sellerKycStatus === 'verified') ? '' : 'none';
 document.getElementById('openWithdrawBtn').style.display = withdrawCardEnabled ? '' : 'none';
 updateSteamBlockVisibility();
 updateMandatorySteamOverlay();

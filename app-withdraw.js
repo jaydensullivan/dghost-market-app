@@ -1081,7 +1081,10 @@ const qsFloatRow = document.getElementById('qsFloatRow');
 const qsPrice = document.getElementById('qsPrice');
 const qsStatus = document.getElementById('quickSellStatus');
 
+let quickSellItem = null;
+
 function openQuickSell(item){
+quickSellItem = item;
 const rarityBg = RARITY_BG[item.rarity]
 ? `url('${RARITY_BG[item.rarity]}')`
 : 'none';
@@ -1194,6 +1197,13 @@ scheduleSellMarketPreview();
 document.getElementById('quickSellConfirm').addEventListener('click', () => {
 sPrice.value = qsPrice.value;
 publishSkin(document.getElementById('quickSellConfirm'), qsStatus, quickSellOverlay);
+});
+
+// Тот же скин — сразу гаранту со скидкой 5–15% (app-instant.js).
+document.getElementById('quickSellInstant').addEventListener('click', () => {
+const item = quickSellItem;
+stopQuickSell();
+openInstantSell(item);
 });
 
 // Escape-люк для редких случаев, когда авто-подставленные данные
