@@ -49,6 +49,18 @@ img.replaceWith(div);
 // розыгрыша и сюда же сохраняет правки из формы редактирования.
 const API_BASE = 'https://api.dghostmarket.uz';
 
+// 2FA на вход в админку проверяет и сервер: пропуск, выданный после кода
+// (/api/2fa/verify), уходит в каждом запросе к /api/admin/*.
+let admin2faPass = '';
+
+function withAdmin2fa(url){
+if (!admin2faPass || typeof url !== 'string' || url.indexOf('/api/admin/') === -1) return url;
+return url + (url.includes('?') ? '&' : '?') + 'admin_2fa=' + encodeURIComponent(admin2faPass);
+}
+
+const nativeFetch = window.fetch.bind(window);
+window.fetch = (input, init) => nativeFetch(withAdmin2fa(input), init);
+
 
 
 // Пока открыто любое окно, кнопки шапки прячутся (см. body.modal-open

@@ -1232,7 +1232,7 @@ return;
 list.innerHTML = items.map(o => {
 const hours = Math.max(0, Math.floor((Date.now() - new Date(o.created_at).getTime()) / 3600000));
 const receipt = o.has_receipt
-? `<div class="kyc-shots" style="grid-template-columns:1fr; max-width:220px; margin-top:6px;"><figure><img src="${escapeHtml(API_BASE + '/api/admin/p2p_orders/receipt?id=' + o.id + '&init_data=' + encodeURIComponent(tg.initData))}" data-p2p-zoom alt=""><figcaption>${dict.admin_p2p_receipt}</figcaption></figure></div>`
+? `<div class="kyc-shots" style="grid-template-columns:1fr; max-width:220px; margin-top:6px;"><figure><img src="${escapeHtml(withAdmin2fa(API_BASE + '/api/admin/p2p_orders/receipt?id=' + o.id + '&init_data=' + encodeURIComponent(tg.initData)))}" data-p2p-zoom alt=""><figcaption>${dict.admin_p2p_receipt}</figcaption></figure></div>`
 : `<div class="deal-meta">⚠️ ${escapeHtml(dict.admin_p2p_no_receipt.replace('{id}', o.skin_id))}</div>`;
 const gone = o.skin_status && o.skin_status !== 'reserved' && o.skin_status !== 'available'
 ? `<div class="deal-meta">⚠️ ${escapeHtml(dict.admin_p2p_skin_gone)}</div>` : '';
@@ -1749,7 +1749,7 @@ adminSendReport(null, e.currentTarget, { date_from: from, date_to: to });
 // Telegram не пересылаются; решение принимается здесь.
 
 function kycPhotoUrl(id, kind){
-return API_BASE + '/api/admin/kyc/photo?id=' + id + '&kind=' + kind + '&init_data=' + encodeURIComponent(tg.initData);
+return withAdmin2fa(API_BASE + '/api/admin/kyc/photo?id=' + id + '&kind=' + kind + '&init_data=' + encodeURIComponent(tg.initData));
 }
 
 function kycDateLabel(iso){
