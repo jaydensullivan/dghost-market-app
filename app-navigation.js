@@ -305,7 +305,7 @@ headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({ init_data: tg.initData, code: code })
 })
 .then(r => { if (!r.ok) throw new Error('bad_code'); return r.json(); })
-.then(() => ensureAdminScript())
+.then(data => { admin2faPass = (data && data.admin_2fa) || ''; return ensureAdminScript(); })
 .then(() => loadAdminPanel())
 .catch(() => {
 showAlert((I18N[currentLang] || I18N.ru).totp_wrong_code);
