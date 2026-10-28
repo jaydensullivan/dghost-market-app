@@ -98,7 +98,8 @@ document.getElementById('sellerStatusNone').style.display = (status === 'none') 
 document.getElementById('sellerStatusPending').style.display = (status === 'pending') ? '' : 'none';
 document.getElementById('sellerStatusRejected').style.display = (status === 'rejected') ? '' : 'none';
 document.getElementById('sellerStatusVerified').style.display = (status === 'verified') ? '' : 'none';
-document.getElementById('profileMoneyButtons').style.display = (status === 'verified') ? '' : 'none';
+// Продавец без паспорта с продажами гарантам тоже выводит деньги (без пополнения).
+document.getElementById('profileMoneyButtons').style.display = (status === 'verified' || instantCanWithdraw) ? '' : 'none';
 // Проверенному продавцу блок «Стать продавцом» не нужен — вместо него
 // галочка у имени; история и CSV — только продавцам.
 document.getElementById('profileSellerSection').style.display = (status === 'verified') ? 'none' : '';

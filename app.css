@@ -5129,3 +5129,31 @@ body.layout-large #skinsList{ grid-template-columns:repeat(auto-fill, minmax(280
    открывает её сразу в Safari или в приложении Steam (команду openLink
    на части iPhone он игнорирует). Выглядят как кнопки. */
 a.pf-btn, a.steam-link-btn{ text-decoration:none; display:flex; align-items:center; justify-content:center; gap:6px; box-sizing:border-box; }
+
+/* «Продать гаранту» (app-instant.js) */
+.lots-head-btns{ display:flex; gap:8px; }
+.instant-tabs{ display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; margin:12px 0; }
+.instant-tabs .qs-chip[hidden]{ display:none; }
+.instant-intro{ color:var(--silver); font-size:13px; margin:0 0 8px; }
+.instant-muted{ color:var(--silver); opacity:.75; font-size:12px; margin:4px 0; }
+.instant-need{ padding:12px; border-radius:12px; background:rgba(255,255,255,.04); margin:8px 0; }
+.instant-step{ font-size:14px; margin:14px 0 6px; }
+.instant-wide{ width:100%; margin-top:12px; padding:12px; border-radius:10px; font-weight:700; cursor:pointer; border:1px solid var(--red-dim); background:transparent; color:inherit; }
+.instant-wide[disabled]{ opacity:.5; cursor:default; }
+.instant-items, .instant-garants{ display:flex; flex-direction:column; gap:6px; max-height:46vh; overflow-y:auto; }
+.instant-item{ display:flex; align-items:center; gap:10px; width:100%; padding:8px; border-radius:12px; border:1px solid var(--red-dim); background:rgba(255,255,255,.03); color:inherit; text-align:left; cursor:pointer; box-sizing:border-box; }
+.instant-item img, .instant-item > span{ width:56px; height:42px; object-fit:contain; flex:0 0 56px; }
+.instant-item b{ font-size:13px; }
+.instant-item.on, .instant-garant.on{ border-color:var(--accent); background:rgba(168,85,247,.18); }
+.instant-discounts{ display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; }
+.instant-garant{ width:100%; padding:10px; border-radius:12px; border:1px solid var(--red-dim); background:rgba(255,255,255,.03); color:inherit; text-align:left; cursor:pointer; box-sizing:border-box; }
+.instant-garant[disabled]{ opacity:.45; cursor:default; }
+.instant-garant-top{ display:flex; justify-content:space-between; gap:8px; font-size:14px; }
+.instant-note{ font-size:12px; margin-top:4px; }
+.instant-why{ font-size:12px; color:#ff8a8a; margin-top:4px; }
+.instant-request{ padding:8px 0; border-bottom:1px solid rgba(255,255,255,.06); }
+.instant-request .instant-item{ cursor:default; }
+.instant-request-row{ display:flex; justify-content:space-between; gap:8px; font-size:13px; margin-top:6px; }
+.instant-actions{ display:flex; gap:8px; margin-top:6px; }
+.instant-small{ flex:1; padding:8px 10px; border-radius:10px; font-size:13px; margin-top:6px; border:1px solid var(--red-dim); background:transparent; color:inherit; cursor:pointer; }
+.instant-check{ display:flex; align-items:center; gap:8px; margin:6px 0 10px; font-size:14px; }
