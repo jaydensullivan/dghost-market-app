@@ -5207,3 +5207,12 @@ button.brand-logo{ width:44px; height:44px; }
 .shop-cats .category-chip{ font-size:12px; }
 .pf-add-btn{ min-height:44px; }
 .promo-kicker{ font-size:12px; }
+/* Служебный текст от 12px: строка карточки, подписи кнопок лота,
+   статистика и подсказки профиля. Подписи кнопок лота — без капса
+   (короче и читаемее), при 6–7 кнопках ряд переносится. */
+.skin-meta, .skin-meta-float, .skin-market .trader-badge{ font-size:12px; }
+.buy-actions-row{ flex-wrap:wrap; row-gap:4px; }
+.buy-action-btn{ font-size:12px; text-transform:none; padding:6px 7px; min-width:44px; min-height:44px; }
+.buy-subtitle, .stat-label, .shop-hint, .profile-section-title{ font-size:12px; }
+.add-skin-btn{ min-height:40px; }
+#pTradeLink{ min-height:44px; }
