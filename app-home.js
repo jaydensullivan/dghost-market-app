@@ -248,3 +248,15 @@ const form = document.getElementById('wishlistForm');
 form.style.display = form.style.display === 'none' ? '' : 'none';
 if (form.style.display === '') document.getElementById('wishlistQueryInput').focus();
 });
+
+// Кнопки шапки (баланс, уведомления, профиль) висят поверх списка и при
+// прокрутке закрывали карточки. Листаешь вниз — прячем, вверх — показываем.
+(function(){
+let lastY = window.scrollY || 0;
+window.addEventListener('scroll', () => {
+const y = window.scrollY || 0;
+if (Math.abs(y - lastY) < 8) return;
+document.body.classList.toggle('hdr-hidden', y > lastY && y > 120);
+lastY = y;
+}, { passive: true });
+})();

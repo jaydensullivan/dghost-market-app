@@ -59,7 +59,14 @@ return url + (url.includes('?') ? '&' : '?') + 'admin_2fa=' + encodeURIComponent
 }
 
 const nativeFetch = window.fetch.bind(window);
-window.fetch = (input, init) => nativeFetch(withAdmin2fa(input), init);
+window.fetch = (input, init) => nativeFetch(withAdmin2fa(input), init).then(resp => {
+// Первая сделка без принятых правил — сервер ответил agreement_required:
+// открываем окно правил, где бы ни было нажато действие.
+if (resp.status === 403 && typeof showAgreementGate === 'function'){
+resp.clone().json().then(d => { if (d && d.error === 'agreement_required') showAgreementGate(); }).catch(() => {});
+}
+return resp;
+});
 
 
 

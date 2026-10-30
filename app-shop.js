@@ -76,6 +76,7 @@ has_entries: "Участники уже есть — розыгрыш не от�
 bid_banned: "Ставки закрыты: дважды выигранный аукцион не был оплачен. Напиши в поддержку.",
 post_failed: "Не удалось опубликовать пост в канале. Проверь, что бот — админ канала.",
 trade_link_required: 'Чтобы покупать, привяжи ссылку на обмен Steam — продавцу нужно куда отправить предмет.',
+agreement_required: 'Перед первой сделкой прими правила площадки — окно уже открыто.',
 sender_insufficient_funds: 'У отправителя не хватает денег на доплату — предложение больше неактуально.',
 partner_not_sent: 'Партнёр ещё не отметил, что отправил предмет. Подтверждать получение рано.',
 too_fast: 'Слишком много действий подряд. Подожди немного — это защита от накрутки.',
@@ -170,6 +171,7 @@ has_entries: "Ishtirokchilar bor — konkursni bekor qilib bo'lmaydi.",
 bid_banned: "Stavkalar yopilgan: ikki marta yutilgan auksion to'lanmagan. Yordamga yozing.",
 post_failed: "Kanalga post joylab bo'lmadi. Bot kanal admini ekanini tekshiring.",
 trade_link_required: 'Xarid qilish uchun Steam almashuv havolasini ulang — sotuvchi buyumni qayerga yuborishini bilishi kerak.',
+agreement_required: 'Birinchi bitimdan oldin maydon qoidalarini qabul qiling — oyna ochildi.',
 sender_insufficient_funds: "Yuboruvchida qo'shimcha to'lov uchun mablag' yetarli emas — taklif endi dolzarb emas.",
 partner_not_sent: "Hamkor hali buyumni yuborganini belgilamagan. Qabul qilishni tasdiqlashga hali erta.",
 too_fast: "Ketma-ket juda ko'p amal. Biroz kuting — bu aldovdan himoya.",
@@ -264,6 +266,7 @@ has_entries: "There are entries already — the giveaway can't be cancelled.",
 bid_banned: "Bidding is closed: two won auctions were not paid. Contact support.",
 post_failed: "Couldn't post to the channel. Make sure the bot is a channel admin.",
 trade_link_required: 'To buy, link your Steam trade URL — the seller needs somewhere to send the item.',
+agreement_required: 'Accept the marketplace rules before your first deal — the window is open.',
 sender_insufficient_funds: "The sender doesn't have enough funds for the top-up — the offer is no longer valid.",
 partner_not_sent: "Your partner hasn't marked the item as sent yet. It's too early to confirm receipt.",
 too_fast: 'Too many actions in a row. Wait a little — this protects against abuse.',
@@ -384,6 +387,13 @@ let steamLinkSkippedThisSession = false;
 let agreementAccepted = false;
 let sellerOfferAccepted = false;
 let agreementTextLoaded = false;
+let agreementGateRequested = false;
+
+function showAgreementGate(){
+if (agreementAccepted) return;
+agreementGateRequested = true;
+updateMandatorySteamOverlay();
+}
 
 function updateSteamBlockVisibility(){
 document.getElementById('steamLinkBlock').style.display = hasSteamLink ? 'none' : 'block';
@@ -416,6 +426,15 @@ steamOverlay.style.height = window.innerHeight + 'px';
 steamOverlay.classList.add('show');
 document.body.style.overflow = 'hidden';
 haptic('warning');
+}
+
+// Правила — не стеной текста при первом входе, а перед первой сделкой:
+// сервер отвечает agreement_required, и окно открывает showAgreementGate().
+if (currentUserId && !agreementAccepted && !agreementGateRequested){
+agreementOverlay.classList.remove('show');
+steamOverlay.classList.remove('show');
+document.body.style.overflow = '';
+return;
 }
 
 if (currentUserId && !agreementAccepted){
@@ -519,6 +538,8 @@ currentUserId = data.user_id;
 hasSteamLink = !!data.has_steam_link;
 applySteamVerification(data);
 agreementAccepted = !!data.agreement_accepted;
+// Друга по приглашению в розыгрыш засчитывают после правил — им окно сразу.
+if (data.agreement_needed_now) agreementGateRequested = true;
 sellerOfferAccepted = !!data.seller_offer_accepted;
 changelogSeen = !!data.changelog_seen;
 topupCardEnabled = data.topup_card_enabled !== false;
@@ -626,6 +647,8 @@ updateMandatorySteamOverlay();
 updateProfileSteamBlock();
 
 profileName.textContent = data.username || ('ID ' + data.user_id);
+profileName.onclick = null;
+profileName.style.cursor = '';
 profileBalanceAmount.textContent = formatCoins(data.available);
 myAvailableBalance = Number(data.available) || 0;
 profileHeld.innerHTML = data.held > 0
@@ -637,7 +660,12 @@ document.getElementById('statBought').textContent = data.bought_count;
 document.getElementById('statActive').textContent = data.active_count;
 })
 .catch(() => {
-profileName.textContent = (I18N[currentLang] || I18N.ru).load_failed;
+// Ошибка — не «имя»: без галочки проверки и с повтором по нажатию.
+const eDict = I18N[currentLang] || I18N.ru;
+profileName.textContent = eDict.load_failed + ' · ' + eDict.btn_retry + ' ↻';
+profileName.style.cursor = 'pointer';
+profileName.onclick = () => loadProfile();
+document.getElementById('profileVerified').style.display = 'none';
 profileBalanceAmount.textContent = '—';
 });
 

@@ -316,14 +316,16 @@ fetch(API_BASE + '/api/deals?init_data=' + encodeURIComponent(tg.initData))
 .then(data => {
 lastDeals = (data && data.items) || [];
 if (!lastDeals.length){
-dealsList.innerHTML = `<div class="skins-empty skins-empty-md">${dict.no_active_deals}</div>`;
+dealsList.innerHTML = `<div class="skins-empty skins-empty-md">${dict.no_active_deals}</div>`
++ `<button type="button" class="steam-link-btn secondary" onclick="goToScreen('shop')">${dict.rf_open_market}</button>`;
 return;
 }
 dealsList.innerHTML = lastDeals.map(dealCardHtml).join('');
 lastDeals.forEach(deal => loadDealTimelineInline(null, deal.id));
 })
 .catch(() => {
-dealsList.innerHTML = '<div class="skins-empty skins-empty-md">' + (I18N[currentLang] || I18N.ru).deals_load_failed + '</div>';
+dealsList.innerHTML = '<div class="skins-empty skins-empty-md">' + dict.deals_load_failed + '</div>'
++ '<button type="button" class="steam-link-btn secondary" onclick="loadDeals()">' + dict.btn_retry + '</button>';
 });
 }
 
@@ -401,7 +403,8 @@ return;
 el.innerHTML = active.map(tradeOfferCardHtml).join('');
 })
 .catch(() => {
-el.innerHTML = `<div class="skins-empty skins-empty-md">${dict.load_failed}</div>`;
+el.innerHTML = `<div class="skins-empty skins-empty-md">${dict.load_failed}</div>`
++ `<button type="button" class="steam-link-btn secondary" onclick="loadTradeOffers()">${dict.btn_retry}</button>`;
 });
 }
 
