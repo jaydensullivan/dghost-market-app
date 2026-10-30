@@ -1,2 +1,5 @@
 exceptions.txt
 __pycache__/
+
+# Личные настройки Claude Code (хуки Impeccable и т.п.) — не в репозиторий.
+.claude/settings.local.json
