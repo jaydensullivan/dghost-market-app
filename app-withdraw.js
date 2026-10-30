@@ -549,6 +549,7 @@ return;
 }
 lsLink.value = '';
 lsPrice.value = '';
+updateNetPayout(lsPrice);
 lsStatus.textContent = '';
 lsDefaultWhen();
 lsReset();
@@ -611,6 +612,7 @@ if (market && lsChecked && lsChecked.link === link){
 box.innerHTML = `<div class="mp-row"><span>${dict.mp_preview_ref}</span><span>${escapeHtml(formatCoins(market))}</span></div>`;
 box.style.display = '';
 if (!lsPrice.value) lsPrice.value = String(qsRoundPrice(market * (1 - SELL_ALL_DISCOUNT / 100)));
+updateNetPayout(lsPrice);
 } else {
 box.style.display = 'none';
 }
@@ -1110,6 +1112,7 @@ qsFloatRow.style.display = 'none';
 }
 
 qsPrice.value = '';
+updateNetPayout(qsPrice);
 qsStatus.textContent = '';
 qsAutoPriced = false;
 // Ориентир по рынку виден сразу («загрузка…»), а не появляется из ниоткуда.
@@ -1150,6 +1153,7 @@ return Math.max(step, Math.floor(value / step) * step);
 
 function setQuickSellPrice(price){
 qsPrice.value = String(price);
+updateNetPayout(qsPrice);
 sPrice.value = qsPrice.value;
 scheduleSellMarketPreview();
 }
@@ -1306,15 +1310,29 @@ try { onboardingAlreadySeen = localStorage.getItem(ONBOARDING_SEEN_KEY) === '1';
 
 const hasAnyDeepLink = !!deepLinkSkinId || !!deepLinkAuctionId || deepLinkGiveaway;
 
-if (!onboardingAlreadySeen && !hasAnyDeepLink){
+// Обучение не закрывает маркет при первом входе: сразу товары, а над
+// ними подсказка «Впервые здесь?» — по нажатию те же 4 шага.
+function openOnboarding(){
 onboardingSlideIndex = 0;
 showOnboardingSlide(0);
 document.getElementById('onboardingOverlay').style.height = window.innerHeight + 'px';
 document.getElementById('onboardingOverlay').classList.add('show');
 document.body.style.overflow = 'hidden';
-} else {
-startAppAfterOnboarding();
 }
+
+function hideNewbieTip(){
+document.getElementById('newbieTip').style.display = 'none';
+try { localStorage.setItem(ONBOARDING_SEEN_KEY, '1'); } catch (e) {}
+}
+
+document.getElementById('newbieTip').addEventListener('click', (e) => {
+if (e.target.closest('#newbieTipClose')){ hideNewbieTip(); return; }
+hideNewbieTip();
+openOnboarding();
+});
+
+if (!onboardingAlreadySeen && !hasAnyDeepLink) document.getElementById('newbieTip').style.display = '';
+startAppAfterOnboarding();
 
 document.getElementById('auctionsBackBtn').addEventListener('click', () => goToScreen('welcome'));
 document.getElementById('adminBackBtn').addEventListener('click', () => goToScreen('welcome'));
@@ -1439,3 +1457,21 @@ addSkinSave.addEventListener('click', () => {
 publishSkin(addSkinSave, addSkinStatus, addSkinOverlay);
 });
 
+
+// Под ценой лота — сколько продавец получит на руки и когда: раньше
+// была только строка про процент комиссии, считать приходилось самому.
+function updateNetPayout(input){
+const box = document.querySelector('.net-payout[data-net-for="' + input.id + '"]');
+if (!box) return;
+const price = Math.floor(Number(input.value) || 0);
+if (price <= 0){ box.textContent = ''; return; }
+const fee = Number(saleFeePercent) || 0;
+const net = Math.floor(price * (100 - fee) / 100);
+box.textContent = (I18N[currentLang] || I18N.ru).net_payout
+.replace('{net}', formatCoins(net))
+.replace('{fee}', fee);
+}
+
+document.addEventListener('input', (e) => {
+if (e.target && e.target.matches && e.target.matches('#sPrice, #lsPrice, #qsPrice')) updateNetPayout(e.target);
+});

@@ -211,6 +211,13 @@
 <div class="promo-dots" id="promoDots"></div>
 </div>
 
+<!-- Подсказка новичку вместо обучения на весь экран (app-withdraw.js). -->
+<div class="newbie-tip" id="newbieTip" role="button" tabindex="0" style="display:none;">
+<span class="newbie-tip-ico">👋</span>
+<span class="newbie-tip-text" data-i18n="newbie_tip">Впервые здесь? Как всё устроено — 4 коротких шага</span>
+<button type="button" class="newbie-tip-x" id="newbieTipClose" aria-label="Закрыть">✕</button>
+</div>
+
 <div class="shop-search-row" id="shopSearchAnchor">
 <label class="shop-search">
 <svg class="gi" width="18" height="18" aria-hidden="true"><use href="#gi-search"/></svg>
@@ -1832,6 +1839,7 @@
 <div class="edit-field">
 <label for="sPrice" data-i18n="label_price">Цена, сум</label>
 <input id="sPrice" type="number" min="1" placeholder="5000">
+<div class="net-payout" data-net-for="sPrice"></div>
 <div id="sMarketPricePreview" class="market-price-box" style="display:none;"></div>
 </div>
 
@@ -2185,6 +2193,7 @@
 <div class="edit-field">
 <label for="lsPrice" data-i18n="label_price_sum">Цена, сум</label>
 <input id="lsPrice" type="number" min="1" placeholder="5000">
+<div class="net-payout" data-net-for="lsPrice"></div>
 </div>
 </div>
 
@@ -2218,6 +2227,7 @@
 <div class="edit-field">
 <label for="qsPrice" data-i18n="label_price_sum">Цена, сум</label>
 <input id="qsPrice" type="number" min="1" placeholder="5000">
+<div class="net-payout" data-net-for="qsPrice"></div>
 </div>
 
 <div class="edit-actions">
@@ -2398,9 +2408,9 @@
 <button class="btn-ghost-link mt6" type="button" id="musicCloseBtn" data-i18n="btn_close">Закрыть</button>
 </div>
 </div>
-<script src="app-core.js?v=19"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=26', en: 'app-i18n-en.js?v=25' };</script>
-<script src="app-i18n.js?v=150"></script>
+<script src="app-core.js?v=20"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=27', en: 'app-i18n-en.js?v=26' };</script>
+<script src="app-i18n.js?v=151"></script>
 <script src="app-navigation.js?v=27"></script>
 <script src="app-shop.js?v=45"></script>
 <script src="app-legal.js?v=3"></script>
@@ -2413,7 +2423,7 @@
 <script src="app-topup.js?v=5"></script>
 <script src="app-history.js?v=10"></script>
 <script src="app-referral.js?v=9"></script>
-<script src="app-withdraw.js?v=36"></script>
+<script src="app-withdraw.js?v=37"></script>
 <script src="app-instant.js?v=1"></script>
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
 <script>window.DG_ADMIN_SRC = 'app-admin.js?v=30';</script>

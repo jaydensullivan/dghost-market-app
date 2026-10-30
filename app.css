@@ -5161,3 +5161,30 @@ a.pf-btn, a.steam-link-btn{ text-decoration:none; display:flex; align-items:cent
 /* Шапка прячется при прокрутке вниз (app-home.js), чтобы не закрывать карточки. */
 .brand-tr{ transition:transform .2s ease, opacity .2s ease; }
 body.hdr-hidden .brand-tr{ transform:translateY(-90px); opacity:0; pointer-events:none; }
+
+/* Подсказка новичку над поиском маркета. */
+.newbie-tip{
+display:flex; align-items:center; gap:10px;
+margin:10px 0 0; padding:12px 14px;
+border:1px solid var(--red-dim); border-radius:14px;
+background:rgba(123,44,255,0.12); color:var(--silver);
+font-size:14px; line-height:1.35; cursor:pointer;
+}
+.newbie-tip-ico{ font-size:20px; flex:0 0 auto; }
+.newbie-tip-text{ flex:1 1 auto; }
+.newbie-tip-x{ flex:0 0 auto; background:none; border:0; color:var(--muted); font-size:16px; padding:4px; cursor:pointer; }
+
+/* «Получишь на руки …» под ценой лота. */
+.net-payout{ margin-top:6px; font-size:13px; color:var(--muted); line-height:1.35; }
+.net-payout:empty{ display:none; }
+
+/* Единый стиль кнопок: моноширинный шрифт остаётся у цен, цифр и
+   заголовков, а кнопки и служебный текст — обычным шрифтом. Главная
+   кнопка «Купить» в окне лота — тот же градиент, что на карточках. */
+.welcome-btn, .cta, .save, .edit-actions button, .edit-status, .money-btn, .deal-action,
+.auction-card-bid-btn, .add-skin-btn, .skins-empty, .skin-action, .steam-link-btn, .steam-inv-btn,
+.buy-action-btn, .buy-sticky-bar #buySendOfferBtn, .buy-sticky-bar #buyCancel,
+.buy-sticky-bar .buy-main-btn, .pay-methods .save, .topup-copy-btn{
+font-family:'Inter', system-ui, -apple-system, sans-serif;
+}
+.buy-sticky-bar .buy-main-btn, .pay-methods .save{ background:var(--cta-gradient); color:#fff; }
