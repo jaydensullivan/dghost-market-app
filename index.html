@@ -13,7 +13,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=5"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=109">
+<link rel="stylesheet" href="app.css?v=110">
 </head>
 <body data-tab="shop">
 <!-- Значки интерфейса в едином объёмном стиле (gi-*): <svg class="gi"><use href="#gi-…"/></svg>. -->
@@ -405,7 +405,8 @@
 
 <!-- ❤️ Хочу: слежу за скинами и заявки «Ищут» — отдельный экран -->
 <!-- 🧊 3D-рендер для бизнеса — как на сайте (app-render3d.js) -->
-<div class="pf-card r3d-card">
+<!-- B2B-предложение: только проверенным продавцам и админам, не покупателю. -->
+<div class="pf-card r3d-card" id="r3dCard" hidden>
 <button type="button" class="pf-btn" id="r3dOpenBtn" data-i18n="r3d_btn">🧊 3D-рендер для бизнеса</button>
 <div class="r3d-sub" id="r3dCardSub" data-i18n="r3d_btn_sub">3D-просмотр скинов на вашем сайте — тарифы от $19</div>
 </div>
@@ -1889,6 +1890,8 @@
 <span class="buy-badge buy-badge-stattrak" id="buyStattrakBadge" style="display:none;">STATTRAK™</span>
 </div>
 <img id="buyPhoto" class="buy-photo" alt="" style="display:none;">
+<!-- Фото лота — вход в 3D: значок и тап по картинке открывают просмотр (app-filters.js). -->
+<button type="button" class="buy-3d-badge" id="buy3dBadge" hidden><svg class="gi" width="16" height="16" aria-hidden="true"><use href="#gi-cube"/></svg><span data-i18n="buy_3d_badge">3D · покрутить</span></button>
 <h2 id="buyTitle">—</h2>
 <div class="buy-subtitle" id="buySubtitle"></div>
 <div class="buy-market-badge" id="buyMarketBadge" hidden></div>
@@ -1907,9 +1910,19 @@
 <svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-cube"/></svg>
 <span data-i18n="btn_3d">3D</span>
 </button>
+<!-- AR «На столе» — рядом с 3D, а не в «Ещё»: это главное отличие маркета. -->
+<button type="button" id="buyArBtn" class="buy-action-btn" style="display:none;">
+<svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-ar"/></svg>
+<span data-i18n="btn_ar">На столе</span>
+</button>
 <button type="button" id="buyListenBtn" class="buy-action-btn" style="display:none;">
 <svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-music"/></svg>
 <span data-i18n="btn_listen">Послушать</span>
+</button>
+<!-- Корзина — здесь, а не на карточке каталога: карточка открывает лот. -->
+<button type="button" id="buyCartBtn" class="buy-action-btn" style="display:none;" aria-pressed="false">
+<svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-cart"/></svg>
+<span id="buyCartLabel" data-i18n="buy_to_cart">В корзину</span>
 </button>
 <button type="button" id="buyWatchBtn" class="buy-action-btn">
 <svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-heart"/></svg>
@@ -1935,10 +1948,6 @@
 <button type="button" id="buyAnglesBtn" class="buy-action-btn" style="display:none;">
 <svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-refresh"/></svg>
 <span data-i18n="btn_angles">Ракурсы</span>
-</button>
-<button type="button" id="buyArBtn" class="buy-action-btn" style="display:none;">
-<svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-ar"/></svg>
-<span data-i18n="btn_ar">На столе</span>
 </button>
 <button type="button" id="buyRemoveBtn" class="buy-action-btn" style="display:none;">
 <svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-trash"/></svg>
@@ -1983,7 +1992,7 @@
 <button type="button" class="buy-main-btn" id="buyTradeLockWatch" data-i18n="tl_watch_btn">🔔 В «Хочу» — сообщить, когда выйдет</button>
 </div>
 <!-- Гарантия сделки — прямо над кнопкой покупки (совет Советника). -->
-<div class="buy-guarantee" id="buyGuarantee" style="display:none;">🛡 <span data-i18n="buy_guarantee">Деньги у гаранта: если продавец не передаст скин за 24 ч — вернём. Продавец получит оплату только после доставки.</span></div>
+<div class="buy-guarantee" id="buyGuarantee" style="display:none;"><svg class="gi" width="14" height="14" aria-hidden="true"><use href="#gi-shield"/></svg> <span data-i18n="buy_guarantee">Деньги у гаранта · нет скина за 24 ч — вернём</span></div>
 <!-- Одна основная кнопка: способ оплаты выбирается в отдельном окне. -->
 <button type="button" id="buyOpenPayBtn" class="buy-main-btn" style="display:none;"><span data-i18n="btn_buy">Купить</span> · <span id="buyMainPrice">—</span></button>
 <button type="button" id="buyMakeOfferBtn" class="steam-link-btn secondary" data-i18n="btn_make_offer">Предложить цену</button>
@@ -2002,6 +2011,11 @@
 <div class="pay-head">
 <div class="pay-title" data-i18n="buy_choose_payment">Способ оплаты</div>
 <div class="pay-sub"><span id="payItemTitle"></span> · <b id="payItemPrice"></b></div>
+</div>
+<!-- Гарантия — в самом окне оплаты: здесь человек отдаёт деньги. -->
+<div class="pay-guarantee">
+<div class="pg-row"><span class="pg-ico" aria-hidden="true">🛡</span><span data-i18n="pay_guarantee">Деньги держит гарант. Не передадут скин за 24 часа — вернём автоматически.</span></div>
+<div class="pg-row pg-sub"><span data-i18n="pay_guarantee_hold">Комиссия для тебя — 0%. Продавец получит деньги только через 8 дней — когда обмен в Steam уже нельзя откатить.</span></div>
 </div>
 <div id="buyPaymentMethods" class="pay-methods">
 <div id="buyNoPaymentHint" class="shop-hint" style="display:none; text-align:center;" data-i18n="buy_no_payment_hint">Сейчас нет доступного способа оплаты — напиши в поддержку.</div>
@@ -2430,15 +2444,15 @@
 </div>
 </div>
 <script src="app-core.js?v=20"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=28', en: 'app-i18n-en.js?v=27' };</script>
-<script src="app-i18n.js?v=152"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=29', en: 'app-i18n-en.js?v=28' };</script>
+<script src="app-i18n.js?v=153"></script>
 <script src="app-navigation.js?v=28"></script>
-<script src="app-shop.js?v=45"></script>
+<script src="app-shop.js?v=46"></script>
 <script src="app-legal.js?v=3"></script>
 <script src="app-deals.js?v=29"></script>
-<script src="app-catalog.js?v=33"></script>
+<script src="app-catalog.js?v=34"></script>
 <script src="app-cart.js?v=10"></script>
-<script src="app-filters.js?v=66"></script>
+<script src="app-filters.js?v=67"></script>
 <script src="app-music.js?v=1"></script>
 <script src="app-steam.js?v=16"></script>
 <script src="app-topup.js?v=5"></script>
@@ -2455,9 +2469,9 @@
 <script src="app-notifications.js?v=3"></script>
 <script src="app-telegram.js?v=17"></script>
 <script src="app-raffle.js?v=11"></script>
-<script src="app-home.js?v=11"></script>
+<script src="app-home.js?v=12"></script>
 <script src="app-support.js?v=4"></script>
 <script src="app-pro.js?v=18"></script>
-<script>window.DG_R3D_SRC = 'app-render3d.js?v=4';</script>
+<script>window.DG_R3D_SRC = 'app-render3d.js?v=5';</script>
 </body>
 </html>

@@ -9,7 +9,7 @@
 --surface:#171022;
 --accent:#7B2CFF;
 --accent-2:#FF2BD6;
---cta-gradient:linear-gradient(135deg, #7B2CFF, #FF2BD6);
+--cta-gradient:linear-gradient(135deg, #7B2CFF, #C4169F);
 --red:#A855F7;
 --red-glow:#c081fa;
 --red-dim:#2a1140;
@@ -23,7 +23,7 @@ body.theme-light{
 --surface:#ffffff;
 --accent:#7B2CFF;
 --accent-2:#FF2BD6;
---cta-gradient:linear-gradient(135deg, #7B2CFF, #FF2BD6);
+--cta-gradient:linear-gradient(135deg, #7B2CFF, #C4169F);
 --red:#7B2CFF;
 --red-glow:#7c22c9;
 --red-dim:#dccdf3;
@@ -5204,3 +5204,50 @@ font-family:'Inter', system-ui, -apple-system, sans-serif;
 .pro-cab-body > .pro-events:not(.pro-cab-on){ display:none !important; }
 .pro-cab-body > :first-child{ margin-top:0; }
 .pro-cab-body > .pro-cab-on{ border-top:0; padding-top:0; margin-top:0; }
+
+/* Экран оплаты: гарантия прямо там, где отдают деньги (critique 30.10). */
+.pay-guarantee{ margin:0 0 14px; padding:12px 14px; border-radius:12px; background:rgba(74,216,128,0.08); border:1px solid rgba(74,216,128,0.28); display:grid; gap:6px; }
+.pay-guarantee .pg-row{ display:flex; gap:8px; align-items:flex-start; font-size:14px; line-height:1.4; color:var(--silver); }
+.pay-guarantee .pg-sub{ font-size:13px; color:var(--muted); padding-left:24px; }
+.pay-guarantee .pg-ico{ flex:0 0 auto; }
+/* Оплатить нечем — кнопка ведёт в поддержку, без градиента «Купить». */
+.buy-sticky-bar .buy-main-btn.no-pay{ background:transparent; border:1px solid var(--red-dim); color:var(--silver); font-weight:600; }
+/* Заглушка загрузки вместо прочерка в балансе профиля. */
+.is-loading{ color:transparent !important; background:linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.14), rgba(255,255,255,.06)); background-size:200% 100%; border-radius:8px; min-width:110px; display:inline-block; animation:dgSkel 1.2s ease-in-out infinite; }
+@keyframes dgSkel{ from{ background-position:100% 0; } to{ background-position:-100% 0; } }
+@media (prefers-reduced-motion: reduce){ .is-loading{ animation:none; } }
+/* Ошибка вместо имени — переносится, кнопку «Повторить» видно целиком. */
+.pf-hero .profile-name.pf-name-error{ white-space:normal; font-size:15px; font-weight:700; color:var(--silver); cursor:pointer; }
+.r3d-card[hidden]{ display:none !important; }
+
+/* Фото лота — вход в 3D (critique 30.10): значок под фото, фото кликабельно. */
+.buy-photo.has-3d{ cursor:zoom-in; }
+.buy-3d-badge{ display:inline-flex; align-items:center; gap:6px; margin:-4px auto 12px; padding:9px 16px; min-height:40px; border-radius:999px; border:1px solid rgba(255,255,255,0.22); background:rgba(10,10,12,0.55); color:#fff; font:600 14px/1 'Inter', system-ui, sans-serif; cursor:pointer; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); }
+.buy-3d-badge[hidden]{ display:none; }
+.buy-3d-badge:active{ transform:scale(0.97); }
+
+/* ---------- critique 30.10: распределение, контраст, размеры ---------- */
+/* Белый текст на кнопках — не ниже 4.5:1: розовый конец градиента темнее
+   (#C4169F), сам розовый --accent-2 остаётся для «♡» и акцентов. */
+/* Две колонки без вылезания за экран (длинные цены раздували 1fr). */
+.skins-grid{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
+/* Градиент — только у главной кнопки экрана; выбранная вкладка — сплошной цвет. */
+.shop-tabs button.active,
+.pro-cab-tabs button.active{ background:var(--accent); }
+/* Служебный текст не меньше 12px. */
+.nav-label, .skin-weapon-type{ font-size:12px; }
+.skin-badge{ font-size:11px; }
+/* Подсказки в полях — читаемые (4.5:1 и выше). */
+input::placeholder, textarea::placeholder{ color:var(--muted); opacity:1; }
+/* Нижняя панель лота — ниже: гарантия одной строкой, кнопки плотнее. */
+.buy-sticky-bar{ gap:8px; padding-top:10px; }
+.buy-sticky-bar .buy-guarantee{ flex:1 1 100%; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.buy-sticky-bar #buyMakeOfferBtn,
+.buy-sticky-bar #buyMakeTradeBtn{ min-height:44px; padding-top:0; padding-bottom:0; }
+/* «В корзину» в лоте: добавлено — подсвечено. */
+#buyCartBtn.active{ color:var(--accent-2); }
+/* Нажимаемая область — не меньше 44×44 (вкладки, кнопки шапки, крестик подсказки). */
+.shop-tabs{ padding:2px; }
+.shop-tabs button{ min-height:44px; padding-top:0; padding-bottom:0; }
+button.brand-logo{ width:44px; height:44px; }
+.newbie-tip-x{ min-width:44px; min-height:44px; display:flex; align-items:center; justify-content:center; }

@@ -377,27 +377,18 @@ const rarityBg = '';
 
 const isOwn = currentUserId && skin.seller_id === currentUserId;
 
-const inCart = cart.includes(skin.id);
-
-const CART_ICON = '<svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-cart"/></svg>';
-
-// Трейд-бан Steam: на фото — таймер, у чужого лота вместо «Купить» / «Торг»
-// одна кнопка с таймером (открывает лот: там «В «Хочу»»), без корзины.
+// Трейд-бан Steam: на фото — таймер; в лоте вместо «Купить» —
+// «В «Хочу»», без корзины.
 const lockUntil = tradeLockUntil(skin);
 const lockBadge = lockUntil
 ? `<div class="skin-lock-badge">🔒 <span data-unlock="${lockUntil}">${tradeLockLeft(lockUntil)}</span></div>`
 : '';
 
-// Свой лот — «Управлять»; чужой — «Купить» + «Торг» (корзина — значком на фото).
+// Карточка чужого лота — тап открывает лот (там «Купить», торг и корзина),
+// на фото только «♡». Свой лот — кнопка «Управлять».
 const actionBtn = isOwn
 ? `<button class="skin-action own" data-open="${skin.id}" type="button">${(I18N[currentLang] || I18N.ru).btn_manage}</button>`
-: `<div class="skin-action-row">
-<button class="skin-action" data-buy="${skin.id}" type="button">${(I18N[currentLang] || I18N.ru).btn_buy}</button>
-<button class="skin-action ghost" data-bargain="${skin.id}" type="button">${(I18N[currentLang] || I18N.ru).btn_bargain}</button>
-</div>`;
-const lockedAction = `<button class="skin-action locked" data-open="${skin.id}" type="button">🔒 ${escapeHtml((I18N[currentLang] || I18N.ru).tl_title)}</button>`;
-const cartBtn = (isOwn || lockUntil) ? ''
-: `<button class="skin-cart-btn${inCart ? ' in-cart' : ''}" data-cart-toggle="${skin.id}" type="button" aria-label="${escapeHtml((I18N[currentLang] || I18N.ru).cart_aria)}">${CART_ICON}</button>`;
+: '';
 
 const favBtn = isOwn ? ''
 : `<button type="button" class="skin-fav${isFavSkin(skin) ? ' on' : ''}" data-fav="${skin.id}" aria-label="${escapeHtml((I18N[currentLang] || I18N.ru).fav_aria || 'Хочу')}"><svg class="gi" width="18" height="18" aria-hidden="true"><use href="#gi-heart"/></svg></button>`;
@@ -471,7 +462,6 @@ return `
 ${photo}
 ${(wearBadge || stBadge) ? `<div class="skin-badges">${wearBadge}${stBadge}</div>` : ''}
 ${favBtn}
-${cartBtn}
 ${lockBadge || hotBadge}
 </div>
 ${weaponType}
@@ -481,7 +471,7 @@ ${floatLine}
 ${stickerStrip}
 ${priceHtml}
 ${marketHtml}
-${lockUntil && !isOwn ? lockedAction : actionBtn}
+${actionBtn}
 </div>`;
 }
 
@@ -685,39 +675,10 @@ const skin = lastSkins.find(s => String(s.id) === favBtn.dataset.fav);
 if (skin) openWatchSheet(skin);
 return;
 }
-const buyBtn = e.target.closest('[data-buy]');
-if (buyBtn){
-const skin = lastSkins.find(s => String(s.id) === buyBtn.dataset.buy);
-if (skin) openBuySheet(skin);
-return;
-}
 const openBtn = e.target.closest('[data-open]');
 if (openBtn){
 const skin = lastSkins.find(s => String(s.id) === openBtn.dataset.open);
 if (skin) openBuySheet(skin);
-return;
-}
-const bargainBtn = e.target.closest('[data-bargain]');
-if (bargainBtn){
-const skin = lastSkins.find(s => String(s.id) === bargainBtn.dataset.bargain);
-if (!skin) return;
-openBuySheet(skin);
-// «Торг» — сразу поле своей цены в окне лота.
-if (buyMakeOfferBtn.style.display !== 'none'){
-buyMakeOfferBtn.click();
-// Поле цены — в самом низу окна, над панелью кнопок; цена рынка
-// догружается и сдвигает его, поэтому докручиваем ещё раз.
-const sheet = buyOfferInput.closest('.buy-sheet');
-const toBottom = () => { if (sheet) sheet.scrollTop = sheet.scrollHeight; };
-toBottom();
-setTimeout(toBottom, 700);
-}
-return;
-}
-const cartBtn = e.target.closest('[data-cart-toggle]');
-if (cartBtn){
-const id = Number(cartBtn.dataset.cartToggle);
-toggleCartItem(id);
 return;
 }
 // Нажатие на саму карточку (не на кнопку внутри) открывает лот —
