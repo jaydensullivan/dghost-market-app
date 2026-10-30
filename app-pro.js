@@ -955,3 +955,78 @@ renderProEvents();
 };
 
 loadProStatus().then(loadProEvents);
+
+// ------------------------------------------------------------
+// КАБИНЕТ PRO: каналы, настройки, аукционы и депозит — отдельный экран
+// с вкладками (раньше всё это растягивало профиль). Видимость каждого
+// блока по-прежнему решают его render-функции выше (hidden / display);
+// кабинет только показывает доступные вкладки и одну из них за раз.
+// ------------------------------------------------------------
+
+const PRO_CAB_SECTIONS = ['proChannels', 'proSettings', 'proEvents', 'proDeposit'];
+// Вкладку, выбранную человеком, помним; пока он не выбирал — первая доступная
+// (блоки появляются по мере загрузки данных).
+let proCabChosen = null;
+
+function proSectionAvailable(id){
+const el = document.getElementById(id);
+return !!el && !el.hidden && el.style.display !== 'none';
+}
+
+function updateProCabinet(){
+const available = PRO_CAB_SECTIONS.filter(proSectionAvailable);
+const card = document.getElementById('profileProCard');
+// В профиле — компактная карточка: с кабинетом список возможностей не нужен.
+document.getElementById('proCabinetBtn').hidden = !available.length;
+if (card) card.classList.toggle('has-cab', available.length > 0);
+const proCabTab = available.includes(proCabChosen) ? proCabChosen : (available[0] || PRO_CAB_SECTIONS[0]);
+document.querySelectorAll('#proCabTabs [data-pro-tab]').forEach(b => {
+const on = b.dataset.proTab === proCabTab;
+b.hidden = !available.includes(b.dataset.proTab);
+b.classList.toggle('active', on);
+b.setAttribute('aria-selected', String(on));
+if (on && !b.hidden && b.scrollIntoView && document.getElementById('screenPro').style.display !== 'none') b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+});
+// Одна вкладка — переключатель не нужен.
+document.getElementById('proCabTabs').hidden = available.length < 2;
+PRO_CAB_SECTIONS.forEach(id => {
+const el = document.getElementById(id);
+if (el) el.classList.toggle('pro-cab-on', id === proCabTab);
+});
+// Шапка кабинета повторяет статус из карточки профиля.
+document.getElementById('proCabTier').textContent = (I18N[currentLang] || I18N.ru).pro_title;
+document.getElementById('proCabBadge').textContent = document.getElementById('proBadge').textContent;
+document.getElementById('proCabStatus').textContent = document.getElementById('proStatusText').textContent;
+}
+
+function openProCabinet(){
+updateProCabinet();
+// Свежие данные — вдруг что-то меняли с другого устройства.
+loadProStatus().then(() => { loadProChannels(); loadProSettings(); loadProEvents(); });
+}
+
+document.getElementById('proCabinetBtn').addEventListener('click', () => goToScreen('pro'));
+document.getElementById('proBackBtn').addEventListener('click', () => goToScreen('profile'));
+document.getElementById('proCabPlansBtn').addEventListener('click', openProPlans);
+document.getElementById('proCabTabs').addEventListener('click', (e) => {
+const btn = e.target.closest('[data-pro-tab]');
+if (!btn) return;
+haptic('light');
+proCabChosen = btn.dataset.proTab;
+updateProCabinet();
+});
+
+// Блоки прячут/показывают свои render-функции — следим за этим и
+// обновляем вкладки и кнопку кабинета.
+(function watchProSections(){
+const obs = new MutationObserver(updateProCabinet);
+PRO_CAB_SECTIONS.forEach(id => {
+const el = document.getElementById(id);
+if (el) obs.observe(el, { attributes: true, attributeFilter: ['hidden', 'style'] });
+});
+['proBadge', 'proStatusText'].forEach(id => {
+const el = document.getElementById(id);
+if (el) obs.observe(el, { childList: true, characterData: true, subtree: true });
+});
+updateProCabinet();
+})();

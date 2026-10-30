@@ -269,8 +269,10 @@ document.getElementById('screenDeals').style.display = name === 'deals' ? 'block
 document.getElementById('screenBuyRequests').style.display = name === 'buyRequests' ? 'block' : 'none';
 document.getElementById('screenSupport').style.display = name === 'support' ? 'block' : 'none';
 document.getElementById('screenLots').style.display = name === 'lots' ? 'block' : 'none';
+document.getElementById('screenPro').style.display = name === 'pro' ? 'block' : 'none';
 tabShopBtn.classList.toggle('active', name === 'shop');
-tabProfileBtn.classList.toggle('active', name === 'profile');
+// Кабинет PRO — часть профиля: в нижней навигации подсвечен «Профиль».
+tabProfileBtn.classList.toggle('active', name === 'profile' || name === 'pro');
 document.getElementById('tabDealsBtn').classList.toggle('active', name === 'deals');
 document.getElementById('tabLotsBtn').classList.toggle('active', name === 'lots');
 // Нижняя навигация видна везде, кроме панели Admin — там своя кнопка «Назад».
@@ -319,6 +321,8 @@ ensureAdminScript().then(() => loadAdminPanel()).catch(() => showAlert(errorMess
 }
 } else if (name === 'auctions'){
 loadAuctionsList();
+} else if (name === 'pro'){
+openProCabinet();
 }
 }
 

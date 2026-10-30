@@ -13,7 +13,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=5"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=108">
+<link rel="stylesheet" href="app.css?v=109">
 </head>
 <body data-tab="shop">
 <!-- Значки интерфейса в едином объёмном стиле (gi-*): <svg class="gi"><use href="#gi-…"/></svg>. -->
@@ -416,90 +416,7 @@
 🖼 Картинка — бесплатно для всех</div>
 <div class="pro-status" id="proStatusText"></div>
 <button type="button" class="pf-btn pro-buy" id="proBuyBtn"></button>
-<div class="pro-channels" id="proChannels" style="display:none;">
-<div class="pro-channels-title" data-i18n="pro_ch_title">📢 Мои каналы</div>
-<div class="pro-channels-hint" id="proChannelsHint"></div>
-<div id="proChannelsList"></div>
-<div class="pro-channels-add">
-<input type="text" id="proChannelInput" autocomplete="off" autocapitalize="off" spellcheck="false">
-<button type="button" class="pf-btn" id="proChannelAddBtn" data-i18n="pro_ch_add">Подключить</button>
-</div>
-<div class="pro-channels-status" id="proChannelsStatus"></div>
-</div>
-<!-- «Гарант» с депозитом: депозит продавца страхует оплату на его карту
-     (app-pro.js, бот: /api/garant/deposit). -->
-<div class="pro-settings" id="proDeposit" hidden>
-<div class="pro-channels-title" data-i18n="pro_dep_title">🛡 Депозит гаранта</div>
-<div class="pro-channels-hint" data-i18n="pro_dep_hint">Покупатели платят прямо на твою карту, а депозит на площадке страхует сделку. Одна сделка — не больше половины депозита, все открытые — не больше депозита. Комиссия списывается с баланса.</div>
-<div class="ps-section" id="proDepositInfo"></div>
-<div class="ps-section">
-<div class="edit-field">
-<label for="depAmount" data-i18n="pro_dep_amount_label">Сумма депозита, сум</label>
-<input id="depAmount" type="number" min="0" step="50000" placeholder="200000">
-</div>
-<div class="edit-field">
-<label for="depCard" data-i18n="pro_dep_card_label">Карта для переводов (16 цифр, на своё имя)</label>
-<input id="depCard" type="text" inputmode="numeric" autocomplete="off" maxlength="19" placeholder="8600 0000 0000 0000">
-</div>
-<div class="edit-field">
-<label for="depHolder" data-i18n="pro_dep_holder_label">Имя и фамилия, как на карте</label>
-<input id="depHolder" type="text" autocomplete="cc-name" maxlength="80">
-</div>
-<div class="ps-btns">
-<button type="button" class="pf-btn" id="depSaveBtn" data-i18n="pro_dep_save">Внести / изменить</button>
-<button type="button" class="pf-btn" id="depWithdrawBtn" data-i18n="pro_dep_withdraw" hidden>Вернуть на баланс</button>
-</div>
-<div class="ps-note" data-i18n="pro_dep_note">Депозит замораживается на твоём балансе. Вернуть его можно, когда нет открытых сделок с оплатой на карту.</div>
-<div class="edit-status" id="depStatus"></div>
-</div>
-</div>
-<!-- «Моя подписка»: лимиты, формат постов, логотип, подпись,
-     автопубликация (app-pro.js, бот: /api/pro/settings, /api/pro/logo). -->
-<div class="pro-settings" id="proSettings" hidden>
-<div class="pro-channels-title" data-i18n="ps_title">⚙️ Моя подписка</div>
-<div class="pro-channels-hint" id="psUsage"></div>
-<div class="ps-section">
-<div class="ps-label" data-i18n="ps_format">Формат постов в мои каналы</div>
-<div class="ps-chips" id="psFormat">
-<button type="button" data-ps-format="photo" data-i18n="ps_fmt_photo">🖼 Фото</button>
-<button type="button" data-ps-format="gif" data-i18n="ps_fmt_gif">🎞 GIF</button>
-<button type="button" data-ps-format="hands" data-i18n="ps_fmt_hands">🖐 Видео</button>
-</div>
-<div class="ps-note" data-i18n="ps_format_note">«Поделиться» → свой канал сразу отправит в этом формате.</div>
-</div>
-<div class="ps-section" id="psLogoBox">
-<div class="ps-label" data-i18n="ps_logo">Мой логотип на постах</div>
-<div class="ps-logo-row">
-<img id="psLogoImg" class="ps-logo-img" alt="" hidden>
-<div class="ps-note" id="psLogoStatus"></div>
-</div>
-<div class="ps-btns">
-<button type="button" class="pf-btn" id="psLogoUploadBtn" data-i18n="ps_logo_upload">Загрузить</button>
-<button type="button" class="pf-btn" id="psLogoRemoveBtn" data-i18n="ps_logo_remove" style="display:none;">Убрать</button>
-<input type="file" id="psLogoInput" accept="image/png,image/jpeg,image/webp" hidden>
-</div>
-<div class="ps-lock" id="psLogoLock" hidden></div>
-</div>
-<div class="ps-section" id="psFooterBox">
-<div class="ps-label" data-i18n="ps_footer">Подпись к постам</div>
-<textarea id="psFooter" rows="2" maxlength="150"></textarea>
-<button type="button" class="pf-btn" id="psFooterSave" data-i18n="ps_save">Сохранить</button>
-<div class="ps-lock" id="psFooterLock" hidden></div>
-</div>
-<div class="ps-section" id="psAutoBox">
-<label class="pf-toggle"><span data-i18n="ps_autopost">⚡ Автопубликация новых лотов</span> <input type="checkbox" id="psAutopost"></label>
-<div class="ps-note" data-i18n="ps_autopost_note">Выставил лот — пост с картинкой сразу уходит в выбранные каналы.</div>
-<div id="psAutoChannels"></div>
-<div class="ps-lock" id="psAutoLock" hidden></div>
-</div>
-<div class="pro-channels-status" id="psStatus"></div>
-</div>
-<div class="pro-events" id="proEvents" hidden>
-<div class="pro-channels-title" data-i18n="ev_my_title">🎯 Мои аукционы и розыгрыши</div>
-<div class="pro-channels-hint" id="proEventsLeft"></div>
-<div id="proEventsList"></div>
-<div class="pro-channels-status" id="proEventsStatus"></div>
-</div>
+<button type="button" class="pf-btn pro-cab-open" id="proCabinetBtn" hidden data-i18n="pro_cab_btn">⚙️ Кабинет PRO — каналы, настройки, аукционы</button>
 </div>
 
 <div class="pf-card" id="profileWantsCard">
@@ -620,6 +537,110 @@
 <div class="shop-hint" data-i18n="hint_sell_flow">Продал скин — деньги придут покупателю в холд на 7 дней (трейд-бан Steam), затем автоматически на твой баланс.</div>
 <div class="skins-grid" id="myLotsList"></div>
 <button type="button" class="steam-link-btn secondary u-mt16" id="lotsDealsBtn" data-i18n="lots_deals_btn">📜 Мои сделки и обмены</button>
+</div>
+
+<!-- Кабинет PRO: каналы, настройки подписки, аукционы и депозит гаранта —
+     отдельный экран с вкладками, чтобы не растягивать профиль (app-pro.js). -->
+<div class="screen-profile" id="screenPro" style="display:none; padding:76px 16px 100px;">
+<button type="button" class="back-btn u-mb12" id="proBackBtn">←</button>
+<div class="profile-section-title" style="font-size:16px; margin-bottom:14px;" data-i18n="pro_cab_title">Кабинет PRO</div>
+<div class="pf-card pro-card pro-cab-head">
+<div class="pro-head"><span class="pro-title" id="proCabTier"></span><span class="pro-badge" id="proCabBadge"></span></div>
+<div class="pro-status" id="proCabStatus"></div>
+<button type="button" class="pf-btn pro-buy" id="proCabPlansBtn" data-i18n="pro_cab_plans">Тарифы и продление</button>
+</div>
+<div class="pro-cab-tabs" id="proCabTabs" role="tablist">
+<button type="button" role="tab" data-pro-tab="proChannels" data-i18n="pro_cab_tab_channels">📢 Каналы</button>
+<button type="button" role="tab" data-pro-tab="proSettings" data-i18n="pro_cab_tab_settings">⚙️ Настройки</button>
+<button type="button" role="tab" data-pro-tab="proEvents" data-i18n="pro_cab_tab_events">🎯 Аукционы</button>
+<button type="button" role="tab" data-pro-tab="proDeposit" data-i18n="pro_cab_tab_deposit">🛡 Депозит</button>
+</div>
+<div class="pf-card pro-card pro-cab-body" id="proCabBody">
+<div class="pro-channels" id="proChannels" style="display:none;">
+<div class="pro-channels-title" data-i18n="pro_ch_title">📢 Мои каналы</div>
+<div class="pro-channels-hint" id="proChannelsHint"></div>
+<div id="proChannelsList"></div>
+<div class="pro-channels-add">
+<input type="text" id="proChannelInput" autocomplete="off" autocapitalize="off" spellcheck="false">
+<button type="button" class="pf-btn" id="proChannelAddBtn" data-i18n="pro_ch_add">Подключить</button>
+</div>
+<div class="pro-channels-status" id="proChannelsStatus"></div>
+</div>
+<!-- «Гарант» с депозитом: депозит продавца страхует оплату на его карту
+     (app-pro.js, бот: /api/garant/deposit). -->
+<div class="pro-settings" id="proDeposit" hidden>
+<div class="pro-channels-title" data-i18n="pro_dep_title">🛡 Депозит гаранта</div>
+<div class="pro-channels-hint" data-i18n="pro_dep_hint">Покупатели платят прямо на твою карту, а депозит на площадке страхует сделку. Одна сделка — не больше половины депозита, все открытые — не больше депозита. Комиссия списывается с баланса.</div>
+<div class="ps-section" id="proDepositInfo"></div>
+<div class="ps-section">
+<div class="edit-field">
+<label for="depAmount" data-i18n="pro_dep_amount_label">Сумма депозита, сум</label>
+<input id="depAmount" type="number" min="0" step="50000" placeholder="200000">
+</div>
+<div class="edit-field">
+<label for="depCard" data-i18n="pro_dep_card_label">Карта для переводов (16 цифр, на своё имя)</label>
+<input id="depCard" type="text" inputmode="numeric" autocomplete="off" maxlength="19" placeholder="8600 0000 0000 0000">
+</div>
+<div class="edit-field">
+<label for="depHolder" data-i18n="pro_dep_holder_label">Имя и фамилия, как на карте</label>
+<input id="depHolder" type="text" autocomplete="cc-name" maxlength="80">
+</div>
+<div class="ps-btns">
+<button type="button" class="pf-btn" id="depSaveBtn" data-i18n="pro_dep_save">Внести / изменить</button>
+<button type="button" class="pf-btn" id="depWithdrawBtn" data-i18n="pro_dep_withdraw" hidden>Вернуть на баланс</button>
+</div>
+<div class="ps-note" data-i18n="pro_dep_note">Депозит замораживается на твоём балансе. Вернуть его можно, когда нет открытых сделок с оплатой на карту.</div>
+<div class="edit-status" id="depStatus"></div>
+</div>
+</div>
+<!-- «Моя подписка»: лимиты, формат постов, логотип, подпись,
+     автопубликация (app-pro.js, бот: /api/pro/settings, /api/pro/logo). -->
+<div class="pro-settings" id="proSettings" hidden>
+<div class="pro-channels-title" data-i18n="ps_title">⚙️ Моя подписка</div>
+<div class="pro-channels-hint" id="psUsage"></div>
+<div class="ps-section">
+<div class="ps-label" data-i18n="ps_format">Формат постов в мои каналы</div>
+<div class="ps-chips" id="psFormat">
+<button type="button" data-ps-format="photo" data-i18n="ps_fmt_photo">🖼 Фото</button>
+<button type="button" data-ps-format="gif" data-i18n="ps_fmt_gif">🎞 GIF</button>
+<button type="button" data-ps-format="hands" data-i18n="ps_fmt_hands">🖐 Видео</button>
+</div>
+<div class="ps-note" data-i18n="ps_format_note">«Поделиться» → свой канал сразу отправит в этом формате.</div>
+</div>
+<div class="ps-section" id="psLogoBox">
+<div class="ps-label" data-i18n="ps_logo">Мой логотип на постах</div>
+<div class="ps-logo-row">
+<img id="psLogoImg" class="ps-logo-img" alt="" hidden>
+<div class="ps-note" id="psLogoStatus"></div>
+</div>
+<div class="ps-btns">
+<button type="button" class="pf-btn" id="psLogoUploadBtn" data-i18n="ps_logo_upload">Загрузить</button>
+<button type="button" class="pf-btn" id="psLogoRemoveBtn" data-i18n="ps_logo_remove" style="display:none;">Убрать</button>
+<input type="file" id="psLogoInput" accept="image/png,image/jpeg,image/webp" hidden>
+</div>
+<div class="ps-lock" id="psLogoLock" hidden></div>
+</div>
+<div class="ps-section" id="psFooterBox">
+<div class="ps-label" data-i18n="ps_footer">Подпись к постам</div>
+<textarea id="psFooter" rows="2" maxlength="150"></textarea>
+<button type="button" class="pf-btn" id="psFooterSave" data-i18n="ps_save">Сохранить</button>
+<div class="ps-lock" id="psFooterLock" hidden></div>
+</div>
+<div class="ps-section" id="psAutoBox">
+<label class="pf-toggle"><span data-i18n="ps_autopost">⚡ Автопубликация новых лотов</span> <input type="checkbox" id="psAutopost"></label>
+<div class="ps-note" data-i18n="ps_autopost_note">Выставил лот — пост с картинкой сразу уходит в выбранные каналы.</div>
+<div id="psAutoChannels"></div>
+<div class="ps-lock" id="psAutoLock" hidden></div>
+</div>
+<div class="pro-channels-status" id="psStatus"></div>
+</div>
+<div class="pro-events" id="proEvents" hidden>
+<div class="pro-channels-title" data-i18n="ev_my_title">🎯 Мои аукционы и розыгрыши</div>
+<div class="pro-channels-hint" id="proEventsLeft"></div>
+<div id="proEventsList"></div>
+<div class="pro-channels-status" id="proEventsStatus"></div>
+</div>
+</div>
 </div>
 
 <div class="screen-profile" id="screenDeals" style="display:none; padding:76px 16px 100px;">
@@ -2409,9 +2430,9 @@
 </div>
 </div>
 <script src="app-core.js?v=20"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=27', en: 'app-i18n-en.js?v=26' };</script>
-<script src="app-i18n.js?v=151"></script>
-<script src="app-navigation.js?v=27"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=28', en: 'app-i18n-en.js?v=27' };</script>
+<script src="app-i18n.js?v=152"></script>
+<script src="app-navigation.js?v=28"></script>
 <script src="app-shop.js?v=45"></script>
 <script src="app-legal.js?v=3"></script>
 <script src="app-deals.js?v=29"></script>
@@ -2432,11 +2453,11 @@
 <script src="app-auctions.js?v=9"></script>
 <script src="app-reviews.js?v=4"></script>
 <script src="app-notifications.js?v=3"></script>
-<script src="app-telegram.js?v=16"></script>
+<script src="app-telegram.js?v=17"></script>
 <script src="app-raffle.js?v=11"></script>
 <script src="app-home.js?v=11"></script>
 <script src="app-support.js?v=4"></script>
-<script src="app-pro.js?v=17"></script>
+<script src="app-pro.js?v=18"></script>
 <script>window.DG_R3D_SRC = 'app-render3d.js?v=4';</script>
 </body>
 </html>
