@@ -1253,8 +1253,6 @@ color:var(--muted);
 margin-top:2px;
 }
 
-
-
 .deal-action{
 flex-shrink:0;
 padding:7px 10px;
@@ -1564,34 +1562,6 @@ cursor:pointer;
 border-color:var(--muted);
 background:transparent;
 color:var(--muted);
-}
-
-.skin-action-row{
-display:flex;
-gap:6px;
-margin-top:7px;
-}
-
-.skin-action-row .skin-action{
-margin-top:0;
-flex:1;
-}
-
-.skin-cart-btn{
-flex:0 0 auto;
-width:40px;
-border-radius:7px;
-border:1px solid var(--red-dim);
-background:transparent;
-color:var(--silver);
-font-size:15px;
-cursor:pointer;
-}
-
-.skin-cart-btn.in-cart{
-border-color:var(--red);
-background:var(--red);
-color:#0a0708;
 }
 
 .cart-item{
@@ -3541,16 +3511,6 @@ cursor:pointer;
 .skin-fav.on svg:not(.gi){ fill:#ff2bd6; }
 .skin-title{ min-height:0; font-size:13px; }
 .skin-price{ font-size:14px; margin-top:4px; }
-.skin-action-row{ margin-top:8px; }
-.skin-action-row .skin-action{ padding:10px 6px; border-radius:9px; }
-.skin-cart-btn{
-width:42px;
-display:flex;
-align-items:center;
-justify-content:center;
-border-radius:9px;
-}
-.skin-cart-btn.in-cart{ color:#fff; }
 
 /* нижняя навигация */
 .nav-icon{ position:relative; filter:none; }
@@ -4462,7 +4422,6 @@ body.layout-compact #skinsList .skin-card{ padding:5px; border-radius:9px; }
 body.layout-compact #skinsList .skin-photo-wrap{ aspect-ratio:1 / 1; margin-bottom:4px; border-radius:6px; }
 body.layout-compact #skinsList .skin-weapon-type,
 body.layout-compact #skinsList .trader-badge,
-body.layout-compact #skinsList .skin-cart-btn,
 body.layout-compact #skinsList .skin-badge.stattrak{ display:none; }
 body.layout-compact #skinsList .skin-badge{ font-size:8px; padding:1px 4px; top:3px; }
 body.layout-compact #skinsList .skin-badge.wear{ left:3px; }
@@ -4472,9 +4431,7 @@ body.layout-compact #skinsList .skin-title{ font-size:11px; line-height:1.2; -we
 body.layout-compact #skinsList .skin-float{ display:block; }
 body.layout-compact #skinsList .skin-price{ font-size:11px; margin-top:3px; }
 body.layout-compact #skinsList .skin-price span{ display:none; }
-body.layout-compact #skinsList .skin-action-row{ margin-top:5px; }
-body.layout-compact #skinsList .skin-action,
-body.layout-compact #skinsList .skin-action-row .skin-action{ padding:8px 2px; min-height:32px; font-size:12px; line-height:1.2; margin-top:0; border-radius:7px; white-space:nowrap; }
+body.layout-compact #skinsList .skin-action{ padding:8px 2px; min-height:32px; font-size:12px; line-height:1.2; margin-top:0; border-radius:7px; white-space:nowrap; }
 body.layout-compact #skinsList .skin-action.own{ margin-top:5px; }
 
 /* Крупная: одна колонка, большое превью, float и наклейки */
@@ -4491,7 +4448,6 @@ body.layout-large #skinsList .skin-float{ display:block; font-size:12px; margin-
 body.layout-large #skinsList .skin-stickers{ display:block; }
 body.layout-large #skinsList .st-mini{ width:32px; height:24px; object-fit:contain; }
 body.layout-large #skinsList .skin-price{ font-size:20px; margin-top:8px; }
-body.layout-large #skinsList .skin-action-row .skin-action{ padding:13px 8px; font-size:13px; }
 
 /* ---------- бейдж «Трейдер»: цена лота относительно рынка ---------- */
 .trader-badge{
@@ -4905,14 +4861,10 @@ button.btn-ghost-link.mt14, .edit-sheet > button.btn-ghost-link.mt14:last-child{
 .skin-market{ display:flex; flex-wrap:wrap; align-items:center; gap:3px 6px; margin-top:3px; }
 .skin-market-price{ font-size:11px; color:var(--muted); white-space:nowrap; }
 .skin-market .trader-badge{ margin:0; padding:1px 6px; }
-.skin-action.ghost{ background:transparent; border:1px solid var(--red-dim); color:var(--silver); }
-.skin-photo-wrap .skin-cart-btn{ position:absolute; right:4px; bottom:4px; width:30px; height:30px; border:none; border-radius:50%; background:rgba(8,7,13,0.55); }
-.skin-photo-wrap .skin-cart-btn.in-cart{ background:var(--red); color:#0a0708; }
 body.layout-compact #skinsList .skin-badge.wear{ display:block; }
 body.layout-compact #skinsList .skin-badge.wear ~ .skin-badge.stattrak{ top:26px; }
 body.layout-compact #skinsList .skin-meta,
 body.layout-compact #skinsList .skin-market,
-body.layout-compact #skinsList .skin-action.ghost{ display:none; }
 body.layout-large #skinsList .skin-float{ display:none; }
 body.layout-large #skinsList .skin-meta{ font-size:12px; margin-top:4px; }
 body.layout-large #skinsList .skin-badge.wear ~ .skin-badge.stattrak{ top:8px; }
@@ -4978,7 +4930,6 @@ background:radial-gradient(ellipse at 50% 55%, var(--rarity-glow), transparent 6
 
 /* Карточки каталога одной высоты в ряду: кнопки всегда внизу на одной линии,
    строка «Рынок» — в одну строку (цена рынка сжимается, чип не переносится). */
-.skin-card > .skin-action-row,
 .skin-card > .skin-action.own{ margin-top:auto; }
 /* Отступ над кнопками — у того, что стоит прямо перед ними. */
 .skin-card > :nth-last-child(2){ margin-bottom:8px; }
@@ -5077,9 +5028,6 @@ body.theme-light .cart-balance-hint.cart-short{ color:#dc2626; }
 
 /* Трейд-бан Steam: таймер на фото карточки, кнопка вместо «Купить», блок в окне лота. */
 .skin-lock-badge{ position:absolute; left:5px; bottom:5px; display:flex; align-items:center; gap:3px; padding:3px 8px; border-radius:7px; font-size:11px; font-weight:800; font-variant-numeric:tabular-nums; color:#fff; background:rgba(8,7,13,0.78); border:1px solid rgba(251,191,36,0.55); }
-.skin-action.locked{ background:transparent; border:1px solid rgba(251,191,36,0.55); color:#fbbf24; }
-.skin-card > .skin-action.locked{ margin-top:auto; }
-body.theme-light .skin-action.locked{ color:#b45309; border-color:rgba(180,83,9,0.45); }
 .trade-lock-box{ margin:0 0 10px; padding:12px; border-radius:12px; border:1px solid rgba(251,191,36,0.45); background:rgba(251,191,36,0.08); }
 .trade-lock-box .tl-head{ font-weight:700; color:var(--text); }
 .trade-lock-box .tl-left{ font-family:'JetBrains Mono', monospace; font-variant-numeric:tabular-nums; color:#fbbf24; }
@@ -5251,3 +5199,20 @@ input::placeholder, textarea::placeholder{ color:var(--muted); opacity:1; }
 .shop-tabs button{ min-height:44px; padding-top:0; padding-bottom:0; }
 button.brand-logo{ width:44px; height:44px; }
 .newbie-tip-x{ min-width:44px; min-height:44px; display:flex; align-items:center; justify-content:center; }
+/* Ночной проход: «Назад», крестик лота, чипы и «Добавить» — от 44px;
+   подписи категорий и чипов — 12px. */
+.back-btn{ width:44px; height:44px; }
+.buy-close-btn{ width:44px; height:44px; top:8px; right:8px; font-size:16px; }
+.category-chip{ min-height:40px; font-size:12px; }
+.shop-cats .category-chip{ font-size:12px; }
+.pf-add-btn{ min-height:44px; }
+.promo-kicker{ font-size:12px; }
+/* Служебный текст от 12px: строка карточки, подписи кнопок лота,
+   статистика и подсказки профиля. Подписи кнопок лота — без капса
+   (короче и читаемее), при 6–7 кнопках ряд переносится. */
+.skin-meta, .skin-meta-float, .skin-market .trader-badge{ font-size:12px; }
+.buy-actions-row{ flex-wrap:wrap; row-gap:4px; }
+.buy-action-btn{ font-size:12px; text-transform:none; padding:6px 7px; min-width:44px; min-height:44px; }
+.buy-subtitle, .stat-label, .shop-hint, .profile-section-title{ font-size:12px; }
+.add-skin-btn{ min-height:40px; }
+#pTradeLink{ min-height:44px; }

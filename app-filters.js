@@ -1515,6 +1515,7 @@ setTimeout(() => { if (pendingBuySkin === skin) applyBuyTradeLock(skin); }, 1500
 });
 
 function openBuySheet(skin){
+if (typeof ensure3DScript === 'function') ensure3DScript().catch(() => {});
 // Гость в браузере может рассмотреть лот; купить — только после входа
 // (кнопки действий перехватывает app-web.js).
 const webGuest = !!(window.DG_WEB && !window.DG_WEB.loggedIn);

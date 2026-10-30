@@ -704,10 +704,13 @@ renderProChannels();
 renderProSettings();
 };
 
+// Настройки автопостинга видны только с активным тарифом или админу
+// (renderProSettings) — остальным не делаем лишний запрос при запуске.
+// Каналы грузим всем: после окончания тарифа они видны с замком.
 loadProStatus().then(() => {
 renderProChannels();
 loadProChannels();
-loadProSettings();
+if (isProActive() || (proStatus && proStatus.admin)) loadProSettings();
 });
 
 // ------------------------------------------------------------

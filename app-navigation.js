@@ -418,6 +418,10 @@ return threeDScriptLoading;
 }
 
 (function schedule3DScript(){
+// Экономия трафика или медленная сеть (3G в регионах) — не тянем 210 КБ
+// заранее: 3D загрузится при первом открытии лота (openBuySheet).
+const c = navigator.connection;
+if (c && (c.saveData || /^(slow-2g|2g|3g)$/.test(c.effectiveType || ''))) return;
 const start = () => setTimeout(() => ensure3DScript().catch(() => {}), 300);
 if (document.readyState === 'complete') start();
 else window.addEventListener('load', start, { once: true });
