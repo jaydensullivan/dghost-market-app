@@ -4,13 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>DGHOST — CASE DROP</title>
+<!-- Защита (CSP): скрипты только свои, Telegram и jsDelivr (3D); запросы — только к нашему API,
+     медиа на Railway и 3D-хранилищу. Внедрённый чужой код не сможет отправить данные на свой сервер. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://telegram.org https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https://api.dghostmarket.uz https://*.up.railway.app https://3d.dghostmarket.com https://cdn.jsdelivr.net data: blob:; frame-src https://oauth.telegram.org https://www.youtube-nocookie.com https://www.youtube.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=5"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=107">
+<link rel="stylesheet" href="app.css?v=108">
 </head>
 <body data-tab="shop">
 <!-- Значки интерфейса в едином объёмном стиле (gi-*): <svg class="gi"><use href="#gi-…"/></svg>. -->
@@ -586,7 +589,7 @@
 
 </div>
 
-<div class="screen-profile" id="screenAuctions" style="display:none; padding:50px 16px 100px;">
+<div class="screen-profile" id="screenAuctions" style="display:none; padding:76px 16px 100px;">
 
 <button type="button" class="back-btn u-mb12" id="auctionsBackBtn">←</button>
 
@@ -612,7 +615,7 @@
 <button type="button" class="steam-link-btn secondary u-mt16" id="lotsDealsBtn" data-i18n="lots_deals_btn">📜 Мои сделки и обмены</button>
 </div>
 
-<div class="screen-profile" id="screenDeals" style="display:none; padding:50px 16px 100px;">
+<div class="screen-profile" id="screenDeals" style="display:none; padding:76px 16px 100px;">
 
 <button type="button" class="back-btn u-mb12" id="dealsBackBtn">←</button>
 
@@ -631,7 +634,7 @@
 
 </div>
 
-<div class="screen-profile" id="screenBuyRequests" style="display:none; padding:50px 16px 100px;">
+<div class="screen-profile" id="screenBuyRequests" style="display:none; padding:76px 16px 100px;">
 
 <button type="button" class="back-btn u-mb12" id="buyRequestsBackBtn">←</button>
 
@@ -729,7 +732,7 @@
 </div>
 </div>
 
-<div class="screen-profile" id="screenSupport" style="display:none; padding:50px 16px 100px;">
+<div class="screen-profile" id="screenSupport" style="display:none; padding:76px 16px 100px;">
 <button type="button" class="back-btn u-mb12" id="supportBackBtn">←</button>
 <div class="profile-section-title" style="font-size:16px; margin-bottom:4px;" data-i18n="support_title">Поддержка</div>
 <div class="support-note" data-i18n="support_note">Ответим здесь и в Telegram — обычно в течение нескольких часов.</div>
@@ -751,7 +754,7 @@
 <a class="support-tg-link" href="https://t.me/dghostmarketsupportbot" target="_blank" rel="noopener" data-i18n="support_tg_link">или в Telegram: @dghostmarketsupportbot</a>
 </div>
 
-<div class="screen-profile" id="screenAdmin" style="display:none; padding:50px 16px 100px;">
+<div class="screen-profile" id="screenAdmin" style="display:none; padding:76px 16px 100px;">
 
 <button type="button" class="back-btn u-mb12" id="adminBackBtn">←</button>
 
@@ -2399,9 +2402,9 @@
 <script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=26', en: 'app-i18n-en.js?v=25' };</script>
 <script src="app-i18n.js?v=150"></script>
 <script src="app-navigation.js?v=27"></script>
-<script src="app-shop.js?v=44"></script>
+<script src="app-shop.js?v=45"></script>
 <script src="app-legal.js?v=3"></script>
-<script src="app-deals.js?v=28"></script>
+<script src="app-deals.js?v=29"></script>
 <script src="app-catalog.js?v=33"></script>
 <script src="app-cart.js?v=10"></script>
 <script src="app-filters.js?v=66"></script>
@@ -2421,7 +2424,7 @@
 <script src="app-notifications.js?v=3"></script>
 <script src="app-telegram.js?v=16"></script>
 <script src="app-raffle.js?v=11"></script>
-<script src="app-home.js?v=10"></script>
+<script src="app-home.js?v=11"></script>
 <script src="app-support.js?v=4"></script>
 <script src="app-pro.js?v=17"></script>
 <script>window.DG_R3D_SRC = 'app-render3d.js?v=4';</script>

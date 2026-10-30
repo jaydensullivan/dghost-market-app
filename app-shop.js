@@ -626,6 +626,8 @@ updateMandatorySteamOverlay();
 updateProfileSteamBlock();
 
 profileName.textContent = data.username || ('ID ' + data.user_id);
+profileName.onclick = null;
+profileName.style.cursor = '';
 profileBalanceAmount.textContent = formatCoins(data.available);
 myAvailableBalance = Number(data.available) || 0;
 profileHeld.innerHTML = data.held > 0
@@ -637,7 +639,12 @@ document.getElementById('statBought').textContent = data.bought_count;
 document.getElementById('statActive').textContent = data.active_count;
 })
 .catch(() => {
-profileName.textContent = (I18N[currentLang] || I18N.ru).load_failed;
+// Ошибка — не «имя»: без галочки проверки и с повтором по нажатию.
+const eDict = I18N[currentLang] || I18N.ru;
+profileName.textContent = eDict.load_failed + ' · ' + eDict.btn_retry + ' ↻';
+profileName.style.cursor = 'pointer';
+profileName.onclick = () => loadProfile();
+document.getElementById('profileVerified').style.display = 'none';
 profileBalanceAmount.textContent = '—';
 });
 
