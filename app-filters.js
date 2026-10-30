@@ -1488,6 +1488,7 @@ document.getElementById('buyOpenPayBtn').style.display = until ? 'none' : '';
 buyMakeOfferBtn.style.display = until ? 'none' : '';
 document.getElementById('buyMakeTradeBtn').style.display = until ? 'none' : '';
 document.getElementById('buyGuarantee').style.display = until ? 'none' : '';
+syncBuyCartBtn(skin);
 }
 const left = document.getElementById('buyTradeLockLeft');
 if (!until){
@@ -1637,11 +1638,11 @@ buyRemoveBtn.style.display = (isOwn || isAdmin) ? '' : 'none';
 // «Осмотреть в игре» — у лотов из Steam есть ссылка осмотра.
 document.getElementById('buyInspectBtn').style.display = skin.inspect_link ? '' : 'none';
 document.getElementById('buyWatchBtn').style.display = isOwn ? 'none' : '';
+syncBuyCartBtn(skin);
 if (typeof updateMusicKitButton === 'function') updateMusicKitButton(skin);
 document.getElementById('buyPaymentMethods').style.display = isOwn ? 'none' : 'flex';
 document.getElementById('buyOpenPayBtn').style.display = isOwn ? 'none' : '';
 document.getElementById('buyGuarantee').style.display = isOwn ? 'none' : '';
-document.getElementById('buyMainPrice').textContent = formatCoins(skin.price);
 closePaySheet();
 // С баланса платят только покупатели (не проверенные продавцы) и
 // только если хватает: пополнить баланс они не могут, там лежат их
@@ -1655,8 +1656,15 @@ buyConfirmCard.style.display = (!isOwn && hostedPayMethods.length) ? '' : 'none'
 // Продавец с депозитом «Гаранта» — можно перевести прямо ему (seller_card_ok от бота).
 const sellerCardOk = !isOwn && !!skin.seller_card_ok;
 document.getElementById('buyConfirmSellerCard').style.display = sellerCardOk ? '' : 'none';
-document.getElementById('buyNoPaymentHint').style.display =
-(!isOwn && !canPayFromBalance && !directP2pPurchaseEnabled && !hostedPayMethods.length && !sellerCardOk) ? '' : 'none';
+const noPayMethod = !isOwn && !canPayFromBalance && !directP2pPurchaseEnabled && !hostedPayMethods.length && !sellerCardOk;
+document.getElementById('buyNoPaymentHint').style.display = noPayMethod ? '' : 'none';
+// Оплатить нечем — говорим это сразу на кнопке и ведём в поддержку,
+// а не после гайда и окна оплаты.
+const buyMainBtn = document.getElementById('buyOpenPayBtn');
+buyMainBtn.classList.toggle('no-pay', noPayMethod);
+buyMainBtn.innerHTML = noPayMethod
+? `<span>${escapeHtml(dict.buy_no_pay_btn)}</span>`
+: `<span data-i18n="btn_buy">${escapeHtml(dict.btn_buy)}</span> · <span id="buyMainPrice">${formatCoins(skin.price)}</span>`;
 buyEditPriceBtn.style.display = isOwn ? '' : 'none';
 document.getElementById('buyDiscountBtn').style.display = isOwn ? '' : 'none';
 buySavePriceBtn.style.display = 'none';
@@ -1768,7 +1776,10 @@ const el = document.getElementById('buyMarketRowValue');
 if (!el) return;
 const dict = I18N[currentLang] || I18N.ru;
 if (data && data.available){
-const diff = typeof data.diff_percent === 'number'
+// Разница с рынком у покупателя — один раз, плашкой под названием;
+// здесь «−N%» видит только продавец своего лота.
+const ownLot = pendingBuySkin && currentUserId && pendingBuySkin.seller_id === currentUserId;
+const diff = ownLot && typeof data.diff_percent === 'number'
 ? ` <span class="mp-row-diff ${data.diff_percent >= 0 ? 'cheaper' : 'pricier'}">${data.diff_percent >= 0 ? '−' : '+'}${Math.abs(Math.round(data.diff_percent))}%</span>`
 : '';
 const own = pendingBuySkin && currentUserId && pendingBuySkin.seller_id === currentUserId;
@@ -1799,10 +1810,13 @@ const diffLabel = (cheaper
 ? (isCsfloat ? dict.mp_cheaper : dict.mp_cheaper_generic)
 : (isCsfloat ? dict.mp_pricier : dict.mp_pricier_generic)).replace('{p}', pct);
 const label = isCsfloat ? dict.mp_csfloat : dict.mp_market;
-const usd = (isCsfloat && data.price_usd) ? `<span class="mp-usd">${dict.mp_from} $${Number(data.price_usd).toFixed(2)}</span>` : '';
+const ownLot = pendingBuySkin && currentUserId && pendingBuySkin.seller_id === currentUserId;
+// Покупателю — только сумы (PRODUCT.md): цену CSFloat в долларах не показываем.
+// Цена рынка у покупателя уже в таблице («Рынок»), здесь — только график.
+const usd = '';
 box.innerHTML = `
-<div class="mp-row"><span>${label} ${usd}</span><span>${formatCoins(data.market_price_uzs)}</span></div>
-<div class="mp-diff ${cheaper ? 'cheaper' : 'pricier'}">${diffLabel}</div>
+${ownLot ? `<div class="mp-row"><span>${label} ${usd}</span><span>${formatCoins(data.market_price_uzs)}</span></div>` : ''}
+${ownLot ? `<div class="mp-diff ${cheaper ? 'cheaper' : 'pricier'}">${diffLabel}</div>` : ''}
 ${marketSparklineHtml(data.history, pendingBuySkin && pendingBuySkin.price)}
 `;
 box.style.display = '';
@@ -2226,8 +2240,13 @@ function closeBuyGuide(){
 buyGuideOverlay.classList.remove('show');
 }
 
-document.getElementById('buyOpenPayBtn').addEventListener('click', () => {
+document.getElementById('buyOpenPayBtn').addEventListener('click', (e) => {
 if (!pendingBuySkin) return;
+if (e.currentTarget.classList.contains('no-pay')){
+const support = document.querySelector('[data-header-action="support"]');
+if (support) support.click();
+return;
+}
 if (!buyGuideSeen()){
 openBuyGuide();
 return;
@@ -3127,4 +3146,42 @@ try { window.location.href = link; } catch (e) {}
 // Самозанятым и ИП — поле ИНН/ПИНФЛ (для сплита оплаты банком).
 document.getElementById('kycLegalStatus').addEventListener('change', (e) => {
 document.getElementById('kycTinField').style.display = e.target.value === 'individual' ? 'none' : '';
+});
+
+// Фото лота — вход в 3D: значок «3D · покрутить» виден, когда у лота есть
+// модель (кнопку 3D показывает app-3d.js), тап по фото открывает просмотр.
+(function(){
+const btn3d = document.getElementById('buy3dBtn');
+const badge = document.getElementById('buy3dBadge');
+const photo = document.getElementById('buyPhoto');
+if (!btn3d || !badge || !photo) return;
+const sync = () => {
+const on = btn3d.style.display !== 'none';
+badge.hidden = !on;
+photo.classList.toggle('has-3d', on);
+};
+new MutationObserver(sync).observe(btn3d, { attributes: true, attributeFilter: ['style'] });
+sync();
+badge.addEventListener('click', () => btn3d.click());
+photo.addEventListener('click', () => { if (!badge.hidden) btn3d.click(); });
+})();
+
+// «В корзину» в окне лота: чужой лот без трейд-бана. Повторное нажатие убирает.
+function syncBuyCartBtn(skin){
+const btn = document.getElementById('buyCartBtn');
+if (!btn || !skin) return;
+const isOwn = currentUserId && skin.seller_id === currentUserId;
+btn.style.display = (isOwn || tradeLockUntil(skin)) ? 'none' : '';
+const inCart = cart.includes(skin.id);
+const dict = I18N[currentLang] || I18N.ru;
+btn.classList.toggle('active', inCart);
+btn.setAttribute('aria-pressed', inCart ? 'true' : 'false');
+const label = document.getElementById('buyCartLabel');
+label.dataset.i18n = inCart ? 'buy_in_cart' : 'buy_to_cart';
+label.textContent = inCart ? dict.buy_in_cart : dict.buy_to_cart;
+}
+document.getElementById('buyCartBtn').addEventListener('click', () => {
+if (!pendingBuySkin) return;
+toggleCartItem(pendingBuySkin.id);
+syncBuyCartBtn(pendingBuySkin);
 });

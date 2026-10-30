@@ -515,7 +515,7 @@ if (!tg || !tg.initData){
 document.getElementById('balanceAmount').textContent = '—';
 return;
 }
-fetch(API_BASE + '/api/me?init_data=' + encodeURIComponent(tg.initData))
+return fetch(API_BASE + '/api/me?init_data=' + encodeURIComponent(tg.initData))
 .then(r => r.json())
 .then(data => {
 if (!data || data.error) return;
@@ -568,7 +568,8 @@ updateSteamBlockVisibility();
 updateMandatorySteamOverlay();
 })
 .catch(() => {
-document.getElementById('balanceAmount').textContent = '—';
+// Не загрузилось — плашку баланса прячем: прочерк вместо денег пугает.
+balancePill.style.display = 'none';
 });
 }
 
@@ -584,7 +585,12 @@ if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.
 profileAvatar.innerHTML = `<img src="${escapeHtml(tg.initDataUnsafe.user.photo_url)}" alt="">`;
 }
 
+// Пока профиль грузится — заглушка вместо прочерка в балансе.
+profileBalanceAmount.classList.add('is-loading');
+profileName.classList.remove('pf-name-error');
+
 if (!tg || !tg.initData){
+profileBalanceAmount.classList.remove('is-loading');
 const pDict = I18N[currentLang] || I18N.ru;
 if (window.DG_WEB && typeof window.dgWebLogin === 'function'){
 // Браузер без входа: вместо «Открой через Telegram» — кнопка входа.
@@ -633,6 +639,7 @@ withdrawFeePercent = data.withdraw_fee_percent ?? withdrawFeePercent;
 applyTranslations();
 applyFeePercents();
 updateSellerStatusUI(sellerKycStatus);
+document.getElementById('r3dCard').hidden = !(sellerKycStatus === 'verified' || isAdmin);
 totp2faStatus = data.totp || totp2faStatus;
 updateTotp2faUI();
 p2pCardDetails = data.p2p_card_details || '';
@@ -650,6 +657,7 @@ profileName.textContent = data.username || ('ID ' + data.user_id);
 profileName.onclick = null;
 profileName.style.cursor = '';
 profileBalanceAmount.textContent = formatCoins(data.available);
+profileBalanceAmount.classList.remove('is-loading');
 myAvailableBalance = Number(data.available) || 0;
 profileHeld.innerHTML = data.held > 0
 ? (LOCK_ICON + ' ' + (I18N[currentLang] || I18N.ru).profile_held_label + ' ' + formatCoins(data.held))
@@ -663,6 +671,8 @@ document.getElementById('statActive').textContent = data.active_count;
 // Ошибка — не «имя»: без галочки проверки и с повтором по нажатию.
 const eDict = I18N[currentLang] || I18N.ru;
 profileName.textContent = eDict.load_failed + ' · ' + eDict.btn_retry + ' ↻';
+profileName.classList.add('pf-name-error');
+profileBalanceAmount.classList.remove('is-loading');
 profileName.style.cursor = 'pointer';
 profileName.onclick = () => loadProfile();
 document.getElementById('profileVerified').style.display = 'none';

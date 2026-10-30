@@ -407,7 +407,7 @@ const R3D = {
 "en": "🧊 3D rendering for business"
 },
 "btn_sub": {
-"ru": "3D-просмотр скинов на вашем сайте — тарифы от $19",
+"ru": "3D-просмотр скинов на вашем сайте или в магазине",
 "uz": "Saytingizda skinlarning 3D-ko‘rinishi — tariflar $19 dan",
 "en": "3D skin viewer for your website — plans from $19"
 },

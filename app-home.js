@@ -152,7 +152,11 @@ function renderMyLots(){
 const dict = I18N[currentLang] || I18N.ru;
 const box = document.getElementById('myLotsList');
 if (!currentUserId){
-box.innerHTML = `<div class="skins-empty">${dict.lots_login}</div>`;
+// Внутри Telegram профиль просто не загрузился (сеть, сервер) — совет
+// «открой через Telegram» там невыполним: показываем повтор.
+box.innerHTML = (tg && tg.initData)
+? `<div class="skins-empty">${dict.load_failed}</div><button type="button" class="steam-link-btn secondary" data-lots-retry>${dict.btn_retry}</button>`
+: `<div class="skins-empty">${dict.lots_login}</div>`;
 return;
 }
 const mine = (typeof lastSkins !== 'undefined' ? lastSkins : []).filter(s => s.seller_id === currentUserId);
@@ -260,3 +264,9 @@ document.body.classList.toggle('hdr-hidden', y > lastY && y > 120);
 lastY = y;
 }, { passive: true });
 })();
+
+document.getElementById('myLotsList').addEventListener('click', (e) => {
+if (!e.target.closest('[data-lots-retry]')) return;
+const p = loadMe();
+if (p && p.then) p.then(renderMyLots);
+});
