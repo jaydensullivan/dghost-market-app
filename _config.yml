@@ -1,0 +1,8 @@
+# GitHub Pages (Jekyll): служебные файлы проекта не публикуем на
+# app.dghostmarket.uz — иначе Jekyll превращает их в страницы
+# (CLAUDE.md → /CLAUDE.html, PRODUCT.md → /PRODUCT.html).
+exclude:
+  - CLAUDE.md
+  - PRODUCT.md
+  - README.md
+  - DESIGN.md
