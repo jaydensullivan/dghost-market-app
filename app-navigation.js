@@ -17,6 +17,13 @@ let hostedPayMethods = [];
 let sellerKycStatus = 'none';
 // Вывод без паспорта — после продаж гарантам («Продать гаранту», /api/me).
 let instantCanWithdraw = false;
+// Продавец без паспорта (бот: /api/me): что мешает продавать
+// (steam_login_required / phone_required / null), сколько ещё можно
+// вывести без проверки и лимит цены лота. null — без ограничения.
+let sellerIdentityProblem = null;
+let kycWithdrawLeft = null;
+let kycWithdrawThreshold = null;
+let unverifiedLotMax = null;
 // Сколько можно потратить с баланса (balance − held) — для кнопки «С баланса».
 let myAvailableBalance = 0;
 let currentUserTrust = null;

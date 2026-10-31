@@ -274,13 +274,14 @@ document.getElementById('bvPhoneBtn').style.display = phoneOk ? 'none' : '';
 if (steamOk && phoneOk){
 document.getElementById('bvStatus').textContent = dict.bv_done;
 clearInterval(bvPoll);
+if (sellerIdentityProblem && typeof loadMe === 'function') loadMe();
 }
 });
 }
 
-function openBuyerVerify(data){
+function openBuyerVerify(data, hint){
 const dict = I18N[currentLang] || I18N.ru;
-document.getElementById('bvHint').textContent = dict.bv_hint.replace('{sum}', formatCoins((data && data.threshold) || 0));
+document.getElementById('bvHint').textContent = hint || dict.bv_hint.replace('{sum}', formatCoins((data && data.threshold) || 0));
 document.getElementById('bvStatus').textContent = '';
 document.getElementById('buyerVerifyOverlay').classList.add('show');
 refreshBuyerVerify();
@@ -290,6 +291,13 @@ bvPoll = setInterval(() => {
 if (++tries > 100 || !document.getElementById('buyerVerifyOverlay').classList.contains('show')){ clearInterval(bvPoll); return; }
 refreshBuyerVerify();
 }, 3000);
+}
+
+// То же окно для продавца без паспорта: Steam и телефон нужны, чтобы
+// выставлять лоты и выводить деньги. Подтвердил — обновляем профиль.
+function openSellerVerify(){
+const dict = I18N[currentLang] || I18N.ru;
+openBuyerVerify(null, dict.sv_hint);
 }
 
 document.getElementById('bvSteamBtn').addEventListener('click', () => startSteamLogin(document.getElementById('bvStatus')));

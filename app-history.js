@@ -284,6 +284,7 @@ document.getElementById('historyOverlay').classList.remove('show');
 document.getElementById('openWithdrawBtn').addEventListener('click', () => {
 document.getElementById('withdrawTotpField').style.display = totp2faStatus.enabled_withdraw ? '' : 'none';
 document.getElementById('wTotpCode').value = '';
+updateWithdrawKycNote();
 withdrawOverlay.classList.add('show');
 });
 document.getElementById('withdrawCancel').addEventListener('click', () => {

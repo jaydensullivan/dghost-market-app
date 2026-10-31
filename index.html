@@ -357,8 +357,8 @@
 <div class="pf-card-title"><div class="pf-title" data-i18n="pf_seller_title">Статус продавца</div></div>
 </div>
 <div id="sellerStatusNone">
-<div class="shop-hint" style="margin:8px 0 10px;" data-i18n="seller_status_none_hint">Покупать можно всем без ограничений. Чтобы выставлять свои лоты и пользоваться балансом — нужно пройти проверку (ФИО, телефон, страна, адрес).</div>
-<button type="button" id="openKycBtn" class="steam-link-btn u-w100" data-i18n="seller_btn_become">Стать продавцом</button>
+<div class="shop-hint" style="margin:8px 0 10px;" data-i18n="seller_status_none_hint">Продавать можно без паспорта — нужен вход через Steam и номер телефона. Проверка личности (паспорт и селфи) понадобится для вывода крупной суммы и для дорогих лотов: остаток видно в окне вывода.</div>
+<button type="button" id="openKycBtn" class="steam-link-btn u-w100" data-i18n="seller_btn_become">Пройти проверку личности</button>
 </div>
 <div id="sellerStatusPending" style="display:none;">
 <div class="shop-hint u-mt8" data-i18n="seller_status_pending">⏳ Заявка на проверке — обычно рассматривается в течение дня.</div>
@@ -1475,6 +1475,7 @@
 <label for="wAmount" data-i18n="label_amount_sum">Сумма, сум</label>
 <input id="wAmount" type="number" min="1" placeholder="50000">
 <div class="shop-hint u-mt6" id="withdrawPayoutPreview"></div>
+<div class="shop-hint u-mt6" id="withdrawKycNote" hidden></div>
 </div>
 <div class="edit-field" id="withdrawCardField">
 <label for="wDetails" data-i18n="label_card_uzcard_humo">Карта Uzcard/Humo</label>
@@ -2447,21 +2448,21 @@
 </div>
 </div>
 <script src="app-core.js?v=21"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=30', en: 'app-i18n-en.js?v=29' };</script>
-<script src="app-i18n.js?v=154"></script>
-<script src="app-navigation.js?v=29"></script>
-<script src="app-shop.js?v=46"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=31', en: 'app-i18n-en.js?v=30' };</script>
+<script src="app-i18n.js?v=155"></script>
+<script src="app-navigation.js?v=30"></script>
+<script src="app-shop.js?v=47"></script>
 <script src="app-legal.js?v=3"></script>
 <script src="app-deals.js?v=30"></script>
 <script src="app-catalog.js?v=35"></script>
 <script src="app-cart.js?v=11"></script>
-<script src="app-filters.js?v=68"></script>
+<script src="app-filters.js?v=69"></script>
 <script src="app-music.js?v=1"></script>
-<script src="app-steam.js?v=16"></script>
+<script src="app-steam.js?v=17"></script>
 <script src="app-topup.js?v=5"></script>
-<script src="app-history.js?v=10"></script>
+<script src="app-history.js?v=11"></script>
 <script src="app-referral.js?v=9"></script>
-<script src="app-withdraw.js?v=37"></script>
+<script src="app-withdraw.js?v=38"></script>
 <script src="app-instant.js?v=1"></script>
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
 <script>window.DG_ADMIN_SRC = 'app-admin.js?v=30';</script>

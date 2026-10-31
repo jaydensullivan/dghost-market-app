@@ -98,13 +98,14 @@ document.getElementById('sellerStatusNone').style.display = (status === 'none') 
 document.getElementById('sellerStatusPending').style.display = (status === 'pending') ? '' : 'none';
 document.getElementById('sellerStatusRejected').style.display = (status === 'rejected') ? '' : 'none';
 document.getElementById('sellerStatusVerified').style.display = (status === 'verified') ? '' : 'none';
-// Продавец без паспорта с продажами гарантам тоже выводит деньги (без пополнения).
+// Продавец без паспорта (Steam и телефон подтверждены) тоже выводит деньги — до порога.
 document.getElementById('profileMoneyButtons').style.display = (status === 'verified' || instantCanWithdraw) ? '' : 'none';
 // Проверенному продавцу блок «Стать продавцом» не нужен — вместо него
 // галочка у имени; история и CSV — только продавцам.
 document.getElementById('profileSellerSection').style.display = (status === 'verified') ? 'none' : '';
 document.getElementById('profileVerified').style.display = (status === 'verified') ? '' : 'none';
-document.querySelectorAll('.pf-seller-only').forEach(el => { el.style.display = (status === 'verified') ? '' : 'none'; });
+// История и CSV продаж — всем, кто может продавать (с паспортом или без).
+document.querySelectorAll('.pf-seller-only').forEach(el => { el.style.display = (status === 'verified' || instantCanWithdraw) ? '' : 'none'; });
 }
 
 // Фото документа и селфи — сжатые в JPEG (base64), номер — только
@@ -1544,9 +1545,11 @@ const rating = skin.seller_rating_avg
 // У нового продавца нет сделок — «0 сделок · 0 споров» отпугивает,
 // поэтому пишем «новый на маркете».
 const sellerIsNew = !Number(skin.seller_completed_trades) && !skin.seller_rating_avg;
+// «Проверенный» — только с паспортом; без него, но со Steam — «Steam подтверждён».
+const steamOnly = !skin.seller_verified && skin.seller_steam_verified;
 const sellerLine = sellerIsNew
-? (skin.seller_verified ? statsDict.seller_line_verified_new : statsDict.seller_line_new)
-: (skin.seller_verified ? statsDict.seller_line_verified : statsDict.seller_line);
+? (skin.seller_verified ? statsDict.seller_line_verified_new : steamOnly ? statsDict.seller_line_steam_new : statsDict.seller_line_new)
+: (skin.seller_verified ? statsDict.seller_line_verified : steamOnly ? statsDict.seller_line_steam : statsDict.seller_line);
 sellerStatsBox.innerHTML = `<button type="button" class="seller-line${skin.seller_verified ? ' verified' : ''}" data-seller-profile="${skin.seller_id}">
 <span>${escapeHtml(sellerLine
 .replace('{rating}', rating)
@@ -2320,6 +2323,7 @@ body: JSON.stringify({ init_data: tg.initData, price: newPrice })
 .then(async r => {
 if (!r.ok){
 const data = await r.json().catch(() => ({}));
+if (data.error === 'lot_price_kyc_required') throw new Error(lotPriceKycMessage(data));
 throw new Error(errorMessage(data.error));
 }
 return r.json();

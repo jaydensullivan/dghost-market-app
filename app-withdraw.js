@@ -24,9 +24,33 @@ withdrawPayoutPreview.textContent = fee
 
 wAmount.addEventListener('input', updateWithdrawPayoutPreview);
 
+// Без паспорта вывод ограничен суммой за всё время — показываем остаток
+// прямо в окне вывода, а не только ошибкой после заявки.
+function updateWithdrawKycNote(){
+const el = document.getElementById('withdrawKycNote');
+if (!el) return;
+const dict = I18N[currentLang] || I18N.ru;
+const show = sellerKycStatus !== 'verified' && kycWithdrawLeft !== null && kycWithdrawThreshold;
+el.hidden = !show;
+if (show) el.textContent = dict.withdraw_kyc_note.replace('{left}', formatCoins(kycWithdrawLeft)).replace('{sum}', formatCoins(kycWithdrawThreshold));
+}
+
+// Вывод сверх порога без паспорта: объясняем и сразу предлагаем проверку.
+function withdrawKycNeeded(data){
+const dict = I18N[currentLang] || I18N.ru;
+const msg = dict.withdraw_kyc_needed.replace('{sum}', formatCoins(data.threshold || 0)).replace('{left}', formatCoins(data.left || 0));
+if (sellerKycStatus === 'pending'){
+showAlert(msg + ' ' + dict.seller_status_pending);
+return msg;
+}
+showConfirm(msg + ' ' + dict.kyc_open_q, () => { withdrawOverlay.classList.remove('show'); openKycOverlay(); });
+return msg;
+}
+
 const WITHDRAW_ERROR_MESSAGES_RU = {
 no_payment_details: 'Укажи карту и Ф.И.О. владельца карты.',
-payout_name_mismatch: 'Вывод возможен только на свою карту: Ф.И.О. держателя должно совпадать с Ф.И.О. из проверки продавца. Впиши имя так, как на карте (можно латиницей). Если всё верно, а ошибка остаётся — напиши в поддержку.',
+payout_name_mismatch: 'Вывод возможен только на свою карту: Ф.И.О. держателя должно совпадать с Ф.И.О. из проверки продавца, а до проверки — с именем в твоём первом выводе. Впиши имя так, как на карте (можно латиницей). Если всё верно, а ошибка остаётся — напиши в поддержку.',
+payout_name_required: 'Впиши после номера карты имя и фамилию владельца — так, как на карте. Вывод возможен только на свою карту.',
 below_minimum: 'Сумма меньше минимальной для вывода.',
 insufficient_funds: 'Недостаточно средств на балансе.',
 feature_disabled: 'Вывод сейчас временно недоступен.',
@@ -36,7 +60,8 @@ totp_locked: `Слишком много неверных попыток — 2FA 
 
 const WITHDRAW_ERROR_MESSAGES_UZ = {
 no_payment_details: "Karta va karta egasining F.I.Sh.ni kiriting.",
-payout_name_mismatch: "Pul faqat o'z kartangizga chiqariladi: karta egasining F.I.Sh. sotuvchi tekshiruvidagi F.I.Sh. bilan mos bo'lishi kerak. Ismni kartadagidek yozing (lotincha ham mumkin). Hammasi to'g'ri, lekin xato qolsa — qo'llab-quvvatlash xizmatiga yozing.",
+payout_name_mismatch: "Pul faqat o'z kartangizga chiqariladi: karta egasining F.I.Sh. sotuvchi tekshiruvidagi F.I.Sh. bilan, tekshiruvdan oldin esa birinchi yechib olishdagi ism bilan mos bo'lishi kerak. Ismni kartadagidek yozing (lotincha ham mumkin). Hammasi to'g'ri, lekin xato qolsa — qo'llab-quvvatlash xizmatiga yozing.",
+payout_name_required: "Karta raqamidan keyin egasining ismi va familiyasini kartadagidek yozing. Pul faqat o'z kartangizga chiqariladi.",
 below_minimum: "Summa chiqarish uchun minimaldan kam.",
 insufficient_funds: "Balansda mablag' yetarli emas.",
 feature_disabled: "Pul chiqarish hozircha vaqtincha mavjud emas.",
@@ -46,7 +71,8 @@ totp_locked: `Juda ko'p noto'g'ri urinish — 2FA ${15} daqiqaga vaqtincha blokl
 
 const WITHDRAW_ERROR_MESSAGES_EN = {
 no_payment_details: "Enter the card and the cardholder's full name.",
-payout_name_mismatch: "Withdrawals go only to your own card: the cardholder's full name must match the name from seller verification. Write the name as it is on the card (Latin letters are fine). If everything is correct and the error persists, contact support.",
+payout_name_mismatch: "Withdrawals go only to your own card: the cardholder's full name must match the name from seller verification or, before verification, the name in your first withdrawal. Write the name as it is on the card (Latin letters are fine). If everything is correct and the error persists, contact support.",
+payout_name_required: "After the card number, write the cardholder's first and last name as on the card. Withdrawals go only to your own card.",
 below_minimum: 'The amount is below the withdrawal minimum.',
 insufficient_funds: 'Not enough funds on your balance.',
 feature_disabled: 'Withdrawals are temporarily unavailable.',
@@ -111,6 +137,8 @@ body: JSON.stringify(payload)
 .then(async r => {
 if (!r.ok){
 const data = await r.json().catch(() => ({}));
+if (data.error === 'seller_kyc_required' && data.reason === 'withdraw_threshold') throw new Error(withdrawKycNeeded(data));
+if (data.error === 'steam_login_required' || data.error === 'phone_required') openSellerVerify();
 throw new Error(withdrawTrustLimitMessage(data) || langMessage(WITHDRAW_ERROR_MESSAGES_RU, WITHDRAW_ERROR_MESSAGES_UZ, WITHDRAW_ERROR_MESSAGES_EN, data.error) || errorMessage(data.error));
 }
 return r.json();
@@ -532,13 +560,27 @@ document.getElementById('lsPreview').style.display = 'none';
 lsConfirm.disabled = true;
 }
 
+// Выставлять лоты можно без паспорта: нужны вход через Steam и телефон
+// (бот: seller_identity_problem). Паспорт спросим позже — при выводе
+// сверх порога или для дорогого лота.
+// Лот дороже лимита без паспорта: текст с лимитом + предложение пройти проверку.
+function lotPriceKycMessage(data){
+const dict = I18N[currentLang] || I18N.ru;
+const msg = dict.lot_price_kyc.replace('{max}', formatCoins(data.max || unverifiedLotMax || 0));
+if (sellerKycStatus !== 'pending') showConfirm(msg + ' ' + dict.kyc_open_q, openKycOverlay);
+return msg;
+}
+
+function sellerReadyToList(){
+if (sellerKycStatus === 'verified' || !sellerIdentityProblem) return true;
+openSellerVerify();
+return false;
+}
+
 function openLinkSell(){
 if (!tg || !tg.initData) return;
 const dict = I18N[currentLang] || I18N.ru;
-if (sellerKycStatus !== 'verified'){
-showAlert(dict.sell_need_kyc);
-return;
-}
+if (!sellerReadyToList()) return;
 if (steamLoginRequired && !steamVerified){
 showConfirm(dict.steam_login_required_q, startSteamLogin);
 return;
@@ -682,6 +724,8 @@ body: JSON.stringify({ init_data: tg.initData, inspect_link: link, tradable_afte
 const data = await r.json().catch(() => ({}));
 if (!r.ok){
 if (data.error === 'seller_offer_required') sellerOfferAccepted = false;
+if (data.error === 'lot_price_kyc_required') throw new Error(lotPriceKycMessage(data));
+if (data.error === 'steam_login_required' || data.error === 'phone_required') openSellerVerify();
 if (data.error === 'price_too_high'){
 throw new Error(dict.price_too_high.replace('{max}', formatCoins(data.max_allowed)).replace('{market}', formatCoins(data.market_price_uzs)));
 }
@@ -1226,10 +1270,7 @@ if (!tg || !tg.initData){
 showAlert(errorMessage('unauthorized'));
 return;
 }
-if (sellerKycStatus !== 'verified'){
-showAlert((I18N[currentLang] || I18N.ru).sell_need_kyc);
-return;
-}
+if (!sellerReadyToList()) return;
 if (steamLoginRequired && !steamVerified){
 const dict = I18N[currentLang] || I18N.ru;
 showConfirm(dict.steam_login_required_q, startSteamLogin);
