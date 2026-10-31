@@ -38,6 +38,14 @@ const HAS_GI = !!document.querySelector('#giSprite');
 const LOCK_ICON = HAS_GI ? '<svg class="gi" width="13" height="13" aria-hidden="true"><use href="#gi-lock"/></svg>' : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="vertical-align:-1px"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
 const TARGET_ICON = HAS_GI ? '<svg class="gi gi-placeholder" width="22" height="22" aria-hidden="true"><use href="#gi-target"/></svg>' : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>';
 
+// Картинки Steam CDN отдаются в нужном размере по суффиксу «/ШxВ»:
+// превью не тянет оригинал 512×384. Чужие адреса возвращаем как есть.
+function steamImg(url, w, h){
+const u = String(url || '');
+if (!/^https:\/\/community\.[a-z.]*steamstatic\.com\/economy\/image\/[^/]+$/.test(u)) return u;
+return u + '/' + w + 'x' + h;
+}
+
 function showPlaceholderIcon(img){
 const div = document.createElement('div');
 div.className = 'skin-photo placeholder';

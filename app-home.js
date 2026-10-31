@@ -84,7 +84,7 @@ kicker: '',
 title: dict.promo_sell_title,
 text: dict.promo_sell_text,
 btn: dict.promo_sell_btn,
-image: 'coin-512.webp',
+image: 'coin-192.webp',
 action: () => { goToScreen('lots'); setTimeout(() => addSkinBtn.click(), 150); },
 });
 return slides;
@@ -105,7 +105,7 @@ ${s.kicker ? `<div class="promo-kicker">${s.key.indexOf('deal') === 0 ? FIRE_ICO
 <div class="promo-title">${escapeHtml(s.title)}</div>
 <div class="promo-text">${escapeHtml(s.text)}</div>
 </div>
-${s.image ? `<img class="promo-img" src="${escapeHtml(s.image)}" alt="" onerror="this.remove()">` : ''}
+${s.image ? `<img class="promo-img" src="${escapeHtml(steamImg(s.image, 192, 144))}" alt="" onerror="this.remove()">` : ''}
 <button type="button" class="promo-btn" data-promo-btn="${i}" aria-label="${escapeHtml(s.btn)}"><img src="icons/arrow.webp" alt="" width="32" height="16"></button>
 </div>`).join('');
 document.getElementById('promoDots').innerHTML = slides.length > 1

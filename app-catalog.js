@@ -199,24 +199,25 @@ const RARITY_GLOW_STRONG = {
 // (RARITY_BACKGROUND_URLS в bot.py) — чтобы лот в мини-аппе и лот в
 // канале выглядели одинаково. Файлы лежат рядом с index.html в том
 // же репозитории GitHub Pages, поэтому путь относительный.
+// Мини-апп берёт сжатые .webp (≈17 КБ вместо 1,5 МБ PNG); PNG остаются для бота.
 const RARITY_BG = {
-'Consumer Grade': 'bg-consumer.png',
-'Base Grade': 'bg-consumer.png',
-'Stock': 'bg-consumer.png',
-'Industrial Grade': 'bg-industrial.png',
-'Mil-Spec Grade': 'bg-mil-spec.png',
-'High Grade': 'bg-mil-spec.png',
-'Distinguished': 'bg-mil-spec.png',
-'Restricted': 'bg-restricted.png',
-'Remarkable': 'bg-restricted.png',
-'Exceptional': 'bg-restricted.png',
-'Classified': 'bg-classified.png',
-'Exotic': 'bg-classified.png',
-'Superior': 'bg-classified.png',
-'Covert': 'bg-covert.png',
-'Master': 'bg-covert.png',
-'Contraband': 'bg-contraband.png',
-'Extraordinary': 'bg-contraband.png',
+'Consumer Grade': 'bg-consumer.webp',
+'Base Grade': 'bg-consumer.webp',
+'Stock': 'bg-consumer.webp',
+'Industrial Grade': 'bg-industrial.webp',
+'Mil-Spec Grade': 'bg-mil-spec.webp',
+'High Grade': 'bg-mil-spec.webp',
+'Distinguished': 'bg-mil-spec.webp',
+'Restricted': 'bg-restricted.webp',
+'Remarkable': 'bg-restricted.webp',
+'Exceptional': 'bg-restricted.webp',
+'Classified': 'bg-classified.webp',
+'Exotic': 'bg-classified.webp',
+'Superior': 'bg-classified.webp',
+'Covert': 'bg-covert.webp',
+'Master': 'bg-covert.webp',
+'Contraband': 'bg-contraband.webp',
+'Extraordinary': 'bg-contraband.webp',
 };
 
 // ---------- темы оформления и вид карточек ----------
@@ -315,7 +316,10 @@ if (tb) { applyTheme(tb.dataset.themeId); return; }
 const lb = e.target.closest ? e.target.closest('[data-layout-cycle]') : null;
 if (lb) {
 const order = [''].concat(CARD_LAYOUTS);
+const wasLarge = currentCardLayout === 'large';
 applyCardLayout(order[(order.indexOf(currentCardLayout) + 1) % order.length]);
+// «Крупная» берёт фото в полном размере (cardPhotoUrl) — перерисовать.
+if (wasLarge !== (currentCardLayout === 'large') && typeof lastSkins !== 'undefined' && lastSkins.length) applyFiltersAndRender();
 const d = I18N[currentLang] || I18N.ru;
 if (typeof showToast === 'function') showToast(currentCardLayout === 'compact' ? d.layout_compact_hint : (currentCardLayout === 'large' ? d.layout_large_hint : d.layout_normal_hint));
 return;
@@ -353,7 +357,7 @@ return boostDeals && market > 0 && skin.price < market ? 0 : 1;
 
 function skinCardHtml(skin){
 const photo = skin.photo_url
-? `<img class="skin-photo" src="${escapeHtml(skin.photo_url)}" alt="" onerror="showPlaceholderIcon(this)">`
+? `<img class="skin-photo" src="${escapeHtml(cardPhotoUrl(skin.photo_url))}" alt="" loading="lazy" decoding="async" onerror="showPlaceholderIcon(this)">`
 : `<div class="skin-photo placeholder">${TARGET_ICON}</div>`;
 
 const wearBadge = skin.wear && WEAR_LABELS[skin.wear]
@@ -473,6 +477,13 @@ ${priceHtml}
 ${marketHtml}
 ${actionBtn}
 </div>`;
+}
+
+// Карточке в две колонки хватает 330×248 (≈35% легче оригинала 512×384);
+// в «Крупной» раскладке карточка во всю ширину — оставляем оригинал.
+function cardPhotoUrl(url){
+if (document.body.classList.contains('layout-large')) return String(url || '');
+return steamImg(url, 330, 248);
 }
 
 // ---------- наклейки ----------
