@@ -16,7 +16,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=5"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=111">
+<link rel="stylesheet" href="app.css?v=112">
 </head>
 <body data-tab="shop">
 <!-- Значки интерфейса в едином объёмном стиле (gi-*): <svg class="gi"><use href="#gi-…"/></svg>. -->
@@ -2020,12 +2020,13 @@
 <div class="pay-guarantee">
 <div class="pg-row"><span class="pg-ico" aria-hidden="true">🛡</span><span data-i18n="pay_guarantee">Деньги держит гарант. Не передадут скин за 24 часа — вернём автоматически.</span></div>
 <div class="pg-row pg-sub"><span data-i18n="pay_guarantee_hold">Комиссия для тебя — 0%. Продавец получит деньги только через 8 дней — когда обмен в Steam уже нельзя откатить.</span></div>
+<button type="button" class="pg-how" id="payHowBtn" data-i18n="pay_how_guarantee">Как работает гарант? →</button>
 </div>
 <div id="buyPaymentMethods" class="pay-methods">
 <div id="buyNoPaymentHint" class="shop-hint" style="display:none; text-align:center;" data-i18n="buy_no_payment_hint">Сейчас нет доступного способа оплаты — напиши в поддержку.</div>
 <button type="button" id="buyConfirmBalance" class="save" style="display:none;">💰 <span data-i18n="buy_pay_balance">С баланса</span> · <span id="buyPrice">—</span><span class="pay-balance-left"><span data-i18n="buy_balance_available">доступно</span> <span id="buyBalanceAvailable">—</span></span></button>
 <button type="button" id="buyConfirmCard" class="save" style="display:none;">💳 <span data-i18n="buy_pay_card">Оплатить картой</span><span class="pay-balance-left">Uzcard · Humo</span></button>
-<button type="button" id="buyConfirmP2P" class="save" style="display:none;" data-i18n="buy_pay_p2p">🏦 Оплатить П2П (карта)</button>
+<button type="button" id="buyConfirmP2P" class="save" style="display:none;" data-i18n="buy_pay_p2p">Оплатить</button>
 <!-- «Гарант» с депозитом: перевод прямо продавцу, сделку страхует его депозит. -->
 <button type="button" id="buyConfirmSellerCard" class="save" style="display:none;">🤝 <span data-i18n="buy_pay_seller_card">На карту продавца</span><span class="pay-balance-left" data-i18n="buy_pay_seller_card_sub">депозит гаранта</span></button>
 </div>
@@ -2042,6 +2043,15 @@
 <div class="pay-head">
 <div class="pay-title" data-i18n="buy_guide_title">Как купить за 3 шага</div>
 </div>
+<!-- Схема: деньги идут через гаранта, продавцу — только после доставки. -->
+<div class="guarantee-flow" aria-hidden="true">
+<div class="gf-node"><span class="gf-ico">👤</span><span data-i18n="gf_you">Ты</span></div>
+<div class="gf-line"><i class="gf-coin"></i></div>
+<div class="gf-node gf-shield"><span class="gf-ico">🛡</span><span data-i18n="gf_garant">Гарант</span></div>
+<div class="gf-line gf-line2"><i class="gf-coin"></i></div>
+<div class="gf-node"><span class="gf-ico">🎮</span><span data-i18n="gf_seller">Продавец</span></div>
+</div>
+<div class="gf-caption" data-i18n="gf_caption">Продавец получит деньги, только когда скин уже у тебя</div>
 <ol class="buy-guide-steps">
 <li><b data-i18n="buy_guide_step1_title">Оплати</b><span data-i18n="buy_guide_step1">Деньги держит гарант — продавец получит их только после доставки скина.</span></li>
 <li><b data-i18n="buy_guide_step2_title">Получи обмен в Steam</b><span data-i18n="buy_guide_step2">Продавец отправит скин на твою ссылку для обмена — у него 24 часа. Не отправит — деньги вернутся.</span>
@@ -2049,7 +2059,16 @@
 <button type="button" class="buy-guide-link-btn" id="buyGuideLinkBtn" data-i18n="buy_guide_link_add">🔗 Привязать ссылку на обмен</button></li>
 <li><b data-i18n="buy_guide_step3_title">Прими и подтверди</b><span data-i18n="buy_guide_step3">Прими обмен в Steam и нажми «Получил» в разделе «Сделки». Проблема — открой спор, гарант разберётся.</span></li>
 </ol>
+<button type="button" class="buy-guide-video-btn" id="buyGuideVideoBtn" data-i18n="buy_guide_video">▶ Видео: как купить безопасно · 1 мин</button>
 <button type="button" id="buyGuideContinue" class="save" data-i18n="buy_guide_continue">Понятно, к оплате</button>
+</div>
+</div>
+
+<!-- Обучающее видео «Как купить безопасно» (app-filters.js). -->
+<div class="buy-overlay pay-overlay" id="guideVideoOverlay">
+<div class="buy-sheet pay-sheet guide-video-sheet">
+<button type="button" id="guideVideoClose" class="buy-close-btn">✕</button>
+<video id="guideVideo" playsinline controls preload="none"></video>
 </div>
 </div>
 
@@ -2448,15 +2467,15 @@
 </div>
 </div>
 <script src="app-core.js?v=21"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=31', en: 'app-i18n-en.js?v=30' };</script>
-<script src="app-i18n.js?v=155"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=32', en: 'app-i18n-en.js?v=31' };</script>
+<script src="app-i18n.js?v=156"></script>
 <script src="app-navigation.js?v=30"></script>
 <script src="app-shop.js?v=48"></script>
 <script src="app-legal.js?v=3"></script>
 <script src="app-deals.js?v=30"></script>
 <script src="app-catalog.js?v=35"></script>
 <script src="app-cart.js?v=11"></script>
-<script src="app-filters.js?v=70"></script>
+<script src="app-filters.js?v=71"></script>
 <script src="app-music.js?v=1"></script>
 <script src="app-steam.js?v=17"></script>
 <script src="app-topup.js?v=5"></script>
