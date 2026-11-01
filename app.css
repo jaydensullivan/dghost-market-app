@@ -4971,6 +4971,7 @@ body.theme-light .trader-badge.hot{ color:#fff; background:linear-gradient(90deg
 body.theme-light .buy-hero .buy-market-badge.cheaper{ color:#4ade80; background:rgba(46,204,113,0.16); border-color:rgba(74,222,128,0.35); }
 body.theme-light .wl-select,
 body.theme-light .edit-field input,
+body.theme-light .bulk-np-row input,
 body.theme-light .edit-field textarea{ background:#fff; }
 
 /* Выпадающие списки фильтров — как поля ввода, а не системные мелкие. */
@@ -5216,3 +5217,28 @@ button.brand-logo{ width:44px; height:44px; }
 .buy-subtitle, .stat-label, .shop-hint, .profile-section-title{ font-size:12px; }
 .add-skin-btn{ min-height:40px; }
 #pTradeLink{ min-height:44px; }
+
+/* Массовое выставление (app-withdraw.js). Поверх окна инвентаря. */
+#bulkOverlay{ z-index:11; }
+.bulk-label{ margin:12px 0 6px; font-size:13px; font-weight:600; color:var(--silver); }
+.bulk-hint{ margin:8px 0; font-size:12px; line-height:1.45; color:var(--muted); }
+.bulk-rules{ display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; }
+.bulk-rules .qs-chip{ min-height:44px; justify-content:center; }
+.bulk-rules .qs-chip b{ font-size:12px; text-align:center; }
+.bulk-sum{ margin:10px 0 0; font-size:14px; font-weight:600; color:var(--silver); }
+.bulk-bar{ height:10px; margin:16px 0 8px; border-radius:6px; background:rgba(255,255,255,.08); overflow:hidden; }
+.bulk-bar-fill{ height:100%; width:0; background:var(--accent); transition:width .4s ease; }
+.bulk-progress-text{ font-size:14px; font-weight:600; color:var(--silver); }
+.bulk-result-head{ margin:12px 0 4px; font-size:16px; font-weight:700; color:var(--silver); }
+.bulk-skipped{ max-height:160px; overflow:auto; }
+.bulk-row{ display:flex; justify-content:space-between; gap:8px; padding:6px 0; border-bottom:1px solid rgba(255,255,255,.06); font-size:12px; }
+.bulk-row span{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--silver); }
+.bulk-row em{ flex-shrink:0; font-style:normal; color:var(--muted); }
+.bulk-np-list{ max-height:240px; overflow:auto; }
+.bulk-np-row{ display:grid; grid-template-columns:40px 1fr 110px; align-items:center; gap:8px; padding:6px 0; }
+.bulk-np-row img{ width:40px; height:30px; object-fit:contain; }
+.bulk-np-name{ min-width:0; font-size:12px; color:var(--silver); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.bulk-np-row input{ width:100%; min-height:40px; padding:8px 10px; border-radius:4px; border:1px solid var(--red-dim); background:rgba(255,255,255,0.03); color:var(--silver); font-family:'Inter', sans-serif; font-size:14px; }
+.bulk-np-row input:focus{ outline:none; border-color:var(--red); }
+.bulk-np-btn{ width:100%; margin-top:8px; min-height:44px; }
+@media (max-width:360px){ .bulk-rules{ grid-template-columns:repeat(3, 1fr); } }

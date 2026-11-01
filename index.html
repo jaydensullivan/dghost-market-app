@@ -16,7 +16,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=5"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=111">
+<link rel="stylesheet" href="app.css?v=112">
 </head>
 <body data-tab="shop">
 <!-- Значки интерфейса в едином объёмном стиле (gi-*): <svg class="gi"><use href="#gi-…"/></svg>. -->
@@ -2281,6 +2281,56 @@
 </div>
 </div>
 
+<!-- Массовое выставление (app-withdraw.js): правило цены, прогресс с бота, итог. -->
+<div class="edit-overlay" id="bulkOverlay">
+<div class="edit-sheet">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+<h2 style="margin:0;" id="bulkTitle" data-i18n="bulk_title">Выставить пачкой</h2>
+<button type="button" id="bulkCloseBtn" class="buy-close-btn" style="position:static;">✕</button>
+</div>
+<div id="bulkSetup">
+<div class="bulk-hint" id="bulkCount"></div>
+<div class="bulk-label" data-i18n="bulk_price_rule">Цена</div>
+<div class="bulk-rules" id="bulkRules">
+<button type="button" class="qs-chip" data-bulk-pct="0"><b data-i18n="bulk_rule_market">По рынку</b></button>
+<button type="button" class="qs-chip on" data-bulk-pct="-3"><b>−3%</b></button>
+<button type="button" class="qs-chip" data-bulk-pct="-5"><b>−5%</b></button>
+<button type="button" class="qs-chip" data-bulk-pct="-10"><b>−10%</b></button>
+<button type="button" class="qs-chip" data-bulk-pct="custom"><b data-i18n="bulk_rule_custom">Свой %</b></button>
+</div>
+<div class="edit-field" id="bulkCustomField" hidden>
+<label for="bulkCustomPct" data-i18n="bulk_custom_label">Наценка к рынку, % (минус — дешевле)</label>
+<input id="bulkCustomPct" type="number" min="-50" max="50" step="1" placeholder="-7">
+</div>
+<div class="bulk-sum" id="bulkSum"></div>
+<div class="bulk-hint" data-i18n="bulk_how">Бот сам проверит каждый скин в Steam, подставит float, паттерн и наклейки и посчитает цену. Скины без цены рынка покажем отдельно — цену поставишь сам.</div>
+<div class="edit-actions">
+<button type="button" id="bulkCancel" data-i18n="btn_cancel">Отмена</button>
+<button type="button" id="bulkStart" class="save" data-i18n="btn_list_skin">Выставить</button>
+</div>
+</div>
+<div id="bulkProgress" hidden>
+<div class="bulk-bar"><div class="bulk-bar-fill" id="bulkBarFill"></div></div>
+<div class="bulk-progress-text" id="bulkProgressText"></div>
+<div class="bulk-hint" data-i18n="bulk_can_close">Можно закрыть приложение — бот закончит сам, итог покажем при следующем входе.</div>
+<button type="button" id="bulkStop" class="qs-advanced-link" data-i18n="bulk_stop">Остановить</button>
+</div>
+<div id="bulkResult" hidden>
+<div class="bulk-result-head" id="bulkResultHead"></div>
+<div class="bulk-skipped" id="bulkSkipped"></div>
+<div id="bulkNeedsPrice" hidden>
+<div class="bulk-label" data-i18n="bulk_needs_price">Нет цены рынка — поставь сам</div>
+<div class="bulk-np-list" id="bulkNpList"></div>
+<button type="button" id="bulkNpStart" class="save bulk-np-btn" data-i18n="bulk_np_start">Выставить с моими ценами</button>
+</div>
+<div class="edit-actions">
+<button type="button" id="bulkDone" data-i18n="btn_done">Готово</button>
+</div>
+</div>
+<div class="edit-status" id="bulkStatus"></div>
+</div>
+</div>
+
 <div class="edit-overlay" id="instantOverlay">
 <div class="edit-sheet">
 <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
@@ -2409,9 +2459,9 @@
 <!-- Выбранные предметы: миниатюры, счётчик и «Продолжить». -->
 <div class="inv-picked" id="invPicked" style="display:none;">
 <div class="inv-picked-thumbs" id="invPickedThumbs"></div>
-<div class="inv-picked-count"><span data-i18n="inv_picked">Выбрано скинов:</span><b id="invPickedCount">0 из 50</b><span class="inv-picked-sum" id="invPickedSum"></span></div>
+<div class="inv-picked-count"><span data-i18n="inv_picked">Выбрано скинов:</span><b id="invPickedCount">0 из 200</b><span class="inv-picked-sum" id="invPickedSum"></span></div>
 <button type="button" class="inv-continue" id="invContinueBtn"><span data-i18n="inv_continue">Продолжить</span> →</button>
-<button type="button" class="inv-sell-all" id="invSellAllBtn">⚡ Все по рынку −3%</button>
+<button type="button" class="inv-sell-all" id="invSellAllBtn">⚡ Выставить все</button>
 </div>
 
 <button type="button" id="inventoryCancel" class="inv-close" data-i18n="btn_close">Закрыть</button>
@@ -2448,13 +2498,13 @@
 </div>
 </div>
 <script src="app-core.js?v=21"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=31', en: 'app-i18n-en.js?v=30' };</script>
-<script src="app-i18n.js?v=155"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=32', en: 'app-i18n-en.js?v=31' };</script>
+<script src="app-i18n.js?v=156"></script>
 <script src="app-navigation.js?v=30"></script>
 <script src="app-shop.js?v=48"></script>
 <script src="app-legal.js?v=3"></script>
 <script src="app-deals.js?v=30"></script>
-<script src="app-catalog.js?v=35"></script>
+<script src="app-catalog.js?v=36"></script>
 <script src="app-cart.js?v=11"></script>
 <script src="app-filters.js?v=70"></script>
 <script src="app-music.js?v=1"></script>
@@ -2462,7 +2512,7 @@
 <script src="app-topup.js?v=5"></script>
 <script src="app-history.js?v=11"></script>
 <script src="app-referral.js?v=9"></script>
-<script src="app-withdraw.js?v=38"></script>
+<script src="app-withdraw.js?v=39"></script>
 <script src="app-instant.js?v=1"></script>
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
 <script>window.DG_ADMIN_SRC = 'app-admin.js?v=30';</script>
