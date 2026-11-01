@@ -2279,6 +2279,34 @@ steamLinkSkippedThisSession = false;
 updateMandatorySteamOverlay();
 });
 
+// «Как работает гарант?» из окна оплаты — та же схема и 3 шага.
+document.getElementById('payHowBtn').addEventListener('click', () => {
+closePaySheet();
+openBuyGuide();
+});
+
+// Видео «Как купить безопасно» с озвучкой: русское и узбекское.
+const GUIDE_VIDEOS = { ru: 'how-to-buy-ru.mp4?v=1', uz: 'how-to-buy-uz.mp4?v=2' };
+const guideVideoOverlay = document.getElementById('guideVideoOverlay');
+const guideVideo = document.getElementById('guideVideo');
+function guideVideoSrc(){
+return GUIDE_VIDEOS[currentLang] || GUIDE_VIDEOS.ru;
+}
+document.getElementById('buyGuideVideoBtn').addEventListener('click', () => {
+const src = guideVideoSrc();
+if (guideVideo.getAttribute('src') !== src) guideVideo.setAttribute('src', src);
+guideVideoOverlay.classList.add('show');
+guideVideo.play().catch(() => {});
+});
+function closeGuideVideo(){
+guideVideo.pause();
+guideVideoOverlay.classList.remove('show');
+}
+document.getElementById('guideVideoClose').addEventListener('click', closeGuideVideo);
+guideVideoOverlay.addEventListener('click', (e) => {
+if (e.target === guideVideoOverlay) closeGuideVideo();
+});
+
 document.getElementById('buyGuideClose').addEventListener('click', closeBuyGuide);
 buyGuideOverlay.addEventListener('click', (e) => {
 if (e.target === buyGuideOverlay) closeBuyGuide();
