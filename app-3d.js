@@ -538,6 +538,82 @@ camera.far = distance * 10;
 camera.updateProjectionMatrix();
 }
 
+// Кадр иконки плотнее: модель почти во весь кадр, как в Steam (больше
+// пикселей на детали — сверке узора это важно). Два прохода: сдвиг центра
+// и расстояние по крайним точкам мешей в экранных координатах.
+function fitIconFrame(THREE, object, camera){
+const target = meshBox(THREE, object).getCenter(new THREE.Vector3());
+for (let pass = 0; pass < 2; pass++){
+object.updateMatrixWorld(true);
+camera.updateMatrixWorld(true);
+let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+const p = new THREE.Vector3();
+object.traverse(node => {
+if (!node.isMesh || !node.geometry || node.visible === false) return;
+if (!node.geometry.boundingBox) node.geometry.computeBoundingBox();
+const bb = node.geometry.boundingBox;
+for (let i = 0; i < 8; i++){
+p.set(i & 1 ? bb.max.x : bb.min.x, i & 2 ? bb.max.y : bb.min.y, i & 4 ? bb.max.z : bb.min.z)
+.applyMatrix4(node.matrixWorld).project(camera);
+minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
+minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
+}
+});
+if (!isFinite(minX)) return;
+// Центр кадра — на середину проекции (сдвиг в плоскости экрана).
+const ndcCenter = new THREE.Vector3((minX + maxX) / 2, (minY + maxY) / 2, 0.5).unproject(camera);
+const toCam = camera.position.clone().sub(target);
+const dir = ndcCenter.sub(camera.position).normalize();
+const dist = toCam.length();
+const newTarget = camera.position.clone().add(dir.multiplyScalar(dist));
+const scale = Math.max(maxX - minX, maxY - minY) / 2 / 0.94;
+target.copy(newTarget);
+camera.position.copy(target.clone().add(toCam.multiplyScalar(scale)));
+camera.lookAt(target);
+camera.near = camera.position.distanceTo(target) / 50;
+camera.far = camera.position.distanceTo(target) * 10;
+camera.updateProjectionMatrix();
+}
+}
+
+// Свет иконки CS2 (items_game.txt, weapon_base.inventory_image_data,
+// override_default_light): основной прожектор сзади-слева-сверху
+// (−120 120 180, цвет 2/2.1/2.3) и узкий бирюзовый контровой снизу с
+// другой стороны (10 −90 −60, цвет 3/5/5). Координаты Source (x — к дулу,
+// y — влево, z — вверх) переводим в систему камеры: дуло на экране слева,
+// левая сторона оружия — к камере. Только для кадра 'icon' (сверка);
+// свет просмотрщика не меняется. window.DGHOST_ICON_LIGHT — для подбора.
+const ICON_LIGHT = { off: true, key: 1, rim: 1, ambient: 0.15, env: 1 };
+function applyIconLights(THREE, scene, camera, object){
+const L = Object.assign({}, ICON_LIGHT, window.DGHOST_ICON_LIGHT || {});
+scene.children.filter(n => n.isLight).forEach(n => scene.remove(n));
+scene.add(new THREE.AmbientLight(0xffffff, L.ambient));
+const target = meshBox(THREE, object).getCenter(new THREE.Vector3());
+camera.updateMatrixWorld(true);
+const reach = camera.position.distanceTo(target);
+const spot = (src, rgb, k, inner, outer) => {
+// Source (x, y, z) → камера (−x, z, y), затем в мир.
+const dirView = new THREE.Vector3(-src[0], src[2], src[1]).normalize();
+const dirWorld = dirView.transformDirection(camera.matrixWorld);
+const max = Math.max(rgb[0], rgb[1], rgb[2]);
+const light = new THREE.SpotLight(new THREE.Color(rgb[0] / max, rgb[1] / max, rgb[2] / max), k * max, 0, outer, Math.max(0, 1 - inner / outer), 0);
+light.position.copy(target).add(dirWorld.multiplyScalar(reach));
+light.target.position.copy(target);
+scene.add(light);
+scene.add(light.target);
+};
+spot([-120, 120, 180], [2, 2.1, 2.3], L.key, 0.5, 1.0);
+spot([10, -90, -60], [3, 5, 5], L.rim, 0.04, 0.5);
+if (L.env !== 1){
+object.traverse(node => {
+if (!node.isMesh) return;
+(Array.isArray(node.material) ? node.material : [node.material]).forEach(m => {
+if (m && 'envMapIntensity' in m) m.envMapIntensity *= L.env;
+});
+});
+}
+}
+
 // Кадр для «Поделиться»: модель целиком и по центру на всех углах
 // покачивания. Считаем только видимые меши (у ножей и стволов в файле
 // есть скрытый второй корпус — из-за него центр уезжал вбок, а нож
@@ -4121,12 +4197,14 @@ if (still === 'angles'){
 frameShareView(THREE, object, camera, [side + tilt, otherSide]);
 } else if (still === 'icon'){
 applyIconPose(THREE, object, camera, side);
+fitIconFrame(THREE, object, camera);
 } else if (still !== 'transparent' && still !== 'icon'){
 const swing = [];
 for (let i = 0; i < 16; i++) swing.push(side + 0.6 * Math.sin(i / 16 * Math.PI * 2));
 frameShareView(THREE, object, camera, still ? [side + tilt] : swing);
 }
 await setupViewerScene(THREE, renderer, scene, entry.weapon);
+if (still === 'icon' && !Object.assign({}, ICON_LIGHT, window.DGHOST_ICON_LIGHT || {}).off) applyIconLights(THREE, scene, camera, object);
 
 if (still === 'pano'){
 object.rotation.y = side + tilt;
