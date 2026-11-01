@@ -1475,7 +1475,7 @@ buy_no_payment_hint: 'No payment method available right now — contact support.
 buy_pay_card: 'Pay by card',
 buy_card_opened: 'The bank payment page is open. After payment the item will appear in Deals and the seller will be notified.',
 buy_card_unavailable: 'Card payment is unavailable right now — try later or choose another method.',
-buy_pay_p2p: '🏦 Pay via P2P (card)',
+buy_pay_p2p: 'Pay',
 buy_make_trade: '🔄 Offer a trade',
 buy_discount_btn: '🏷️ Discount',
 p2p_skin_title: '🏦 P2P Payment',

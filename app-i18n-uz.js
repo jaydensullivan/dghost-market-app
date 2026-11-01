@@ -1475,7 +1475,7 @@ buy_no_payment_hint: "Hozircha to'lov usuli mavjud emas — qo'llab-quvvatlash x
 buy_pay_card: "Karta bilan to'lash",
 buy_card_opened: "Bank to'lov sahifasi ochildi. To'lovdan so'ng lot «Bitimlar»da paydo bo'ladi — sotuvchiga xabar boradi.",
 buy_card_unavailable: "Karta bilan to'lov hozir mavjud emas — keyinroq urinib ko'ring yoki boshqa usulni tanlang.",
-buy_pay_p2p: "🏦 P2P orqali to'lash (karta)",
+buy_pay_p2p: "To'lash",
 buy_make_trade: '🔄 Almashinuv taklif qilish',
 buy_discount_btn: '🏷️ Chegirma',
 p2p_skin_title: "🏦 P2P to'lov",
