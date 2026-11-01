@@ -548,6 +548,7 @@ hostedPayMethods = Array.isArray(data.payment_methods) ? data.payment_methods.fi
 sellerKycStatus = data.seller_kyc_status || 'none';
 instantCanWithdraw = !!data.instant_can_withdraw;
 sellerIdentityProblem = data.seller_identity_problem || null;
+if (typeof pendingBuySkin !== 'undefined' && pendingBuySkin && buyOverlay.classList.contains('show')) updateBuyPayState(pendingBuySkin);
 kycWithdrawLeft = data.kyc_withdraw_left ?? null;
 kycWithdrawThreshold = data.kyc_withdraw_threshold ?? null;
 unverifiedLotMax = data.unverified_lot_max ?? null;
@@ -640,6 +641,7 @@ hostedPayMethods = Array.isArray(data.payment_methods) ? data.payment_methods.fi
 sellerKycStatus = data.seller_kyc_status || 'none';
 instantCanWithdraw = !!data.instant_can_withdraw;
 sellerIdentityProblem = data.seller_identity_problem || null;
+if (typeof pendingBuySkin !== 'undefined' && pendingBuySkin && buyOverlay.classList.contains('show')) updateBuyPayState(pendingBuySkin);
 kycWithdrawLeft = data.kyc_withdraw_left ?? null;
 kycWithdrawThreshold = data.kyc_withdraw_threshold ?? null;
 unverifiedLotMax = data.unverified_lot_max ?? null;
