@@ -2285,8 +2285,8 @@ closePaySheet();
 openBuyGuide();
 });
 
-// Видео «Как купить безопасно»: русское с озвучкой, узбекское с субтитрами.
-const GUIDE_VIDEOS = { ru: 'how-to-buy-ru.mp4?v=1', uz: 'how-to-buy-uz.mp4?v=1' };
+// Видео «Как купить безопасно» с озвучкой: русское и узбекское.
+const GUIDE_VIDEOS = { ru: 'how-to-buy-ru.mp4?v=1', uz: 'how-to-buy-uz.mp4?v=2' };
 const guideVideoOverlay = document.getElementById('guideVideoOverlay');
 const guideVideo = document.getElementById('guideVideo');
 function guideVideoSrc(){
