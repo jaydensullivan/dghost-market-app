@@ -169,7 +169,7 @@ withdrawSubmitBtn.disabled = false;
 // (inventoryPickHandler) «Выбрать» сразу отдаёт предмет обработчику.
 // ============================================================
 
-const INV_PICK_MAX = 50;
+const INV_PICK_MAX = 200;
 
 // Порядок редкости — для сортировки «сначала редкие».
 const RARITY_RANK = {
@@ -257,9 +257,39 @@ const chip = (cat, n) => `<button type="button" class="category-chip inv-type-ch
 const top = (!inventoryPickHandler && Object.keys(invPrices).length)
 ? `<button type="button" class="category-chip inv-top-chip" id="invTopPickBtn">${escapeHtml(dict.inv_top_pick.replace('{n}', INV_TOP_PICK))}</button>`
 : '';
-document.getElementById('invTypeChips').innerHTML = lastInventoryItems.length
-? chip('all', lastInventoryItems.length) + top + INV_CATEGORY_ORDER.filter(c => counts[c]).map(c => chip(c, counts[c])).join('')
+// «Выбрать все» — все подходящие под текущий фильтр (до INV_PICK_MAX).
+const sellableShown = inventoryPickHandler ? [] : invFilteredItems().map(x => x.item).filter(invSellable);
+const allPicked = sellableShown.length && sellableShown.every(isInvPicked);
+const all = sellableShown.length > 1
+? `<button type="button" class="category-chip inv-top-chip" id="invPickAllBtn">${escapeHtml(allPicked ? dict.inv_unpick_all : dict.inv_pick_all.replace('{n}', Math.min(sellableShown.length, INV_PICK_MAX)))}</button>`
 : '';
+document.getElementById('invTypeChips').innerHTML = lastInventoryItems.length
+? chip('all', lastInventoryItems.length) + all + top + INV_CATEGORY_ORDER.filter(c => counts[c]).map(c => chip(c, counts[c])).join('')
+: '';
+}
+
+function invSellable(item){
+return item.tradable !== false || !!invLockUntil(item);
+}
+
+// Выбрать все показанные (фильтр, поиск) или снять выбор с них.
+function pickAllShown(){
+const dict = I18N[currentLang] || I18N.ru;
+const shown = invFilteredItems().map(x => x.item).filter(invSellable);
+if (shown.length && shown.every(isInvPicked)){
+const keys = new Set(shown.map(invKey));
+invPicked = invPicked.filter(p => !keys.has(invKey(p)));
+} else {
+const add = shown.filter(it => !isInvPicked(it)).slice(0, Math.max(0, INV_PICK_MAX - invPicked.length));
+if (!add.length){
+showToast(dict.inv_limit.replace('{max}', INV_PICK_MAX));
+return;
+}
+invPicked.push(...add);
+showToast(dict.inv_top_done.replace('{n}', add.length));
+}
+haptic('light');
+renderInventory();
 }
 
 // «5 самых дорогих»: добавляет к выбору дорогие передаваемые скины.
@@ -383,7 +413,7 @@ renderInvTypeChips();
 
 function renderInvPicked(){
 const dict = I18N[currentLang] || I18N.ru;
-if (!sellAllRunning) document.getElementById('invSellAllBtn').textContent = dict.inv_sell_all.replace('{p}', SELL_ALL_DISCOUNT);
+document.getElementById('invSellAllBtn').textContent = dict.inv_sell_all;
 const box = document.getElementById('invPicked');
 box.style.display = invPicked.length && !inventoryPickHandler ? '' : 'none';
 document.getElementById('invPickedCount').textContent = dict.inv_of.replace('{n}', invPicked.length).replace('{max}', INV_PICK_MAX);
@@ -776,6 +806,10 @@ if (e.target.closest('#invTopPickBtn')){
 pickTopExpensive();
 return;
 }
+if (e.target.closest('#invPickAllBtn')){
+pickAllShown();
+return;
+}
 const chip = e.target.closest('[data-inv-type]');
 if (!chip) return;
 document.getElementById('invTypeFilter').value = chip.dataset.invType;
@@ -907,41 +941,15 @@ queueEl.textContent = dict.qs_queue.replace('{n}', sellQueueTotal - sellQueue.le
 document.getElementById('quickSellSkip').style.display = sellQueue.length ? '' : 'none';
 }
 
-// ---------- «Все по рынку −3%»: выставить выбранные разом ----------
-// Для каждого предмета: инспект (float, паттерн, наклейки), ориентир
-// рынка, цена = рынок −3% (как подсказка в окне «Выставить лот») и
-// публикация. Предметы без износа или без цены рынка пропускаем —
-// их можно выставить по одному через «Продолжить».
+// ---------- Массовое выставление: выбранные разом, в фоне на боте ----------
+// Продавец выбирает правило цены (по рынку, −3/−5/−10% или свой %), бот
+// сам проверяет каждый скин в Steam, инспектирует и выставляет
+// (/api/listings/bulk). Прогресс спрашиваем по id задачи — его храним в
+// localStorage, поэтому приложение можно закрыть. Скины без цены рынка
+// приходят списком — продавец ставит цену и отправляет их ещё раз.
 
+// Подсказка цены в окне «по ссылке»: рынок −3%.
 const SELL_ALL_DISCOUNT = 3;
-let sellAllRunning = false;
-
-document.getElementById('invSellAllBtn').addEventListener('click', () => {
-if (!invPicked.length || sellAllRunning) return;
-const dict = I18N[currentLang] || I18N.ru;
-const items = invPicked.filter(it => it.tradable !== false);
-showConfirm(dict.inv_sell_all_q.replace('{n}', items.length).replace('{p}', SELL_ALL_DISCOUNT), () => {
-if (!sellerOfferAccepted){
-openSellerOffer(() => sellAllAtMarket(items));
-return;
-}
-sellAllAtMarket(items);
-});
-});
-
-async function sellAllInspect(item){
-if (!item.inspect_link) return null;
-try {
-const r = await fetch(API_BASE + '/api/steam/inspect'
-+ '?init_data=' + encodeURIComponent(tg.initData)
-+ '&inspect_link=' + encodeURIComponent(item.inspect_link)
-+ '&_t=' + Date.now(), { cache: 'no-store' });
-const data = r.ok ? await r.json() : null;
-return data && data.ok ? data : null;
-} catch (e){
-return null;
-}
-}
 
 async function sellAllMarketPrice(item, stattrak){
 const params = new URLSearchParams({ title: item.title });
@@ -956,76 +964,292 @@ return 0;
 }
 }
 
-async function sellAllAtMarket(items){
-const dict = I18N[currentLang] || I18N.ru;
-const btn = document.getElementById('invSellAllBtn');
-sellAllRunning = true;
-btn.disabled = true;
-let listed = 0, skipped = 0, failed = 0;
+const BULK_JOB_KEY = 'dg_bulk_job';
+const BULK_POLL_MS = 2500;
+let sellAllRunning = false;
+let bulkPct = -3;
+let bulkItems = [];
+let bulkJobId = null;
+let bulkPollTimer = null;
+let bulkNeedsPrice = [];
+
+const bulkOverlay = document.getElementById('bulkOverlay');
+
+function bulkDict(){
+return I18N[currentLang] || I18N.ru;
+}
+
+function bulkSaveJob(id){
+bulkJobId = id;
 try {
-for (let i = 0; i < items.length; i++){
-const item = items[i];
-btn.textContent = dict.inv_sell_all_progress.replace('{n}', i + 1).replace('{total}', items.length);
-// Износ не нужен: кейсы, капсулы и наклейки тоже выставляются по рынку.
-if (!item.title || !item.photo_url || !item.asset_id){
-skipped++;
-continue;
+if (id) localStorage.setItem(BULK_JOB_KEY, id);
+else localStorage.removeItem(BULK_JOB_KEY);
+} catch (e) {}
 }
-const info = await sellAllInspect(item);
-const stattrak = !!(item.stattrak || (info && info.stattrak));
-const market = await sellAllMarketPrice(item, stattrak);
-if (!market){
-skipped++;
-continue;
+
+function bulkShow(step){
+['bulkSetup', 'bulkProgress', 'bulkResult'].forEach(id => { document.getElementById(id).hidden = id !== step; });
+document.getElementById('bulkStatus').textContent = '';
 }
-const pick = (a, b) => (a !== null && a !== undefined && a !== '') ? a : (b !== undefined ? b : null);
-const r = await fetch(API_BASE + '/api/skins', {
+
+function bulkCurrentPct(){
+if (bulkPct !== 'custom') return bulkPct;
+const v = Number(document.getElementById('bulkCustomPct').value);
+return Number.isFinite(v) && document.getElementById('bulkCustomPct').value !== '' ? Math.round(v) : null;
+}
+
+function bulkRenderSum(){
+const dict = bulkDict();
+const pct = bulkCurrentPct();
+const priced = bulkItems.filter(it => invItemPrice(it) > 0);
+const sum = pct === null ? 0 : priced.reduce((acc, it) => acc + qsRoundPrice(invItemPrice(it) * (100 + pct) / 100), 0);
+document.getElementById('bulkSum').textContent = sum
+? dict.bulk_sum.replace('{sum}', formatCoins(sum)).replace('{n}', priced.length)
+: '';
+}
+
+function openBulkSetup(items){
+const dict = bulkDict();
+bulkItems = items;
+document.getElementById('bulkCount').textContent = dict.bulk_count.replace('{n}', items.length);
+bulkShow('bulkSetup');
+bulkRenderSum();
+bulkOverlay.classList.add('show');
+}
+
+document.getElementById('invSellAllBtn').addEventListener('click', () => {
+if (!invPicked.length || sellAllRunning) return;
+if (!sellerReadyToList()) return;
+// Пачка уже идёт — показываем её прогресс, а не вторую.
+if (bulkJobId){
+bulkOverlay.classList.add('show');
+bulkShow('bulkProgress');
+bulkPoll();
+return;
+}
+openBulkSetup(invPicked.filter(it => it.tradable !== false || invLockUntil(it)));
+});
+
+document.getElementById('bulkRules').addEventListener('click', (e) => {
+const chip = e.target.closest('[data-bulk-pct]');
+if (!chip) return;
+document.querySelectorAll('#bulkRules .qs-chip').forEach(c => c.classList.toggle('on', c === chip));
+const custom = chip.dataset.bulkPct === 'custom';
+bulkPct = custom ? 'custom' : Number(chip.dataset.bulkPct);
+document.getElementById('bulkCustomField').hidden = !custom;
+if (custom) setTimeout(() => document.getElementById('bulkCustomPct').focus(), 50);
+haptic('light');
+bulkRenderSum();
+});
+
+document.getElementById('bulkCustomPct').addEventListener('input', bulkRenderSum);
+
+function bulkItemPayload(item, price){
+const pick = (v) => (v !== undefined && v !== '') ? v : null;
+const body = {
+asset_id: item.asset_id,
+title: item.title,
+photo_url: item.photo_url,
+wear: item.wear || null,
+rarity: item.rarity || null,
+weapon_type: item.weapon_type || null,
+float_value: pick(item.float_value),
+pattern: pick(item.pattern),
+stattrak: !!item.stattrak,
+inspect_link: item.inspect_link || null,
+};
+if (price) body.price = price;
+return body;
+}
+
+async function bulkStart(items, pct){
+const dict = bulkDict();
+const status = document.getElementById('bulkStatus');
+if (pct === null || pct < -50 || pct > 50){
+status.textContent = dict.bulk_err_pct;
+return;
+}
+sellAllRunning = true;
+let r = null, data = {};
+try {
+r = await fetch(API_BASE + '/api/listings/bulk', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({
-init_data: tg.initData,
-title: item.title,
-description: '',
-price: qsRoundPrice(market * (1 - SELL_ALL_DISCOUNT / 100)),
-photo_url: item.photo_url,
-weapon_type: item.weapon_type || '',
-wear: item.wear,
-rarity: item.rarity || (info && info.rarity) || '',
-float_value: pick(item.float_value, info && info.float_value),
-pattern: pick(item.pattern, info && info.pattern),
-stattrak: stattrak,
-has_stickers: !!(info && info.has_stickers),
-asset_id: item.asset_id,
-inspect_link: item.inspect_link || null,
-})
-}).catch(() => null);
-if (r && r.ok){
-listed++;
-invPicked = invPicked.filter(p => invKey(p) !== invKey(item));
-continue;
-}
-const data = r ? await r.json().catch(() => ({})) : {};
-if (data.error === 'seller_offer_required'){
-// Оферту ещё не приняли — после принятия продолжаем с этого же предмета.
-sellerOfferAccepted = false;
-const rest = items.slice(i);
-openSellerOffer(() => sellAllAtMarket(rest));
-break;
-}
-failed++;
-}
+body: JSON.stringify({ init_data: tg.initData, pct: pct, items: items })
+});
+data = await r.json().catch(() => ({}));
+} catch (e) {
+r = null;
 } finally {
 sellAllRunning = false;
-btn.disabled = false;
-btn.textContent = dict.inv_sell_all.replace('{p}', SELL_ALL_DISCOUNT);
-renderInventory();
 }
-if (listed) loadSkins();
-showAlert(dict.inv_sell_all_done
-.replace('{ok}', listed)
-.replace('{skip}', skipped + failed));
-if (listed && !invPicked.length) inventoryOverlay.classList.remove('show');
+if (!r){
+status.textContent = dict.load_failed || 'Error';
+return;
 }
+if (r.ok){
+bulkSaveJob(data.job_id);
+bulkShow('bulkProgress');
+bulkRenderProgress(data);
+bulkPoll();
+return;
+}
+const err = data.error;
+if (err === 'bulk_running' && data.job_id){
+bulkSaveJob(data.job_id);
+bulkShow('bulkProgress');
+bulkPoll();
+return;
+}
+if (err === 'seller_offer_required'){
+sellerOfferAccepted = false;
+openSellerOffer(() => bulkStart(items, pct));
+return;
+}
+if (err === 'steam_login_required' || err === 'phone_required'){
+bulkOverlay.classList.remove('show');
+openSellerVerify();
+return;
+}
+if (err === 'trade_link_required'){
+status.textContent = dict.sell_need_trade_link;
+return;
+}
+if (err === 'bulk_too_many'){
+status.textContent = dict.bulk_err_too_many.replace('{max}', data.max);
+return;
+}
+if (err === 'bulk_day_limit'){
+status.textContent = dict.bulk_err_day_limit.replace('{max}', data.max);
+return;
+}
+if (err === 'bad_pct'){
+status.textContent = dict.bulk_err_pct;
+return;
+}
+status.textContent = errorMessage(err);
+}
+
+document.getElementById('bulkStart').addEventListener('click', () => {
+if (!tg || !tg.initData || sellAllRunning) return;
+bulkStart(bulkItems.map(it => bulkItemPayload(it)), bulkCurrentPct());
+});
+
+function bulkRenderProgress(job){
+const dict = bulkDict();
+const total = job.total || 0;
+const done = job.done || 0;
+document.getElementById('bulkBarFill').style.width = (total ? Math.round(done / total * 100) : 0) + '%';
+document.getElementById('bulkProgressText').textContent = dict.bulk_progress
+.replace('{n}', done).replace('{total}', total).replace('{ok}', (job.listed || []).length);
+}
+
+function bulkReasonText(code){
+const dict = bulkDict();
+return dict['bulk_reason_' + code] || dict.bulk_reason_other;
+}
+
+function bulkRenderResult(job){
+const dict = bulkDict();
+const listed = (job.listed || []).length;
+const head = job.status === 'cancelled' ? dict.bulk_stopped : dict.bulk_result;
+document.getElementById('bulkResultHead').textContent = head.replace('{ok}', listed).replace('{total}', job.total || 0);
+const skipped = job.skipped || [];
+document.getElementById('bulkSkipped').innerHTML = skipped.length
+? `<div class="bulk-label">${escapeHtml(dict.bulk_skipped_title.replace('{n}', skipped.length))}</div>`
++ skipped.map(it => `<div class="bulk-row"><span>${escapeHtml(it.title || '')}</span><em>${escapeHtml(bulkReasonText(it.reason))}</em></div>`).join('')
+: '';
+bulkNeedsPrice = job.needs_price || [];
+document.getElementById('bulkNeedsPrice').hidden = !bulkNeedsPrice.length;
+document.getElementById('bulkNpList').innerHTML = bulkNeedsPrice.map((it, i) => `
+<div class="bulk-np-row">
+${it.photo_url ? `<img src="${escapeHtml(it.photo_url)}" alt="">` : '<span></span>'}
+<span class="bulk-np-name">${escapeHtml(it.title || '')}</span>
+<input type="number" min="1" inputmode="numeric" placeholder="${escapeHtml(dict.label_price_sum || '')}" data-bulk-np="${i}">
+</div>`).join('');
+bulkShow('bulkResult');
+}
+
+async function bulkPoll(){
+clearTimeout(bulkPollTimer);
+if (!bulkJobId || !tg || !tg.initData) return;
+let r = null, job = null;
+try {
+r = await fetch(API_BASE + '/api/listings/bulk/' + encodeURIComponent(bulkJobId)
++ '?init_data=' + encodeURIComponent(tg.initData) + '&_t=' + Date.now(), { cache: 'no-store' });
+job = await r.json().catch(() => null);
+} catch (e) {
+r = null;
+}
+if (!r){
+bulkPollTimer = setTimeout(bulkPoll, BULK_POLL_MS * 2);
+return;
+}
+if (r.status === 404){
+bulkSaveJob(null);
+if (bulkOverlay.classList.contains('show')) bulkShow('bulkSetup');
+showAlert(bulkDict().bulk_lost);
+loadSkins();
+return;
+}
+if (!job || !job.ok){
+bulkPollTimer = setTimeout(bulkPoll, BULK_POLL_MS * 2);
+return;
+}
+if (job.status === 'running'){
+bulkRenderProgress(job);
+bulkPollTimer = setTimeout(bulkPoll, BULK_POLL_MS);
+return;
+}
+// Готово: итог показываем один раз, выставленные убираем из выбора.
+bulkSaveJob(null);
+const listedAssets = new Set((job.listed || []).map(x => String(x.asset_id || '')));
+invPicked = invPicked.filter(p => !listedAssets.has(String(p.asset_id)));
+loadSkins();
+if (lastInventoryItems.length) renderInventory();
+if (!bulkOverlay.classList.contains('show')){
+showToast(bulkDict().bulk_done_toast.replace('{ok}', (job.listed || []).length));
+bulkOverlay.classList.add('show');
+}
+bulkRenderResult(job);
+}
+
+document.getElementById('bulkStop').addEventListener('click', () => {
+if (!bulkJobId) return;
+fetch(API_BASE + '/api/listings/bulk/' + encodeURIComponent(bulkJobId) + '/cancel', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData })
+}).then(() => bulkPoll()).catch(() => {});
+});
+
+document.getElementById('bulkNpStart').addEventListener('click', () => {
+const dict = bulkDict();
+const items = [];
+document.querySelectorAll('#bulkNpList [data-bulk-np]').forEach(input => {
+const price = Math.round(Number(input.value));
+if (price > 0) items.push(bulkItemPayload(bulkNeedsPrice[Number(input.dataset.bulkNp)], price));
+});
+if (!items.length){
+document.getElementById('bulkStatus').textContent = dict.bulk_np_none;
+return;
+}
+bulkStart(items, 0);
+});
+
+function closeBulk(){
+bulkOverlay.classList.remove('show');
+}
+document.getElementById('bulkCloseBtn').addEventListener('click', closeBulk);
+document.getElementById('bulkCancel').addEventListener('click', closeBulk);
+document.getElementById('bulkDone').addEventListener('click', () => {
+closeBulk();
+if (!invPicked.length) inventoryOverlay.classList.remove('show');
+});
+
+// Пачка шла, когда приложение закрыли, — досматриваем её при входе.
+try { bulkJobId = localStorage.getItem(BULK_JOB_KEY) || null; } catch (e) {}
+if (bulkJobId) setTimeout(bulkPoll, 1500);
 
 // Вызывается из publishSkin после успешной публикации из окна «Выставить лот».
 function onQuickSellPublished(){
@@ -1349,7 +1573,7 @@ document.getElementById('onboardingSkipBtn').addEventListener('click', finishOnb
 let onboardingAlreadySeen = false;
 try { onboardingAlreadySeen = localStorage.getItem(ONBOARDING_SEEN_KEY) === '1'; } catch (e) {}
 
-const hasAnyDeepLink = !!deepLinkSkinId || !!deepLinkAuctionId || deepLinkGiveaway;
+const hasAnyDeepLink = !!deepLinkSkinId || !!deepLinkAuctionId || deepLinkGiveaway || !!deepLinkSellerId;
 
 // Обучение не закрывает маркет при первом входе: сразу товары, а над
 // ними подсказка «Впервые здесь?» — по нажатию те же 4 шага.

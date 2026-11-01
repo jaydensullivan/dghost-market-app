@@ -533,6 +533,12 @@ if (!deepLinkSkinId){
 try { deepLinkSkinId = (String(new URLSearchParams(location.search).get('open') || '').match(/^skin_(\d+)$/) || [])[1] || null; } catch (e) {}
 }
 
+// seller_<id> — пост-подборка продавца в канале: «Смотреть все».
+let deepLinkSellerId = null;
+if (tg && tg.initDataUnsafe && typeof tg.initDataUnsafe.start_param === 'string'){
+deepLinkSellerId = Number((tg.initDataUnsafe.start_param.match(/^seller_(\d+)$/) || [])[1]) || null;
+}
+
 let deepLinkAuctionId = null;
 if (tg && tg.initDataUnsafe && typeof tg.initDataUnsafe.start_param === 'string' && tg.initDataUnsafe.start_param.startsWith('auction_')){
 deepLinkAuctionId = Number(tg.initDataUnsafe.start_param.slice(8));
@@ -632,6 +638,11 @@ if (typeof restoreCart === 'function') restoreCart();
 if (typeof renderMyLots === 'function') renderMyLots();
 if (typeof uploadOwnLotAngles === 'function') uploadOwnLotAngles(lastSkins);
 if (typeof renderPromo === 'function') renderPromo();
+if (deepLinkSellerId){
+const sellerId = deepLinkSellerId;
+deepLinkSellerId = null;
+if (typeof openSellerProfile === 'function') openSellerProfile(sellerId);
+}
 if (deepLinkSkinId){
 const targetId = deepLinkSkinId;
 deepLinkSkinId = null;
