@@ -1648,6 +1648,34 @@ document.getElementById('buyPaymentMethods').style.display = isOwn ? 'none' : 'f
 document.getElementById('buyOpenPayBtn').style.display = isOwn ? 'none' : '';
 document.getElementById('buyGuarantee').style.display = isOwn ? 'none' : '';
 closePaySheet();
+updateBuyPayState(skin);
+buyEditPriceBtn.style.display = isOwn ? '' : 'none';
+document.getElementById('buyDiscountBtn').style.display = isOwn ? '' : 'none';
+buySavePriceBtn.style.display = 'none';
+buyPriceEdit.style.display = 'none';
+buyNewPriceInput.value = skin.price;
+
+buyMakeOfferBtn.style.display = isOwn ? 'none' : '';
+document.getElementById('buyMakeTradeBtn').style.display = isOwn ? 'none' : '';
+buySendOfferBtn.style.display = 'none';
+buyOfferEdit.style.display = 'none';
+buyOfferInput.value = '';
+
+buyStatus.textContent = '';
+applyBuyTradeLock(skin);
+if (typeof update3DButton === 'function') update3DButton(skin);
+buyOverlay.classList.add('show');
+
+loadMarketPriceComparison(skin.id);
+renderSimilarSkins(skin);
+}
+
+// Способы оплаты лота и главная кнопка. Вызывается при открытии лота и
+// ещё раз, когда пришёл профиль (/api/me): если открыть лот до ответа,
+// флаги оплаты ещё пустые и кнопка ошибочно говорила «оплата недоступна».
+function updateBuyPayState(skin){
+const dict = I18N[currentLang] || I18N.ru;
+const isOwn = currentUserId && skin.seller_id === currentUserId;
 // С баланса платят только покупатели (не проверенные продавцы) и
 // только если хватает: пополнить баланс они не могут, там лежат их
 // возвраты и бонусы. Продавец деньги с продаж выводит.
@@ -1669,25 +1697,6 @@ buyMainBtn.classList.toggle('no-pay', noPayMethod);
 buyMainBtn.innerHTML = noPayMethod
 ? `<span>${escapeHtml(dict.buy_no_pay_btn)}</span>`
 : `<span data-i18n="btn_buy">${escapeHtml(dict.btn_buy)}</span> · <span id="buyMainPrice">${formatCoins(skin.price)}</span>`;
-buyEditPriceBtn.style.display = isOwn ? '' : 'none';
-document.getElementById('buyDiscountBtn').style.display = isOwn ? '' : 'none';
-buySavePriceBtn.style.display = 'none';
-buyPriceEdit.style.display = 'none';
-buyNewPriceInput.value = skin.price;
-
-buyMakeOfferBtn.style.display = isOwn ? 'none' : '';
-document.getElementById('buyMakeTradeBtn').style.display = isOwn ? 'none' : '';
-buySendOfferBtn.style.display = 'none';
-buyOfferEdit.style.display = 'none';
-buyOfferInput.value = '';
-
-buyStatus.textContent = '';
-applyBuyTradeLock(skin);
-if (typeof update3DButton === 'function') update3DButton(skin);
-buyOverlay.classList.add('show');
-
-loadMarketPriceComparison(skin.id);
-renderSimilarSkins(skin);
 }
 
 // График по дневным снимкам цены (history: [{day, price_uzs}]): сверху —
