@@ -521,8 +521,11 @@ return distance;
 // Свои углы каждого оружия из items_game.txt (inventory_image_data)
 // пробовали — счёт не меняется (±0.5), поэтому не используются.
 const ICON_POSE = { yaw: -0.6, elev: 0.25, roll: 0, fov: 15 };
-function applyIconPose(THREE, object, camera, side){
-const pose = Object.assign({}, ICON_POSE, window.DGHOST_ICON_POSE || {});
+// Ножи на иконках лежат по диагонали (клинок вверх-влево) и сняты выше:
+// перебор по 8 ножам — счёт 17.9 → 36.1 (совпадение силуэта 0.22 → 0.77).
+const ICON_POSE_KNIFE = { yaw: 0, elev: 0.6, roll: -0.7, fov: 15 };
+function applyIconPose(THREE, object, camera, side, knife){
+const pose = Object.assign({}, knife ? ICON_POSE_KNIFE : ICON_POSE, window.DGHOST_ICON_POSE || {});
 const { yaw, elev, roll } = pose;
 object.rotation.order = 'ZYX';
 object.rotation.set(0, side + Math.PI + yaw, roll);
@@ -4120,7 +4123,7 @@ const otherSide = side + Math.PI - tilt;
 if (still === 'angles'){
 frameShareView(THREE, object, camera, [side + tilt, otherSide]);
 } else if (still === 'icon'){
-applyIconPose(THREE, object, camera, side);
+applyIconPose(THREE, object, camera, side, isKnifeName(String(entry.weapon || '').split('/').pop()));
 } else if (still !== 'transparent' && still !== 'icon'){
 const swing = [];
 for (let i = 0; i < 16; i++) swing.push(side + 0.6 * Math.sin(i / 16 * Math.PI * 2));
