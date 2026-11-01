@@ -516,20 +516,14 @@ return distance;
 // со Steam (tools/steam-compare, render3DGif(..., 'icon')): там сравнивают
 // форму и узор, и ракурс должен совпадать. Углы подобраны по совпадению
 // силуэтов с иконками; window.DGHOST_ICON_POSE — для подбора.
-// Углы камеры иконки у каждого оружия — из items_game.txt CS2
-// (inventory_image_data.camera_angles: наклон, поворот, крен в градусах;
-// у оружия без своей записи — weapon_base 2/−130/0). Берём разницу с
-// базовыми углами поверх общего ракурса ICON_POSE.
-const ICON_ANGLES = {"deagle":[-2.0,-130.0,0.0],"elite":[0.0,-90.0,0.0],"p250":[-1.2,-130.0,0.0],"cz75a":[-1.2,-130.0,0.0],"tec9":[0.0,-125.0,0.0],"bizon":[-4.0,-130.0,0.0],"mac10":[-3.0,-125.0,-3.0],"mp7":[0.0,-135.0,0.0],"mp5sd":[0.0,-135.0,0.0],"p90":[-3.0,-125.0,0.0],"ump45":[-4.0,-130.0,0.0],"ak47":[-2.0,-135.0,0.0],"aug":[-4.0,-130.0,0.0],"famas":[-3.0,-130.0,0.0],"galilar":[-3.0,-130.0,0.0],"m4a1":[-2.0,-135.0,0.0],"sg556":[-12.0,-130.0,0.0],"awp":[-5.0,-140.0,0.0],"g3sg1":[-5.0,-140.0,0.0],"scar20":[-5.0,-140.0,0.0],"ssg08":[-5.0,-140.0,0.0],"mag7":[-3.0,-130.0,0.0],"nova":[-5.0,-137.0,0.0],"sawedoff":[-3.0,-130.0,0.0],"xm1014":[-4.0,-137.0,0.0],"m249":[-12.0,-142.0,0.0],"negev":[-6.0,-146.0,0.0],"m4a1_silencer":[2.0,-135.0,0.0],"usp_silencer":[-1.0,-125.0,0.0],"revolver":[0.0,-130.0,0.0],"knifegg":[0.0,-70.0,25.0],"knife":[0.0,-70.0,25.0],"knife_t":[0.0,-70.0,25.0],"knife_css":[30.0,-95.0,29.0],"knife_flip":[30.0,-95.0,29.0],"knife_gut":[30.0,-95.0,23.0],"knife_karambit":[30.0,-95.0,-5.0],"knife_m9_bayonet":[30.0,-95.0,29.0],"knife_tactical":[30.0,-95.0,29.0],"knife_falchion":[0.0,0.0,0.0],"knife_survival_bowie":[30.0,-95.0,29.0],"knife_butterfly":[30.0,-95.0,29.0],"knife_cord":[0.0,0.0,0.0],"knife_canis":[0.0,0.0,0.0],"knife_outdoor":[30.0,-95.0,29.0],"knife_widowmaker":[0.0,0.0,0.0],"knife_skeleton":[0.0,0.0,0.0],"knife_kukri":[0.0,0.0,0.0]};
-const ICON_BASE_ANGLES = [2, -130, 0];
-const ICON_POSE = { yaw: 0, elev: 0.25, roll: 0, fov: 30, kYaw: 1, kPitch: 1, kRoll: 1 };
-function applyIconPose(THREE, object, camera, side, weaponName){
+// Подобрано перебором по совпадению с иконками Steam (8 видов оружия):
+// поворот к дулу −0.6 рад, камера выше на 0.25 рад, угол обзора 15°.
+// Свои углы каждого оружия из items_game.txt (inventory_image_data)
+// пробовали — счёт не меняется (±0.5), поэтому не используются.
+const ICON_POSE = { yaw: -0.6, elev: 0.25, roll: 0, fov: 15 };
+function applyIconPose(THREE, object, camera, side){
 const pose = Object.assign({}, ICON_POSE, window.DGHOST_ICON_POSE || {});
-const src = ICON_ANGLES[weaponName] || ICON_BASE_ANGLES;
-const deg = Math.PI / 180;
-const yaw = pose.yaw + (src[1] - ICON_BASE_ANGLES[1]) * deg * pose.kYaw;
-const elev = pose.elev + (src[0] - ICON_BASE_ANGLES[0]) * deg * pose.kPitch;
-const roll = pose.roll + (src[2] - ICON_BASE_ANGLES[2]) * deg * pose.kRoll;
+const { yaw, elev, roll } = pose;
 object.rotation.order = 'ZYX';
 object.rotation.set(0, side + Math.PI + yaw, roll);
 camera.fov = pose.fov;
@@ -4126,7 +4120,7 @@ const otherSide = side + Math.PI - tilt;
 if (still === 'angles'){
 frameShareView(THREE, object, camera, [side + tilt, otherSide]);
 } else if (still === 'icon'){
-applyIconPose(THREE, object, camera, side, String(entry.weapon || '').split('/').pop());
+applyIconPose(THREE, object, camera, side);
 } else if (still !== 'transparent' && still !== 'icon'){
 const swing = [];
 for (let i = 0; i < 16; i++) swing.push(side + 0.6 * Math.sin(i / 16 * Math.PI * 2));
