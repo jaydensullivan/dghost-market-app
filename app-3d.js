@@ -945,6 +945,15 @@ knife_widowmaker: 0.36, knife_skeleton: 0.36, knife_kukri: 0.36,
 // g_bIgnoreWeaponSizeScale = true — масштаб ствола к ним не применяем
 // (иначе полосы MP7 Amberline растягивались на весь ствол).
 const GUN_FADE_SCALE = 1.3;
+// Fade на стволах: градиент лежал со сдвигом на одну полосу — у Glock и
+// MAC-10 спереди розовый вместо золотого, у Amber Fade не было оливкового.
+// Сдвиг −0.3 вдоль узора — только этим раскраскам: у AWP Fade, MP7, UMP
+// и Red Blue он хуже. Сверка по скриншотам игры (CSFloat, 27 экземпляров):
+// Fade +4.5, R8 Fade +10.0, Amber Fade +0.1; со Steam +5.4, +7.9, +4.5.
+const GUN_FADE_SHIFT = new Set(['aa_fade', 'aa_fade_revolver', 'aa_fade_metallic', 'aa_fade_metallic_revolver']);
+function gunFadeShift(skin, weaponName){
+return isGunFade(skin) && !isKnifeName(weaponName || '') && GUN_FADE_SHIFT.has(String(skin.finish || '')) ? -0.3 : 0;
+}
 const PATINA_TILED = /^aq_(oiled|forced|blued|brass|copper|obsidian|steel|damascus)/;
 const WEAPON_SPECIFIC_FINISH = /(?:^|_)(ak47|m4a4|m4a1s?|awp|glock(?:_?18)?|p250|p90|ump(?:45)?|tec9|ssg08|mac(?:_?10)|usp|deagle|deserteagle|desert_eagle|famas|galil(?:ar)?|sg553|sg556|aug|mp7|mp9|mp5|bizon|nova|xm1014|mag7|sawedoff|negev|m249|cz75a?|five_?seven|57|p2000|hkp2000|dualberettas|elites?|revolver|r8|scar20|scar|g3sg1|zeus)(?=$|_|lam|\d)/;
 // Узор, который игра сдвигает по паттерну на целую текстуру и больше
@@ -1517,7 +1526,7 @@ uPatternScale: { value: (skin.params.pattern_scale || 1) * weaponPatternScale(sk
 // Поворот узора в params.json — в градусах.
 uPatternRotation: { value: placement.rotation * Math.PI / 180 },
 // Сдвиг узора по seed (в долях текстуры).
-uPatternOffset: { value: new THREE.Vector2(placement.offset[0], placement.offset[1]) },
+uPatternOffset: { value: new THREE.Vector2(placement.offset[0] + gunFadeShift(skin, weaponName), placement.offset[1]) },
 uWearScale: { value: skin.params.wear_scale || 1 },
 uGrungeScale: { value: skin.params.grunge_scale || 1 },
 uPaintMetalness: { value: legacyCaseHardened(skin) ? ANODIZED.metalness : paintMetalness(skin.params) * gunsmithTone(skin).metal },
