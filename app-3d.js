@@ -511,6 +511,36 @@ camera.updateProjectionMatrix();
 return distance;
 }
 
+// Ракурс иконки CS2 (как картинки в инвентаре Steam): левая сторона
+// оружия, дуло влево и чуть вверх, камера спереди-сверху. Нужен сверке
+// со Steam (tools/steam-compare, render3DGif(..., 'icon')): там сравнивают
+// форму и узор, и ракурс должен совпадать. Углы подобраны по совпадению
+// силуэтов с иконками; window.DGHOST_ICON_POSE — для подбора.
+// Подобрано перебором по совпадению с иконками Steam (8 видов оружия):
+// поворот к дулу −0.6 рад, камера выше на 0.25 рад, угол обзора 15°.
+// Свои углы каждого оружия из items_game.txt (inventory_image_data)
+// пробовали — счёт не меняется (±0.5), поэтому не используются.
+const ICON_POSE = { yaw: -0.6, elev: 0.25, roll: 0, fov: 15 };
+// Ножи на иконках лежат по диагонали (клинок вверх-влево) и сняты выше:
+// перебор по 8 ножам — счёт 17.9 → 36.1 (совпадение силуэта 0.22 → 0.77).
+const ICON_POSE_KNIFE = { yaw: 0, elev: 0.6, roll: -0.7, fov: 15 };
+function applyIconPose(THREE, object, camera, side, knife){
+const pose = Object.assign({}, knife ? ICON_POSE_KNIFE : ICON_POSE, window.DGHOST_ICON_POSE || {});
+const { yaw, elev, roll } = pose;
+object.rotation.order = 'ZYX';
+object.rotation.set(0, side + Math.PI + yaw, roll);
+camera.fov = pose.fov;
+const box = meshBox(THREE, object);
+const radius = box.getSize(new THREE.Vector3()).length() / 2 || 1;
+const distance = radius / Math.sin(pose.fov * Math.PI / 360) * 1.05;
+const center = box.getCenter(new THREE.Vector3());
+camera.position.set(center.x, center.y + distance * Math.sin(elev), center.z + distance * Math.cos(elev));
+camera.lookAt(center);
+camera.near = distance / 50;
+camera.far = distance * 10;
+camera.updateProjectionMatrix();
+}
+
 // Кадр для «Поделиться»: модель целиком и по центру на всех углах
 // покачивания. Считаем только видимые меши (у ножей и стволов в файле
 // есть скрытый второй корпус — из-за него центр уезжал вбок, а нож
@@ -1877,9 +1907,13 @@ return pack;
 // 14 скинов): яркость как в игре (было светлее на 10 по L, стало ±0).
 // «showcase» — прежний, ярче.
 // window.DGHOST_LIGHT (только для сверки) подменяет параметры набора.
+// Пресет «game»: тонмаппинг AgX вместо ACES и экспозиция 0.6 — сверка
+// с иконками Steam по «игровому счёту» (52 скина: 32 ствола, 20 ножей):
+// ACES 0.7 → 34.7, AgX 0.7 → 36.1, AgX 0.6 → 36.6 (0.5 — 36.6, 0.42 — 36.1).
+// Сильнее всего на ножах: 17 из 20 ближе к игре.
 const LIGHT_PRESETS = {
 showcase: { tone: 'aces', exposure: 1.1, ambient: 0.55, key: 2.4, front: 1.2, neon: 0.25, rim: 0.2, env: 1 },
-game: { tone: 'aces', exposure: 0.7, ambient: 0.55, key: 2.4, front: 1.2, neon: 0.25, rim: 0.2, env: 1 },
+game: { tone: 'agx', exposure: 0.6, ambient: 0.55, key: 2.4, front: 1.2, neon: 0.25, rim: 0.2, env: 1 },
 };
 let currentLightPreset = 'game';
 function lightPreset(){
@@ -3930,6 +3964,8 @@ const GIFENC_URL = 'https://cdn.jsdelivr.net/npm/gifenc@1.0.3/dist/gifenc.esm.js
 const SHARE_GIF = { width: 360, height: 240, frames: 36, delay: 70, colors: 128 };
 // Картинка для «Поделиться» — один кадр крупнее, чем у GIF.
 const SHARE_PHOTO = { width: 1080, height: 720, quality: 0.9 };
+// Кадр в ракурсе иконки CS2 — размер картинок Steam (512×384).
+const ICON_SHOT = { width: 512, height: 384 };
 // Видео вместо GIF: Telegram показывает его той же «гифкой», но без
 // потолка в 256 цветов — чётко и легче. Кадр рисуется вдвое крупнее и
 // уменьшается (гладкие края), длина — один цикл покачивания.
@@ -4032,7 +4068,7 @@ ctx.fillText('DGHOSTMARKET', 12 * k, 18 * k);
 async function render3DGif(entry, wear, title, onProgress, seed, still, stickers){
 const video = still === 'video';
 if (video) still = false;
-const size = still ? SHARE_PHOTO : (video ? SHARE_VIDEO : SHARE_GIF);
+const size = still === 'icon' ? ICON_SHOT : still ? SHARE_PHOTO : (video ? SHARE_VIDEO : SHARE_GIF);
 const { width: W, height: H } = size;
 const { frames, delay, colors } = SHARE_GIF;
 const ss = video ? SHARE_VIDEO.supersample : 1;
@@ -4090,7 +4126,9 @@ const tilt = glove ? 0.25 : stickerAtlas ? -0.3 : 0.3;
 const otherSide = side + Math.PI - tilt;
 if (still === 'angles'){
 frameShareView(THREE, object, camera, [side + tilt, otherSide]);
-} else if (still !== 'transparent'){
+} else if (still === 'icon'){
+applyIconPose(THREE, object, camera, side, isKnifeName(String(entry.weapon || '').split('/').pop()));
+} else if (still !== 'transparent' && still !== 'icon'){
 const swing = [];
 for (let i = 0; i < 16; i++) swing.push(side + 0.6 * Math.sin(i / 16 * Math.PI * 2));
 frameShareView(THREE, object, camera, still ? [side + tilt] : swing);
@@ -4121,9 +4159,10 @@ return shots;
 
 if (still){
 // Тот же ракурс, что в середине покачивания GIF, чуть повёрнутый к камере.
-object.rotation.y = side + tilt;
+// Ракурс иконки CS2 уже выставлен applyIconPose.
+if (still !== 'icon') object.rotation.y = side + tilt;
 renderer.render(scene, camera);
-if (still === 'transparent'){
+if (still === 'transparent' || still === 'icon'){
 const png = await new Promise(resolve => glCanvas.toBlob(resolve, 'image/png'));
 if (!png) throw new Error('не получилось сохранить картинку');
 return new Uint8Array(await png.arrayBuffer());
