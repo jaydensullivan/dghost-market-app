@@ -53,6 +53,9 @@ const WEAR_LABELS = { FN: 'FN', MW: 'MW', FT: 'FT', WW: 'WW', BS: 'BS' };
 
 const ERROR_MESSAGES_RU = {
 phone_required: "Подтверди номер телефона.",
+reels_not_configured: "Рилс не настроены: нужен токен GitHub в Railway (REELS_GITHUB_TOKEN).",
+reels_day_limit: "Лимит роликов на сегодня исчерпан — завтра можно снова.",
+reels_dispatch_failed: "GitHub не принял запуск сборки — проверь токен и попробуй ещё раз.",
 item_not_in_inventory: "Этого скина нет в твоём инвентаре Steam.",
 no_market_price: "Для этого скина нет цены рынка — продать гаранту пока нельзя.",
 garant_unavailable: "Этот гарант сейчас не принимает заявки.",
@@ -148,6 +151,9 @@ payer_name_required: 'Укажи имя и фамилию владельца к�
 
 const ERROR_MESSAGES_UZ = {
 phone_required: "Telefon raqamini tasdiqlang.",
+reels_not_configured: "Rilslar sozlanmagan: Railway'da GitHub tokeni kerak (REELS_GITHUB_TOKEN).",
+reels_day_limit: "Bugungi roliklar limiti tugadi — ertaga yana mumkin.",
+reels_dispatch_failed: "GitHub yig'ishni qabul qilmadi — tokenni tekshiring va qayta urinib ko'ring.",
 item_not_in_inventory: "Bu skin Steam inventaringizda yo‘q.",
 no_market_price: "Bu skin uchun bozor narxi yo‘q — hozircha kafilga sotib bo‘lmaydi.",
 garant_unavailable: "Bu kafil hozir ariza qabul qilmayapti.",
@@ -243,6 +249,9 @@ payer_name_required: "Karta egasining ismi va familiyasini kiriting.",
 
 const ERROR_MESSAGES_EN = {
 phone_required: "Confirm your phone number.",
+reels_not_configured: "Reels aren't set up: a GitHub token is needed in Railway (REELS_GITHUB_TOKEN).",
+reels_day_limit: "Today's video limit is used up — try again tomorrow.",
+reels_dispatch_failed: "GitHub didn't accept the build — check the token and try again.",
 item_not_in_inventory: "This skin isn't in your Steam inventory.",
 no_market_price: "There's no market price for this skin — it can't be sold to a guarantor yet.",
 garant_unavailable: "This guarantor isn't taking requests right now.",
