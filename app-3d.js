@@ -1032,6 +1032,17 @@ return false;
 // Firebreathing, 15 потёртых 39.3 → 41.3; 5 других скинов, 54 потёртых
 // 33.3 → 33.9 (Glock Gold Toof +2.0, USP-S Jawbreaker +1.5).
 const NEW_FORMAT_WEAR = { cut: 0.31, k: 0.40 };
+
+// Маска материалов у vcompmat (сборка с prep_version 5 хранит её в цвете):
+// канал R — где краска металлическая (Glock Gold Toof, Desert Eagle
+// Calligraffiti, P250 Epicenter в игре тёмный металлик, а не матовая
+// краска). Своей карты металличности у таких раскрасок нет. Половина
+// металла: полный металл без окружения игры выходил слишком тёмным.
+// Сверка со Steam: 26 скинов подбора 33.5 → 34.5, 30 отложенных 34.2 → 35.2.
+const MASK_METAL_K = 0.5;
+function maskMetal(skin){
+return skin.format === 'vcompmat' && !skin.metalness && !!skin.mask;
+}
 function wearCurve(THREE, skin){
 if (skin.format === 'vcompmat' || skin.format === 'template') return new THREE.Vector3(NEW_FORMAT_WEAR.cut, NEW_FORMAT_WEAR.k, 1);
 return new THREE.Vector3(0.25, 0.5, 0);
@@ -1505,7 +1516,8 @@ uWearScale: { value: skin.params.wear_scale || 1 },
 uGrungeScale: { value: skin.params.grunge_scale || 1 },
 uPaintMetalness: { value: legacyCaseHardened(skin) ? ANODIZED.metalness : paintMetalness(skin.params) * gunsmithTone(skin).metal },
 // Своя карта металличности краски (Zeno — серый металлик).
-uSkinMetal: { value: skin.metalness || pattern },
+uSkinMetal: { value: skin.metalness || (maskMetal(skin) ? skin.mask : pattern) },
+uMaskMetalK: { value: skin.metalness ? 0 : (maskMetal(skin) ? MASK_METAL_K : 0) },
 // Зоны покраски раскраски (paint by number): R/G/B — где лежат цвета
 // 1–3 поверх узора. У MP7 Amberline так закрашены тёмным рукоять,
 // магазин и мелкие детали.
@@ -1517,7 +1529,7 @@ uColorMetal: { value: colorVec4(THREE, skin.params.color_metalness) },
 uColorRough: { value: colorVec4(THREE, skin.params.color_roughness) },
 uHasColorMetal: { value: Array.isArray(skin.params.color_metalness) ? 1 : 0 },
 uHasColorRough: { value: Array.isArray(skin.params.color_roughness) ? 1 : 0 },
-uHasSkinMetal: { value: skin.metalness ? 1 : 0 },
+uHasSkinMetal: { value: skin.metalness || maskMetal(skin) ? 1 : 0 },
 uPaintRoughness: { value: anodizedLook(skin, weaponName).roughness },
 uHasPaintRoughness: { value: isAnodized(skin.params) || legacyCaseHardened(skin) ? 1 : 0 },
 uUseColors: { value: skin.solid || skinUsesColorMask(skin.params) ? 1 : 0 },
@@ -1660,7 +1672,7 @@ if (stickersHere) g.setAttribute('dgStkUv', stkUv);
 const shaderDefines = [
 stickersHere ? 'DG_STICKERS' : '',
 uniforms.uHasRamp.value ? 'DG_RAMP' : '',
-skin.metalness ? 'DG_SKIN_METAL' : '',
+skin.metalness || maskMetal(skin) ? 'DG_SKIN_METAL' : '',
 skin.pbn ? 'DG_PBN' : '',
 skin.zones ? 'DG_ZONES' : '',
 skin.overlay ? 'DG_OVERLAY' : '',
@@ -1752,6 +1764,7 @@ uniform vec4 uColorRough;
 uniform int uHasColorMetal;
 uniform int uHasColorRough;
 uniform int uHasSkinMetal;
+uniform float uMaskMetalK;
 uniform int uHasPaintRoughness;
 uniform int uUseColors;
 uniform int uSolid;
@@ -1985,7 +1998,7 @@ stkCover = max(stkCover, a);
 .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>
 float paintMetal = uHasColorMetal == 1 ? dot(colorWeight, uColorMetal) : uPaintMetalness;
 #ifdef DG_SKIN_METAL
-if (uHasSkinMetal == 1) paintMetal = texture2D(uSkinMetal, vSkinUv).r;
+if (uHasSkinMetal == 1) paintMetal = uMaskMetalK > 0.0 ? uMaskMetalK * texture2D(uSkinMetal, vSkinUv).r : texture2D(uSkinMetal, vSkinUv).r;
 #endif
 #ifdef DG_RAMP
 // Закалка — это цвет каленого металла: полированный металлик.
