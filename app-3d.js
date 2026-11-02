@@ -890,6 +890,37 @@ return WEAPON_UV_SCALE[weaponName] || 1;
 // выходила светлее, чем на иконке игры. Подобрано сверкой со Steam (game-метрика):
 // на неделе подбора и на отложенных 48 скинах (35.3 → 36.7, лучше у 35).
 const STYLE_BRIGHTNESS = { 'legacy/2': 0.85, 'legacy/4': 0.7, 'legacy/5': 0.7, 'template/2': 0.7 };
+// Гидрография старого формата, нарисованная под конкретное оружие (SSG 08
+// Detour, AUG Wings): альфа узора на два уровня — 1 там, где краска, и
+// ~0.7 там, где её нет (ствол, прицел, рукоять остаются родного цвета).
+// Сверка со Steam: Detour 16.8 → 28.4, Wings 18.8 → 33.1. У остальных
+// альфа везде одна (1 или 0) — их не трогаем.
+function patternHasAlphaZones(pack){
+const img = pack.pattern && pack.pattern.image;
+if ((pack.format || 'legacy') !== 'legacy' || !pack.params || pack.params.paint_style !== 1 || !img || !img.width) return false;
+try {
+const n = 64;
+const cv = document.createElement('canvas');
+cv.width = cv.height = n;
+const ctx = cv.getContext('2d', { willReadFrequently: true });
+ctx.imageSmoothingEnabled = false;
+ctx.drawImage(img, 0, 0, n, n);
+const px = ctx.getImageData(0, 0, n, n).data;
+let max = 0, low = 0;
+for (let i = 3; i < px.length; i += 4){
+max = Math.max(max, px[i]);
+if (px[i] >= 140 && px[i] <= 230) low++;
+}
+return max >= 245 && low / (n * n) > 0.2;
+} catch (e){
+return false;
+}
+}
+
+function hydroAlphaZone(skin){
+return skin.alphaZones ? 2 : 0;
+}
+
 function styleBrightness(skin){
 return STYLE_BRIGHTNESS[(skin.format || 'legacy') + '/' + skin.params.paint_style] || 1;
 }
@@ -1352,6 +1383,7 @@ uColors: { value: skinColors(THREE, skin.params) },
 // Узор грузится как sRGB, а маске нужны исходные значения каналов.
 uMaskGamma: { value: THREE.SRGBColorSpace ? 1 / 2.2 : 1 },
 uSmokeK: { value: dopplerSmokeK(skin, weaponName) },
+uAlphaZone: { value: hydroAlphaZone(skin) },
 uColorBrightness: { value: (skin.params.color_brightness || 1) * (legacyCaseHardened(skin) ? CASE_HARDENED.brightness : 1) * styleBrightness(skin) },
 // Патина (7) и Gunsmith (8) старого формата выходили бледно-пастельными
 // (по сверке с CSFloat светлее игры на 30–50 по яркости). Степень 1.8
@@ -1582,6 +1614,7 @@ uniform int uSolid;
 uniform vec3 uColors[4];
 uniform float uMaskGamma;
 uniform float uSmokeK;
+uniform int uAlphaZone;
 uniform float uColorBrightness;
 uniform float uPatternGamma;
 uniform vec3 uIrid;
@@ -1678,6 +1711,11 @@ if (uUseColors == 1){
 vec3 m = uSolid == 1 && uHasZones == 1 ? texture2D(DG_ZONE_TEX, vSkinUv).rgb
 : (uSolid == 2 ? vec3(0.0) : pow(pattern, vec3(uMaskGamma)));
 if (uSolid == 2 && uHasWeapon == 1) paintable *= masks.r;
+// Узор под конкретное оружие (SSG 08 Detour, AUG Wings): где альфа < 1,
+// краски нет (patternHasAlphaZones).
+float zoneOff = uAlphaZone > 0 ? 1.0 - smoothstep(0.8, 0.92, patternTex.a) : 0.0;
+if (uAlphaZone == 1) m.r = max(m.r, zoneOff);
+if (uAlphaZone == 2) paintable *= 1.0 - zoneOff;
 pattern = uColors[0];
 pattern = mix(pattern, uColors[1], m.r);
 pattern = mix(pattern, uColors[2], m.g);
@@ -1921,6 +1959,7 @@ names.forEach((name, i) => { pack[name] = loaded[i]; });
 // Однотонные раскраски (so_, an_ и т. п.): узора у них в игре нет,
 // есть только цвета из материала — красим ими по маскам ствола.
 pack.solid = !pack.pattern && Array.isArray(pack.params.colors) && pack.params.colors.length >= 4;
+pack.alphaZones = patternHasAlphaZones(pack);
 console.log('3D: слои раскраски —',
 names.filter(n => pack[n]).join(', ') || 'ничего не загрузилось');
 return pack;
