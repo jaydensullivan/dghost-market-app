@@ -1511,7 +1511,8 @@ uHasZones: { value: skin.zones || (weapon && weapon.masks && !(skin.format === '
 uAo: { value: weapon ? weapon.ao : null },
 uWearAmount: { value: Math.max(0, Math.min(1, wear || 0)) },
 uWearCurve: { value: wearCurve(THREE, skin) },
-uGammaLum: { value: legacyPatinaStyle(skin) && !legacyPatinaBlend(skin) && skin.params.paint_style === 8 ? 1 : 0 },
+// Ножи не трогаем: Huntsman Autotronic в сверке CI 55.2 → 51.8.
+uGammaLum: { value: legacyPatinaStyle(skin) && !legacyPatinaBlend(skin) && skin.params.paint_style === 8 && !isKnifeName(weaponName) ? 1 : 0 },
 uPatternScale: { value: (skin.params.pattern_scale || 1) * weaponPatternScale(skin, weaponName) * templateScaleTest(skin) },
 // Поворот узора в params.json — в градусах.
 uPatternRotation: { value: placement.rotation * Math.PI / 180 },
