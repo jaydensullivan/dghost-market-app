@@ -298,11 +298,13 @@ return !!(tg && tg.initData && typeof tg.shareMessage === 'function'
 && (typeof tg.isVersionAtLeast !== 'function' || tg.isVersionAtLeast('8.0')));
 }
 
+let raffleSharePromise = null;
 function prefetchRaffleShare(){
-if (!canShareRaffle() || raffleShareLoading) return;
-if (raffleShareId && Date.now() - raffleShareAt < 20 * 60 * 1000) return;
+if (!canShareRaffle()) return Promise.resolve(null);
+if (raffleShareId && Date.now() - raffleShareAt < 20 * 60 * 1000) return Promise.resolve(raffleShareId);
+if (raffleShareLoading && raffleSharePromise) return raffleSharePromise;
 raffleShareLoading = true;
-fetch(API_BASE + '/api/giveaway/invite_prepare', {
+raffleSharePromise = fetch(API_BASE + '/api/giveaway/invite_prepare', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({ init_data: tg.initData }),
@@ -310,9 +312,30 @@ body: JSON.stringify({ init_data: tg.initData }),
 .then(r => r.ok ? r.json() : null)
 .then(data => {
 if (data && data.prepared_id){ raffleShareId = data.prepared_id; raffleShareAt = Date.now(); }
+return raffleShareId;
 })
-.catch(() => {})
+.catch(() => null)
 .finally(() => { raffleShareLoading = false; });
+return raffleSharePromise;
+}
+
+// Нажали, пока карточка ещё готовится: кнопка показывает «Готовлю…», а
+// когда готово — «Отправить приглашение» (окно открываем следующим
+// нажатием: после ожидания телефон может не открыть его сам).
+function waitRaffleShare(){
+const dict = rfDict();
+const btn = document.getElementById('rfInviteBtn');
+btn.disabled = true;
+btn.textContent = dict.rf_invite_preparing;
+prefetchRaffleShare().then(id => {
+btn.disabled = false;
+if (id){
+btn.textContent = dict.rf_invite_ready;
+return;
+}
+btn.textContent = dict.rf_invite_btn;
+inviteFallback();
+});
 }
 
 // Сначала — окно «Поделиться» с выбором нескольких чатов. Нет его (старый
@@ -324,15 +347,28 @@ showAlert(errorMessage('unauthorized'));
 return;
 }
 haptic('light');
-if (raffleShareId && canShareRaffle()){
+if (canShareRaffle()){
+if (!raffleShareId || Date.now() - raffleShareAt >= 20 * 60 * 1000){
+waitRaffleShare();
+return;
+}
 try {
 tg.shareMessage(raffleShareId, (sent) => {
 if (sent) showToast(rfDict().rf_invite_sent);
 });
+document.getElementById('rfInviteBtn').textContent = rfDict().rf_invite_btn;
 return;
 } catch (e) {}
 }
-prefetchRaffleShare();
+inviteFallback();
+}
+
+// Окно «Поделиться» не открылось (карточка устарела и т. п.) — готовим заново.
+if (tg && typeof tg.onEvent === 'function'){
+tg.onEvent('shareMessageFailed', () => { raffleShareId = null; });
+}
+
+function inviteFallback(){
 if (typeof tg.switchInlineQuery === 'function' && (!tg.isVersionAtLeast || tg.isVersionAtLeast('6.7'))){
 try {
 tg.switchInlineQuery('invite', ['users', 'groups', 'channels']);

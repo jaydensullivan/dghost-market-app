@@ -1755,17 +1755,26 @@ return String((e && e.message) || e || '').slice(0, 80);
 // Сравнение с рынком ходит во внешний сервис (CSFloat) — не ждём вечно:
 // через 15 с показываем ошибку, и она уходит владельцу в отчёт.
 const MARKET_FETCH_TIMEOUT_MS = 15000;
-function fetchMarketJson(url){
+function fetchMarketOnce(url){
 const ctrl = typeof AbortController === 'function' ? new AbortController() : null;
 const timer = ctrl ? setTimeout(() => ctrl.abort(), MARKET_FETCH_TIMEOUT_MS) : null;
 return fetch(url, ctrl ? { signal: ctrl.signal } : {}).then(r => {
 if (!r.ok) throw new Error('HTTP ' + r.status);
 return r.json();
+}).finally(() => { if (timer) clearTimeout(timer); });
+}
+
+// Ещё одна попытка при обрыве или тайм-ауте: так бывает, пока бот
+// перезапускается после обновления (до минуты), — без ошибки в лог.
+function fetchMarketJson(url){
+return fetchMarketOnce(url).catch(e => {
+if (e && /^HTTP 4/.test(e.message || '')) throw e;
+return new Promise(resolve => setTimeout(resolve, 3000)).then(() => fetchMarketOnce(url));
 }).catch(e => {
 const reason = e && e.name === 'AbortError' ? 'timeout' : marketFetchError(e);
 if (typeof reportClientError === 'function') reportClientError('market_price', reason + ' · ' + url.replace(/^https?:\/\/[^/]+/, '').slice(0, 120));
 throw new Error(reason);
-}).finally(() => { if (timer) clearTimeout(timer); });
+});
 }
 
 // Пока ответ не пришёл — серые заглушки той же формы, что блок с графиком.
