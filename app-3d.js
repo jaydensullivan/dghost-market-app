@@ -1024,6 +1024,19 @@ return false;
 }
 }
 
+// Износ нового формата (vcompmat и шаблоны). Порог 0.25 + 0.5·float
+// стирал краску слишком поздно: в игре на 0.33–0.45 затвор Desert Eagle
+// Firebreathing уже потёрт до металла, а у нас был целый; на 0.99 —
+// наоборот, у нас облезал весь ствол, а в игре рукоять ещё в краске.
+// Порог растёт как корень из float. Сверка со скриншотами игры (CSFloat):
+// Firebreathing, 15 потёртых 39.3 → 41.3; 5 других скинов, 54 потёртых
+// 33.3 → 33.9 (Glock Gold Toof +2.0, USP-S Jawbreaker +1.5).
+const NEW_FORMAT_WEAR = { cut: 0.31, k: 0.40 };
+function wearCurve(THREE, skin){
+if (skin.format === 'vcompmat' || skin.format === 'template') return new THREE.Vector3(NEW_FORMAT_WEAR.cut, NEW_FORMAT_WEAR.k, 1);
+return new THREE.Vector3(0.25, 0.5, 0);
+}
+
 function hydroAlphaZone(skin){
 return skin.alphaZones ? 2 : 0;
 }
@@ -1482,6 +1495,7 @@ uZones: { value: skin.zones || (weapon && weapon.masks) || pattern },
 uHasZones: { value: skin.zones || (weapon && weapon.masks && !(skin.format === 'template' && !skin.pattern && templatePlaceholderColor(skin.params))) ? 1 : 0 },
 uAo: { value: weapon ? weapon.ao : null },
 uWearAmount: { value: Math.max(0, Math.min(1, wear || 0)) },
+uWearCurve: { value: wearCurve(THREE, skin) },
 uPatternScale: { value: (skin.params.pattern_scale || 1) * weaponPatternScale(skin, weaponName) * templateScaleTest(skin) },
 // Поворот узора в params.json — в градусах.
 uPatternRotation: { value: placement.rotation * Math.PI / 180 },
@@ -1718,6 +1732,7 @@ uniform sampler2D uBaseColor;
 uniform sampler2D uPaintMask;
 uniform sampler2D uAo;
 uniform float uWearAmount;
+uniform vec3 uWearCurve;
 uniform float uPatternScale;
 uniform float uPatternRotation;
 uniform vec2 uPatternOffset;
@@ -1884,7 +1899,8 @@ float wearMask = texture2D(uWearMask, vSkinUv * uWearScale).r;
 // float напрямую как порог стирал краску слишком рано: при 0.8
 // оставалось меньше 5%. Порог 0.25 + 0.5·float держит FN/MW целыми,
 // а на Battle-Scarred оставляет часть краски, как в игре.
-float wearCut = 0.25 + 0.5 * uWearAmount;
+float wearCut = uWearCurve.z > 0.5 ? uWearCurve.x + uWearCurve.y * sqrt(uWearAmount)
+: uWearCurve.x + uWearCurve.y * uWearAmount;
 kept = smoothstep(wearCut - 0.08, wearCut + 0.04, wearMask);
 }
 
