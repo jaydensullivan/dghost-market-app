@@ -889,6 +889,14 @@ return WEAPON_UV_SCALE[weaponName] || 1;
 // Только для сверки со Steam (tools/steam-compare, TPL_SCALE): множитель
 // масштаба узора у шаблонных спрея и гидрографии — подбираем, как его
 // понимает игра. В мини-аппе window.DGHOST_TPL_SCALE не задан — 1.
+// Только для сверки: множитель яркости краски по стилю —
+// window.DGHOST_STYLE_BRIGHT = { 'legacy/2': 0.9, 'template/2': 0.85 }.
+function styleBrightnessTest(skin){
+const t = window.DGHOST_STYLE_BRIGHT;
+if (!t) return 1;
+return Number(t[(skin.format || 'legacy') + '/' + skin.params.paint_style]) || 1;
+}
+
 function templateScaleTest(skin){
 const k = Number(window.DGHOST_TPL_SCALE) || 1;
 return skin.format === 'template' && [1, 2].indexOf(skin.params.paint_style) !== -1 ? k : 1;
@@ -1344,7 +1352,7 @@ uColors: { value: skinColors(THREE, skin.params) },
 // Узор грузится как sRGB, а маске нужны исходные значения каналов.
 uMaskGamma: { value: THREE.SRGBColorSpace ? 1 / 2.2 : 1 },
 uSmokeK: { value: dopplerSmokeK(skin, weaponName) },
-uColorBrightness: { value: (skin.params.color_brightness || 1) * (legacyCaseHardened(skin) ? CASE_HARDENED.brightness : 1) },
+uColorBrightness: { value: (skin.params.color_brightness || 1) * (legacyCaseHardened(skin) ? CASE_HARDENED.brightness : 1) * styleBrightnessTest(skin) },
 // Патина (7) и Gunsmith (8) старого формата выходили бледно-пастельными
 // (по сверке с CSFloat светлее игры на 30–50 по яркости). Степень 1.8
 // у узора возвращает и яркость, и оттенок: Decimator — тёмно-синий,
