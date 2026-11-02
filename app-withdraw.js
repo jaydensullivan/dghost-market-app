@@ -517,6 +517,12 @@ invPicked = invPicked.filter(p => lastInventoryItems.some(it => invKey(it) === i
 renderInventory();
 renderInvHidden();
 loadInvPrices();
+// Steam не ответил — бот отдал прошлую копию: говорим честно, от какого она времени.
+const staleAt = data.stale_since ? new Date(data.stale_since) : null;
+if (staleAt && !isNaN(staleAt)){
+const time = staleAt.toLocaleString(currentLang === 'uz' ? 'uz-UZ' : currentLang === 'en' ? 'en-GB' : 'ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+showToast((I18N[currentLang] || I18N.ru).inv_stale.replace('{time}', time), { type: 'error' });
+}
 })
 .catch(err => {
 const msg = friendlyErrorMessage(err);
