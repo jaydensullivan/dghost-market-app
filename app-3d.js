@@ -1584,10 +1584,15 @@ uniforms.uStkQ = { value: stk.Q };
 // [сторона, порог] по длинной оси ножа (−0.5…0.5 от центра): краска Fade
 // только там, где сторона·x ≥ порог — на клинке, не на рукояти.
 const KNIFE_FADE_BLADE = { knife_falchion: [-1, 0.1], knife_butterfly: [-1, 0.1] };
+// 03.11 по скриншотам игры (CSFloat, по 3 экземпляра на нож) у шести
+// ножей острие выходило оранжевым, а не сине-фиолетовым: Bayonet → 3,
+// Navaja → 1, Stiletto → 0, Survival → 2, Karambit → 1, Talon → 3
+// (на 20 ножах в среднем +1.5, у этих шести +1.5…+9.4).
 const KNIFE_FADE_MODE = {
-knife_flip: 1, knife_kukri: 1, knife_tactical: 1, knife_ursus: 1, knife_widowmaker: 1, knife_falchion: 1,
-knife_cord: 2, knife_css: 2, knife_m9_bayonet: 2, knife_outdoor: 2, knife_skeleton: 2, knife_stiletto: 2,
-knife_canis: 3,
+knife_flip: 1, knife_kukri: 1, knife_tactical: 1, knife_ursus: 1, knife_falchion: 1,
+knife_gypsy_jackknife: 1, knife_karambit: 1,
+knife_cord: 2, knife_css: 2, knife_m9_bayonet: 2, knife_outdoor: 2, knife_skeleton: 2, knife_canis: 2,
+bayonet: 3, knife_widowmaker: 3,
 };
 // Fade (стиль 5) на ножах — по развёртке: она у клинков разложена так,
 // что градиент целиком ложится на клинок, а проекция по всей длине
