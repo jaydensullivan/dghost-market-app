@@ -1907,9 +1907,13 @@ return pack;
 // 14 скинов): яркость как в игре (было светлее на 10 по L, стало ±0).
 // «showcase» — прежний, ярче.
 // window.DGHOST_LIGHT (только для сверки) подменяет параметры набора.
+// Пресет «game»: тонмаппинг AgX вместо ACES и экспозиция 0.6 — сверка
+// с иконками Steam по «игровому счёту» (52 скина: 32 ствола, 20 ножей):
+// ACES 0.7 → 34.7, AgX 0.7 → 36.1, AgX 0.6 → 36.6 (0.5 — 36.6, 0.42 — 36.1).
+// Сильнее всего на ножах: 17 из 20 ближе к игре.
 const LIGHT_PRESETS = {
 showcase: { tone: 'aces', exposure: 1.1, ambient: 0.55, key: 2.4, front: 1.2, neon: 0.25, rim: 0.2, env: 1 },
-game: { tone: 'aces', exposure: 0.7, ambient: 0.55, key: 2.4, front: 1.2, neon: 0.25, rim: 0.2, env: 1 },
+game: { tone: 'agx', exposure: 0.6, ambient: 0.55, key: 2.4, front: 1.2, neon: 0.25, rim: 0.2, env: 1 },
 };
 let currentLightPreset = 'game';
 function lightPreset(){
