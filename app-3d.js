@@ -1090,6 +1090,10 @@ const PATINA_PATTERN_GAMMA = 1.8;
 // сам цвет ствола. Сверка со Steam по 163 скинам: 1.2 → 73.5, 1.55 →
 // 77.3, 1.8 → 75.8, 2.0 → 74.2.
 const GUNSMITH_LEGACY_GAMMA = 1.55;
+// Степень 1.55 по каждому каналу уводила жёлтое в оранжевое (MAC-10
+// Stalker, M4A4 The Coalition — в Steam ярко-жёлтые). Теперь степень
+// только для яркости, а оттенок узора сохраняется: сверка со Steam
+// (игровой счёт) 21 скин подбора 36.0 → 36.4, 27 отложенных 38.2 → 38.5.
 // Усиление тонировки патины (стиль 7). Клинки ножей светлее стволов, и с
 // общим 3.4 Blue Steel и Stained выходили серебристыми вместо воронёных:
 // по 96 ножам с патиной сходство 65.4 → 69.0 при 1.2 (Steam-картинки).
@@ -1507,6 +1511,7 @@ uHasZones: { value: skin.zones || (weapon && weapon.masks && !(skin.format === '
 uAo: { value: weapon ? weapon.ao : null },
 uWearAmount: { value: Math.max(0, Math.min(1, wear || 0)) },
 uWearCurve: { value: wearCurve(THREE, skin) },
+uGammaLum: { value: legacyPatinaStyle(skin) && !legacyPatinaBlend(skin) && skin.params.paint_style === 8 ? 1 : 0 },
 uPatternScale: { value: (skin.params.pattern_scale || 1) * weaponPatternScale(skin, weaponName) * templateScaleTest(skin) },
 // Поворот узора в params.json — в градусах.
 uPatternRotation: { value: placement.rotation * Math.PI / 180 },
@@ -1750,6 +1755,7 @@ uniform sampler2D uPaintMask;
 uniform sampler2D uAo;
 uniform float uWearAmount;
 uniform vec3 uWearCurve;
+uniform int uGammaLum;
 uniform float uPatternScale;
 uniform float uPatternRotation;
 uniform vec2 uPatternOffset;
@@ -1903,7 +1909,11 @@ colorWeight = mix(colorWeight, vec4(0.0, 0.0, 0.0, 1.0), zone.b);
 #endif
 }
 if (uPatinaBlend == 1) pattern = pattern * uColors[0] * vec3(dot(base, vec3(0.299, 0.587, 0.114))) * uPatinaK;
-else if (uPatternGamma != 1.0) pattern = pow(pattern, vec3(uPatternGamma));
+else if (uPatternGamma != 1.0){
+// Gunsmith старого формата: степень только для яркости, оттенок как в узоре.
+float pl = max(dot(pattern, vec3(0.2126, 0.7152, 0.0722)), 1e-4);
+pattern = uGammaLum == 1 ? pattern * pow(pl, uPatternGamma - 1.0) : pow(pattern, vec3(uPatternGamma));
+}
 pattern *= uColorBrightness;
 // Doppler на ножах: мраморный «дым» лежит в альфе узора.
 if (uSmokeK > 0.0) pattern *= patternTex.a * uSmokeK;
