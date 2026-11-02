@@ -919,6 +919,22 @@ const GUNSMITH_TEMPLATE_GAMMA = 1.6;
 function gunsmithTemplate(skin){
 return skin.format === 'vcompmat' && /^gs_(extended_)?template$/.test(String(skin.params.paint_template || ''));
 }
+// Металличность и шероховатость закалки из рецепта. Heat Treated и
+// подобные (aq_) — каленый металл: полированный металлик. У «спрея» с
+// закалкой (so_: UMP-45 Green Swirl) в рецепте g_vPaintMetalness = 0 и
+// g_vPaintRoughness = 0.6 — это матовая краска; металликом она выходила
+// почти чёрной. Сверка со Steam по всем 15 скинам so_case_hardening:
+// 30.4 → 33.3 (UMP-45 Green Swirl 13 → 36, Galil Grey Smoke 24 → 39,
+// M4A1-S Solitude 16 → 26; SSG 08 Grey Smoke −3, XM1014 Solitude −1).
+function rampSurface(skin){
+const rb = skin.params.recipe_bounds || {};
+const num = (v, d) => (v && Number.isFinite(Number(v.x)) ? Number(v.x) : d);
+const metal = !/^so_/.test(String(skin.params.paint_template || ''));
+return {
+metalness: metal ? 1 : num(rb.g_vPaintMetalness, 0),
+roughness: metal ? 0.3 : num(rb.g_vPaintRoughness, num(rb.g_flPaintRoughness, 0.6)),
+};
+}
 function noiseCaseHardening(skin){
 return !!skin.ramp && skin.format === 'vcompmat' && /^(aq|so)_case_hardening_template$/.test(String(skin.params.paint_template || ''));
 }
@@ -1273,6 +1289,8 @@ uHasRamp: { value: noiseCaseHardening(skin) ? 1 : 0 },
 uRampGeo: { value: hardening ? Number(hardening.geometric_influence) || 0 : 0 },
 uRampInfluence: { value: hardening ? Number(hardening.pattern_influence ?? 1) : 1 },
 uRampOffset: { value: hardening ? Number(hardening.ramp_offset) || 0 : 0 },
+uRampMetal: { value: rampSurface(skin).metalness },
+uRampRough: { value: rampSurface(skin).roughness },
 // 1 — несколько цветов по зонам ствола, 2 — один цвет (анодирование:
 // остальные цвета в материале нулевые) только на окрашиваемых деталях.
 uSolid: { value: !skin.solid ? 0 : (skinIsSingleColor(skin.params) ? 2 : 1) },
@@ -1518,6 +1536,8 @@ uniform sampler2D uRamp;
 uniform int uHasRamp;
 uniform float uRampInfluence;
 uniform float uRampOffset;
+uniform float uRampMetal;
+uniform float uRampRough;
 uniform float uRampGeo;
 uniform sampler2D uWearMask;
 uniform sampler2D uGrunge;
@@ -1773,14 +1793,14 @@ if (uHasSkinMetal == 1) paintMetal = texture2D(uSkinMetal, vSkinUv).r;
 #endif
 #ifdef DG_RAMP
 // Закалка — это цвет каленого металла: полированный металлик.
-if (uHasRamp == 1) paintMetal = 1.0;
+if (uHasRamp == 1) paintMetal = uRampMetal;
 #endif
 metalnessFactor = mix(metalnessFactor, paintMetal, skinCover);
 metalnessFactor = mix(metalnessFactor, 0.0, stkCover);`)
 // Анодированная краска — полированная, где бы она ни лежала.
 .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
 #ifdef DG_RAMP
-if (uHasRamp == 1) roughnessFactor = mix(roughnessFactor, 0.3, skinCover);
+if (uHasRamp == 1) roughnessFactor = mix(roughnessFactor, uRampRough, skinCover);
 #endif
 if (uHasPaintRoughness == 1) roughnessFactor = mix(roughnessFactor, uPaintRoughness, skinCover);
 if (uHasColorRough == 1) roughnessFactor = mix(roughnessFactor, dot(colorWeight, uColorRough), skinCover);
