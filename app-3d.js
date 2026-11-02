@@ -1028,6 +1028,17 @@ function hydroAlphaZone(skin){
 return skin.alphaZones ? 2 : 0;
 }
 
+// Gunsmith старого формата (стиль 8): color_brightness из items_game у нас
+// пересвечивал (MAG-7 Praetorian при 2.8 — розово-белый вместо чёрного), а
+// металлическая краска без окружения игры выходила тёмной (MP7 Cirrus,
+// Galil Connexion). Берём яркость в степени 0.3 и половину металла.
+// Сверка со Steam: 21 скин подбора 34.2 → 36.0, 27 отложенных 37.3 → 38.2.
+const GUNSMITH_LEGACY_TONE = { bright: 0.3, metal: 0.5 };
+function gunsmithTone(skin){
+const legacyGs = (!skin.format || skin.format === 'legacy') && skin.params.paint_style === 8;
+return legacyGs ? GUNSMITH_LEGACY_TONE : { bright: 1, metal: 1 };
+}
+
 function styleBrightness(skin){
 return STYLE_BRIGHTNESS[(skin.format || 'legacy') + '/' + skin.params.paint_style] || 1;
 }
@@ -1468,7 +1479,7 @@ uPatternRotation: { value: placement.rotation * Math.PI / 180 },
 uPatternOffset: { value: new THREE.Vector2(placement.offset[0], placement.offset[1]) },
 uWearScale: { value: skin.params.wear_scale || 1 },
 uGrungeScale: { value: skin.params.grunge_scale || 1 },
-uPaintMetalness: { value: legacyCaseHardened(skin) ? ANODIZED.metalness : paintMetalness(skin.params) },
+uPaintMetalness: { value: legacyCaseHardened(skin) ? ANODIZED.metalness : paintMetalness(skin.params) * gunsmithTone(skin).metal },
 // Своя карта металличности краски (Zeno — серый металлик).
 uSkinMetal: { value: skin.metalness || pattern },
 // Зоны покраски раскраски (paint by number): R/G/B — где лежат цвета
@@ -1491,7 +1502,7 @@ uColors: { value: skinColors(THREE, skin.params) },
 uMaskGamma: { value: THREE.SRGBColorSpace ? 1 / 2.2 : 1 },
 uSmokeK: { value: dopplerSmokeK(skin, weaponName) },
 uAlphaZone: { value: hydroAlphaZone(skin) },
-uColorBrightness: { value: (skin.params.color_brightness || 1) * (legacyCaseHardened(skin) ? CASE_HARDENED.brightness : 1) * styleBrightness(skin) },
+uColorBrightness: { value: Math.pow(skin.params.color_brightness || 1, gunsmithTone(skin).bright) * (legacyCaseHardened(skin) ? CASE_HARDENED.brightness : 1) * styleBrightness(skin) },
 // Патина (7) и Gunsmith (8) старого формата выходили бледно-пастельными
 // (по сверке с CSFloat светлее игры на 30–50 по яркости). Степень 1.8
 // у узора возвращает и яркость, и оттенок: Decimator — тёмно-синий,
