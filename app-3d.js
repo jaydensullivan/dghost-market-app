@@ -524,13 +524,120 @@ const ICON_POSE = { yaw: -0.6, elev: 0.25, roll: 0, fov: 15 };
 // Ножи на иконках лежат по диагонали (клинок вверх-влево) и сняты выше:
 // перебор по 8 ножам — счёт 17.9 → 36.1 (совпадение силуэта 0.22 → 0.77).
 const ICON_POSE_KNIFE = { yaw: 0, elev: 0.6, roll: -0.7, fov: 15 };
-function applyIconPose(THREE, object, camera, side, knife){
-const pose = Object.assign({}, knife ? ICON_POSE_KNIFE : ICON_POSE, window.DGHOST_ICON_POSE || {});
+// Dual Berettas на иконке CS2 стоят буквой «А»: два пистолета стволами
+// вверх, рукоятками наружу, дула сходятся. В модели оба пистолета лежат
+// одной сеткой рядом, дулом в одну сторону — делим сетку на два
+// пистолета и ставим их так же. Камера — прямо сбоку.
+// Подобрано перебором по 6 Dual Berettas: счёт 18.5 → 39.4 (силуэт 0.13 → 0.61).
+const DUAL_ICON = { lean: 0.4, gap: -0.2, back: 0.02, turn: 0.6, flip: 0 };
+const ICON_POSE_DUAL = { yaw: Math.PI / 2, elev: 0.05, roll: 0, fov: 15 };
+function splitDualMesh(THREE, mesh){
+const g = mesh.geometry;
+const pos = g.attributes.position;
+const index = g.index ? g.index.array : Array.from({ length: pos.count }, (_, i) => i);
+// Связные куски сетки (union-find по треугольникам).
+const parent = new Int32Array(pos.count).map((_, i) => i);
+const find = (a) => { while (parent[a] !== a){ parent[a] = parent[parent[a]]; a = parent[a]; } return a; };
+for (let t = 0; t < index.length; t += 3){
+const a = find(index[t]), b = find(index[t + 1]), c = find(index[t + 2]);
+parent[b] = a; parent[find(c)] = a;
+}
+// Центр каждого куска; два пистолета — по самому длинному разбросу центров.
+const sum = new Map();
+for (let i = 0; i < pos.count; i++){
+const r = find(i);
+const v = sum.get(r) || [0, 0, 0, 0];
+v[0] += pos.getX(i); v[1] += pos.getY(i); v[2] += pos.getZ(i); v[3]++;
+sum.set(r, v);
+}
+const cents = [...sum.entries()].map(([r, v]) => [r, v[0] / v[3], v[1] / v[3], v[2] / v[3], v[3]]);
+const lo = [1, 2, 3].map(k => Math.min(...cents.map(c => c[k])));
+const hi = [1, 2, 3].map(k => Math.max(...cents.map(c => c[k])));
+const ax = [0, 1, 2].reduce((m, k) => (hi[k] - lo[k] > hi[m] - lo[m] ? k : m), 0);
+// Два центра: k-средних по оси разброса (несколько шагов).
+let c0 = lo[ax], c1 = hi[ax];
+for (let it = 0; it < 8; it++){
+let s0 = 0, n0 = 0, s1 = 0, n1 = 0;
+cents.forEach(c => { const x = c[ax + 1]; if (Math.abs(x - c0) <= Math.abs(x - c1)){ s0 += x * c[4]; n0 += c[4]; } else { s1 += x * c[4]; n1 += c[4]; } });
+if (n0) c0 = s0 / n0;
+if (n1) c1 = s1 / n1;
+}
+const side = new Map(cents.map(c => [c[0], Math.abs(c[ax + 1] - c0) <= Math.abs(c[ax + 1] - c1) ? 0 : 1]));
+const halves = [[], []];
+for (let t = 0; t < index.length; t += 3) halves[side.get(find(index[t]))].push(index[t], index[t + 1], index[t + 2]);
+if (!halves[0].length || !halves[1].length) return null;
+return halves.map(idx => {
+const geo = new THREE.BufferGeometry();
+Object.keys(g.attributes).forEach(k => geo.setAttribute(k, g.attributes[k]));
+geo.setIndex(idx);
+// Рамка — только по своим вершинам: атрибуты общие с другим пистолетом,
+// и обычный computeBoundingBox взял бы оба.
+const box = new THREE.Box3();
+const v = new THREE.Vector3();
+for (let k = 0; k < idx.length; k++) box.expandByPoint(v.fromBufferAttribute(pos, idx[k]));
+geo.boundingBox = box;
+geo.boundingSphere = box.getBoundingSphere(new THREE.Sphere());
+return geo;
+});
+}
+
+function visibleMeshBox(THREE, object){
+const box = new THREE.Box3();
+const shown = (node) => { for (let n = node; n; n = n.parent){ if (n.visible === false) return false; } return true; };
+object.updateMatrixWorld(true);
+object.traverse(node => {
+if (node.isMesh && node.geometry && shown(node)){
+if (!node.geometry.boundingBox) node.geometry.computeBoundingBox();
+box.union(node.geometry.boundingBox.clone().applyMatrix4(node.matrixWorld));
+}
+});
+return box.isEmpty() ? meshBox(THREE, object) : box;
+}
+
+function arrangeDualIcon(THREE, object){
+const p = Object.assign({}, DUAL_ICON, window.DGHOST_DUAL || {});
+const meshes = [];
+object.traverse(n => { if (n.isMesh && n.visible !== false && /body_(hd|legacy)/i.test(String(n.name || ''))) meshes.push(n); });
+meshes.forEach(mesh => {
+const halves = splitDualMesh(THREE, mesh);
+if (!halves) return;
+// Пистолеты в модели стоят рядом по X, каждый длиной вдоль Z.
+halves.sort((a, b) => a.boundingBox.min.x - b.boundingBox.min.x);
+const len = halves[0].boundingBox.getSize(new THREE.Vector3()).z || 1;
+const up = Math.PI / 2 - p.lean + (p.flip ? Math.PI : 0);
+halves.forEach((geo, i) => {
+const center = geo.boundingBox.getCenter(new THREE.Vector3());
+const sub = new THREE.Mesh(geo, mesh.material);
+sub.name = mesh.name + '_dual' + i;
+sub.position.copy(center).negate();
+const pivot = new THREE.Group();
+// Пистолет в модели лежит вдоль Z — сначала вдоль X, затем стволом
+// вверх с наклоном дулом к середине; левый — зеркально (поворот на
+// пол-оборота вокруг вертикали), рукояткой наружу.
+const qBase = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2);
+const qZ = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), up);
+const qMirror = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), i ? 0 : Math.PI);
+const sx = i ? 1 : -1;
+// Вполоборота к камере (зеркально): рукоятки уходят вглубь и вниз.
+const qTurn = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), sx * p.turn);
+pivot.quaternion.copy(qTurn.multiply(qMirror).multiply(qZ).multiply(qBase));
+pivot.position.set(sx * p.gap * len / 2, 0, sx * p.back * len);
+pivot.add(sub);
+mesh.parent.add(pivot);
+});
+mesh.visible = false;
+});
+object.updateMatrixWorld(true);
+}
+
+function applyIconPose(THREE, object, camera, side, knife, dual){
+const pose = Object.assign({}, dual ? ICON_POSE_DUAL : knife ? ICON_POSE_KNIFE : ICON_POSE, window.DGHOST_ICON_POSE || {});
 const { yaw, elev, roll } = pose;
 object.rotation.order = 'ZYX';
 object.rotation.set(0, side + Math.PI + yaw, roll);
 camera.fov = pose.fov;
-const box = meshBox(THREE, object);
+// У Dual Berettas исходная сетка и кобура спрятаны — кадр по видимому.
+const box = dual ? visibleMeshBox(THREE, object) : meshBox(THREE, object);
 const radius = box.getSize(new THREE.Vector3()).length() / 2 || 1;
 const distance = radius / Math.sin(pose.fov * Math.PI / 360) * 1.05;
 const center = box.getCenter(new THREE.Vector3());
@@ -4194,7 +4301,10 @@ const otherSide = side + Math.PI - tilt;
 if (still === 'angles'){
 frameShareView(THREE, object, camera, [side + tilt, otherSide]);
 } else if (still === 'icon'){
-applyIconPose(THREE, object, camera, side, isKnifeName(String(entry.weapon || '').split('/').pop()));
+// Только для сверки со Steam: в посте и просмотрщике пистолеты как были.
+const dualWeapon = /(^|\/)elite$/.test(String(entry.weapon || ''));
+if (dualWeapon) arrangeDualIcon(THREE, object);
+applyIconPose(THREE, object, camera, side, isKnifeName(String(entry.weapon || '').split('/').pop()), dualWeapon);
 } else if (still !== 'transparent' && still !== 'icon'){
 const swing = [];
 for (let i = 0; i < 16; i++) swing.push(side + 0.6 * Math.sin(i / 16 * Math.PI * 2));
