@@ -238,6 +238,7 @@ renderRaffleJoin(c, me);
 if (!raffleTimer){ raffleTimer = setInterval(tickRaffle, 1000); }
 tickRaffle();
 prefetchRaffleLink();
+prefetchRaffleShare();
 } else {
 document.getElementById('rfCountdown').textContent = raffleShortDate(c.drawn_at);
 renderRaffleResult(c, me);
@@ -285,15 +286,53 @@ document.getElementById('rfLinkRow').style.display = '';
 .catch(() => {});
 }
 
-// Выбор чата, куда бот сам вставляет карточку розыгрыша (GIF с 3D и
-// кнопкой «Участвовать в DGhost»). Проверено на Android и iOS; нужен
-// включённый Inline Mode у бота. Без него — окно «Поделиться ссылкой».
+// Окно Telegram «Поделиться» (Bot API 8.0+): карточку приглашения можно
+// отправить сразу в несколько контактов и групп. Карточку готовим заранее,
+// при открытии розыгрыша: окно, открытое после долгого запроса, телефон
+// может не считать нажатием пользователя и молча проигнорировать.
+let raffleShareId = null;
+let raffleShareAt = 0;
+let raffleShareLoading = false;
+function canShareRaffle(){
+return !!(tg && tg.initData && typeof tg.shareMessage === 'function'
+&& (typeof tg.isVersionAtLeast !== 'function' || tg.isVersionAtLeast('8.0')));
+}
+
+function prefetchRaffleShare(){
+if (!canShareRaffle() || raffleShareLoading) return;
+if (raffleShareId && Date.now() - raffleShareAt < 20 * 60 * 1000) return;
+raffleShareLoading = true;
+fetch(API_BASE + '/api/giveaway/invite_prepare', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData }),
+})
+.then(r => r.ok ? r.json() : null)
+.then(data => {
+if (data && data.prepared_id){ raffleShareId = data.prepared_id; raffleShareAt = Date.now(); }
+})
+.catch(() => {})
+.finally(() => { raffleShareLoading = false; });
+}
+
+// Сначала — окно «Поделиться» с выбором нескольких чатов. Нет его (старый
+// Telegram, карточка не готова) — выбор одного чата, куда бот вставит
+// карточку (inline-режим), затем окно «Поделиться ссылкой».
 function inviteToRaffle(){
 if (!tg || !tg.initData){
 showAlert(errorMessage('unauthorized'));
 return;
 }
 haptic('light');
+if (raffleShareId && canShareRaffle()){
+try {
+tg.shareMessage(raffleShareId, (sent) => {
+if (sent) showToast(rfDict().rf_invite_sent);
+});
+return;
+} catch (e) {}
+}
+prefetchRaffleShare();
 if (typeof tg.switchInlineQuery === 'function' && (!tg.isVersionAtLeast || tg.isVersionAtLeast('6.7'))){
 try {
 tg.switchInlineQuery('invite', ['users', 'groups', 'channels']);

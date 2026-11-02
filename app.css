@@ -5294,3 +5294,6 @@ button.brand-logo{ width:44px; height:44px; }
 .reels-badge.running, .reels-badge.queued{ background:rgba(123,44,255,0.18); color:var(--red-glow); }
 .reels-req a{ font-size:12px; color:var(--red-glow); }
 @media (max-width:360px){ .reels-grid, .reels-music{ grid-template-columns:1fr; } }
+
+/* Подсказка под «Пригласить друзей»: можно выбрать несколько чатов. */
+.raffle-invite-hint{ text-align:center; margin:-4px 0 10px; font-size:12px; }
