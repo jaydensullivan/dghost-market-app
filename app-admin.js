@@ -33,7 +33,7 @@ const ADMIN_ONLY_SECTIONS = new Set([
 'adminPeopleSection','adminDealsSection','adminBalanceSection',
 'adminHoldsSection','adminReportSection','adminDisputesSection',
 'adminClientsSection','adminFraudSection',
-'adminStatusSection','adminGiveawaySection'
+'adminStatusSection','adminGiveawaySection','adminReelsSection'
 ]);
 
 function hasChipPermission(chip){
@@ -290,6 +290,8 @@ startAdminStatsLive();
 }
 
 if (!isAdmin) return;
+
+if (currentAdminChip === 'reels') loadAdminReels();
 
 loadAdminDeals();
 loadAdminHolds();
@@ -1835,3 +1837,212 @@ if (sec && sec.style.display !== 'none') sec.scrollIntoView({ behavior: 'smooth'
 }, 600);
 }, 250);
 })();
+
+// ---------------- Рилс: ролик из шаблона или по команде ----------------
+// Владелец выбирает шаблон, лоты, язык надписей и озвучки, голос и музыку
+// (с прослушиванием), может написать команду для ИИ. Бот запускает сборку
+// в GitHub Actions; готовый ролик приходит в бота черновиком, здесь — ход.
+
+let reelsOptions = null;
+const reelsState = { template: null, lots: [], lang: 'uz', voice_lang: 'uz', voice: 'male', music: '' };
+let reelsAudio = null;
+let reelsPollTimer = null;
+
+function reelsDict(){ return I18N[currentLang] || I18N.ru; }
+
+function reelsTemplate(){
+return (reelsOptions && reelsOptions.templates || []).find(t => t.id === reelsState.template) || null;
+}
+
+function reelsTplName(t){
+return currentLang === 'uz' ? t.name_uz : t.name_ru;
+}
+
+function loadAdminReels(){
+if (!isOwner) return;
+const promise = reelsOptions ? Promise.resolve(reelsOptions) : adminApiFetch('/api/admin/reels/options');
+promise.then(opts => {
+reelsOptions = opts;
+if (!reelsState.template && opts.templates.length) reelsState.template = opts.templates[0].id;
+renderReelsForm();
+loadReelsList();
+}).catch(err => {
+document.getElementById('reelsStatusLine').textContent = err.message;
+});
+}
+
+function reelsSeg(id, options, key){
+const box = document.getElementById(id);
+box.innerHTML = options.map(([value, label]) =>
+`<button type="button" role="radio" aria-checked="${reelsState[key] === value}" class="${reelsState[key] === value ? 'active' : ''}" data-value="${escapeHtml(value)}">${escapeHtml(label)}</button>`
+).join('');
+box.onclick = (e) => {
+const btn = e.target.closest('button[data-value]');
+if (!btn) return;
+reelsState[key] = btn.dataset.value;
+reelsSeg(id, options, key);
+};
+}
+
+function renderReelsForm(){
+const dict = reelsDict();
+const opts = reelsOptions;
+const status = document.getElementById('reelsStatusLine');
+status.textContent = opts.configured
+? dict.reels_today.replace('{n}', opts.used_today).replace('{max}', opts.max_per_day)
+: dict.reels_not_configured_hint;
+document.getElementById('reelsCreateBtn').disabled = !opts.configured;
+
+const grid = document.getElementById('reelsTemplates');
+grid.innerHTML = opts.templates.map(t =>
+`<button type="button" class="reels-tpl${t.id === reelsState.template ? ' active' : ''}" data-tpl="${escapeHtml(t.id)}" aria-pressed="${t.id === reelsState.template}"><b>${escapeHtml(reelsTplName(t))}</b><span>${escapeHtml(t.about)}</span></button>`
+).join('');
+grid.onclick = (e) => {
+const btn = e.target.closest('[data-tpl]');
+if (!btn) return;
+reelsState.template = btn.dataset.tpl;
+reelsState.lots = reelsState.lots.slice(0, (reelsTemplate() || {}).lots || 0);
+renderReelsForm();
+};
+
+renderReelsLots();
+reelsSeg('reelsLang', [['uz', "O'zbekcha"], ['ru', 'Русский']], 'lang');
+reelsSeg('reelsVoiceLang', [['uz', "🎙 O'zbekcha"], ['ru', '🎙 Русский']], 'voice_lang');
+reelsSeg('reelsVoice', [['male', dict.reels_voice_male], ['female', dict.reels_voice_female], ['none', dict.reels_voice_none]], 'voice');
+renderReelsMusic();
+}
+
+function renderReelsLots(){
+const dict = reelsDict();
+const t = reelsTemplate();
+const field = document.getElementById('reelsLotsField');
+const need = t ? t.lots : 0;
+field.hidden = !need;
+if (!need) return;
+document.getElementById('reelsLotsHint').textContent = dict.reels_lots_hint.replace('{n}', need);
+const pool = (typeof lastSkins !== 'undefined' ? lastSkins : [])
+.filter(s => s.status === 'available' || !s.status)
+.slice().sort((a, b) => (b.price || 0) - (a.price || 0)).slice(0, 40);
+const box = document.getElementById('reelsLots');
+if (!pool.length){
+box.innerHTML = `<div class="skins-empty skins-empty-sm">${escapeHtml(dict.reels_no_lots)}</div>`;
+return;
+}
+box.innerHTML = pool.map(s => {
+const n = reelsState.lots.indexOf(s.id);
+return `<button type="button" class="reels-lot${n >= 0 ? ' active' : ''}" data-lot="${s.id}" aria-pressed="${n >= 0}">
+<img src="${escapeHtml(s.photo_url || '')}" alt="" loading="lazy">
+<span class="reels-lot-txt"><b>${escapeHtml(s.title || '')}</b><span>#${s.id} · ${escapeHtml(s.wear || '')} · ${formatCoins(s.price || 0)}</span></span>
+${n >= 0 ? `<span class="reels-lot-n">${n + 1}</span>` : ''}</button>`;
+}).join('');
+box.onclick = (e) => {
+const btn = e.target.closest('[data-lot]');
+if (!btn) return;
+const id = Number(btn.dataset.lot);
+const i = reelsState.lots.indexOf(id);
+if (i >= 0) reelsState.lots.splice(i, 1);
+else if (reelsState.lots.length < need) reelsState.lots.push(id);
+else { reelsState.lots.shift(); reelsState.lots.push(id); }
+renderReelsLots();
+};
+}
+
+function stopReelsPreview(){
+if (reelsAudio){ reelsAudio.pause(); reelsAudio = null; }
+document.querySelectorAll('.reels-play.playing').forEach(b => { b.classList.remove('playing'); b.textContent = '▶'; });
+}
+
+function renderReelsMusic(){
+const dict = reelsDict();
+const t = reelsTemplate();
+const items = [{ id: '', name: dict.reels_music_auto, about: t ? dict.reels_music_auto_hint.replace('{m}', t.music) : '' }].concat(reelsOptions.music);
+const box = document.getElementById('reelsMusic');
+box.innerHTML = items.map(m =>
+`<div class="reels-mus${m.id === reelsState.music ? ' active' : ''}" role="radio" tabindex="0" aria-checked="${m.id === reelsState.music}" data-music="${escapeHtml(m.id)}">
+<span class="reels-mus-txt"><b>${escapeHtml(m.name)}</b><span>${escapeHtml(m.about || '')}</span></span>
+${m.id && m.id !== 'none' ? `<button type="button" class="reels-play" data-play="${escapeHtml(m.id)}" aria-label="${escapeHtml(dict.reels_listen)} ${escapeHtml(m.name)}">▶</button>` : ''}</div>`
+).join('');
+box.onclick = (e) => {
+const play = e.target.closest('[data-play]');
+if (play){
+const was = play.classList.contains('playing');
+stopReelsPreview();
+if (was) return;
+reelsAudio = new Audio('reels-music/' + play.dataset.play + '.mp3');
+reelsAudio.play().catch(() => {});
+reelsAudio.onended = stopReelsPreview;
+play.classList.add('playing');
+play.textContent = '■';
+return;
+}
+const item = e.target.closest('[data-music]');
+if (!item) return;
+reelsState.music = item.dataset.music;
+box.querySelectorAll('[data-music]').forEach(el => {
+const on = el.dataset.music === reelsState.music;
+el.classList.toggle('active', on);
+el.setAttribute('aria-checked', on);
+});
+};
+}
+
+const REELS_STATUS_KEYS = { queued: 'reels_st_queued', running: 'reels_st_running', done: 'reels_st_done', failed: 'reels_st_failed' };
+
+function loadReelsList(){
+adminApiFetch('/api/admin/reels/list').then(data => {
+const dict = reelsDict();
+const box = document.getElementById('reelsList');
+const reqs = data.requests || [];
+if (!reqs.length){
+box.innerHTML = `<div class="skins-empty skins-empty-sm">${escapeHtml(dict.reels_empty)}</div>`;
+} else {
+const names = {};
+(reelsOptions && reelsOptions.templates || []).forEach(t => { names[t.id] = reelsTplName(t); });
+box.innerHTML = reqs.map(r => {
+const when = new Date(r.created_at * 1000).toLocaleString(currentLang === 'uz' ? 'uz-UZ' : 'ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+const p = r.params || {};
+const bits = [names[r.template] || r.template, (p.lang || '').toUpperCase(), p.music || ''].filter(Boolean).join(' · ');
+return `<div class="reels-req">
+<div class="reels-req-top"><span>#${r.id} · ${escapeHtml(bits)}</span><span class="reels-badge ${escapeHtml(r.status)}">${escapeHtml(dict[REELS_STATUS_KEYS[r.status]] || r.status)}</span></div>
+<div class="reels-req-note">${escapeHtml(when)}${r.command ? ' · «' + escapeHtml(r.command.slice(0, 120)) + '»' : ''}</div>
+${r.note ? `<div class="reels-req-note">${escapeHtml(r.note)}</div>` : ''}
+${r.run_url ? `<a href="${escapeHtml(r.run_url)}" target="_blank" rel="noopener">${escapeHtml(dict.reels_run_link)}</a>` : ''}
+</div>`;
+}).join('');
+}
+clearTimeout(reelsPollTimer);
+const busy = reqs.some(r => r.status === 'queued' || r.status === 'running');
+const visible = document.getElementById('adminReelsSection').style.display !== 'none';
+if (busy && visible) reelsPollTimer = setTimeout(loadReelsList, 20000);
+}).catch(() => {});
+}
+
+document.getElementById('reelsCreateBtn').addEventListener('click', () => {
+const dict = reelsDict();
+const t = reelsTemplate();
+if (!t) return;
+const btn = document.getElementById('reelsCreateBtn');
+btn.disabled = true;
+stopReelsPreview();
+adminApiFetch('/api/admin/reels/create', { method: 'POST', body: {
+template: t.id, skin_ids: reelsState.lots, lang: reelsState.lang, voice_lang: reelsState.voice_lang,
+voice: reelsState.voice, music: reelsState.music, command: document.getElementById('reelsCommand').value.trim(),
+} }).then(() => {
+showToast(dict.reels_started);
+document.getElementById('reelsCommand').value = '';
+if (reelsOptions) reelsOptions.used_today += 1;
+renderReelsForm();
+loadReelsList();
+}).catch(err => {
+showToast(err.message, { type: 'error' });
+}).finally(() => {
+btn.disabled = !(reelsOptions && reelsOptions.configured);
+});
+});
+
+document.getElementById('adminChips').addEventListener('click', (e) => {
+const chip = e.target.closest('[data-admin-group]');
+if (!chip) return;
+if (chip.dataset.adminGroup === 'reels') loadAdminReels();
+else { stopReelsPreview(); clearTimeout(reelsPollTimer); }
+});

@@ -5262,3 +5262,35 @@ button.brand-logo{ width:44px; height:44px; }
 .bulk-np-row input:focus{ outline:none; border-color:var(--red); }
 .bulk-np-btn{ width:100%; margin-top:8px; min-height:44px; }
 @media (max-width:360px){ .bulk-rules{ grid-template-columns:repeat(3, 1fr); } }
+
+/* ---------- админка: «Рилс» (шаблон, лоты, язык, голос, музыка, команда) ---------- */
+.reels-grid{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; }
+.reels-tpl{ display:flex; flex-direction:column; gap:4px; min-height:44px; padding:10px 12px; border-radius:8px; border:1px solid var(--red-dim); background:rgba(255,255,255,0.03); color:var(--text); text-align:left; font:inherit; cursor:pointer; }
+.reels-tpl b{ font-size:14px; }
+.reels-tpl span{ font-size:11px; line-height:1.35; color:var(--muted); }
+.reels-tpl.active, .reels-mus.active, .reels-seg button.active, .reels-lot.active{ border-color:var(--accent); background:rgba(123,44,255,0.14); }
+.reels-seg{ display:flex; gap:6px; flex-wrap:wrap; }
+.reels-seg button{ flex:1 1 0; min-height:40px; padding:8px 10px; border-radius:8px; border:1px solid var(--red-dim); background:rgba(255,255,255,0.03); color:var(--text); font:inherit; font-size:13px; cursor:pointer; }
+.reels-music{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; }
+.reels-mus{ display:flex; align-items:center; gap:8px; min-height:44px; padding:6px 8px 6px 12px; border-radius:8px; border:1px solid var(--red-dim); background:rgba(255,255,255,0.03); color:var(--text); cursor:pointer; }
+.reels-mus .reels-mus-txt{ flex:1; min-width:0; display:flex; flex-direction:column; text-align:left; }
+.reels-mus .reels-mus-txt b{ font-size:13px; }
+.reels-mus .reels-mus-txt span{ font-size:10.5px; color:var(--muted); line-height:1.3; }
+.reels-play{ flex:none; width:34px; height:34px; border-radius:50%; border:1px solid var(--red-dim); background:var(--surface); color:var(--text); font-size:13px; cursor:pointer; }
+.reels-play.playing{ background:var(--cta-gradient); color:#fff; border-color:transparent; }
+.reels-lots{ display:flex; flex-direction:column; gap:6px; max-height:300px; overflow-y:auto; }
+.reels-lot{ display:flex; align-items:center; gap:10px; min-height:48px; padding:6px 10px; border-radius:8px; border:1px solid var(--red-dim); background:rgba(255,255,255,0.03); color:var(--text); font:inherit; text-align:left; cursor:pointer; }
+.reels-lot img{ width:52px; height:38px; object-fit:contain; flex:none; }
+.reels-lot .reels-lot-txt{ flex:1; min-width:0; display:flex; flex-direction:column; }
+.reels-lot .reels-lot-txt b{ font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.reels-lot .reels-lot-txt span{ font-size:11px; color:var(--muted); }
+.reels-lot .reels-lot-n{ flex:none; width:22px; height:22px; border-radius:50%; display:grid; place-items:center; font-size:11px; font-weight:700; background:var(--accent); color:#fff; }
+.reels-req{ display:flex; flex-direction:column; gap:4px; padding:10px 12px; border-radius:8px; border:1px solid var(--red-dim); margin-bottom:8px; }
+.reels-req-top{ display:flex; justify-content:space-between; gap:8px; font-size:13px; }
+.reels-req-note{ font-size:11.5px; color:var(--muted); line-height:1.35; word-break:break-word; }
+.reels-badge{ flex:none; font-size:11px; padding:2px 8px; border-radius:999px; background:var(--red-dim); color:var(--text); }
+.reels-badge.done{ background:rgba(34,197,94,0.18); color:#4ade80; }
+.reels-badge.failed{ background:rgba(239,68,68,0.18); color:#f87171; }
+.reels-badge.running, .reels-badge.queued{ background:rgba(123,44,255,0.18); color:var(--red-glow); }
+.reels-req a{ font-size:12px; color:var(--red-glow); }
+@media (max-width:360px){ .reels-grid, .reels-music{ grid-template-columns:1fr; } }
