@@ -1028,6 +1028,16 @@ function hydroAlphaZone(skin){
 return skin.alphaZones ? 2 : 0;
 }
 
+// Гидрография старого формата (стиль 1): рамку ствола (канал G его маски)
+// игра красит третьим цветом рецепта, узор лежит только на остальном —
+// кремовая рамка Five-SeveN Coolant, чёрный верх P90 Death Grip, фиолетовые
+// детали SCAR-20 Magna Carta. Сверка со Steam по 42 скинам: 38.0 → 39.2
+// (Coolant 30.6 → 43.9). Ножи не трогаем — у них маски другие.
+function legacyHydroFrame(skin, weapon){
+return !!(weapon && weapon.masks && skin.params.paint_style === 1 && skin.params.legacy_model === true
+&& !skin.solid && !isKnifeName(weapon.name || ''));
+}
+
 // Gunsmith старого формата (стиль 8): color_brightness из items_game у нас
 // пересвечивал (MAG-7 Praetorian при 2.8 — розово-белый вместо чёрного), а
 // металлическая краска без окружения игры выходила тёмной (MP7 Cirrus,
@@ -1502,6 +1512,7 @@ uColors: { value: skinColors(THREE, skin.params) },
 uMaskGamma: { value: THREE.SRGBColorSpace ? 1 / 2.2 : 1 },
 uSmokeK: { value: dopplerSmokeK(skin, weaponName) },
 uAlphaZone: { value: hydroAlphaZone(skin) },
+uHydroFrame: { value: legacyHydroFrame(skin, weapon) ? 1 : 0 },
 uColorBrightness: { value: Math.pow(skin.params.color_brightness || 1, gunsmithTone(skin).bright) * (legacyCaseHardened(skin) ? CASE_HARDENED.brightness : 1) * styleBrightness(skin) },
 // Патина (7) и Gunsmith (8) старого формата выходили бледно-пастельными
 // (по сверке с CSFloat светлее игры на 30–50 по яркости). Степень 1.8
@@ -1733,6 +1744,7 @@ uniform vec3 uColors[4];
 uniform float uMaskGamma;
 uniform float uSmokeK;
 uniform int uAlphaZone;
+uniform int uHydroFrame;
 uniform float uColorBrightness;
 uniform float uPatternGamma;
 uniform vec3 uIrid;
@@ -1838,6 +1850,10 @@ pattern = uColors[0];
 pattern = mix(pattern, uColors[1], m.r);
 pattern = mix(pattern, uColors[2], m.g);
 pattern = mix(pattern, uColors[3], m.b);
+if (uHydroFrame == 1){
+pattern = mix(pattern, uColors[2], masks.g);
+m.g = max(m.g, masks.g);
+}
 colorWeight = mix(colorWeight, vec4(0.0, 1.0, 0.0, 0.0), m.r);
 colorWeight = mix(colorWeight, vec4(0.0, 0.0, 1.0, 0.0), m.g);
 colorWeight = mix(colorWeight, vec4(0.0, 0.0, 0.0, 1.0), m.b);
