@@ -1249,6 +1249,10 @@ if (maskName === 'none' && SKIN_MASK_OVERRIDES[skin.finish] && weapon && weapon.
 if (maskName === 'none' && weapon && weapon.masks && !weapon.masksRedEmpty
 && (isAnodized(skin.params) || legacyPatinaMetal(skin)
 || (isKnifeName(weaponName) && KNIFE_BLADE_ONLY.has(skin.finish)))) maskName = 'r';
+// Только для сверки (tools/steam-compare): канал маски по стилю раскраски
+// — window.DGHOST_MASK_TEST = { <стиль>: 'none'|'r'|'g'|'b' }.
+const maskTest = window.DGHOST_MASK_TEST && window.DGHOST_MASK_TEST[skin.params.paint_style];
+if (maskTest && weapon && weapon.masks) maskName = maskTest;
 const channel = CHANNELS[maskName] ?? 3;
 
 // Однотонной раскраске узор не нужен, но сэмплер в шейдере должен
