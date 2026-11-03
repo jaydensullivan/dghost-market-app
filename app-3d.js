@@ -2578,6 +2578,17 @@ if (!rig) return fetch(modelsUrl(modelUrl));
 return fetch(modelsUrl(rig)).then(r => (r.ok ? r : fetch(modelsUrl(modelUrl))), () => fetch(modelsUrl(modelUrl)));
 }
 
+// Скелет агента не разобрался (битый файл на CDN) — обычная модель.
+function parseModelBuffer(buffer, modelUrl){
+return parseGlb(buffer).catch(err => {
+if (!agentRigUrl(modelUrl)) throw err;
+console.warn('3D: агент со скелетом не разобрался, беру обычную модель —', err);
+return fetch(modelsUrl(modelUrl))
+.then(r => { if (!r.ok) throw err; return r.arrayBuffer(); })
+.then(b => parseGlb(b));
+});
+}
+
 function loadAgentPoseClips(team){
 if (!agentPoseCache[team]){
 agentPoseCache[team] = fetch(modelsUrl('models/anim/agent/index.json'))
@@ -3582,7 +3593,7 @@ console.warn('3D: неожиданное начало файла —', magicWarn
 if (!stale()) status.textContent = dict.v3_size.replace('{mb}', (buffer.byteLength / 1048576).toFixed(1));
 return buffer;
 })
-.then(buffer => parseGlb(buffer).catch(err => {
+.then(buffer => parseModelBuffer(buffer, modelUrl).catch(err => {
 // Текстуры не декодируются — показываем хотя бы геометрию.
 console.warn('3D: разбор с текстурами не удался, пробую без них —', err);
 texturesDropped = true;
@@ -4418,7 +4429,7 @@ await loadModelIndex();
 const response = await fetchModelFile(entry.model);
 if (!response.ok) throw new Error('model ' + response.status);
 const buffer = await response.arrayBuffer();
-const gltf = await parseGlb(buffer).catch(() => parseGlb(stripTexturesFromGlb(buffer)));
+const gltf = await parseModelBuffer(buffer, entry.model).catch(() => parseGlb(stripTexturesFromGlb(buffer)));
 // Агент со скелетом — в первой позе инвентаря (руки скрещены), до кадра.
 if (agentRigUrl(entry.model)){
 const clips = await loadAgentPoseClips(agentTeam(entry.model));
