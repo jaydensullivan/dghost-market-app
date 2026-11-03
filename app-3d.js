@@ -2618,11 +2618,31 @@ root.traverse(o => { if (o.isSkinnedMesh){ skinned = true; o.frustumCulled = fal
 if (!skinned || !clips || !clips.length || !THREE.AnimationMixer) return null;
 const mixer = new THREE.AnimationMixer(root);
 const actions = clips.map(c => mixer.clipAction(c));
-let current = 0, held = 0;
+let current = 0, held = 0, emote = null;
 actions[0].play();
 mixer.update(0);
+// Эмоция доиграла — обратно в текущую позу, круг поз продолжается.
+mixer.addEventListener('finished', e => {
+if (!emote || e.action !== emote) return;
+actions[current].reset().play();
+emote.crossFadeTo(actions[current], AGENT_POSE_FADE / 2, false);
+emote = null;
+held = 0;
+});
 return {
+// Эмоция (клип MVP, празднование…) один раз, поверх поз.
+playOnce(clip){
+const from = emote || actions[current];
+if (emote) emote.stop();
+emote = mixer.clipAction(clip);
+emote.reset();
+emote.setLoop(THREE.LoopOnce, 1);
+emote.clampWhenFinished = true;
+emote.play();
+from.crossFadeTo(emote, 0.25, false);
+},
 update(dt){
+if (emote){ mixer.update(dt); return; }
 if (cycle && actions.length > 1){
 held += dt;
 if (held >= AGENT_POSE_HOLD){
@@ -2636,6 +2656,82 @@ current = next;
 mixer.update(dt);
 },
 };
+}
+
+// ---------- Эмоции агентов ----------
+// Клипы из игры: MVP, празднование победы, выход, выбор команды
+// (models/anim/agent/emote/, сборка build-agent-rig.sh). Кнопки — под 3D
+// агента со скелетом; эмоция играет один раз и возвращает позы.
+const AGENT_EMOTE_GROUPS = ['mvp', 'end_round', 'intro_anims', 'team_select'];
+let agentEmoteIndex = null;
+const agentEmoteClips = {};
+
+function loadAgentEmoteIndex(){
+if (!agentEmoteIndex){
+agentEmoteIndex = fetch(modelsUrl('models/anim/agent/emote/index.json'))
+.then(r => (r.ok ? r.json() : []))
+.then(list => (Array.isArray(list) ? list : []))
+.catch(() => []);
+}
+return agentEmoteIndex;
+}
+
+function loadAgentEmoteClip(name){
+if (!agentEmoteClips[name]){
+agentEmoteClips[name] = fetch(modelsUrl('models/anim/agent/emote/' + name + '.glb'))
+.then(r => { if (!r.ok) throw new Error('emote ' + r.status); return r.arrayBuffer(); })
+.then(buf => parseGlb(buf))
+.then(g => {
+const clip = g.animations && g.animations[0];
+if (!clip) throw new Error('emote: нет клипа');
+// Без смещения корня: иначе агент уходит из кадра (выход, MVP).
+// Поворот корня оставляем — в нём поворот модели вертикально.
+clip.tracks = clip.tracks.filter(t => !/^root_motion\.position$/.test(t.name));
+return clip;
+});
+agentEmoteClips[name].catch(() => { delete agentEmoteClips[name]; });
+}
+return agentEmoteClips[name];
+}
+
+function hideAgentEmotes(){
+const box = document.getElementById('viewer3dEmotes');
+if (box){ box.style.display = 'none'; box.innerHTML = ''; }
+}
+
+function renderAgentEmotes(team, isCurrent){
+const box = document.getElementById('viewer3dEmotes');
+if (!box) return;
+loadAgentEmoteIndex().then(list => {
+if (!isCurrent()) return;
+const dict = I18N[currentLang] || I18N.ru;
+const mine = list.filter(e => e && e.name && (!e.team || e.team === team) && AGENT_EMOTE_GROUPS.includes(e.group));
+mine.sort((a, b) => AGENT_EMOTE_GROUPS.indexOf(a.group) - AGENT_EMOTE_GROUPS.indexOf(b.group) || String(a.name).localeCompare(b.name));
+if (!mine.length){ hideAgentEmotes(); return; }
+box.innerHTML = '';
+box.setAttribute('aria-label', dict.v3_emotes_label || 'Emotes');
+const label = document.createElement('span');
+label.className = 'viewer3d-emotes-label';
+label.style.cssText = 'flex:0 0 auto;font-size:12px;color:var(--muted);margin-right:2px';
+label.textContent = dict.v3_emotes_label || 'Emotes';
+box.appendChild(label);
+const counter = {};
+mine.forEach(e => {
+counter[e.group] = (counter[e.group] || 0) + 1;
+const btn = document.createElement('button');
+btn.type = 'button';
+btn.className = 'viewer3d-bg';
+btn.textContent = String(dict['v3_emote_' + e.group] || e.group + ' {n}').replace('{n}', counter[e.group]);
+btn.addEventListener('click', () => {
+btn.disabled = true;
+loadAgentEmoteClip(e.name).then(clip => {
+if (isCurrent() && viewer3d && viewer3d.agentPose && viewer3d.agentPose.playOnce) viewer3d.agentPose.playOnce(clip);
+}).catch(err => console.warn('3D: эмоция не загрузилась —', err)).finally(() => { btn.disabled = false; });
+});
+box.appendChild(btn);
+});
+box.style.display = 'flex';
+});
 }
 
 // Перчатки на витрине — как на картинке Steam: пара без рук (в модели
@@ -3528,6 +3624,7 @@ d3Track('open');
 // интернете это секунды); гаснет, когда раскраска легла.
 showViewerPoster(posterUrl);
 hideWearSlider();
+hideAgentEmotes();
 const stale = () => loadId !== viewer3dLoadId;
 const dict = I18N[currentLang] || I18N.ru;
 renderViewerBackgrounds(dict);
@@ -3635,6 +3732,8 @@ if (agentRigUrl(modelUrl)){
 loadAgentPoseClips(agentTeam(modelUrl)).then(clips => {
 if (stale() || !viewer3d || viewer3d.object !== object) return;
 viewer3d.agentPose = startAgentPoses(THREE, gltf.scene, clips, true);
+// Эмоции — только у агента со скелетом (поза встала).
+if (viewer3d.agentPose) renderAgentEmotes(agentTeam(modelUrl), () => !stale() && viewer3d && viewer3d.object === object);
 });
 }
 
