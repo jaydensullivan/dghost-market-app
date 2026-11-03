@@ -2595,6 +2595,7 @@ return fetch(modelsUrl(modelUrl))
 
 // Свои позы группы агентов (жандармы, SEAL, партизаны, маски — index.special
 // по началу имени модели) идут первыми, потом общие позы стороны.
+const AGENT_FEMALE_MODELS = /^(ctm_diver_varianta|tm_jungle_raider_variante)$/;
 function loadAgentPoseClips(team, modelUrl){
 const base = String(modelUrl || '').split('/').pop().replace(/\.glb$/, '');
 const cacheKey = team + '|' + base;
@@ -2604,7 +2605,14 @@ agentPoseCache[cacheKey] = fetch(modelsUrl('models/anim/agent/index.json'))
 .then(index => {
 const special = Object.entries(index.special || {})
 .filter(([prefix]) => base.startsWith(prefix))
-.reduce((all, [, list]) => all.concat(list || []), []);
+.reduce((all, [, list]) => all.concat(list || []), [])
+.filter((name, i, list) => {
+// Мужская/женская поза группы — по самому агенту.
+const sex = /_female$/.test(name) ? 'f' : (/_male$/.test(name) ? 'm' : '');
+if (!sex) return true;
+const want = AGENT_FEMALE_MODELS.test(base) ? 'f' : 'm';
+return sex === want || !list.some(n => n.endsWith(want === 'f' ? '_female' : '_male'));
+});
 const names = special.concat((index[team] || []).slice().sort((a, b) => {
 const ia = AGENT_POSE_ORDER.indexOf(a), ib = AGENT_POSE_ORDER.indexOf(b);
 return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
