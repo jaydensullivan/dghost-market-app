@@ -945,6 +945,15 @@ knife_widowmaker: 0.36, knife_skeleton: 0.36, knife_kukri: 0.36,
 // g_bIgnoreWeaponSizeScale = true — масштаб ствола к ним не применяем
 // (иначе полосы MP7 Amberline растягивались на весь ствол).
 const GUN_FADE_SCALE = 1.3;
+// Fade на стволах: градиент лежал со сдвигом на одну полосу — у Glock и
+// MAC-10 спереди розовый вместо золотого, у Amber Fade не было оливкового.
+// Сдвиг −0.3 вдоль узора — только этим раскраскам: у AWP Fade, MP7, UMP
+// и Red Blue он хуже. Сверка по скриншотам игры (CSFloat, 27 экземпляров):
+// Fade +4.5, R8 Fade +10.0, Amber Fade +0.1; со Steam +5.4, +7.9, +4.5.
+const GUN_FADE_SHIFT = new Set(['aa_fade', 'aa_fade_revolver', 'aa_fade_metallic', 'aa_fade_metallic_revolver']);
+function gunFadeShift(skin, weaponName){
+return isGunFade(skin) && !isKnifeName(weaponName || '') && GUN_FADE_SHIFT.has(String(skin.finish || '')) ? -0.3 : 0;
+}
 const PATINA_TILED = /^aq_(oiled|forced|blued|brass|copper|obsidian|steel|damascus)/;
 const WEAPON_SPECIFIC_FINISH = /(?:^|_)(ak47|m4a4|m4a1s?|awp|glock(?:_?18)?|p250|p90|ump(?:45)?|tec9|ssg08|mac(?:_?10)|usp|deagle|deserteagle|desert_eagle|famas|galil(?:ar)?|sg553|sg556|aug|mp7|mp9|mp5|bizon|nova|xm1014|mag7|sawedoff|negev|m249|cz75a?|five_?seven|57|p2000|hkp2000|dualberettas|elites?|revolver|r8|scar20|scar|g3sg1|zeus)(?=$|_|lam|\d)/;
 // Узор, который игра сдвигает по паттерну на целую текстуру и больше
@@ -1024,6 +1033,30 @@ return false;
 }
 }
 
+// Износ нового формата (vcompmat и шаблоны). Порог 0.25 + 0.5·float
+// стирал краску слишком поздно: в игре на 0.33–0.45 затвор Desert Eagle
+// Firebreathing уже потёрт до металла, а у нас был целый; на 0.99 —
+// наоборот, у нас облезал весь ствол, а в игре рукоять ещё в краске.
+// Порог растёт как корень из float. Сверка со скриншотами игры (CSFloat):
+// Firebreathing, 15 потёртых 39.3 → 41.3; 5 других скинов, 54 потёртых
+// 33.3 → 33.9 (Glock Gold Toof +2.0, USP-S Jawbreaker +1.5).
+const NEW_FORMAT_WEAR = { cut: 0.31, k: 0.40 };
+
+// Маска материалов у vcompmat (сборка с prep_version 5 хранит её в цвете):
+// канал R — где краска металлическая (Glock Gold Toof, Desert Eagle
+// Calligraffiti, P250 Epicenter в игре тёмный металлик, а не матовая
+// краска). Своей карты металличности у таких раскрасок нет. Половина
+// металла: полный металл без окружения игры выходил слишком тёмным.
+// Сверка со Steam: 26 скинов подбора 33.5 → 34.5, 30 отложенных 34.2 → 35.2.
+const MASK_METAL_K = 0.5;
+function maskMetal(skin){
+return skin.format === 'vcompmat' && !skin.metalness && !!skin.mask;
+}
+function wearCurve(THREE, skin){
+if (skin.format === 'vcompmat' || skin.format === 'template') return new THREE.Vector3(NEW_FORMAT_WEAR.cut, NEW_FORMAT_WEAR.k, 1);
+return new THREE.Vector3(0.25, 0.5, 0);
+}
+
 function hydroAlphaZone(skin){
 return skin.alphaZones ? 2 : 0;
 }
@@ -1066,6 +1099,10 @@ const PATINA_PATTERN_GAMMA = 1.8;
 // сам цвет ствола. Сверка со Steam по 163 скинам: 1.2 → 73.5, 1.55 →
 // 77.3, 1.8 → 75.8, 2.0 → 74.2.
 const GUNSMITH_LEGACY_GAMMA = 1.55;
+// Степень 1.55 по каждому каналу уводила жёлтое в оранжевое (MAC-10
+// Stalker, M4A4 The Coalition — в Steam ярко-жёлтые). Теперь степень
+// только для яркости, а оттенок узора сохраняется: сверка со Steam
+// (игровой счёт) 21 скин подбора 36.0 → 36.4, 27 отложенных 38.2 → 38.5.
 // Усиление тонировки патины (стиль 7). Клинки ножей светлее стволов, и с
 // общим 3.4 Blue Steel и Stained выходили серебристыми вместо воронёных:
 // по 96 ножам с патиной сходство 65.4 → 69.0 при 1.2 (Steam-картинки).
@@ -1482,16 +1519,20 @@ uZones: { value: skin.zones || (weapon && weapon.masks) || pattern },
 uHasZones: { value: skin.zones || (weapon && weapon.masks && !(skin.format === 'template' && !skin.pattern && templatePlaceholderColor(skin.params))) ? 1 : 0 },
 uAo: { value: weapon ? weapon.ao : null },
 uWearAmount: { value: Math.max(0, Math.min(1, wear || 0)) },
+uWearCurve: { value: wearCurve(THREE, skin) },
+// Ножи не трогаем: Huntsman Autotronic в сверке CI 55.2 → 51.8.
+uGammaLum: { value: legacyPatinaStyle(skin) && !legacyPatinaBlend(skin) && skin.params.paint_style === 8 && !isKnifeName(weaponName) ? 1 : 0 },
 uPatternScale: { value: (skin.params.pattern_scale || 1) * weaponPatternScale(skin, weaponName) * templateScaleTest(skin) },
 // Поворот узора в params.json — в градусах.
 uPatternRotation: { value: placement.rotation * Math.PI / 180 },
 // Сдвиг узора по seed (в долях текстуры).
-uPatternOffset: { value: new THREE.Vector2(placement.offset[0], placement.offset[1]) },
+uPatternOffset: { value: new THREE.Vector2(placement.offset[0] + gunFadeShift(skin, weaponName), placement.offset[1]) },
 uWearScale: { value: skin.params.wear_scale || 1 },
 uGrungeScale: { value: skin.params.grunge_scale || 1 },
 uPaintMetalness: { value: legacyCaseHardened(skin) ? ANODIZED.metalness : paintMetalness(skin.params) * gunsmithTone(skin).metal },
 // Своя карта металличности краски (Zeno — серый металлик).
-uSkinMetal: { value: skin.metalness || pattern },
+uSkinMetal: { value: skin.metalness || (maskMetal(skin) ? skin.mask : pattern) },
+uMaskMetalK: { value: skin.metalness ? 0 : (maskMetal(skin) ? MASK_METAL_K : 0) },
 // Зоны покраски раскраски (paint by number): R/G/B — где лежат цвета
 // 1–3 поверх узора. У MP7 Amberline так закрашены тёмным рукоять,
 // магазин и мелкие детали.
@@ -1503,7 +1544,7 @@ uColorMetal: { value: colorVec4(THREE, skin.params.color_metalness) },
 uColorRough: { value: colorVec4(THREE, skin.params.color_roughness) },
 uHasColorMetal: { value: Array.isArray(skin.params.color_metalness) ? 1 : 0 },
 uHasColorRough: { value: Array.isArray(skin.params.color_roughness) ? 1 : 0 },
-uHasSkinMetal: { value: skin.metalness ? 1 : 0 },
+uHasSkinMetal: { value: skin.metalness || maskMetal(skin) ? 1 : 0 },
 uPaintRoughness: { value: anodizedLook(skin, weaponName).roughness },
 uHasPaintRoughness: { value: isAnodized(skin.params) || legacyCaseHardened(skin) ? 1 : 0 },
 uUseColors: { value: skin.solid || skinUsesColorMask(skin.params) ? 1 : 0 },
@@ -1558,10 +1599,15 @@ uniforms.uStkQ = { value: stk.Q };
 // [сторона, порог] по длинной оси ножа (−0.5…0.5 от центра): краска Fade
 // только там, где сторона·x ≥ порог — на клинке, не на рукояти.
 const KNIFE_FADE_BLADE = { knife_falchion: [-1, 0.1], knife_butterfly: [-1, 0.1] };
+// 03.11 по скриншотам игры (CSFloat, по 3 экземпляра на нож) у шести
+// ножей острие выходило оранжевым, а не сине-фиолетовым: Bayonet → 3,
+// Navaja → 1, Stiletto → 0, Survival → 2, Karambit → 1, Talon → 3
+// (на 20 ножах в среднем +1.5, у этих шести +1.5…+9.4).
 const KNIFE_FADE_MODE = {
-knife_flip: 1, knife_kukri: 1, knife_tactical: 1, knife_ursus: 1, knife_widowmaker: 1, knife_falchion: 1,
-knife_cord: 2, knife_css: 2, knife_m9_bayonet: 2, knife_outdoor: 2, knife_skeleton: 2, knife_stiletto: 2,
-knife_canis: 3,
+knife_flip: 1, knife_kukri: 1, knife_tactical: 1, knife_ursus: 1, knife_falchion: 1,
+knife_gypsy_jackknife: 1, knife_karambit: 1,
+knife_cord: 2, knife_css: 2, knife_m9_bayonet: 2, knife_outdoor: 2, knife_skeleton: 2, knife_canis: 2,
+bayonet: 3, knife_widowmaker: 3,
 };
 // Fade (стиль 5) на ножах — по развёртке: она у клинков разложена так,
 // что градиент целиком ложится на клинок, а проекция по всей длине
@@ -1646,7 +1692,7 @@ if (stickersHere) g.setAttribute('dgStkUv', stkUv);
 const shaderDefines = [
 stickersHere ? 'DG_STICKERS' : '',
 uniforms.uHasRamp.value ? 'DG_RAMP' : '',
-skin.metalness ? 'DG_SKIN_METAL' : '',
+skin.metalness || maskMetal(skin) ? 'DG_SKIN_METAL' : '',
 skin.pbn ? 'DG_PBN' : '',
 skin.zones ? 'DG_ZONES' : '',
 skin.overlay ? 'DG_OVERLAY' : '',
@@ -1718,6 +1764,8 @@ uniform sampler2D uBaseColor;
 uniform sampler2D uPaintMask;
 uniform sampler2D uAo;
 uniform float uWearAmount;
+uniform vec3 uWearCurve;
+uniform int uGammaLum;
 uniform float uPatternScale;
 uniform float uPatternRotation;
 uniform vec2 uPatternOffset;
@@ -1737,6 +1785,7 @@ uniform vec4 uColorRough;
 uniform int uHasColorMetal;
 uniform int uHasColorRough;
 uniform int uHasSkinMetal;
+uniform float uMaskMetalK;
 uniform int uHasPaintRoughness;
 uniform int uUseColors;
 uniform int uSolid;
@@ -1870,7 +1919,11 @@ colorWeight = mix(colorWeight, vec4(0.0, 0.0, 0.0, 1.0), zone.b);
 #endif
 }
 if (uPatinaBlend == 1) pattern = pattern * uColors[0] * vec3(dot(base, vec3(0.299, 0.587, 0.114))) * uPatinaK;
-else if (uPatternGamma != 1.0) pattern = pow(pattern, vec3(uPatternGamma));
+else if (uPatternGamma != 1.0){
+// Gunsmith старого формата: степень только для яркости, оттенок как в узоре.
+float pl = max(dot(pattern, vec3(0.2126, 0.7152, 0.0722)), 1e-4);
+pattern = uGammaLum == 1 ? pattern * pow(pl, uPatternGamma - 1.0) : pow(pattern, vec3(uPatternGamma));
+}
 pattern *= uColorBrightness;
 // Doppler на ножах: мраморный «дым» лежит в альфе узора.
 if (uSmokeK > 0.0) pattern *= patternTex.a * uSmokeK;
@@ -1884,7 +1937,8 @@ float wearMask = texture2D(uWearMask, vSkinUv * uWearScale).r;
 // float напрямую как порог стирал краску слишком рано: при 0.8
 // оставалось меньше 5%. Порог 0.25 + 0.5·float держит FN/MW целыми,
 // а на Battle-Scarred оставляет часть краски, как в игре.
-float wearCut = 0.25 + 0.5 * uWearAmount;
+float wearCut = uWearCurve.z > 0.5 ? uWearCurve.x + uWearCurve.y * sqrt(uWearAmount)
+: uWearCurve.x + uWearCurve.y * uWearAmount;
 kept = smoothstep(wearCut - 0.08, wearCut + 0.04, wearMask);
 }
 
@@ -1969,7 +2023,7 @@ stkCover = max(stkCover, a);
 .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>
 float paintMetal = uHasColorMetal == 1 ? dot(colorWeight, uColorMetal) : uPaintMetalness;
 #ifdef DG_SKIN_METAL
-if (uHasSkinMetal == 1) paintMetal = texture2D(uSkinMetal, vSkinUv).r;
+if (uHasSkinMetal == 1) paintMetal = uMaskMetalK > 0.0 ? uMaskMetalK * texture2D(uSkinMetal, vSkinUv).r : texture2D(uSkinMetal, vSkinUv).r;
 #endif
 #ifdef DG_RAMP
 // Закалка — это цвет каленого металла: полированный металлик.
