@@ -4374,8 +4374,11 @@ else if (painted) applySkinToModel(THREE, object, skin, wear, weapon, 'none', se
 // С наклейками — вид с той стороны, где они наклеены (дулом влево, как
 // при осмотре в игре); без них — как раньше.
 // Перчатки уже стоят тыльной стороной к камере (prepareGloveModel).
-const side = glove ? 0 : stickerAtlas ? -Math.PI / 2 : Math.PI / 2;
-const tilt = glove ? 0.25 : stickerAtlas ? -0.3 : 0.3;
+// Агент — лицом к камере (сбоку в посте виден только профиль), вторая
+// сторона — спина.
+const agent = /(^|\/)models\/agents\//.test(String(entry.model || ''));
+const side = glove || agent ? 0 : stickerAtlas ? -Math.PI / 2 : Math.PI / 2;
+const tilt = agent ? 0.35 : glove ? 0.25 : stickerAtlas ? -0.3 : 0.3;
 // Кадр — по всем углам покачивания (у картинки — по её одному ракурсу).
 // Вторая сторона — поворот на пол-оборота, наклон зеркально.
 const otherSide = side + Math.PI - tilt;
