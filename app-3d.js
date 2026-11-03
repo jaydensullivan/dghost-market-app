@@ -2561,6 +2561,7 @@ const AGENT_POSE_FADE = 0.8;
 const AGENT_POSE_ORDER = ['cu_ct_pose03', 'cu_ct_pose04', 'cu_ct_pose01', 'cu_ct_pose05', 'cu_ct_pose02',
 'cu_t_pose01', 'cu_t_pose03', 'cu_t_pose02', 'cu_t_pose04'];
 const agentPoseCache = {};
+const AGENT_RIG_VERSION = 2;
 
 function agentRigUrl(modelUrl){
 const m = String(modelUrl || '').match(/^(.*models\/agents\/)([^/]+\.glb)$/);
@@ -2575,7 +2576,9 @@ return /(^|\/)tm_[^/]*$/.test(String(modelUrl || '')) ? 't' : 'ct';
 function fetchModelFile(modelUrl){
 const rig = agentRigUrl(modelUrl);
 if (!rig) return fetch(modelsUrl(modelUrl));
-return fetch(modelsUrl(rig)).then(r => (r.ok ? r : fetch(modelsUrl(modelUrl))), () => fetch(modelsUrl(modelUrl)));
+// ?r= — версия сборки: файлы до исправления морфов (3 ноября) телефоны
+// держат в кэше до часа, с новой версией качают заново.
+return fetch(modelsUrl(rig) + '?r=' + AGENT_RIG_VERSION).then(r => (r.ok ? r : fetch(modelsUrl(modelUrl))), () => fetch(modelsUrl(modelUrl)));
 }
 
 // Скелет агента не разобрался (битый файл на CDN) — обычная модель.
