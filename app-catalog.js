@@ -388,11 +388,12 @@ const lockBadge = lockUntil
 ? `<div class="skin-lock-badge">🔒 <span data-unlock="${lockUntil}">${tradeLockLeft(lockUntil)}</span></div>`
 : '';
 
-// Карточка чужого лота — тап открывает лот (там «Купить», торг и корзина),
-// на фото только «♡». Свой лот — кнопка «Управлять».
+// Своему лоту — «Управлять», чужому — «Купить» (в трейд-бане —
+// «Открыть»: купить пока нельзя). Тап по карточке тоже открывает лот.
+const cardDict = I18N[currentLang] || I18N.ru;
 const actionBtn = isOwn
-? `<button class="skin-action own" data-open="${skin.id}" type="button">${(I18N[currentLang] || I18N.ru).btn_manage}</button>`
-: '';
+? `<button class="skin-action own" data-open="${skin.id}" type="button">${cardDict.btn_manage}</button>`
+: `<button class="skin-action buy" data-open="${skin.id}" type="button">${lockUntil ? cardDict.btn_open : cardDict.btn_buy}</button>`;
 
 const favBtn = isOwn ? ''
 : `<button type="button" class="skin-fav${isFavSkin(skin) ? ' on' : ''}" data-fav="${skin.id}" aria-label="${escapeHtml((I18N[currentLang] || I18N.ru).fav_aria || 'Хочу')}"><svg class="gi" width="18" height="18" aria-hidden="true"><use href="#gi-heart"/></svg></button>`;
