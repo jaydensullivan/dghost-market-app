@@ -2550,6 +2550,83 @@ cm.getContext('2d').putImageData(mrData, 0, 0);
 return { color: c, mr: cm };
 }
 
+// ---------- Позы агентов ----------
+// Агент со скелетом (models/agents/rig/, сборка build-agent-rig.sh) стоит
+// в позах из инвентаря CS2 (models/anim/agent/), а не в Т-позе; в
+// просмотрщике позы плавно сменяют друг друга. Нет скелета или поз на CDN —
+// обычная модель, как раньше.
+const AGENT_POSE_HOLD = 3.5;
+const AGENT_POSE_FADE = 0.8;
+// Первая поза — как на витринах (руки скрещены), дальше — по кругу.
+const AGENT_POSE_ORDER = ['cu_ct_pose03', 'cu_ct_pose04', 'cu_ct_pose01', 'cu_ct_pose05', 'cu_ct_pose02',
+'cu_t_pose01', 'cu_t_pose03', 'cu_t_pose02', 'cu_t_pose04'];
+const agentPoseCache = {};
+
+function agentRigUrl(modelUrl){
+const m = String(modelUrl || '').match(/^(.*models\/agents\/)([^/]+\.glb)$/);
+return m ? m[1] + 'rig/' + m[2] : null;
+}
+
+function agentTeam(modelUrl){
+return /(^|\/)tm_[^/]*$/.test(String(modelUrl || '')) ? 't' : 'ct';
+}
+
+// Скелет агента, если он есть на CDN, иначе обычная модель.
+function fetchModelFile(modelUrl){
+const rig = agentRigUrl(modelUrl);
+if (!rig) return fetch(modelsUrl(modelUrl));
+return fetch(modelsUrl(rig)).then(r => (r.ok ? r : fetch(modelsUrl(modelUrl))), () => fetch(modelsUrl(modelUrl)));
+}
+
+function loadAgentPoseClips(team){
+if (!agentPoseCache[team]){
+agentPoseCache[team] = fetch(modelsUrl('models/anim/agent/index.json'))
+.then(r => (r.ok ? r.json() : {}))
+.then(index => {
+const names = (index[team] || []).slice().sort((a, b) => {
+const ia = AGENT_POSE_ORDER.indexOf(a), ib = AGENT_POSE_ORDER.indexOf(b);
+return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+});
+return Promise.all(names.map(name => fetch(modelsUrl('models/anim/agent/' + name + '.glb'))
+.then(r => (r.ok ? r.arrayBuffer() : null))
+.then(buf => (buf ? parseGlb(buf) : null))
+.then(g => (g && g.animations && g.animations[0]) || null)
+.catch(() => null)));
+})
+.then(clips => clips.filter(Boolean))
+.catch(() => []);
+}
+return agentPoseCache[team];
+}
+
+// Поза на модели со скелетом: первая сразу, дальше (cycle) — по кругу
+// с плавным переходом. null — у модели нет костей или поз нет.
+function startAgentPoses(THREE, root, clips, cycle){
+let skinned = false;
+root.traverse(o => { if (o.isSkinnedMesh){ skinned = true; o.frustumCulled = false; } });
+if (!skinned || !clips || !clips.length || !THREE.AnimationMixer) return null;
+const mixer = new THREE.AnimationMixer(root);
+const actions = clips.map(c => mixer.clipAction(c));
+let current = 0, held = 0;
+actions[0].play();
+mixer.update(0);
+return {
+update(dt){
+if (cycle && actions.length > 1){
+held += dt;
+if (held >= AGENT_POSE_HOLD){
+held = 0;
+const next = (current + 1) % actions.length;
+actions[next].reset().play();
+actions[current].crossFadeTo(actions[next], AGENT_POSE_FADE, false);
+current = next;
+}
+}
+mixer.update(dt);
+},
+};
+}
+
 // Перчатки на витрине — как на картинке Steam: пара без рук (в модели
 // есть ещё «руки от первого лица» с голой кожей — их прячем).
 // В экспорте перчаток и агентов у мешей общий буфер вершин: в нём есть
@@ -3481,7 +3558,7 @@ loadGltfLoader()
 .then(() => loadModelIndex())
 // Кэш браузера: CDN отдаёт модели с max-age=3600 и ETag — повторное
 // открытие лота не качает 1–3 МБ заново (раньше стоял no-store).
-.then(() => fetch(modelsUrl(modelUrl)).catch(() => { throw new Error(dict.v3_err_net); }))
+.then(() => fetchModelFile(modelUrl).catch(() => { throw new Error(dict.v3_err_net); }))
 .then(async response => {
 if (response.status === 404) throw new Error(dict.v3_err_404);
 if (!response.ok) throw new Error(dict.v3_err_net + ' (HTTP ' + response.status + ')');
@@ -3542,6 +3619,13 @@ scene.add(object);
 gltf.scene.userData.upright = /(^|\/)models\/(agents|cases|gloves)\//.test(String(modelUrl || ''));
 const baseDistance = fitObjectToView(THREE, gltf.scene, camera, true);
 if (!skinDir){ hideViewerPoster(); d3Ready(); }
+// Агент со скелетом — в позах из инвентаря CS2, по кругу.
+if (agentRigUrl(modelUrl)){
+loadAgentPoseClips(agentTeam(modelUrl)).then(clips => {
+if (stale() || !viewer3d || viewer3d.object !== object) return;
+viewer3d.agentPose = startAgentPoses(THREE, gltf.scene, clips, true);
+});
+}
 
 setupViewerScene(THREE, renderer, scene, weaponDir);
 
@@ -3756,6 +3840,7 @@ const tx = tilt.rotX + Math.max(-35, Math.min(35, tilt.b)) * deg * 0.9;
 object.rotation.y += (ty - object.rotation.y) * 0.15;
 object.rotation.x += (tx - object.rotation.x) * 0.15;
 } else if (autoRotate) object.rotation.y += 0.006;
+if (viewer3d && viewer3d.agentPose) viewer3d.agentPose.update(dt);
 updateViewerBgParallax(object.rotation.y);
 renderer.render(scene, camera);
 }
@@ -4330,10 +4415,15 @@ const ss = video ? SHARE_VIDEO.supersample : 1;
 const [, gifenc] = await Promise.all([loadGltfLoader(), (still || video) ? null : loadGifEncoder()]);
 
 await loadModelIndex();
-const response = await fetch(modelsUrl(entry.model));
+const response = await fetchModelFile(entry.model);
 if (!response.ok) throw new Error('model ' + response.status);
 const buffer = await response.arrayBuffer();
 const gltf = await parseGlb(buffer).catch(() => parseGlb(stripTexturesFromGlb(buffer)));
+// Агент со скелетом — в первой позе инвентаря (руки скрещены), до кадра.
+if (agentRigUrl(entry.model)){
+const clips = await loadAgentPoseClips(agentTeam(entry.model));
+startAgentPoses(THREE, gltf.scene, clips.slice(0, 1), false);
+}
 // Перчатки — готовые текстуры, агенты — без раскраски.
 const glove = isGloveSkin(entry.skin);
 const painted = !!entry.skin && !glove;
