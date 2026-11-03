@@ -3077,9 +3077,134 @@ return layer;
 // Параллакс: фон уходит в сторону, противоположную повороту скина.
 function updateViewerBgParallax(rotationY){
 const layer = document.querySelector('.viewer3d-stage .viewer3d-bglayer');
-if (!layer || layer.style.display === 'none') return;
+if (!layer || layer.style.display === 'none' || viewerAgentStage) return;
 const shift = Math.sin(rotationY || 0) * viewerBgFx().parallax;
 layer.style.transform = `translate3d(${(-shift).toFixed(1)}px, 0, 0)`;
+}
+
+// ---------- Агент на сцене ----------
+// Агент стоит, как в игре: камера на уровне пояса, смотрит прямо (горизонт —
+// середина кадра), ноги на полу с тенью, сам не крутится и не
+// заваливается. Карта за ним подогнана под ту же камеру: её горизонт —
+// на середине кадра, а место на земле (floor) — под ногами. Картинки карт —
+// скриншоты CS2 с камеры примерно такой же высоты, поэтому агент стоит
+// на земле, а не висит. x — где стоять по ширине картинки, floor — земля
+// под ногами, horizon — линия горизонта (доли от ширины/высоты картинки).
+const AGENT_STAGE = { height: 0.62, feet: 0.86, fov: 40 };
+const AGENT_MAP_FLOOR = {
+cs_italy: { x: 0.52, floor: 0.86, horizon: 0.6 },
+cs_office: { x: 0.5, floor: 0.84, horizon: 0.58 },
+de_ancient: { x: 0.56, floor: 0.86, horizon: 0.56 },
+de_anubis: { x: 0.5, floor: 0.86, horizon: 0.62 },
+de_dust2: { x: 0.3, floor: 0.8, horizon: 0.5 },
+de_inferno: { x: 0.5, floor: 0.86, horizon: 0.62 },
+de_mirage: { x: 0.56, floor: 0.86, horizon: 0.62 },
+de_nuke: { x: 0.5, floor: 0.92, horizon: 0.47 },
+de_overpass: { x: 0.5, floor: 0.86, horizon: 0.52 },
+de_train: { x: 0.5, floor: 0.88, horizon: 0.55 },
+de_vertigo: { x: 0.56, floor: 0.92, horizon: 0.72 },
+};
+// Агент ли сейчас в просмотрщике (ставит open3DViewer) и какая карта за ним.
+let viewerAgentStage = false;
+let viewerBgCurrent = null;
+
+// Камера агента: высота — AGENT_STAGE.height кадра, ноги — на feet от
+// верха. Возвращает расстояние камеры (baseDistance для щипка).
+function frameAgentCamera(THREE, object, camera){
+const box = meshBox(THREE, object);
+const h = Math.max(0.01, box.max.y - box.min.y);
+camera.fov = AGENT_STAGE.fov;
+const t = Math.tan(camera.fov * Math.PI / 360);
+const dist = h / (AGENT_STAGE.height * 2 * t);
+// Горизонт (ось камеры) — середина кадра; ноги ниже на (feet − 0.5) кадра.
+const camY = box.min.y + (AGENT_STAGE.feet - 0.5) * 2 * dist * t;
+camera.position.set(0, camY, dist);
+camera.lookAt(0, camY, 0);
+camera.near = dist / 50;
+camera.far = dist * 10;
+camera.updateProjectionMatrix();
+return { dist, floorY: box.min.y };
+}
+
+// Пол под агентом: тень от света (ShadowMaterial), мягкое пятно под ногами
+// и — в студии — светлый круг-подиум. Пол не крутится вместе с агентом.
+function addAgentFloor(THREE, renderer, scene, object, floorY){
+const group = new THREE.Group();
+group.name = 'agentFloor';
+if (renderer.shadowMap){
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+}
+const caster = new THREE.DirectionalLight(0xffffff, 0);
+caster.position.set(1.6, 4, 2.6);
+caster.castShadow = true;
+caster.shadow.mapSize.set(1024, 1024);
+Object.assign(caster.shadow.camera, { left: -1.6, right: 1.6, top: 1.6, bottom: -1.6, near: 0.5, far: 10 });
+caster.shadow.bias = -0.0005;
+caster.shadow.radius = 4;
+group.add(caster);
+object.traverse(o => { if (o.isMesh){ o.castShadow = true; } });
+const shadow = new THREE.Mesh(new THREE.PlaneGeometry(8, 8), new THREE.ShadowMaterial({ opacity: 0.42 }));
+shadow.rotation.x = -Math.PI / 2;
+shadow.position.y = floorY;
+shadow.receiveShadow = true;
+group.add(shadow);
+// Пятно под ногами и подиум — радиальные градиенты на холсте.
+const disc = (inner, outer, size) => {
+const c = document.createElement('canvas');
+c.width = c.height = 256;
+const g = c.getContext('2d');
+const grad = g.createRadialGradient(128, 128, 0, 128, 128, 128);
+grad.addColorStop(0, inner);
+grad.addColorStop(1, outer);
+g.fillStyle = grad;
+g.fillRect(0, 0, 256, 256);
+const tex = new THREE.CanvasTexture(c);
+if (THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
+const m = new THREE.Mesh(new THREE.PlaneGeometry(size, size),
+new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, toneMapped: false }));
+m.rotation.x = -Math.PI / 2;
+return m;
+};
+const contact = disc('rgba(0,0,0,0.55)', 'rgba(0,0,0,0)', 1.3);
+contact.position.y = floorY + 0.002;
+group.add(contact);
+const podium = disc('rgba(150,150,165,0.55)', 'rgba(150,150,165,0)', 3.4);
+podium.name = 'agentPodium';
+podium.position.y = floorY + 0.001;
+group.add(podium);
+scene.add(group);
+return group;
+}
+
+// Подиум — только в студии и «Осмотре CS2»; на карте агент стоит на её земле.
+function updateAgentFloor(){
+const floor = viewer3d && viewer3d.scene && viewer3d.scene.getObjectByName('agentPodium');
+if (floor) floor.visible = !AGENT_MAP_FLOOR[viewerBgCurrent] && !(viewerBgList || []).some(b => b.id === viewerBgCurrent);
+}
+
+// Картинка карты за агентом: горизонт — середина кадра, земля floor — под
+// ногами. Масштаб по этим двум точкам; если картинка не закрывает кадр —
+// крупнее (по земле), чтобы не было пустых краёв.
+function placeAgentMapLayer(layer, stage, id){
+const spot = AGENT_MAP_FLOOR[id];
+if (!spot || !layer || !stage) return false;
+const w = stage.clientWidth, h = stage.clientHeight;
+if (!w || !h) return false;
+const ratio = 16 / 9;
+let imgH = h * (AGENT_STAGE.feet - 0.5) / Math.max(0.05, spot.floor - spot.horizon);
+imgH = Math.max(imgH, h, w / ratio);
+const imgW = imgH * ratio;
+let top = h * AGENT_STAGE.feet - spot.floor * imgH;
+top = Math.min(0, Math.max(h - imgH, top));
+let left = w / 2 - spot.x * imgW;
+left = Math.min(0, Math.max(w - imgW, left));
+Object.assign(layer.style, {
+inset: '0', transform: 'none',
+backgroundSize: `${imgW.toFixed(0)}px ${imgH.toFixed(0)}px`,
+backgroundPosition: `${left.toFixed(0)}px ${top.toFixed(0)}px`,
+});
+return true;
 }
 
 function applyViewerBackground(id){
@@ -3102,6 +3227,10 @@ layer.style.display = 'block';
 layer.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.25)), url("${modelsUrl('models/backgrounds/' + map.file)}")`;
 layer.style.filter = fx.blur ? `blur(${fx.blur}px)` : '';
 layer.style.transform = '';
+// Агент стоит на земле карты; у остальных — как было (cover по центру).
+if (!(viewerAgentStage && placeAgentMapLayer(layer, stage, id))){
+Object.assign(layer.style, { inset: '-8%', backgroundSize: 'cover', backgroundPosition: 'center' });
+}
 } else if (id === 'inspect'){
 stage.setAttribute('data-bg', 'inspect');
 stage.style.background = VIEWER_BG_INSPECT;
@@ -3109,6 +3238,8 @@ stage.style.background = VIEWER_BG_INSPECT;
 document.querySelectorAll('#viewer3dBgs .viewer3d-bg').forEach(btn => {
 btn.setAttribute('aria-checked', btn.dataset.bg === id ? 'true' : 'false');
 });
+viewerBgCurrent = id;
+updateAgentFloor();
 applyViewerEnvironment(id);
 }
 
@@ -3682,6 +3813,7 @@ hideWearSlider();
 hideAgentEmotes();
 const stale = () => loadId !== viewer3dLoadId;
 const dict = I18N[currentLang] || I18N.ru;
+viewerAgentStage = false;
 renderViewerBackgrounds(dict);
 const mode = get3DMode() || 'full';
 const status = document.getElementById('viewer3dStatus');
@@ -3780,7 +3912,16 @@ selectModelBody(object, false);
 scene.add(object);
 // Агент, кейс, перчатки — стоят вертикально, на бок кладём только оружие.
 gltf.scene.userData.upright = /(^|\/)models\/(agents|cases|gloves)\//.test(String(modelUrl || ''));
-const baseDistance = fitObjectToView(THREE, gltf.scene, camera, true);
+let baseDistance = fitObjectToView(THREE, gltf.scene, camera, true);
+// Агент: своя камера, пол с тенью, без автоповорота и наклона.
+viewerAgentStage = /(^|\/)models\/agents\//.test(String(modelUrl || ''));
+if (viewerAgentStage){
+const framed = frameAgentCamera(THREE, gltf.scene, camera);
+baseDistance = framed.dist;
+addAgentFloor(THREE, renderer, scene, gltf.scene, framed.floorY);
+// Фон уже стоит (renderViewerBackgrounds) — переставить под агента.
+if (viewerBgCurrent) applyViewerBackground(viewerBgCurrent);
+}
 if (!skinDir){ hideViewerPoster(); d3Ready(); }
 // Агент со скелетом — в позах из инвентаря CS2, по кругу.
 if (agentRigUrl(modelUrl)){
@@ -3852,7 +3993,8 @@ if (!stale()){ status.textContent = dict.v3_skin_failed; hideViewerPoster(); }
 });
 }
 
-let autoRotate = true;
+// Агент стоит лицом к зрителю и сам не крутится.
+let autoRotate = !viewerAgentStage;
 let dragging = false, lastX = 0, lastY = 0, pinchStart = 0;
 // Режим «В руках»: анимация осмотра вместо вращения модели.
 let hands = null;
@@ -3950,7 +4092,8 @@ return;
 if (!dragging) return;
 const p = e.touches ? e.touches[0] : e;
 object.rotation.y += (p.clientX - lastX) * 0.01;
-object.rotation.x += (p.clientY - lastY) * 0.01;
+// Агент только поворачивается вокруг себя — не заваливается.
+if (!viewerAgentStage) object.rotation.x += (p.clientY - lastY) * 0.01;
 lastX = p.clientX;
 lastY = p.clientY;
 e.preventDefault();
@@ -3979,6 +4122,7 @@ camera.aspect = w / h;
 camera.zoom = Math.min(1, camera.aspect / baseAspect);
 camera.updateProjectionMatrix();
 if (hands) fitHandsCamera(hands.camera);
+if (viewerAgentStage && viewerBgCurrent) applyViewerBackground(viewerBgCurrent);
 };
 
 const clock = { last: performance.now() };
@@ -4005,6 +4149,7 @@ const tx = tilt.rotX + Math.max(-35, Math.min(35, tilt.b)) * deg * 0.9;
 object.rotation.y += (ty - object.rotation.y) * 0.15;
 object.rotation.x += (tx - object.rotation.x) * 0.15;
 } else if (autoRotate) object.rotation.y += 0.006;
+if (viewerAgentStage) object.rotation.x = 0;
 if (viewer3d && viewer3d.agentPose) viewer3d.agentPose.update(dt);
 updateViewerBgParallax(object.rotation.y);
 renderer.render(scene, camera);
