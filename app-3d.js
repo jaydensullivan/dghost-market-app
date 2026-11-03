@@ -2619,6 +2619,14 @@ if (!skinned || !clips || !clips.length || !THREE.AnimationMixer) return null;
 const mixer = new THREE.AnimationMixer(root);
 const actions = clips.map(c => mixer.clipAction(c));
 let current = 0, held = 0, emote = null;
+// Эмоции двигают таз (шаги, выход) — держим агента на месте: таз по
+// горизонтали там же, где был в позе.
+let pelvis = null;
+root.traverse(o => { if (!pelvis && o.isBone && /^pelvis$/i.test(o.name)) pelvis = o; });
+const rootPos0 = root.position.clone();
+const pelvisBase = new THREE.Vector3();
+const tmp = new THREE.Vector3();
+const pelvisLocal = (out) => { root.updateMatrixWorld(true); pelvis.getWorldPosition(out); return root.worldToLocal(out); };
 actions[0].play();
 mixer.update(0);
 // Эмоция доиграла — обратно в текущую позу, круг поз продолжается.
@@ -2638,11 +2646,23 @@ emote = mixer.clipAction(clip);
 emote.reset();
 emote.setLoop(THREE.LoopOnce, 1);
 emote.clampWhenFinished = true;
+if (pelvis){ root.position.copy(rootPos0); pelvisLocal(pelvisBase); }
 emote.play();
 from.crossFadeTo(emote, 0.25, false);
 },
 update(dt){
-if (emote){ mixer.update(dt); return; }
+if (emote){
+mixer.update(dt);
+if (pelvis){
+root.position.copy(rootPos0);
+const d = pelvisLocal(tmp).sub(pelvisBase);
+d.y = 0;
+d.multiply(root.scale).applyQuaternion(root.quaternion);
+root.position.sub(d);
+}
+return;
+}
+if (pelvis) root.position.lerp(rootPos0, Math.min(1, dt * 6));
 if (cycle && actions.length > 1){
 held += dt;
 if (held >= AGENT_POSE_HOLD){
@@ -2662,7 +2682,32 @@ mixer.update(dt);
 // Клипы из игры: MVP, празднование победы, выход, выбор команды
 // (models/anim/agent/emote/, сборка build-agent-rig.sh). Кнопки — под 3D
 // агента со скелетом; эмоция играет один раз и возвращает позы.
-const AGENT_EMOTE_GROUPS = ['mvp', 'end_round', 'intro_anims', 'team_select'];
+// Личные празднования и поражения есть у 11 агентов игры — по имени в
+// названии лота (\bava\b — не «Cavalry»).
+const AGENT_EMOTE_OWNERS = { ava: /\bava\b/i, crasswater: /crasswater/i, darryl: /darryl/i, doctor: /the doctor/i,
+goggles: /goggles/i, mae: /\bmae\b/i, muhlik: /muhlik/i, ricksaw: /ricksaw/i, rouchard: /rouchard/i,
+vypa: /\bvypa\b/i, wet_sox: /wet sox/i };
+
+// Кнопки эмоций агента: свои празднования/поражения (если есть), 4 MVP,
+// выход и выбор команды своей стороны — без оружия в руках (ножевые).
+function pickAgentEmotes(list, team, title){
+const owner = Object.keys(AGENT_EMOTE_OWNERS).find(k => AGENT_EMOTE_OWNERS[k].test(String(title || '')));
+const byName = name => list.find(e => e && e.name === name);
+const out = [];
+if (owner){
+const own = list.filter(e => e && new RegExp('^(celebrate|defeat)_' + owner + '_').test(e.name))
+.sort((a, b) => (a.name.startsWith('celebrate') ? 0 : 1) - (b.name.startsWith('celebrate') ? 0 : 1)
+|| (/_start$/.test(b.name) - /_start$/.test(a.name)) || a.name.localeCompare(b.name));
+own.forEach(e => out.push({ e, kind: e.name.startsWith('celebrate') ? 'win' : 'defeat' }));
+}
+['banner_celebrate01', 'banner_celebrate02', 'banner_celebrate03', 'banner_celebrate04']
+.map(byName).filter(Boolean).forEach(e => out.push({ e, kind: 'mvp' }));
+const intro = byName(team + '_intro_v2_knife');
+if (intro) out.push({ e: intro, kind: 'intro', single: true });
+const sel = byName(team + '_sel_generic_knife');
+if (sel) out.push({ e: sel, kind: 'team', single: true });
+return out;
+}
 let agentEmoteIndex = null;
 const agentEmoteClips = {};
 
@@ -2699,14 +2744,13 @@ const box = document.getElementById('viewer3dEmotes');
 if (box){ box.style.display = 'none'; box.innerHTML = ''; }
 }
 
-function renderAgentEmotes(team, isCurrent){
+function renderAgentEmotes(team, isCurrent, title){
 const box = document.getElementById('viewer3dEmotes');
 if (!box) return;
 loadAgentEmoteIndex().then(list => {
 if (!isCurrent()) return;
 const dict = I18N[currentLang] || I18N.ru;
-const mine = list.filter(e => e && e.name && (!e.team || e.team === team) && AGENT_EMOTE_GROUPS.includes(e.group));
-mine.sort((a, b) => AGENT_EMOTE_GROUPS.indexOf(a.group) - AGENT_EMOTE_GROUPS.indexOf(b.group) || String(a.name).localeCompare(b.name));
+const mine = pickAgentEmotes(list, team, title);
 if (!mine.length){ hideAgentEmotes(); return; }
 box.innerHTML = '';
 box.setAttribute('aria-label', dict.v3_emotes_label || 'Emotes');
@@ -2716,12 +2760,12 @@ label.style.cssText = 'flex:0 0 auto;font-size:12px;color:var(--muted);margin-ri
 label.textContent = dict.v3_emotes_label || 'Emotes';
 box.appendChild(label);
 const counter = {};
-mine.forEach(e => {
-counter[e.group] = (counter[e.group] || 0) + 1;
+mine.forEach(({ e, kind, single }) => {
+counter[kind] = (counter[kind] || 0) + 1;
 const btn = document.createElement('button');
 btn.type = 'button';
 btn.className = 'viewer3d-bg';
-btn.textContent = String(dict['v3_emote_' + e.group] || e.group + ' {n}').replace('{n}', counter[e.group]);
+btn.textContent = String(dict['v3_emote_' + kind] || kind + ' {n}').replace(single ? ' {n}' : '{n}', single ? '' : counter[kind]).trim();
 btn.addEventListener('click', () => {
 btn.disabled = true;
 loadAgentEmoteClip(e.name).then(clip => {
@@ -3733,7 +3777,7 @@ loadAgentPoseClips(agentTeam(modelUrl)).then(clips => {
 if (stale() || !viewer3d || viewer3d.object !== object) return;
 viewer3d.agentPose = startAgentPoses(THREE, gltf.scene, clips, true);
 // Эмоции — только у агента со скелетом (поза встала).
-if (viewer3d.agentPose) renderAgentEmotes(agentTeam(modelUrl), () => !stale() && viewer3d && viewer3d.object === object);
+if (viewer3d.agentPose) renderAgentEmotes(agentTeam(modelUrl), () => !stale() && viewer3d && viewer3d.object === object, title);
 });
 }
 
