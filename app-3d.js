@@ -2631,6 +2631,14 @@ return agentPoseCache[cacheKey];
 
 // Поза на модели со скелетом: первая сразу, дальше (cycle) — по кругу
 // с плавным переходом. null — у модели нет костей или поз нет.
+// Дыхание поверх позы: наклон (рад) на вдохе и поворот головы.
+const AGENT_BREATH = [
+{ re: /^spine_1$/i, pitch: 0.008, yaw: 0 },
+{ re: /^spine_2$/i, pitch: 0.012, yaw: 0.004 },
+{ re: /^spine_3$/i, pitch: 0.008, yaw: 0.006 },
+{ re: /^neck_0$/i, pitch: -0.012, yaw: 0.014 },
+{ re: /^head_0$/i, pitch: -0.008, yaw: 0.026 },
+];
 function startAgentPoses(THREE, root, clips, cycle){
 let skinned = false;
 root.traverse(o => { if (o.isSkinnedMesh){ skinned = true; o.frustumCulled = false; } });
@@ -2646,6 +2654,38 @@ const rootPos0 = root.position.clone();
 const pelvisBase = new THREE.Vector3();
 const tmp = new THREE.Vector3();
 const pelvisLocal = (out) => { root.updateMatrixWorld(true); pelvis.getWorldPosition(out); return root.worldToLocal(out); };
+// Позы инвентаря — один кадр, агент стоял как статуя. Сверху — дыхание:
+// грудь чуть наклоняется, голова медленно поворачивается. Только кости,
+// которые клип пишет каждый кадр, — иначе поворот бы накапливался.
+const tracked = new Set();
+clips.forEach(c => c.tracks.forEach(t => tracked.add(t.name.split('.')[0])));
+const breathBones = [];
+root.traverse(o => {
+if (!o.isBone || !tracked.has(o.name)) return;
+const m = AGENT_BREATH.find(b => b.re.test(o.name));
+if (m) breathBones.push({ bone: o, ...m });
+});
+const axisX = new THREE.Vector3(1, 0, 0), axisY = new THREE.Vector3(0, 1, 0);
+const qa = new THREE.Quaternion(), qb = new THREE.Quaternion(), qParent = new THREE.Quaternion(), qRoot = new THREE.Quaternion();
+let breathT = Math.random() * 10, breathW = 1;
+const breathe = (dt) => {
+breathT += dt;
+breathW += ((emote ? 0 : 1) - breathW) * Math.min(1, dt * 3);
+if (breathW < 0.01 || !breathBones.length) return;
+root.updateMatrixWorld(true);
+root.getWorldQuaternion(qRoot);
+const inhale = Math.sin(breathT * Math.PI * 2 / 3.8);
+const look = Math.sin(breathT * Math.PI * 2 / 9.5) + 0.35 * Math.sin(breathT * Math.PI * 2 / 4.3);
+breathBones.forEach(({ bone, pitch, yaw }) => {
+// Поворот в осях агента (X — вбок, Y — вверх) переводим в оси кости.
+qa.setFromAxisAngle(axisX, pitch * inhale * breathW);
+qb.setFromAxisAngle(axisY, yaw * look * breathW);
+qa.premultiply(qb).premultiply(qRoot).multiply(qb.copy(qRoot).invert());
+bone.parent.getWorldQuaternion(qParent);
+qb.copy(qParent).invert().multiply(qa).multiply(qParent);
+bone.quaternion.premultiply(qb);
+});
+};
 actions[0].play();
 mixer.update(0);
 // Эмоция доиграла — обратно в текущую позу, круг поз продолжается.
@@ -2679,6 +2719,7 @@ d.y = 0;
 d.multiply(root.scale).applyQuaternion(root.quaternion);
 root.position.sub(d);
 }
+breathe(dt);
 return;
 }
 if (pelvis) root.position.lerp(rootPos0, Math.min(1, dt * 6));
@@ -2693,6 +2734,7 @@ current = next;
 }
 }
 mixer.update(dt);
+breathe(dt);
 },
 };
 }
