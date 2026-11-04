@@ -2558,8 +2558,9 @@ return { color: c, mr: cm };
 const AGENT_POSE_HOLD = 3.5;
 const AGENT_POSE_FADE = 0.8;
 // Первая поза — как на витринах (руки скрещены), дальше — по кругу.
+// У T позы 01/03/04 почти одинаковые (руки вниз) — первой рука у лица (02).
 const AGENT_POSE_ORDER = ['cu_ct_pose03', 'cu_ct_pose04', 'cu_ct_pose01', 'cu_ct_pose05', 'cu_ct_pose02',
-'cu_t_pose01', 'cu_t_pose03', 'cu_t_pose02', 'cu_t_pose04'];
+'cu_t_pose02', 'cu_t_pose03', 'cu_t_pose01', 'cu_t_pose04'];
 const agentPoseCache = {};
 const AGENT_RIG_VERSION = 2;
 
@@ -2592,15 +2593,22 @@ return fetch(modelsUrl(modelUrl))
 });
 }
 
-function loadAgentPoseClips(team){
-if (!agentPoseCache[team]){
-agentPoseCache[team] = fetch(modelsUrl('models/anim/agent/index.json'))
+// Свои позы группы агентов (жандармы, SEAL, партизаны, маски — index.special
+// по началу имени модели) идут первыми, потом общие позы стороны.
+function loadAgentPoseClips(team, modelUrl){
+const base = String(modelUrl || '').split('/').pop().replace(/\.glb$/, '');
+const cacheKey = team + '|' + base;
+if (!agentPoseCache[cacheKey]){
+agentPoseCache[cacheKey] = fetch(modelsUrl('models/anim/agent/index.json'))
 .then(r => (r.ok ? r.json() : {}))
 .then(index => {
-const names = (index[team] || []).slice().sort((a, b) => {
+const special = Object.entries(index.special || {})
+.filter(([prefix]) => base.startsWith(prefix))
+.reduce((all, [, list]) => all.concat(list || []), []);
+const names = special.concat((index[team] || []).slice().sort((a, b) => {
 const ia = AGENT_POSE_ORDER.indexOf(a), ib = AGENT_POSE_ORDER.indexOf(b);
 return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
-});
+}));
 return Promise.all(names.map(name => fetch(modelsUrl('models/anim/agent/' + name + '.glb'))
 .then(r => (r.ok ? r.arrayBuffer() : null))
 .then(buf => (buf ? parseGlb(buf) : null))
@@ -2610,7 +2618,7 @@ return Promise.all(names.map(name => fetch(modelsUrl('models/anim/agent/' + name
 .then(clips => clips.filter(Boolean))
 .catch(() => []);
 }
-return agentPoseCache[team];
+return agentPoseCache[cacheKey];
 }
 
 // Поза на модели со скелетом: первая сразу, дальше (cycle) — по кругу
@@ -3776,7 +3784,7 @@ const baseDistance = fitObjectToView(THREE, gltf.scene, camera, true);
 if (!skinDir){ hideViewerPoster(); d3Ready(); }
 // Агент со скелетом — в позах из инвентаря CS2, по кругу.
 if (agentRigUrl(modelUrl)){
-loadAgentPoseClips(agentTeam(modelUrl)).then(clips => {
+loadAgentPoseClips(agentTeam(modelUrl), modelUrl).then(clips => {
 if (stale() || !viewer3d || viewer3d.object !== object) return;
 viewer3d.agentPose = startAgentPoses(THREE, gltf.scene, clips, true);
 // Эмоции — только у агента со скелетом (поза встала).
@@ -4578,7 +4586,7 @@ const buffer = await response.arrayBuffer();
 const gltf = await parseModelBuffer(buffer, entry.model).catch(() => parseGlb(stripTexturesFromGlb(buffer)));
 // Агент со скелетом — в первой позе инвентаря (руки скрещены), до кадра.
 if (agentRigUrl(entry.model)){
-const clips = await loadAgentPoseClips(agentTeam(entry.model));
+const clips = await loadAgentPoseClips(agentTeam(entry.model), entry.model);
 startAgentPoses(THREE, gltf.scene, clips.slice(0, 1), false);
 }
 // Перчатки — готовые текстуры, агенты — без раскраски.
