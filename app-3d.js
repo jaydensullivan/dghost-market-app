@@ -2662,15 +2662,18 @@ const pelvisBase = new THREE.Vector3();
 const tmp = new THREE.Vector3();
 const pelvisLocal = (out) => { root.updateMatrixWorld(true); pelvis.getWorldPosition(out); return root.worldToLocal(out); };
 // Позы инвентаря — один кадр, агент стоял как статуя. Сверху — дыхание:
-// грудь чуть наклоняется, голова медленно поворачивается. Только кости,
-// которые клип пишет каждый кадр, — иначе поворот бы накапливался.
+// грудь чуть наклоняется, голова медленно поворачивается. Только кости
+// из клипов поз. Mixer перезаписывает кость, только когда значение клипа
+// меняется (у застывшей позы — никогда), поэтому дыхание каждый раз
+// считается от позы кости (base), а не поверх прошлого кадра: иначе
+// на телефоне при 60 кадрах/с наклон копился и агента складывало.
 const tracked = new Set();
 clips.forEach(c => c.tracks.forEach(t => tracked.add(t.name.split('.')[0])));
 const breathBones = [];
 root.traverse(o => {
 if (!o.isBone || !tracked.has(o.name)) return;
 const m = AGENT_BREATH.find(b => b.re.test(o.name));
-if (m) breathBones.push({ bone: o, ...m });
+if (m) breathBones.push({ bone: o, ...m, base: o.quaternion.clone(), last: o.quaternion.clone() });
 });
 const axisX = new THREE.Vector3(1, 0, 0), axisY = new THREE.Vector3(0, 1, 0);
 const qa = new THREE.Quaternion(), qb = new THREE.Quaternion(), qParent = new THREE.Quaternion(), qRoot = new THREE.Quaternion();
@@ -2678,19 +2681,27 @@ let breathT = Math.random() * 10, breathW = 1;
 const breathe = (dt) => {
 breathT += dt;
 breathW += ((emote ? 0 : 1) - breathW) * Math.min(1, dt * 3);
-if (breathW < 0.01 || !breathBones.length) return;
+if (!breathBones.length) return;
+// Mixer записал в кость новое значение — это и есть поза; не записал —
+// в кости наше прошлое дыхание, поза — сохранённая base.
+breathBones.forEach(b => { if (!b.bone.quaternion.equals(b.last)) b.base.copy(b.bone.quaternion); });
+if (breathW < 0.01){
+breathBones.forEach(b => { b.bone.quaternion.copy(b.base); b.last.copy(b.base); });
+return;
+}
 root.updateMatrixWorld(true);
 root.getWorldQuaternion(qRoot);
 const inhale = Math.sin(breathT * Math.PI * 2 / 3.8);
 const look = Math.sin(breathT * Math.PI * 2 / 9.5) + 0.35 * Math.sin(breathT * Math.PI * 2 / 4.3);
-breathBones.forEach(({ bone, pitch, yaw }) => {
+breathBones.forEach(({ bone, pitch, yaw, base, last }) => {
 // Поворот в осях агента (X — вбок, Y — вверх) переводим в оси кости.
 qa.setFromAxisAngle(axisX, pitch * inhale * breathW);
 qb.setFromAxisAngle(axisY, yaw * look * breathW);
 qa.premultiply(qb).premultiply(qRoot).multiply(qb.copy(qRoot).invert());
 bone.parent.getWorldQuaternion(qParent);
 qb.copy(qParent).invert().multiply(qa).multiply(qParent);
-bone.quaternion.premultiply(qb);
+bone.quaternion.copy(base).premultiply(qb);
+last.copy(bone.quaternion);
 });
 };
 actions[0].play();
