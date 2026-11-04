@@ -414,6 +414,7 @@ let viewer3d = null; // { renderer, scene, camera, object, raf }
 let viewer3dPose = null;
 
 function dispose3DViewer(){
+stopAgentVoice();
 if (!viewer3d) return;
 cancelAnimationFrame(viewer3d.raf);
 if (viewer3d.stopTilt) viewer3d.stopTilt();
@@ -2818,7 +2819,62 @@ agentEmoteClips[name].catch(() => { delete agentEmoteClips[name]; });
 return agentEmoteClips[name];
 }
 
+// ---------- Голоса агентов ----------
+// Реплики из игры (models/anim/agent/vo/, сборка build-agent-vo.sh):
+// кнопка «Голос» — фраза из тех, что игра говорит при осмотре агента в
+// инвентаре; к MVP и победе — подбадривание или похвала. Файл берём
+// fetch'ем (как модели — CDN пускает только с нашего Origin) и играем из
+// памяти.
+let agentVoiceIndex = null;
+let agentVoiceAudio = null;
+let agentVoiceLast = '';
+const agentVoiceBlobs = {};
+
+function loadAgentVoiceIndex(){
+if (!agentVoiceIndex){
+agentVoiceIndex = fetch(agentAssetUrl('models/anim/agent/vo/index.json'))
+.then(r => (r.ok ? r.json() : null))
+.catch(() => null);
+}
+return agentVoiceIndex;
+}
+
+function agentVoiceFor(index, modelUrl){
+if (!index || !index.agents || !index.voices) return null;
+const base = String(modelUrl || '').split('/').pop().replace(/\.glb$/, '');
+const voice = index.agents[base];
+return voice && index.voices[voice] ? voice : null;
+}
+
+function stopAgentVoice(){
+if (agentVoiceAudio){ agentVoiceAudio.pause(); agentVoiceAudio = null; }
+}
+
+function playAgentVoice(index, voice, kinds){
+const v = index && index.voices && index.voices[voice];
+if (!v || !v.lines || !v.lines.length) return;
+let pool = v.lines.filter(l => !kinds || kinds.includes(l.kind));
+if (!pool.length) pool = v.lines;
+if (pool.length > 1) pool = pool.filter(l => l.name !== agentVoiceLast);
+const line = pool[Math.floor(Math.random() * pool.length)];
+agentVoiceLast = line.name;
+const path = 'models/anim/agent/vo/' + voice + '/' + line.name + '.mp3';
+if (!agentVoiceBlobs[path]){
+agentVoiceBlobs[path] = fetch(agentAssetUrl(path))
+.then(r => { if (!r.ok) throw new Error('voice ' + r.status); return r.blob(); })
+.then(b => URL.createObjectURL(b));
+agentVoiceBlobs[path].catch(() => { delete agentVoiceBlobs[path]; });
+}
+agentVoiceBlobs[path].then(src => {
+stopAgentVoice();
+const audio = new Audio(src);
+agentVoiceAudio = audio;
+audio.play().catch(() => {});
+}).catch(err => console.warn('3D: голос не загрузился —', err));
+}
+
 function hideAgentEmotes(){
+stopAgentVoice();
 const box = document.getElementById('viewer3dEmotes');
 if (box) box.innerHTML = '';
 const menu = document.getElementById('v3MenuEmotes');
@@ -2856,16 +2912,25 @@ root.querySelectorAll('.v3-menu').forEach(m => setViewerMenuOpen(m, false));
 });
 }
 
-function renderAgentEmotes(team, isCurrent, title){
+function renderAgentEmotes(team, isCurrent, title, modelUrl){
 const box = document.getElementById('viewer3dEmotes');
 if (!box) return;
-loadAgentEmoteIndex().then(list => {
+Promise.all([loadAgentEmoteIndex(), loadAgentVoiceIndex()]).then(([list, voices]) => {
 if (!isCurrent()) return;
 const dict = I18N[currentLang] || I18N.ru;
 const mine = pickAgentEmotes(list, team, title);
-if (!mine.length){ hideAgentEmotes(); return; }
+const voice = agentVoiceFor(voices, modelUrl);
+if (!mine.length && !voice){ hideAgentEmotes(); return; }
 box.innerHTML = '';
 box.setAttribute('aria-label', dict.v3_emotes_label || 'Emotes');
+if (voice){
+const btn = document.createElement('button');
+btn.type = 'button';
+btn.className = 'viewer3d-bg';
+btn.textContent = dict.v3_voice || '🔊 Voice';
+btn.addEventListener('click', () => playAgentVoice(voices, voice, ['preview']));
+box.appendChild(btn);
+}
 const counter = {};
 mine.forEach(({ e, kind, single }) => {
 counter[kind] = (counter[kind] || 0) + 1;
@@ -2877,6 +2942,8 @@ btn.addEventListener('click', () => {
 btn.disabled = true;
 // Список закрываем — эмоцию должно быть видно целиком.
 setViewerMenuOpen(document.getElementById('v3MenuEmotes'), false);
+// MVP и победа — со словами агента.
+if (voice && (kind === 'mvp' || kind === 'win')) setTimeout(() => { if (isCurrent()) playAgentVoice(voices, voice, ['cheer', 'compliment', 'thanks']); }, 500);
 loadAgentEmoteClip(e.name).then(clip => {
 if (isCurrent() && viewer3d && viewer3d.agentPose && viewer3d.agentPose.playOnce) viewer3d.agentPose.playOnce(clip);
 }).catch(err => console.warn('3D: эмоция не загрузилась —', err)).finally(() => { btn.disabled = false; });
@@ -4039,7 +4106,7 @@ gltf.scene.traverse(o => { if (o.isSkinnedMesh) skinned++; });
 reportClientError('agent_pose', 'no pose: skinned ' + skinned + ', clips ' + clips.length + ' · ' + modelUrl);
 }
 // Эмоции — только у агента со скелетом (поза встала).
-if (viewer3d.agentPose) renderAgentEmotes(agentTeam(modelUrl), () => !stale() && viewer3d && viewer3d.object === object, title);
+if (viewer3d.agentPose) renderAgentEmotes(agentTeam(modelUrl), () => !stale() && viewer3d && viewer3d.object === object, title, modelUrl);
 });
 }
 
