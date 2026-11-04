@@ -4025,7 +4025,7 @@ viewer3d.agentPose = startAgentPoses(THREE, gltf.scene, clips, true);
 if (!viewer3d.agentPose && typeof reportClientError === 'function'){
 let skinned = 0;
 gltf.scene.traverse(o => { if (o.isSkinnedMesh) skinned++; });
-reportClientError('agent_pose', 'нет позы: скелет ' + skinned + ', поз ' + clips.length + ' · ' + modelUrl);
+reportClientError('agent_pose', 'no pose: skinned ' + skinned + ', clips ' + clips.length + ' · ' + modelUrl);
 }
 // Эмоции — только у агента со скелетом (поза встала).
 if (viewer3d.agentPose) renderAgentEmotes(agentTeam(modelUrl), () => !stale() && viewer3d && viewer3d.object === object, title);
