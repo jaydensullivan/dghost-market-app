@@ -2839,10 +2839,17 @@ agentVoiceIndex = fetch(agentAssetUrl('models/anim/agent/vo/index.json'))
 return agentVoiceIndex;
 }
 
+// Голос агента — vo_prefix из items_game.txt игры (у 32 агентов); у
+// остальных — голос команды по папке модели, как в игре.
+const AGENT_VOICE_MAP = { ctm_diver_varianta: 'seal_fem', ctm_diver_variantb: 'seal_diver_01', ctm_diver_variantc: 'seal_diver_02', ctm_fbi_variantb: 'fbihrt_epic', ctm_gendarmerie_varianta: 'gendarmerie_male', ctm_gendarmerie_variantb: 'gendarmerie_male', ctm_gendarmerie_variantc: 'gendarmerie_fem_epic', ctm_gendarmerie_variantd: 'gendarmerie_male', ctm_gendarmerie_variante: 'gendarmerie_male', ctm_st6_varianti: 'seal_epic', ctm_st6_variantk: 'gsg9', ctm_swat_variante: 'swat_epic', ctm_swat_variantf: 'swat_fem', ctm_swat_variantk: 'swat_fem', tm_balkan_varianth: 'balkan_epic', tm_jungle_raider_varianta: 'jungle_male', tm_jungle_raider_variantb: 'jungle_male_epic', tm_jungle_raider_variantb2: 'jungle_male_epic', tm_jungle_raider_variantc: 'jungle_male', tm_jungle_raider_variantd: 'jungle_male', tm_jungle_raider_variante: 'jungle_fem_epic', tm_jungle_raider_variantf: 'jungle_fem', tm_jungle_raider_variantf2: 'jungle_fem', tm_leet_variantf: 'leet_epic', tm_professional_varf: 'professional_epic', tm_professional_varf1: 'professional_epic', tm_professional_varf2: 'professional_epic', tm_professional_varf3: 'professional_epic', tm_professional_varf4: 'professional_epic', tm_professional_varf5: 'professional_epic', tm_professional_varg: 'professional_fem', tm_professional_varj: 'professional_fem' };
+const AGENT_VOICE_TEAM = [[/^ctm_fbi/, 'fbihrt'], [/^ctm_sas/, 'sas'], [/^ctm_st6/, 'seal'], [/^ctm_swat/, 'swat'],
+[/^ctm_gendarmerie/, 'gendarmerie_male'], [/^ctm_diver/, 'seal'], [/^tm_balkan/, 'balkan'], [/^tm_leet/, 'leet'],
+[/^tm_phoenix/, 'phoenix'], [/^tm_professional/, 'professional'], [/^tm_jungle_raider/, 'jungle_male']];
 function agentVoiceFor(index, modelUrl){
-if (!index || !index.agents || !index.voices) return null;
+if (!index || !index.voices) return null;
 const base = String(modelUrl || '').split('/').pop().replace(/\.glb$/, '');
-const voice = index.agents[base];
+const team = AGENT_VOICE_TEAM.find(([re]) => re.test(base));
+const voice = (index.agents && index.agents[base]) || AGENT_VOICE_MAP[base] || (team && team[1]);
 return voice && index.voices[voice] ? voice : null;
 }
 
