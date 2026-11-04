@@ -16,7 +16,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=5"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=117">
+<link rel="stylesheet" href="app.css?v=118">
 </head>
 <body data-tab="shop">
 <!-- Значки интерфейса в едином объёмном стиле (gi-*): <svg class="gi"><use href="#gi-…"/></svg>. -->
@@ -1735,6 +1735,18 @@
 <img class="viewer3d-poster" id="viewer3dPoster" alt="" hidden>
 <canvas id="viewer3dCanvas"></canvas>
 <div class="viewer3d-views" id="viewer3dViews" role="radiogroup" hidden></div>
+<!-- Фон и эмоции — раскрывающиеся списки в правом верхнем углу сцены:
+     у нижнего края их перехватывает жест «домой» iPhone и Samsung. -->
+<div class="v3-menus" id="v3Menus">
+<div class="v3-menu" id="v3MenuBg">
+<button type="button" class="v3-menu-btn" aria-expanded="false" aria-controls="viewer3dBgs"><span data-i18n="v3_bg_label">Фон</span><span class="v3-menu-cur" id="v3MenuBgCur"></span><span class="v3-menu-caret" aria-hidden="true">▾</span></button>
+<div class="viewer3d-bgs v3-menu-list" id="viewer3dBgs" role="radiogroup"></div>
+</div>
+<div class="v3-menu" id="v3MenuEmotes" hidden>
+<button type="button" class="v3-menu-btn" aria-expanded="false" aria-controls="viewer3dEmotes"><span data-i18n="v3_emotes_label">Эмоции</span><span class="v3-menu-caret" aria-hidden="true">▾</span></button>
+<div class="viewer3d-bgs viewer3d-emotes v3-menu-list" id="viewer3dEmotes"></div>
+</div>
+</div>
 <div class="viewer3d-hint" id="viewer3dHint" data-i18n="v3_hint">Покрути пальцем, двумя пальцами — масштаб.</div>
 <div class="viewer3d-status" id="viewer3dStatus"></div>
 </div>
@@ -1750,8 +1762,6 @@
 <input type="range" id="v3wRange" min="0" max="1000" step="1" value="0">
 </div>
 </div>
-<div class="viewer3d-bgs" id="viewer3dBgs" role="radiogroup"></div>
-<div class="viewer3d-bgs viewer3d-emotes" id="viewer3dEmotes" style="display:none;align-items:center;margin-top:8px"></div>
 </div>
 </div>
 
@@ -2583,7 +2593,7 @@
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
 <script>window.DG_ADMIN_SRC = 'app-admin.js?v=31';</script>
 <!-- 3D-просмотрщик (210 КБ) грузится после открытия витрины — ensure3DScript в app-navigation.js. -->
-<script>window.DG_3D_SRC = 'app-3d.js?v=127';</script>
+<script>window.DG_3D_SRC = 'app-3d.js?v=128';</script>
 <script src="app-auctions.js?v=9"></script>
 <script src="app-reviews.js?v=4"></script>
 <script src="app-notifications.js?v=3"></script>

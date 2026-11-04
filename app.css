@@ -2755,6 +2755,31 @@ touch-action:none;
   font-family:'Inter', sans-serif; font-size:12px; color:rgba(255,255,255,0.75); text-shadow:0 1px 3px rgba(0,0,0,0.6);
   transition:opacity .6s; }
 .viewer3d-hint.gone{ opacity:0; }
+/* Фон и эмоции — раскрывающиеся списки в правом верхнем углу сцены
+   (внизу их перехватывает жест «домой»). Колонка занимает высоту сцены,
+   открытый список прокручивается внутри неё. */
+.v3-menus{ position:absolute; top:10px; right:10px; bottom:44px; z-index:4; display:flex; flex-direction:column;
+  align-items:flex-end; gap:6px; pointer-events:none; max-width:min(60%, 220px); }
+.viewer3d-views:not([hidden]) ~ .v3-menus{ top:52px; }
+.v3-menu{ display:flex; flex-direction:column; align-items:flex-end; gap:6px; min-height:0; flex:0 0 auto; }
+.v3-menu.open{ flex:0 1 auto; }
+.v3-menu[hidden]{ display:none; }
+.v3-menu-btn{ pointer-events:auto; display:flex; align-items:center; gap:6px; height:36px; max-width:100%; padding:0 12px;
+  border-radius:18px; border:1px solid rgba(255,255,255,0.14); background:rgba(8,7,13,0.6); color:#fff;
+  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); font-family:'Inter', sans-serif; font-size:13px; cursor:pointer; }
+.v3-menu-btn:focus-visible{ outline:2px solid var(--red); outline-offset:2px; }
+.v3-menu-cur{ color:rgba(255,255,255,0.7); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.v3-menu-cur:not(:empty)::before{ content:'· '; }
+.v3-menu-caret{ font-size:11px; transition:transform .2s; }
+.v3-menu.open .v3-menu-caret{ transform:rotate(180deg); }
+.v3-menus .v3-menu-list{ display:none; pointer-events:auto; flex-direction:column; align-items:stretch; gap:4px; margin:0;
+  padding:6px; min-height:0; overflow-x:hidden; overflow-y:auto; -webkit-mask-image:none; mask-image:none;
+  border-radius:14px; background:rgba(8,7,13,0.72); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+  overscroll-behavior:contain; }
+.v3-menus .v3-menu.open .v3-menu-list{ display:flex; }
+.v3-menus .v3-menu-list .viewer3d-bg{ height:36px; text-align:left; border-color:transparent; background:transparent; color:#fff; }
+.v3-menus .v3-menu-list .viewer3d-bg[aria-checked="true"]{ background:rgba(123,44,255,0.45); border-color:var(--red); }
+.v3-menus .v3-menu-list .viewer3d-bg:disabled{ opacity:.6; }
 /* Во весь экран: лист на всё окно, сцена забирает всё свободное место.
    Отступы — под вырез экрана и кнопки Telegram в полноэкранном режиме. */
 .edit-overlay.v3-full{ align-items:stretch; z-index:1000 !important; }

@@ -2760,7 +2760,40 @@ return agentEmoteClips[name];
 
 function hideAgentEmotes(){
 const box = document.getElementById('viewer3dEmotes');
-if (box){ box.style.display = 'none'; box.innerHTML = ''; }
+if (box) box.innerHTML = '';
+const menu = document.getElementById('v3MenuEmotes');
+if (menu) menu.hidden = true;
+document.querySelectorAll('#v3Menus .v3-menu').forEach(m => setViewerMenuOpen(m, false));
+}
+
+// Списки «Фон» и «Эмоции» в углу сцены: открыт не больше одного,
+// тап по сцене закрывает.
+function setViewerMenuOpen(menu, open){
+if (!menu) return;
+menu.classList.toggle('open', open);
+const btn = menu.querySelector('.v3-menu-btn');
+if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+let viewerMenusReady = false;
+function setupViewerMenus(){
+if (viewerMenusReady) return;
+const root = document.getElementById('v3Menus');
+if (!root) return;
+viewerMenusReady = true;
+root.querySelectorAll('.v3-menu').forEach(menu => {
+menu.querySelector('.v3-menu-btn').addEventListener('click', () => {
+const open = !menu.classList.contains('open');
+root.querySelectorAll('.v3-menu').forEach(m => setViewerMenuOpen(m, m === menu && open));
+if (open){
+const cur = menu.querySelector('[aria-checked="true"]');
+if (cur) cur.scrollIntoView({ block: 'nearest' });
+}
+});
+});
+const canvas = document.getElementById('viewer3dCanvas');
+if (canvas) canvas.addEventListener('pointerdown', () => {
+root.querySelectorAll('.v3-menu').forEach(m => setViewerMenuOpen(m, false));
+});
 }
 
 function renderAgentEmotes(team, isCurrent, title){
@@ -2773,11 +2806,6 @@ const mine = pickAgentEmotes(list, team, title);
 if (!mine.length){ hideAgentEmotes(); return; }
 box.innerHTML = '';
 box.setAttribute('aria-label', dict.v3_emotes_label || 'Emotes');
-const label = document.createElement('span');
-label.className = 'viewer3d-emotes-label';
-label.style.cssText = 'flex:0 0 auto;font-size:12px;color:var(--muted);margin-right:2px';
-label.textContent = dict.v3_emotes_label || 'Emotes';
-box.appendChild(label);
 const counter = {};
 mine.forEach(({ e, kind, single }) => {
 counter[kind] = (counter[kind] || 0) + 1;
@@ -2787,13 +2815,17 @@ btn.className = 'viewer3d-bg';
 btn.textContent = String(dict['v3_emote_' + kind] || kind + ' {n}').replace(single ? ' {n}' : '{n}', single ? '' : counter[kind]).trim();
 btn.addEventListener('click', () => {
 btn.disabled = true;
+// Список закрываем — эмоцию должно быть видно целиком.
+setViewerMenuOpen(document.getElementById('v3MenuEmotes'), false);
 loadAgentEmoteClip(e.name).then(clip => {
 if (isCurrent() && viewer3d && viewer3d.agentPose && viewer3d.agentPose.playOnce) viewer3d.agentPose.playOnce(clip);
 }).catch(err => console.warn('3D: эмоция не загрузилась —', err)).finally(() => { btn.disabled = false; });
 });
 box.appendChild(btn);
 });
-box.style.display = 'flex';
+setupViewerMenus();
+const menu = document.getElementById('v3MenuEmotes');
+if (menu) menu.hidden = false;
 });
 }
 
@@ -3245,6 +3277,10 @@ stage.style.background = VIEWER_BG_INSPECT;
 }
 document.querySelectorAll('#viewer3dBgs .viewer3d-bg').forEach(btn => {
 btn.setAttribute('aria-checked', btn.dataset.bg === id ? 'true' : 'false');
+if (btn.dataset.bg === id){
+const cur = document.getElementById('v3MenuBgCur');
+if (cur) cur.textContent = btn.textContent;
+}
 });
 viewerBgCurrent = id;
 updateAgentFloor();
@@ -3332,6 +3368,7 @@ if (env && viewer3d === v && v.envId === id) v.scene.environment = env;
 function renderViewerBackgrounds(dict){
 const box = document.getElementById('viewer3dBgs');
 if (!box) return;
+setupViewerMenus();
 box.setAttribute('aria-label', dict.v3_bg_label || 'Background');
 let saved = 'inspect';
 try { saved = localStorage.getItem(VIEWER_BG_KEY) || 'inspect'; } catch (e) {}
