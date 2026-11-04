@@ -2562,7 +2562,12 @@ const AGENT_POSE_FADE = 0.8;
 const AGENT_POSE_ORDER = ['cu_ct_pose03', 'cu_ct_pose04', 'cu_ct_pose01', 'cu_ct_pose05', 'cu_ct_pose02',
 'cu_t_pose02', 'cu_t_pose03', 'cu_t_pose01', 'cu_t_pose04'];
 const agentPoseCache = {};
-const AGENT_RIG_VERSION = 2;
+// Версия файлов агентов (скелет, позы, эмоции) в адресе: CDN разрешает
+// телефону держать файл 30 дней, и iPhone, скачавший битый скелет до
+// исправления кэша CDN, показывал агента в T-позе без эмоций. Новая
+// версия — новый адрес, файл качается заново.
+const AGENT_RIG_VERSION = 3;
+const agentAssetUrl = path => modelsUrl(path) + '?r=' + AGENT_RIG_VERSION;
 
 function agentRigUrl(modelUrl){
 const m = String(modelUrl || '').match(/^(.*models\/agents\/)([^/]+\.glb)$/);
@@ -2579,7 +2584,7 @@ const rig = agentRigUrl(modelUrl);
 if (!rig) return fetch(modelsUrl(modelUrl));
 // ?r= — версия сборки: файлы до исправления морфов (3 ноября) телефоны
 // держат в кэше до часа, с новой версией качают заново.
-return fetch(modelsUrl(rig) + '?r=' + AGENT_RIG_VERSION).then(r => (r.ok ? r : fetch(modelsUrl(modelUrl))), () => fetch(modelsUrl(modelUrl)));
+return fetch(agentAssetUrl(rig)).then(r => (r.ok ? r : fetch(modelsUrl(modelUrl))), () => fetch(modelsUrl(modelUrl)));
 }
 
 // Скелет агента не разобрался (битый файл на CDN) — обычная модель.
@@ -2587,6 +2592,8 @@ function parseModelBuffer(buffer, modelUrl){
 return parseGlb(buffer).catch(err => {
 if (!agentRigUrl(modelUrl)) throw err;
 console.warn('3D: агент со скелетом не разобрался, беру обычную модель —', err);
+// Агент будет в T-позе без эмоций — пусть владелец узнает сразу.
+if (typeof reportClientError === 'function') reportClientError('agent_rig', String((err && err.message) || err).slice(0, 160) + ' · ' + modelUrl);
 return fetch(modelsUrl(modelUrl))
 .then(r => { if (!r.ok) throw err; return r.arrayBuffer(); })
 .then(b => parseGlb(b));
@@ -2600,7 +2607,7 @@ function loadAgentPoseClips(team, modelUrl){
 const base = String(modelUrl || '').split('/').pop().replace(/\.glb$/, '');
 const cacheKey = team + '|' + base;
 if (!agentPoseCache[cacheKey]){
-agentPoseCache[cacheKey] = fetch(modelsUrl('models/anim/agent/index.json'))
+agentPoseCache[cacheKey] = fetch(agentAssetUrl('models/anim/agent/index.json'))
 .then(r => (r.ok ? r.json() : {}))
 .then(index => {
 const special = Object.entries(index.special || {})
@@ -2617,7 +2624,7 @@ const names = special.concat((index[team] || []).slice().sort((a, b) => {
 const ia = AGENT_POSE_ORDER.indexOf(a), ib = AGENT_POSE_ORDER.indexOf(b);
 return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
 }));
-return Promise.all(names.map(name => fetch(modelsUrl('models/anim/agent/' + name + '.glb'))
+return Promise.all(names.map(name => fetch(agentAssetUrl('models/anim/agent/' + name + '.glb'))
 .then(r => (r.ok ? r.arrayBuffer() : null))
 .then(buf => (buf ? parseGlb(buf) : null))
 .then(g => (g && g.animations && g.animations[0]) || null)
@@ -2655,15 +2662,18 @@ const pelvisBase = new THREE.Vector3();
 const tmp = new THREE.Vector3();
 const pelvisLocal = (out) => { root.updateMatrixWorld(true); pelvis.getWorldPosition(out); return root.worldToLocal(out); };
 // Позы инвентаря — один кадр, агент стоял как статуя. Сверху — дыхание:
-// грудь чуть наклоняется, голова медленно поворачивается. Только кости,
-// которые клип пишет каждый кадр, — иначе поворот бы накапливался.
+// грудь чуть наклоняется, голова медленно поворачивается. Только кости
+// из клипов поз. Mixer перезаписывает кость, только когда значение клипа
+// меняется (у застывшей позы — никогда), поэтому дыхание каждый раз
+// считается от позы кости (base), а не поверх прошлого кадра: иначе
+// на телефоне при 60 кадрах/с наклон копился и агента складывало.
 const tracked = new Set();
 clips.forEach(c => c.tracks.forEach(t => tracked.add(t.name.split('.')[0])));
 const breathBones = [];
 root.traverse(o => {
 if (!o.isBone || !tracked.has(o.name)) return;
 const m = AGENT_BREATH.find(b => b.re.test(o.name));
-if (m) breathBones.push({ bone: o, ...m });
+if (m) breathBones.push({ bone: o, ...m, base: o.quaternion.clone(), last: o.quaternion.clone() });
 });
 const axisX = new THREE.Vector3(1, 0, 0), axisY = new THREE.Vector3(0, 1, 0);
 const qa = new THREE.Quaternion(), qb = new THREE.Quaternion(), qParent = new THREE.Quaternion(), qRoot = new THREE.Quaternion();
@@ -2671,19 +2681,27 @@ let breathT = Math.random() * 10, breathW = 1;
 const breathe = (dt) => {
 breathT += dt;
 breathW += ((emote ? 0 : 1) - breathW) * Math.min(1, dt * 3);
-if (breathW < 0.01 || !breathBones.length) return;
+if (!breathBones.length) return;
+// Mixer записал в кость новое значение — это и есть поза; не записал —
+// в кости наше прошлое дыхание, поза — сохранённая base.
+breathBones.forEach(b => { if (!b.bone.quaternion.equals(b.last)) b.base.copy(b.bone.quaternion); });
+if (breathW < 0.01){
+breathBones.forEach(b => { b.bone.quaternion.copy(b.base); b.last.copy(b.base); });
+return;
+}
 root.updateMatrixWorld(true);
 root.getWorldQuaternion(qRoot);
 const inhale = Math.sin(breathT * Math.PI * 2 / 3.8);
 const look = Math.sin(breathT * Math.PI * 2 / 9.5) + 0.35 * Math.sin(breathT * Math.PI * 2 / 4.3);
-breathBones.forEach(({ bone, pitch, yaw }) => {
+breathBones.forEach(({ bone, pitch, yaw, base, last }) => {
 // Поворот в осях агента (X — вбок, Y — вверх) переводим в оси кости.
 qa.setFromAxisAngle(axisX, pitch * inhale * breathW);
 qb.setFromAxisAngle(axisY, yaw * look * breathW);
 qa.premultiply(qb).premultiply(qRoot).multiply(qb.copy(qRoot).invert());
 bone.parent.getWorldQuaternion(qParent);
 qb.copy(qParent).invert().multiply(qa).multiply(qParent);
-bone.quaternion.premultiply(qb);
+bone.quaternion.copy(base).premultiply(qb);
+last.copy(bone.quaternion);
 });
 };
 actions[0].play();
@@ -2774,7 +2792,7 @@ const agentEmoteClips = {};
 
 function loadAgentEmoteIndex(){
 if (!agentEmoteIndex){
-agentEmoteIndex = fetch(modelsUrl('models/anim/agent/emote/index.json'))
+agentEmoteIndex = fetch(agentAssetUrl('models/anim/agent/emote/index.json'))
 .then(r => (r.ok ? r.json() : []))
 .then(list => (Array.isArray(list) ? list : []))
 .catch(() => []);
@@ -2784,7 +2802,7 @@ return agentEmoteIndex;
 
 function loadAgentEmoteClip(name){
 if (!agentEmoteClips[name]){
-agentEmoteClips[name] = fetch(modelsUrl('models/anim/agent/emote/' + name + '.glb'))
+agentEmoteClips[name] = fetch(agentAssetUrl('models/anim/agent/emote/' + name + '.glb'))
 .then(r => { if (!r.ok) throw new Error('emote ' + r.status); return r.arrayBuffer(); })
 .then(buf => parseGlb(buf))
 .then(g => {
@@ -4015,6 +4033,11 @@ if (agentRigUrl(modelUrl)){
 loadAgentPoseClips(agentTeam(modelUrl), modelUrl).then(clips => {
 if (stale() || !viewer3d || viewer3d.object !== object) return;
 viewer3d.agentPose = startAgentPoses(THREE, gltf.scene, clips, true);
+if (!viewer3d.agentPose && typeof reportClientError === 'function'){
+let skinned = 0;
+gltf.scene.traverse(o => { if (o.isSkinnedMesh) skinned++; });
+reportClientError('agent_pose', 'no pose: skinned ' + skinned + ', clips ' + clips.length + ' · ' + modelUrl);
+}
 // Эмоции — только у агента со скелетом (поза встала).
 if (viewer3d.agentPose) renderAgentEmotes(agentTeam(modelUrl), () => !stale() && viewer3d && viewer3d.object === object, title);
 });
