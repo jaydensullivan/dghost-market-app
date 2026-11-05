@@ -522,6 +522,9 @@ priceMax: null,
 floatMin: null,
 floatMax: null,
 stickers: 'any',
+// ПК-версия (app-desktop.js): редкости списком значений skin.rarity, только StatTrak.
+rarities: null,
+stattrak: null,
 };
 
 let deepLinkSkinId = null;
@@ -583,6 +586,13 @@ if (activeFilters.stickers === 'yes'){
 filtered = filtered.filter(s => !!s.has_stickers);
 } else if (activeFilters.stickers === 'no'){
 filtered = filtered.filter(s => !s.has_stickers);
+}
+
+if (activeFilters.rarities){
+filtered = filtered.filter(s => activeFilters.rarities.includes(s.rarity));
+}
+if (activeFilters.stattrak){
+filtered = filtered.filter(s => !!s.stattrak);
 }
 
 if (currentShopTab === 'discounts'){

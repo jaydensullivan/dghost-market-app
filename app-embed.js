@@ -24,7 +24,7 @@ const ticket = (q.get('ticket') || '').trim();
 // поворачивает прокрутка страницы (сообщения { source: 'dghost-site',
 // type: 'hero', p: 0…1 } только с наших адресов).
 const hero = q.get('hero') === '1';
-const HERO_ORIGIN = /^https:\/\/(www\.)?dghostmarket\.(uz|com)$|^http:\/\/localhost(:\d+)?$/;
+const HERO_ORIGIN = /^https:\/\/((www|app)\.)?dghostmarket\.(uz|com)$|^http:\/\/localhost(:\d+)?$/;
 if (hero) document.body.classList.add('hero');
 
 const MSG = {
