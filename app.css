@@ -4383,6 +4383,9 @@ color:#f2eefa; text-align:center; box-shadow:0 20px 60px rgba(123,44,255,.25);
 .dgw-gate-logo{ width:72px; height:72px; border-radius:18px; object-fit:cover; margin-bottom:12px; }
 .dgw-gate-title{ font-size:20px; font-weight:800; margin-bottom:8px; }
 .dgw-gate-text{ font-size:14px; line-height:1.45; opacity:.85; margin-bottom:18px; }
+.dgw-btn-steam{ display:flex; align-items:center; justify-content:center; gap:10px; min-height:48px; background:#171a21; border:1px solid rgba(255,255,255,.16); font-size:15px; }
+.dgw-btn-steam:hover{ background:#1b2838; }
+.dgw-gate-or{ margin:14px 0 10px; font-size:12px; opacity:.6; }
 .dgw-gate-widget{ min-height:48px; display:flex; justify-content:center; }
 .dgw-gate-status{ min-height:18px; margin:8px 0; font-size:13px; color:#ff6b8a; }
 .dgw-gate-note{ margin-top:12px; font-size:11px; opacity:.55; line-height:1.4; }
