@@ -342,8 +342,16 @@ if (e.target.closest('[data-dt-hero]') && hero._skin) openBuySheet(hero._skin);
 // 3D в «Выгоде дня» — тот же виджет, что продаём сайтам (embed.html,
 // режим витрины: прозрачный фон, без кнопок). Пока он грузится и если
 // не загрузился — стоит обычная картинка лота.
+// Без WebGL 3D не нарисуется — остаётся картинка лота.
+let webglOk = null;
+function hasWebgl(){
+if (webglOk === null){
+try { const c = document.createElement('canvas'); webglOk = !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { webglOk = false; }
+}
+return webglOk;
+}
 function startHero3d(s){
-if (reduce.matches || (navigator.connection && navigator.connection.saveData)) return;
+if (reduce.matches || (navigator.connection && navigator.connection.saveData) || !hasWebgl()) return;
 const stage = hero.querySelector('.dt-stage');
 const q = new URLSearchParams({ key: 'demo', skin: s.title || '', float: s.float_value ?? '', seed: s.pattern ?? '', lang: currentLang, hero: '1' });
 if (s.paint_index) q.set('paint', s.paint_index);
