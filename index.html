@@ -1284,8 +1284,8 @@
 <!-- ===== people ===== -->
 
 <div class="profile-section admin-group" id="adminPeopleSection" data-group="people" style="margin-top:10px; display:none;" data-view="people">
-<div class="profile-section-title" data-i18n="admin_section_people">Команда: админы, поддержка, организаторы</div>
-<div class="shop-hint u-mb10" data-i18n="admin_people_hint">Админ — полный доступ в боте, галочки только скрывают разделы мини-аппа. Поддержка — только обращения клиентов: без денег, заявок и настроек. Организатор — только свои аукционы.</div>
+<div class="profile-section-title" data-i18n="admin_section_people">Команда: админы и поддержка</div>
+<div class="shop-hint u-mb10" data-i18n="admin_people_hint">Админ — полный доступ в боте, галочки только скрывают разделы мини-аппа. Поддержка — только обращения клиентов: без денег, заявок и настроек.</div>
 <div class="u-mb12" id="adminPeopleList"></div>
 <div class="edit-field">
 <label for="adminNewPersonId" data-i18n="admin_label_user_id">Telegram user_id</label>
@@ -1293,7 +1293,6 @@
 </div>
 <div class="money-btn-row money-btn-row-wrap">
 <button type="button" id="adminAddAdminBtn" class="money-btn" data-i18n="admin_btn_add_admin">+ Админ</button>
-<button type="button" id="adminAddAuctioneerBtn" class="money-btn" data-i18n="admin_btn_add_auctioneer">+ Организатор</button>
 <button type="button" id="adminAddSupportAdminBtn" class="money-btn" data-i18n="admin_btn_add_support_admin">+ Поддержка</button>
 <button type="button" id="adminBlockUserBtn" class="money-btn" style="background:rgba(224,85,90,0.15); border-color:#e0555a;">🚫 <span data-i18n="admin_btn_block">Заблокировать</span></button>
 </div>
@@ -2575,8 +2574,8 @@
 </div>
 </div>
 <script src="app-core.js?v=21"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=42', en: 'app-i18n-en.js?v=41' };</script>
-<script src="app-i18n.js?v=165"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=43', en: 'app-i18n-en.js?v=42' };</script>
+<script src="app-i18n.js?v=166"></script>
 <script src="app-navigation.js?v=30"></script>
 <script src="app-shop.js?v=49"></script>
 <script src="app-legal.js?v=3"></script>
@@ -2592,9 +2591,9 @@
 <script src="app-withdraw.js?v=40"></script>
 <script src="app-instant.js?v=1"></script>
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
-<script>window.DG_ADMIN_SRC = 'app-admin.js?v=32';</script>
+<script>window.DG_ADMIN_SRC = 'app-admin.js?v=33';</script>
 <!-- 3D-просмотрщик (210 КБ) грузится после открытия витрины — ensure3DScript в app-navigation.js. -->
-<script>window.DG_3D_SRC = 'app-3d.js?v=133';</script>
+<script>window.DG_3D_SRC = 'app-3d.js?v=134';</script>
 <script src="app-auctions.js?v=9"></script>
 <script src="app-reviews.js?v=4"></script>
 <script src="app-notifications.js?v=3"></script>

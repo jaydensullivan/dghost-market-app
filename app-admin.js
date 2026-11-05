@@ -1564,7 +1564,7 @@ adminApiFetch('/api/admin/referral_percent', { method: 'POST', body: { percent: 
 .catch(err => { status.textContent = friendlyErrorMessage(err); });
 });
 
-// ---------------- Люди (админы / поддержка / организаторы аукционов) ----------------
+// ---------------- Люди (админы / поддержка; старых организаторов аукционов можно только снять) ----------------
 
 function loadAdminPeople(){
 const list = document.getElementById('adminPeopleList');
@@ -1598,7 +1598,6 @@ rows.push(`<div class="deal-card" style="padding:8px 12px;"><div class="deal-inf
 });
 list.innerHTML = rows.join('');
 document.getElementById('adminAddAdminBtn').style.display = data.is_owner ? '' : 'none';
-document.getElementById('adminAddAuctioneerBtn').style.display = data.is_owner ? '' : 'none';
 document.getElementById('adminAddSupportAdminBtn').style.display = data.is_owner ? '' : 'none';
 })
 .catch(() => {});
@@ -1650,15 +1649,6 @@ const status = document.getElementById('adminPeopleStatus');
 const id = Number(document.getElementById('adminNewPersonId').value);
 if (!id){ status.textContent = (I18N[currentLang] || I18N.ru).admin_need_user_id; return; }
 adminApiFetch('/api/admin/people/add_admin', { method: 'POST', body: { user_id: id } })
-.then(() => { status.textContent = (I18N[currentLang] || I18N.ru).status_done_ok; document.getElementById('adminNewPersonId').value = ''; loadAdminPeople(); })
-.catch(err => { status.textContent = friendlyErrorMessage(err); });
-});
-
-document.getElementById('adminAddAuctioneerBtn').addEventListener('click', () => {
-const status = document.getElementById('adminPeopleStatus');
-const id = Number(document.getElementById('adminNewPersonId').value);
-if (!id){ status.textContent = (I18N[currentLang] || I18N.ru).admin_need_user_id; return; }
-adminApiFetch('/api/admin/people/add_auctioneer', { method: 'POST', body: { user_id: id } })
 .then(() => { status.textContent = (I18N[currentLang] || I18N.ru).status_done_ok; document.getElementById('adminNewPersonId').value = ''; loadAdminPeople(); })
 .catch(err => { status.textContent = friendlyErrorMessage(err); });
 });

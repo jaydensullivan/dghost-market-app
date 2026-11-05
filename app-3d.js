@@ -2606,7 +2606,7 @@ return fetch(modelsUrl(modelUrl))
 const AGENT_FEMALE_MODELS = /^(ctm_diver_varianta|tm_jungle_raider_variante)$/;
 // Своя поза агента — как в инвентаре CS2: pose_sequence из items_game.txt
 // (без «cu_»). cu_t_pose05 у Bloody Darryl в файлах игры нет — вместо неё
-// t_pose02 (рука у лица). Агент стоит в одной позе, без смены по кругу.
+// t_pose02 (рука у лица). Поза с опущенными руками сменяется живыми (ниже).
 const AGENT_OWN_POSE = { ctm_diver_varianta: 'scuba_female', ctm_diver_variantb: 'scuba_male', ctm_diver_variantc: 'ct_pose01', ctm_fbi_variantb: 'ct_pose04', ctm_fbi_variantf: 'ct_pose01', ctm_fbi_variantg: 'ct_pose02', ctm_fbi_varianth: 'ct_pose04', ctm_gendarmerie_varianta: 'ct_pose01', ctm_gendarmerie_variantb: 'ct_pose02', ctm_gendarmerie_variantc: 'ct_gendarmerie01', ctm_gendarmerie_variantd: 'ct_pose04', ctm_gendarmerie_variante: 'ct_pose04', ctm_sas_variantf: 'ct_pose02', ctm_sas_variantg: 'ct_pose02', ctm_st6_variante: 'ct_pose02', ctm_st6_variantg: 'ct_pose02', ctm_st6_varianti: 'ct_pose03', ctm_st6_variantj: 'ct_pose02', ctm_st6_variantk: 'ct_pose01', ctm_st6_variantl: 'ct_pose04', ctm_st6_variantm: 'ct_pose04', ctm_st6_variantn: 'ct_pose02', ctm_swat_variante: 'ct_pose05', ctm_swat_variantf: 'ct_pose02', ctm_swat_variantg: 'ct_pose02', ctm_swat_varianth: 'ct_pose01', ctm_swat_varianti: 'ct_pose04', ctm_swat_variantj: 'ct_pose04', ctm_swat_variantk: 'ct_pose04', tm_balkan_variantf: 't_pose01', tm_balkan_variantg: 't_pose03', tm_balkan_varianth: 't_pose02', tm_balkan_varianti: 't_pose04', tm_balkan_variantj: 't_pose04', tm_balkan_variantk: 't_pose03', tm_balkan_variantl: 't_pose01', tm_jungle_raider_varianta: 't_pose01', tm_jungle_raider_variantb: 't_jungle_male', tm_jungle_raider_variantb2: 't_jungle_male', tm_jungle_raider_variantc: 't_pose01', tm_jungle_raider_variantd: 't_pose01', tm_jungle_raider_variante: 't_jungle_female', tm_jungle_raider_variantf: 't_pose01', tm_jungle_raider_variantf2: 't_pose01', tm_leet_variantf: 't_pose03', tm_leet_variantg: 't_pose03', tm_leet_varianth: 't_pose03', tm_leet_varianti: 't_pose01', tm_leet_variantj: 't_pose03', tm_phoenix_variantf: 't_pose02', tm_phoenix_variantg: 't_pose01', tm_phoenix_varianth: 't_pose01', tm_phoenix_varianti: 't_pose01', tm_professional_varf: 't_pose05', tm_professional_varf1: 't_pose05', tm_professional_varf2: 't_pose05', tm_professional_varf3: 't_pose05', tm_professional_varf4: 't_pose05', tm_professional_varf5: 't_pose04', tm_professional_varg: 't_pose04', tm_professional_varh: 't_pose03', tm_professional_vari: 't_pose04', tm_professional_varj: 't_pose02' };
 const AGENT_POSE_MISSING = { t_pose05: 't_pose02' };
 
@@ -2623,14 +2623,21 @@ return fetch(agentAssetUrl('models/anim/agent/' + name + '.glb'))
 .catch(() => null);
 }
 
+// Своя поза с опущенными руками смотрится застывшей — такой агент после
+// своей позы показывает живые позы стороны (руки скрещены, рука на поясе,
+// рука у лица) и возвращается к своей.
+const AGENT_POSE_CALM = new Set(['cu_ct_pose01', 'cu_ct_pose02', 'cu_t_pose01', 'cu_t_pose03', 'cu_t_pose04']);
+const AGENT_POSE_LIVELY = { ct: ['cu_ct_pose03', 'cu_ct_pose04', 'cu_ct_pose05'], t: ['cu_t_pose02'] };
+
 function loadAgentPoseClips(team, modelUrl){
 const base = String(modelUrl || '').split('/').pop().replace(/\.glb$/, '');
 const cacheKey = team + '|' + base;
 const own = agentOwnPose(base);
 if (!agentPoseCache[cacheKey] && own){
+const names = [own].concat(AGENT_POSE_CALM.has(own) ? (AGENT_POSE_LIVELY[team] || []) : []);
 // Своя поза; не загрузилась — общий круг поз, как раньше.
-agentPoseCache[cacheKey] = loadAgentPoseClip(own)
-.then(clip => (clip ? [clip] : loadAgentPoseCycle(team, base)));
+agentPoseCache[cacheKey] = Promise.all(names.map(loadAgentPoseClip))
+.then(([clip, ...extra]) => (clip ? [clip].concat(extra.filter(Boolean)) : loadAgentPoseCycle(team, base)));
 }
 if (!agentPoseCache[cacheKey]) agentPoseCache[cacheKey] = loadAgentPoseCycle(team, base);
 const promise = agentPoseCache[cacheKey];
