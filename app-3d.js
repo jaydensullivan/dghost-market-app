@@ -2604,11 +2604,45 @@ return fetch(modelsUrl(modelUrl))
 // Свои позы группы агентов (жандармы, SEAL, партизаны, маски — index.special
 // по началу имени модели) идут первыми, потом общие позы стороны.
 const AGENT_FEMALE_MODELS = /^(ctm_diver_varianta|tm_jungle_raider_variante)$/;
+// Своя поза агента — как в инвентаре CS2: pose_sequence из items_game.txt
+// (без «cu_»). cu_t_pose05 у Bloody Darryl в файлах игры нет — вместо неё
+// t_pose02 (рука у лица). Агент стоит в одной позе, без смены по кругу.
+const AGENT_OWN_POSE = { ctm_diver_varianta: 'scuba_female', ctm_diver_variantb: 'scuba_male', ctm_diver_variantc: 'ct_pose01', ctm_fbi_variantb: 'ct_pose04', ctm_fbi_variantf: 'ct_pose01', ctm_fbi_variantg: 'ct_pose02', ctm_fbi_varianth: 'ct_pose04', ctm_gendarmerie_varianta: 'ct_pose01', ctm_gendarmerie_variantb: 'ct_pose02', ctm_gendarmerie_variantc: 'ct_gendarmerie01', ctm_gendarmerie_variantd: 'ct_pose04', ctm_gendarmerie_variante: 'ct_pose04', ctm_sas_variantf: 'ct_pose02', ctm_sas_variantg: 'ct_pose02', ctm_st6_variante: 'ct_pose02', ctm_st6_variantg: 'ct_pose02', ctm_st6_varianti: 'ct_pose03', ctm_st6_variantj: 'ct_pose02', ctm_st6_variantk: 'ct_pose01', ctm_st6_variantl: 'ct_pose04', ctm_st6_variantm: 'ct_pose04', ctm_st6_variantn: 'ct_pose02', ctm_swat_variante: 'ct_pose05', ctm_swat_variantf: 'ct_pose02', ctm_swat_variantg: 'ct_pose02', ctm_swat_varianth: 'ct_pose01', ctm_swat_varianti: 'ct_pose04', ctm_swat_variantj: 'ct_pose04', ctm_swat_variantk: 'ct_pose04', tm_balkan_variantf: 't_pose01', tm_balkan_variantg: 't_pose03', tm_balkan_varianth: 't_pose02', tm_balkan_varianti: 't_pose04', tm_balkan_variantj: 't_pose04', tm_balkan_variantk: 't_pose03', tm_balkan_variantl: 't_pose01', tm_jungle_raider_varianta: 't_pose01', tm_jungle_raider_variantb: 't_jungle_male', tm_jungle_raider_variantb2: 't_jungle_male', tm_jungle_raider_variantc: 't_pose01', tm_jungle_raider_variantd: 't_pose01', tm_jungle_raider_variante: 't_jungle_female', tm_jungle_raider_variantf: 't_pose01', tm_jungle_raider_variantf2: 't_pose01', tm_leet_variantf: 't_pose03', tm_leet_variantg: 't_pose03', tm_leet_varianth: 't_pose03', tm_leet_varianti: 't_pose01', tm_leet_variantj: 't_pose03', tm_phoenix_variantf: 't_pose02', tm_phoenix_variantg: 't_pose01', tm_phoenix_varianth: 't_pose01', tm_phoenix_varianti: 't_pose01', tm_professional_varf: 't_pose05', tm_professional_varf1: 't_pose05', tm_professional_varf2: 't_pose05', tm_professional_varf3: 't_pose05', tm_professional_varf4: 't_pose05', tm_professional_varf5: 't_pose04', tm_professional_varg: 't_pose04', tm_professional_varh: 't_pose03', tm_professional_vari: 't_pose04', tm_professional_varj: 't_pose02' };
+const AGENT_POSE_MISSING = { t_pose05: 't_pose02' };
+
+function agentOwnPose(base){
+const pose = AGENT_OWN_POSE[base];
+return pose ? 'cu_' + (AGENT_POSE_MISSING[pose] || pose) : null;
+}
+
+function loadAgentPoseClip(name){
+return fetch(agentAssetUrl('models/anim/agent/' + name + '.glb'))
+.then(r => (r.ok ? r.arrayBuffer() : null))
+.then(buf => (buf ? parseGlb(buf) : null))
+.then(g => (g && g.animations && g.animations[0]) || null)
+.catch(() => null);
+}
+
 function loadAgentPoseClips(team, modelUrl){
 const base = String(modelUrl || '').split('/').pop().replace(/\.glb$/, '');
 const cacheKey = team + '|' + base;
-if (!agentPoseCache[cacheKey]){
-agentPoseCache[cacheKey] = fetch(agentAssetUrl('models/anim/agent/index.json'))
+const own = agentOwnPose(base);
+if (!agentPoseCache[cacheKey] && own){
+// Своя поза; не загрузилась — общий круг поз, как раньше.
+agentPoseCache[cacheKey] = loadAgentPoseClip(own)
+.then(clip => (clip ? [clip] : loadAgentPoseCycle(team, base)));
+}
+if (!agentPoseCache[cacheKey]) agentPoseCache[cacheKey] = loadAgentPoseCycle(team, base);
+const promise = agentPoseCache[cacheKey];
+// Пустой результат (сеть, сбой разбора) не запоминаем — в следующий раз
+// попробуем снова, а не оставим агента в T-позе до перезапуска.
+promise.then(clips => { if (!clips.length && agentPoseCache[cacheKey] === promise) delete agentPoseCache[cacheKey]; });
+return promise;
+}
+
+// Агент без своей позы в таблице: позы группы, потом общие позы стороны.
+function loadAgentPoseCycle(team, base){
+return fetch(agentAssetUrl('models/anim/agent/index.json'))
 .then(r => (r.ok ? r.json() : {}))
 .then(index => {
 const special = Object.entries(index.special || {})
@@ -2625,16 +2659,10 @@ const names = special.concat((index[team] || []).slice().sort((a, b) => {
 const ia = AGENT_POSE_ORDER.indexOf(a), ib = AGENT_POSE_ORDER.indexOf(b);
 return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
 }));
-return Promise.all(names.map(name => fetch(agentAssetUrl('models/anim/agent/' + name + '.glb'))
-.then(r => (r.ok ? r.arrayBuffer() : null))
-.then(buf => (buf ? parseGlb(buf) : null))
-.then(g => (g && g.animations && g.animations[0]) || null)
-.catch(() => null)));
+return Promise.all(names.map(loadAgentPoseClip));
 })
 .then(clips => clips.filter(Boolean))
 .catch(() => []);
-}
-return agentPoseCache[cacheKey];
 }
 
 // Поза на модели со скелетом: первая сразу, дальше (cycle) — по кругу
