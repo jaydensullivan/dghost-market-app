@@ -2557,7 +2557,10 @@ return { color: c, mr: cm };
 // просмотрщике позы плавно сменяют друг друга. Нет скелета или поз на CDN —
 // обычная модель, как раньше.
 const AGENT_POSE_HOLD = 3.5;
-const AGENT_POSE_FADE = 0.8;
+const AGENT_POSE_FADE = 1.2;
+// Вход в эмоцию и возврат из неё в позу, секунды.
+const AGENT_EMOTE_IN = 0.45;
+const AGENT_EMOTE_OUT = 0.7;
 // Первая поза — как на витринах (руки скрещены), дальше — по кругу.
 // У T позы 01/03/04 почти одинаковые (руки вниз) — первой рука у лица (02).
 const AGENT_POSE_ORDER = ['cu_ct_pose03', 'cu_ct_pose04', 'cu_ct_pose01', 'cu_ct_pose05', 'cu_ct_pose02',
@@ -2742,30 +2745,65 @@ last.copy(bone.quaternion);
 };
 actions[0].play();
 mixer.update(0);
-// Эмоция доиграла — обратно в текущую позу, круг поз продолжается.
-mixer.addEventListener('finished', e => {
-if (!emote || e.action !== emote) return;
-actions[current].reset().play();
-emote.crossFadeTo(actions[current], AGENT_POSE_FADE / 2, false);
+// Плавный вес клипа от текущего значения. Встроенные fadeIn/fadeOut
+// начинают с 0 или 1 — если сменить эмоцию посреди перехода, агент
+// дёргался.
+// Вес клипа = weight × значение перехода, поэтому weight ставим 1, а
+// переход ведём от from (по умолчанию — от текущего веса) к цели.
+const fadeTo = (a, weight, dur, from) => {
+if (typeof a._scheduleFading !== 'function'){ if (weight > 0) a.fadeIn(dur); else a.fadeOut(dur); return; }
+const now = from !== undefined ? from : (a.enabled ? a.getEffectiveWeight() : 0);
+a.enabled = true;
+a.setEffectiveWeight(1);
+a._scheduleFading(dur, now, weight);
+};
+// Уходящая в позу эмоция (её вес ещё не стал нулём).
+let leaving = null;
+const backToPose = () => {
+if (!emote) return;
+const pose = actions[current];
+const fresh = !pose.isRunning();
+if (fresh){ pose.reset(); pose.play(); }
+fadeTo(pose, 1, AGENT_EMOTE_OUT, fresh ? 0 : undefined);
+fadeTo(emote, 0, AGENT_EMOTE_OUT);
+leaving = emote;
 emote = null;
 held = 0;
-});
+};
+// Эмоция доиграла (короткая, раньше не ушла) — обратно в текущую позу.
+mixer.addEventListener('finished', e => { if (emote && e.action === emote) backToPose(); });
 return {
 // Эмоция (клип MVP, празднование…) один раз, поверх поз.
 playOnce(clip){
-const from = emote || actions[current];
-if (emote) emote.stop();
-emote = mixer.clipAction(clip);
-emote.reset();
-emote.setLoop(THREE.LoopOnce, 1);
-emote.clampWhenFinished = true;
-if (pelvis){ root.position.copy(rootPos0); pelvisLocal(pelvisBase); }
-emote.play();
-from.crossFadeTo(emote, 0.25, false);
+// Та же эмоция ещё на экране — играем её копию, чтобы перейти плавно,
+// а не прыгнуть в начало клипа.
+let next = mixer.clipAction(clip);
+if (next.isRunning()){
+clip.userData = clip.userData || {};
+if (!clip.userData.twin) clip.userData.twin = clip.clone();
+next = mixer.clipAction(clip.userData.twin);
+if (next.isRunning()) next.stop();
+}
+// Таз считаем от позы (не от середины прошлой эмоции).
+if (pelvis && !emote && !leaving){ root.position.copy(rootPos0); pelvisLocal(pelvisBase); }
+next.reset();
+next.setLoop(THREE.LoopOnce, 1);
+next.clampWhenFinished = true;
+next.play();
+[...actions, emote, leaving].forEach(a => { if (a && a !== next && a.isRunning()) fadeTo(a, 0, AGENT_EMOTE_IN); });
+fadeTo(next, 1, AGENT_EMOTE_IN, 0);
+emote = next;
+leaving = null;
 },
 update(dt){
 if (emote){
+// Возврат в позу начинаем до конца клипа — движение перетекает в позу.
+const dur = emote.getClip().duration;
+if (dur > AGENT_EMOTE_OUT * 2 && emote.time >= dur - AGENT_EMOTE_OUT) backToPose();
+}
+if (emote || leaving){
 mixer.update(dt);
+if (leaving && (!leaving.enabled || leaving.getEffectiveWeight() === 0)) leaving = null;
 if (pelvis){
 root.position.copy(rootPos0);
 const d = pelvisLocal(tmp).sub(pelvisBase);
