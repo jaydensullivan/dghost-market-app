@@ -411,17 +411,16 @@ window.scrollTo({ top: (document.getElementById('shopTabs').getBoundingClientRec
 }
 });
 
-// Каталог обновился — обновляем «Выгоду дня» и ленту.
-if (typeof renderSkins === 'function'){
-const orig = renderSkins;
-renderSkins = function(list){
-const out = orig.apply(this, arguments);
-renderHero();
-renderFresh();
-if (on) syncFromState();
-return out;
-};
-}
+// Каталог обновился (сетка перерисована) — обновляем «Выгоду дня» и
+// ленту. Следим за самой сеткой: каталог мог загрузиться раньше этого
+// файла, и обёртка над renderSkins его бы пропустила.
+let refreshTimer = null;
+new MutationObserver(() => {
+if (!on) return;
+clearTimeout(refreshTimer);
+refreshTimer = setTimeout(() => { renderHero(); renderFresh(); syncFromState(); }, 120);
+}).observe(grid, { childList: true });
+
 // Сменили язык — подписи, созданные скриптом, тоже.
 if (typeof applyTranslations === 'function'){
 const origT = applyTranslations;

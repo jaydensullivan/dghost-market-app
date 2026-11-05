@@ -20,7 +20,7 @@ html.dg-desk body{ padding-bottom:0; }
 /* ---------- шапка ---------- */
 .dt-top{ display:none; }
 html.dg-desk .dt-top{
-position:fixed; top:0; left:0; right:0; z-index:450; height:72px;
+position:fixed; top:0; left:0; right:0; z-index:9; height:72px;
 display:flex; align-items:center; gap:24px; padding:0 340px 0 32px;
 background:color-mix(in srgb, var(--bg) 78%, transparent);
 backdrop-filter:blur(14px) saturate(140%); -webkit-backdrop-filter:blur(14px) saturate(140%);
@@ -226,7 +226,8 @@ html.dg-desk .dt-fr:hover{ background:rgba(255,255,255,.04); }
 html.dg-desk .dt-fr img{ width:64px; height:48px; flex:none; object-fit:contain; border-radius:8px; background:radial-gradient(circle at 50% 90%, color-mix(in srgb, var(--r) 35%, transparent), transparent 70%); }
 html.dg-desk .dt-fr > span{ min-width:0; }
 html.dg-desk .dt-frn{ display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; color:var(--text); font:600 13px/1.3 'Inter', sans-serif; }
-html.dg-desk .dt-frm{ display:flex; gap:8px; align-items:baseline; margin-top:2px; color:var(--dt-dim); font:400 12px 'Inter', sans-serif; }
+html.dg-desk .dt-frm{ display:flex; gap:8px; align-items:baseline; margin-top:2px; color:var(--dt-dim); font:400 12px 'Inter', sans-serif; white-space:nowrap; min-width:0; }
+html.dg-desk .dt-frm span{ overflow:hidden; text-overflow:ellipsis; }
 html.dg-desk .dt-frm b{ color:var(--text); font:500 12px 'JetBrains Mono', monospace; }
 html.dg-desk .dt-empty{ padding:12px 8px; color:var(--muted); font:400 13px 'Inter', sans-serif; }
 html.dg-desk .dt-all{ margin-top:8px; width:100%; height:38px; border-radius:10px; border:1px solid var(--dt-line); background:none; color:var(--muted); font:600 13px 'Inter', sans-serif; cursor:pointer; }
@@ -240,7 +241,8 @@ html.dg-desk :focus-visible{ outline:2px solid var(--red); outline-offset:2px; }
 
 /* Узкий ПК (1280–1500): правая колонка уже. */
 @media (max-width:1500px){
-html.dg-desk .dt-body{ grid-template-columns:220px minmax(0, 1fr) 260px; }
+html.dg-desk .dt-body{ grid-template-columns:210px minmax(0, 1fr) 280px; }
+html.dg-desk .dt-fr img{ width:52px; height:40px; }
 html.dg-desk .dt-hn{ font-size:44px; }
 }
 @media (prefers-reduced-motion:reduce){
