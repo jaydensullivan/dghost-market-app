@@ -5,7 +5,8 @@
 // Внутри Telegram (есть initData) ничего не делает. В браузере
 // подменяет Telegram.WebApp своей заглушкой: вместо initData — токен
 // сессии «web:<токен>», который бот выдаёт после входа через
-// Telegram Login Widget (/api/web_login). Бот принимает его везде,
+// Telegram Login Widget (/api/web_login) или входа через Steam
+// (/web/steam/start → ?dgw_code= → /api/web_steam_exchange). Бот принимает его везде,
 // где принимает initData, поэтому остальной код не меняется.
 // Без входа маркет сразу открыт как витрина; любое действие,
 // которому нужен аккаунт, предлагает войти.
@@ -28,30 +29,36 @@ const lang = navLang === 'ru' ? 'ru' : (navLang === 'en' ? 'en' : 'uz');
 const T = {
 ru: {
 title: 'DGhostMarket — маркет скинов CS2',
-text: 'Войди через Telegram — тот же аккаунт, баланс и сделки, что в мини-аппе бота.',
+text: 'Войди через Steam или Telegram. Если Steam уже подтверждён в мини-аппе, откроется тот же аккаунт с балансом и сделками.',
+steam: 'Войти через Steam',
+or_tg: 'или через Telegram',
 guest: 'Смотреть без входа',
 need: 'Войти через Telegram',
 failed: 'Не удалось войти. Попробуй ещё раз.',
 ok: 'OK', cancel: 'Отмена',
-note: 'Мы получаем только имя и ID Telegram — номер телефона не передаётся.',
+note: 'Через Steam мы получаем только ник и аватар, через Telegram — имя и ID. Пароли и номер телефона не передаются.',
 },
 uz: {
 title: 'DGhostMarket — CS2 skinlari bozori',
-text: "Telegram orqali kiring — bot mini-ilovasidagi akkaunt, balans va bitimlar shu yerda ham.",
+text: "Steam yoki Telegram orqali kiring. Steam mini-ilovada tasdiqlangan bo'lsa — o'sha akkaunt, balans va bitimlar ochiladi.",
+steam: 'Steam orqali kirish',
+or_tg: 'yoki Telegram orqali',
 guest: "Kirmasdan ko'rish",
 need: 'Telegram orqali kirish',
 failed: "Kirib bo'lmadi. Qayta urinib ko'ring.",
 ok: 'OK', cancel: 'Bekor qilish',
-note: "Biz faqat Telegram ismi va ID ni olamiz — telefon raqami berilmaydi.",
+note: "Steam orqali faqat nik va avatar, Telegram orqali — ism va ID olinadi. Parol va telefon raqami berilmaydi.",
 },
 en: {
 title: 'DGhostMarket — CS2 skin market',
-text: 'Log in with Telegram — the same account, balance and deals as in the bot mini app.',
+text: 'Log in with Steam or Telegram. If your Steam is verified in the mini app, you get the same account, balance and deals.',
+steam: 'Log in with Steam',
+or_tg: 'or with Telegram',
 guest: 'Browse without logging in',
 need: 'Log in with Telegram',
 failed: 'Login failed. Please try again.',
 ok: 'OK', cancel: 'Cancel',
-note: 'We only receive your Telegram name and ID — your phone number is not shared.',
+note: 'With Steam we only receive your nickname and avatar, with Telegram — your name and ID. No passwords or phone numbers are shared.',
 },
 }[lang];
 
@@ -139,16 +146,38 @@ window.DG_WEB = { loggedIn: !!session, user: session ? session.user : null };
 
 // ---------- вход ----------
 
+function saveSession(data){
+if (!data || !data.session) throw new Error('no session');
+try { localStorage.setItem(KEY, JSON.stringify({ token: data.session, user: data.user })); } catch(e) {}
+}
+
+// Вернулись со Steam: одноразовый код → сессия. Код убираем из адреса
+// сразу, чтобы он не остался в истории браузера.
+const steamCode = params.get('dgw_code');
+if (steamCode){
+params.delete('dgw_code');
+const clean = location.pathname + (params.toString() ? '?' + params : '') + location.hash;
+try { history.replaceState(null, '', clean); } catch(e) {}
+fetch(API + '/api/web_steam_exchange', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ code: steamCode }),
+})
+.then(r => r.ok ? r.json() : Promise.reject(r.status))
+.then(data => { saveSession(data); location.reload(); })
+.catch(() => { document.addEventListener('DOMContentLoaded', () => { openGate(); const st = document.querySelector('.dgw-gate-status'); if (st) st.textContent = T.failed; }); });
+}
+
+function steamLogin(){
+location.href = API + '/web/steam/start?return=' + encodeURIComponent(location.origin + location.pathname);
+}
+
 window.dgWebOnAuth = function(user){
 const fd = new FormData();
 Object.keys(user || {}).forEach(k => { if (user[k] != null) fd.append(k, String(user[k])); });
 fetch(API + '/api/web_login', { method: 'POST', body: fd })
 .then(r => r.ok ? r.json() : Promise.reject(r.status))
-.then(data => {
-if (!data.session) throw new Error('no session');
-try { localStorage.setItem(KEY, JSON.stringify({ token: data.session, user: data.user })); } catch(e) {}
-location.reload();
-})
+.then(data => { saveSession(data); location.reload(); })
 .catch(() => {
 const st = document.querySelector('.dgw-gate-status');
 if (st) st.textContent = T.failed;
@@ -176,6 +205,8 @@ gate.innerHTML =
 + '<img class="dgw-gate-logo" src="logo.webp" alt="">'
 + '<div class="dgw-gate-title"></div>'
 + '<div class="dgw-gate-text"></div>'
++ '<button type="button" class="dgw-btn dgw-btn-steam"><span></span></button>'
++ '<div class="dgw-gate-or"></div>'
 + '<div class="dgw-gate-widget"></div>'
 + '<div class="dgw-gate-status"></div>'
 + '<button type="button" class="dgw-btn dgw-btn-ghost dgw-gate-guest"></button>'
@@ -183,6 +214,9 @@ gate.innerHTML =
 + '</div>';
 gate.querySelector('.dgw-gate-title').textContent = T.title;
 gate.querySelector('.dgw-gate-text').textContent = T.text;
+gate.querySelector('.dgw-btn-steam span').textContent = T.steam;
+gate.querySelector('.dgw-btn-steam').addEventListener('click', steamLogin);
+gate.querySelector('.dgw-gate-or').textContent = T.or_tg;
 gate.querySelector('.dgw-gate-guest').textContent = T.guest;
 gate.querySelector('.dgw-gate-note').textContent = T.note;
 gate.querySelector('.dgw-gate-guest').addEventListener('click', () => gate.remove());
