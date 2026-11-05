@@ -38,7 +38,7 @@ const ADMIN_ONLY_SECTIONS = new Set([
 
 function hasChipPermission(chip){
 if (isOwner) return true;
-// «Поддержка» — и пультовым админам (не полные админы); сервер решает сам.
+// «Поддержка» — и операторам поддержки (роль support_admins, не полные админы); сервер решает сам.
 if (chip === 'support' && isSupportStaff) return true;
 if (!isAdmin) return false;
 // Владелец видит все чипы всегда. Организатор аукционов
@@ -274,7 +274,7 @@ applyAdminChipFilter(currentAdminChip);
 
 if (hasChipPermission('support') && !applySupportStaffDeepLink()) loadAdminSupport();
 
-// Пультовый админ (только поддержка) — остальные разделы ему не нужны.
+// Оператор поддержки (только поддержка) — остальные разделы ему не нужны.
 if (!isAdmin && !isAuctioneer) return;
 
 loadAdminSkinPicker();
@@ -1564,7 +1564,7 @@ adminApiFetch('/api/admin/referral_percent', { method: 'POST', body: { percent: 
 .catch(err => { status.textContent = friendlyErrorMessage(err); });
 });
 
-// ---------------- Люди (админы / организаторы аукционов) ----------------
+// ---------------- Люди (админы / поддержка / организаторы аукционов) ----------------
 
 function loadAdminPeople(){
 const list = document.getElementById('adminPeopleList');
