@@ -9,6 +9,8 @@ if (activeFilters.priceMax !== null) n++;
 if (activeFilters.floatMin !== null) n++;
 if (activeFilters.floatMax !== null) n++;
 if (activeFilters.stickers !== 'any') n++;
+if (activeFilters.rarities) n++;
+if (activeFilters.stattrak) n++;
 if (skinSort.value !== 'auto') n++;
 return n;
 }
@@ -1160,6 +1162,9 @@ priceMax: priceMax !== '' ? Number(priceMax) : null,
 floatMin: floatMin !== '' ? Number(floatMin) : null,
 floatMax: floatMax !== '' ? Number(floatMax) : null,
 stickers: document.getElementById('filterStickers').value,
+// Редкость и StatTrak задаются в колонке ПК-версии — окно их не сбрасывает.
+rarities: activeFilters.rarities || null,
+stattrak: activeFilters.stattrak || null,
 };
 
 updateFiltersBadge();

@@ -6,7 +6,7 @@
 <title>DGHOST — CASE DROP</title>
 <!-- Защита (CSP): скрипты только свои, Telegram и jsDelivr (3D); запросы — только к нашему API,
      медиа на Railway и 3D-хранилищу. Внедрённый чужой код не сможет отправить данные на свой сервер. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://telegram.org https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https://api.dghostmarket.uz https://*.up.railway.app https://3d.dghostmarket.com https://cdn.jsdelivr.net data: blob:; frame-src https://oauth.telegram.org https://www.youtube-nocookie.com https://www.youtube.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://telegram.org https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https://api.dghostmarket.uz https://*.up.railway.app https://3d.dghostmarket.com https://cdn.jsdelivr.net data: blob:; frame-src 'self' https://oauth.telegram.org https://www.youtube-nocookie.com https://www.youtube.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <!-- Каталог и картинки лотов — соединение заранее, пока грузятся скрипты. -->
@@ -17,6 +17,7 @@
 <script src="app-web.js?v=6"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
 <link rel="stylesheet" href="app.css?v=119">
+<link rel="stylesheet" href="app-desktop.css?v=1" media="(min-width: 1280px)">
 </head>
 <body data-tab="shop">
 <!-- Значки интерфейса в едином объёмном стиле (gi-*): <svg class="gi"><use href="#gi-…"/></svg>. -->
@@ -2574,15 +2575,15 @@
 </div>
 </div>
 <script src="app-core.js?v=21"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=44', en: 'app-i18n-en.js?v=43' };</script>
-<script src="app-i18n.js?v=167"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=45', en: 'app-i18n-en.js?v=44' };</script>
+<script src="app-i18n.js?v=168"></script>
 <script src="app-navigation.js?v=30"></script>
 <script src="app-shop.js?v=49"></script>
 <script src="app-legal.js?v=3"></script>
 <script src="app-deals.js?v=30"></script>
-<script src="app-catalog.js?v=37"></script>
+<script src="app-catalog.js?v=38"></script>
 <script src="app-cart.js?v=11"></script>
-<script src="app-filters.js?v=72"></script>
+<script src="app-filters.js?v=73"></script>
 <script src="app-music.js?v=2"></script>
 <script src="app-steam.js?v=17"></script>
 <script src="app-topup.js?v=5"></script>
@@ -2600,6 +2601,7 @@
 <script src="app-telegram.js?v=17"></script>
 <script src="app-raffle.js?v=13"></script>
 <script src="app-home.js?v=13"></script>
+<script src="app-desktop.js?v=1"></script>
 <script src="app-support.js?v=4"></script>
 <script src="app-pro.js?v=19"></script>
 <script>window.DG_R3D_SRC = 'app-render3d.js?v=5';</script>
