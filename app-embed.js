@@ -7,8 +7,10 @@
 //   lang  — ru | uz | en (по умолчанию en), bg — фон (как в мини-аппе);
 //   ticket — пропуск от бота для открытия виджета в отдельной вкладке
 //           («во весь экран» на iPhone, где iframe развернуть нельзя).
-// Ключ и сайт, на котором стоит виджет, проверяет бот
-// (/api/embed/session) — он же считает показы по тарифу.
+// Ключ и сайт, на котором стоит виджет, проверяет сервис DGhost 3D
+// (dghost-3d-api, /api/embed/session) — он же считает показы по тарифу.
+// Отдельно от бота маркета: перезапуск бота виджеты клиентов не трогает.
+// Сервис не ответил — спрашиваем бота (он передаст запрос в сервис).
 (function(){
 const q = new URLSearchParams(location.search);
 const key = (q.get('key') || '').trim();
@@ -119,11 +121,13 @@ if (!key) return fail(MSG.no_key, 'no_key');
 if (!skinName) return fail(MSG.no_skin, 'no_skin');
 
 const origin = hostOrigin();
-const session = fetch(API_BASE + '/api/embed/session', {
+const EMBED_API = 'https://dghost-3d-api-production.up.railway.app';
+const ask = base => fetch(base + '/api/embed/session', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({ key: key, origin: origin, skin: skinName, ticket: ticket }),
 }).then(r => r.json().catch(() => ({})).then(d => Object.assign({ status: r.status }, d)));
+const session = ask(EMBED_API).then(s => (s.status >= 500 ? ask(API_BASE) : s), () => ask(API_BASE));
 
 Promise.all([session, loadModelIndex(), loadPaintIndex()]).then(([s, map, paintMap]) => {
 if (!s.ok){
