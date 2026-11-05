@@ -29,7 +29,7 @@ const lang = navLang === 'ru' ? 'ru' : (navLang === 'en' ? 'en' : 'uz');
 const T = {
 ru: {
 title: 'DGhostMarket — маркет скинов CS2',
-text: 'Войди через Steam или Telegram. Steam уже подтверждён в мини-аппе — откроется тот же аккаунт, баланс и сделки.',
+text: 'Войди через Steam или Telegram. Если Steam уже подтверждён в мини-аппе, откроется тот же аккаунт с балансом и сделками.',
 steam: 'Войти через Steam',
 or_tg: 'или через Telegram',
 guest: 'Смотреть без входа',
