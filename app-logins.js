@@ -104,7 +104,7 @@ fetch(API_BASE + '/api/account/logins?init_data=' + encodeURIComponent(tg.initDa
 
 function errText(code){
 const dict = d();
-return dict['lg_err_' + code] || dict.err_something_wrong;
+return dict['lg_err_' + (/^mail_/.test(code) ? 'mail' : code)] || dict.err_something_wrong;
 }
 
 function post(path, body){
