@@ -1728,6 +1728,29 @@ dt_rar_restricted: 'Запрещённое',
 dt_rar_milspec: 'Армейское',
 dt_rar_industrial: 'Промышленное',
 dt_rar_consumer: 'Ширпотреб',
+lg_title: 'Способы входа',
+lg_sub: 'Подключи несколько — тогда войдёшь в тот же аккаунт любым из них.',
+lg_email: 'Почта',
+lg_none: 'не подключено',
+lg_connected: 'подключено',
+lg_connect: 'Подключить',
+lg_cancel: 'Отмена',
+lg_send_code: 'Получить код',
+lg_confirm: 'Подтвердить',
+lg_email_ph: 'you@example.com',
+lg_code_ph: 'Код из письма',
+lg_sending: 'Отправляем код…',
+lg_code_sent: 'Код отправлен на {email}. Он действует 10 минут.',
+lg_email_ok: '✅ Почта подключена — по ней теперь можно входить на сайт.',
+lg_tg_hint: 'Войди через Telegram ниже — аккаунт с сайта объединится с твоим аккаунтом в Telegram.',
+lg_err_bad_email: 'Проверь адрес почты.',
+lg_err_bad_code: 'Неверный или устаревший код.',
+lg_err_too_many_requests: 'Слишком много попыток. Подожди 15 минут.',
+lg_err_email_in_use: 'Эта почта уже подключена к другому аккаунту.',
+lg_err_account_has_activity: 'На этом аккаунте уже есть баланс или сделки — объединить с Telegram автоматически нельзя. Напиши в поддержку.',
+lg_err_telegram_already_linked: 'Telegram уже подключён.',
+lg_err_bad_telegram: 'Telegram не подтвердил вход. Попробуй ещё раз.',
+lg_err_blocked: 'Аккаунт заблокирован.',
 },
 };
 
@@ -1846,6 +1869,10 @@ renderPromo();
 
 if (typeof renderLayoutCycleBtn === 'function'){
 renderLayoutCycleBtn();
+}
+
+if (typeof window.renderLoginMethods === 'function'){
+window.renderLoginMethods();
 }
 
 if (typeof lastDeals !== 'undefined' && lastDeals.length){
