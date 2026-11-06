@@ -4387,6 +4387,13 @@ color:#f2eefa; text-align:center; box-shadow:0 20px 60px rgba(123,44,255,.25);
 .dgw-gate-or{ margin:14px 0 10px; font-size:12px; opacity:.6; }
 .dgw-gate-widget{ min-height:48px; display:flex; justify-content:center; }
 .dgw-gate-status{ min-height:18px; margin:8px 0; font-size:13px; color:#ff6b8a; }
+.dgw-btn-email{ margin-top:10px; }
+.dgw-email-form{ margin-top:10px; display:flex; flex-direction:column; gap:8px; }
+.dgw-email-form[hidden], .dgw-btn-email[hidden], .dgw-input[hidden]{ display:none; }
+.dgw-input{ width:100%; box-sizing:border-box; min-height:46px; padding:0 12px; border-radius:12px; border:1px solid rgba(255,255,255,.18); background:rgba(0,0,0,.3); color:#fff; font-size:16px; }
+.dgw-input:disabled{ opacity:.6; }
+.dgw-email-sent{ font-size:12px; opacity:.75; }
+.dgw-email-sent:empty{ display:none; }
 .dgw-gate-note{ margin-top:12px; font-size:11px; opacity:.55; line-height:1.4; }
 .dgw-modal-box{ text-align:left; }
 .dgw-modal-title{ font-size:16px; font-weight:800; margin-bottom:8px; }
@@ -5328,3 +5335,20 @@ button.brand-logo{ width:44px; height:44px; }
 
 /* Подсказка под «Пригласить друзей»: можно выбрать несколько чатов. */
 .raffle-invite-hint{ text-align:center; margin:-4px 0 10px; font-size:12px; }
+
+/* профиль: способы входа (app-logins.js) */
+.lg-sub{ margin-top:3px; font-size:12px; line-height:1.4; color:var(--muted); }
+.lg-rows{ display:flex; flex-direction:column; gap:6px; margin-top:12px; }
+.lg-row{ display:flex; align-items:center; gap:10px; min-height:44px; padding:6px 10px; border-radius:12px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); }
+.lg-name{ flex:0 0 76px; font-size:13px; font-weight:700; color:var(--silver); }
+.lg-val{ flex:1; min-width:0; font-size:12px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.lg-val.on{ color:#4ade80; }
+.lg-val.on::before{ content:'● '; }
+.lg-act .lg-btn{ min-height:34px; padding:0 12px; }
+.lg-form{ margin-top:12px; }
+.lg-input{ width:100%; box-sizing:border-box; min-height:44px; margin-bottom:8px; padding:0 12px; border-radius:10px; border:1px solid var(--red-dim); background:rgba(0,0,0,.25); color:var(--silver); font-size:15px; }
+.lg-input:disabled{ opacity:.6; }
+.lg-tg{ display:flex; justify-content:center; margin-top:12px; min-height:48px; }
+.lg-tg[hidden], .lg-form[hidden]{ display:none; }
+.lg-status{ margin-top:8px; }
+.lg-status.ok{ color:#4ade80; }
