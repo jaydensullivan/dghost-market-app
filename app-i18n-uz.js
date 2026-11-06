@@ -1747,4 +1747,5 @@ lg_err_account_has_activity: "Bu akkauntda balans yoki bitimlar bor — Telegram
 lg_err_telegram_already_linked: 'Telegram allaqachon ulangan.',
 lg_err_bad_telegram: "Telegram kirishni tasdiqlamadi. Qayta urinib ko'ring.",
 lg_err_blocked: 'Akkaunt bloklangan.',
+lg_err_mail: "Xat yuborib bo'lmadi. Keyinroq urinib ko'ring.",
 };

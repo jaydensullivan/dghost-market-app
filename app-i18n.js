@@ -1751,6 +1751,7 @@ lg_err_account_has_activity: 'На этом аккаунте уже есть б�
 lg_err_telegram_already_linked: 'Telegram уже подключён.',
 lg_err_bad_telegram: 'Telegram не подтвердил вход. Попробуй ещё раз.',
 lg_err_blocked: 'Аккаунт заблокирован.',
+lg_err_mail: 'Не удалось отправить письмо. Попробуй позже.',
 },
 };
 

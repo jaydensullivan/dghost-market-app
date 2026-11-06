@@ -1747,4 +1747,5 @@ lg_err_account_has_activity: 'This account already has a balance or deals, so it
 lg_err_telegram_already_linked: 'Telegram is already connected.',
 lg_err_bad_telegram: 'Telegram did not confirm the login. Please try again.',
 lg_err_blocked: 'The account is blocked.',
+lg_err_mail: 'Could not send the email. Please try later.',
 };

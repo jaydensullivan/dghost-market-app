@@ -40,6 +40,7 @@ code_sent: 'Код отправлен на {email}. Он действует 10 �
 bad_email: 'Проверь адрес почты.',
 bad_code: 'Неверный или устаревший код.',
 too_many: 'Слишком много попыток. Подожди 15 минут.',
+mail_failed: 'Не удалось отправить письмо. Попробуй позже или войди через Steam / Telegram.',
 steam: 'Войти через Steam',
 or_tg: 'или через Telegram',
 guest: 'Смотреть без входа',
@@ -60,6 +61,7 @@ code_sent: "Kod {email} manziliga yuborildi. U 10 daqiqa amal qiladi.",
 bad_email: "Pochta manzilini tekshiring.",
 bad_code: "Kod noto'g'ri yoki eskirgan.",
 too_many: "Urinishlar juda ko'p. 15 daqiqa kuting.",
+mail_failed: "Xat yuborib bo'lmadi. Keyinroq urinib ko'ring yoki Steam / Telegram orqali kiring.",
 steam: 'Steam orqali kirish',
 or_tg: 'yoki Telegram orqali',
 guest: "Kirmasdan ko'rish",
@@ -80,6 +82,7 @@ code_sent: 'Code sent to {email}. It is valid for 10 minutes.',
 bad_email: 'Check the email address.',
 bad_code: 'Wrong or expired code.',
 too_many: 'Too many attempts. Wait 15 minutes.',
+mail_failed: 'Could not send the email. Try later or log in with Steam / Telegram.',
 steam: 'Log in with Steam',
 or_tg: 'or with Telegram',
 guest: 'Browse without logging in',
@@ -231,7 +234,7 @@ headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify(Object.assign({ lang: lang }, body)),
 }).then(r => r.json().catch(() => ({})).then(d => (r.ok ? d : Promise.reject(d.error || 'error'))));
 const fail = code => {
-st.textContent = code === 'bad_email' ? T.bad_email : code === 'bad_code' ? T.bad_code : code === 'too_many_requests' ? T.too_many : T.failed;
+st.textContent = code === 'bad_email' ? T.bad_email : code === 'bad_code' ? T.bad_code : code === 'too_many_requests' ? T.too_many : /^mail_/.test(code) ? T.mail_failed : T.failed;
 };
 function go(){
 const email = emailIn.value.trim();
