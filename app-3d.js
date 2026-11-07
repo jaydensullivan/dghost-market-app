@@ -1107,8 +1107,18 @@ const GUNSMITH_LEGACY_GAMMA = 1.55;
 // Усиление тонировки патины (стиль 7). Клинки ножей светлее стволов, и с
 // общим 3.4 Blue Steel и Stained выходили серебристыми вместо воронёных:
 // по 96 ножам с патиной сходство 65.4 → 69.0 при 1.2 (Steam-картинки).
+// По видам патины на ножах (игровой счёт, Steam): дамаск в игре светлый
+// (1.2 — тёмно-серый, 2.4 — как в игре), воронение (Blue Steel) темнее и
+// насыщеннее (0.35). Подбор на 27 ножах 37.8 → 40.2, проверка на 31 других
+// 37.9 → 40.2 (Damascus 36.2 → 40.8, Blue Steel 39.0 → 41.5); Stained —
+// без изменений (ярче — хуже).
 const PATINA_K = 3.4;
 const PATINA_KNIFE_K = 1.2;
+const PATINA_KNIFE_K_BY = { damascus: 2.4, blued: 0.35 };
+function patinaKnifeK(skin){
+const kind = (String(skin.finish || '').match(/^aq_([a-z]+)/) || [])[1];
+return PATINA_KNIFE_K_BY[kind] || PATINA_KNIFE_K;
+}
 function legacyPatinaStyle(skin){
 return (!skin.format || skin.format === 'legacy') && [7, 8].indexOf(skin.params.paint_style) !== -1;
 }
@@ -1568,7 +1578,7 @@ uColorBrightness: { value: Math.pow(skin.params.color_brightness || 1, gunsmithT
 // Night Terror и Nebula Crusader — оранжевые, Magma — тёмная.
 uPatternGamma: { value: legacyCaseHardened(skin) ? CASE_HARDENED.gamma : legacyPatinaStyle(skin) && !legacyPatinaBlend(skin) ? (skin.params.paint_style === 8 ? GUNSMITH_LEGACY_GAMMA : PATINA_PATTERN_GAMMA) : (gunsmithTemplate(skin) ? GUNSMITH_TEMPLATE_GAMMA : 1) },
 uPatinaBlend: { value: legacyPatinaBlend(skin) ? 1 : 0 },
-uPatinaK: { value: isKnifeName(weapon ? weapon.name || '' : '') ? PATINA_KNIFE_K : PATINA_K },
+uPatinaK: { value: isKnifeName(weapon ? weapon.name || '' : '') ? patinaKnifeK(skin) : PATINA_K },
 uMaskChannel: { value: channel },
 // Иризация (шаблоны soe/aq: Leafhopper, Marsh, Pink Pearl): оттенок
 // краски плывёт по радуге с углом взгляда. x — сила, y — масштаб,
