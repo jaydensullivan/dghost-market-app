@@ -1107,8 +1107,18 @@ const GUNSMITH_LEGACY_GAMMA = 1.55;
 // Усиление тонировки патины (стиль 7). Клинки ножей светлее стволов, и с
 // общим 3.4 Blue Steel и Stained выходили серебристыми вместо воронёных:
 // по 96 ножам с патиной сходство 65.4 → 69.0 при 1.2 (Steam-картинки).
+// По видам патины на ножах (игровой счёт, Steam): дамаск в игре светлый
+// (1.2 — тёмно-серый, 2.4 — как в игре), воронение (Blue Steel) темнее и
+// насыщеннее (0.35). Подбор на 27 ножах 37.8 → 40.2, проверка на 31 других
+// 37.9 → 40.2 (Damascus 36.2 → 40.8, Blue Steel 39.0 → 41.5); Stained —
+// без изменений (ярче — хуже).
 const PATINA_K = 3.4;
 const PATINA_KNIFE_K = 1.2;
+const PATINA_KNIFE_K_BY = { damascus: 2.4, blued: 0.35 };
+function patinaKnifeK(skin){
+const kind = (String(skin.finish || '').match(/^aq_([a-z]+)/) || [])[1];
+return PATINA_KNIFE_K_BY[kind] || PATINA_KNIFE_K;
+}
 function legacyPatinaStyle(skin){
 return (!skin.format || skin.format === 'legacy') && [7, 8].indexOf(skin.params.paint_style) !== -1;
 }
@@ -1245,12 +1255,18 @@ return out;
 // сверка с CSFloat (снимки осмотра из игры): шероховатость 0.3 и отражения 3
 // дают 63.0 → 75.4 (18 ножей) и 72.4 → 78.0 (6 других ножей). Doppler, Tiger
 // Tooth и Slaughter с этими значениями хуже (75.9 → 73.3) — им 0.45 и 5.
-const ANODIZED = { metalness: 1, roughness: 0.3, knifeRoughness: 0.45, envIntensity: 5,
+// knifeMatte: Tiger Tooth, Slaughter и прочее анодирование ножей, кроме
+// Doppler/мраморных, в игре матовее — с 0.45 клинок выходил тёмным
+// зеркалом. Сверка со Steam по 38 ножам Tiger Tooth/Slaughter: 38.9 → 42.2
+// (игровой счёт); на 13 анодированных ножах разных узоров 37.1 → 39.4.
+// Doppler с 0.65 хуже (37.2 → 35.5) — у них остаётся 0.45.
+const ANODIZED = { metalness: 1, roughness: 0.3, knifeRoughness: 0.45, knifeMatte: 0.65, envIntensity: 5,
 knifeFade: { roughness: 0.3, envIntensity: 3 } };
 function anodizedLook(skin, weaponName){
 if (!isKnifeName(weaponName)) return { roughness: ANODIZED.roughness, envIntensity: ANODIZED.envIntensity };
 if (skin.params.paint_style === 5) return ANODIZED.knifeFade;
-return { roughness: ANODIZED.knifeRoughness, envIntensity: ANODIZED.envIntensity };
+const mirror = /doppler|marbleized/.test(String(skin.finish || ''));
+return { roughness: mirror ? ANODIZED.knifeRoughness : ANODIZED.knifeMatte, envIntensity: ANODIZED.envIntensity };
 }
 function isAnodized(params){
 return [3, 4, 5].indexOf(params.paint_style) !== -1;
@@ -1562,7 +1578,7 @@ uColorBrightness: { value: Math.pow(skin.params.color_brightness || 1, gunsmithT
 // Night Terror и Nebula Crusader — оранжевые, Magma — тёмная.
 uPatternGamma: { value: legacyCaseHardened(skin) ? CASE_HARDENED.gamma : legacyPatinaStyle(skin) && !legacyPatinaBlend(skin) ? (skin.params.paint_style === 8 ? GUNSMITH_LEGACY_GAMMA : PATINA_PATTERN_GAMMA) : (gunsmithTemplate(skin) ? GUNSMITH_TEMPLATE_GAMMA : 1) },
 uPatinaBlend: { value: legacyPatinaBlend(skin) ? 1 : 0 },
-uPatinaK: { value: isKnifeName(weapon ? weapon.name || '' : '') ? PATINA_KNIFE_K : PATINA_K },
+uPatinaK: { value: isKnifeName(weapon ? weapon.name || '' : '') ? patinaKnifeK(skin) : PATINA_K },
 uMaskChannel: { value: channel },
 // Иризация (шаблоны soe/aq: Leafhopper, Marsh, Pink Pearl): оттенок
 // краски плывёт по радуге с углом взгляда. x — сила, y — масштаб,
