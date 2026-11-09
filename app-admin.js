@@ -1030,9 +1030,14 @@ status.textContent = (I18N[currentLang] || I18N.ru).admin_balance_fill_required;
 return;
 }
 
+const reason = document.getElementById('adminBalanceReason').value.trim();
+if (reason.length < 3){
+status.textContent = errorMessage('reason_required');
+return;
+}
+
 status.textContent = '...';
 
-const reason = document.getElementById('adminBalanceReason').value.trim();
 adminApiFetch('/api/admin/balance/adjust', {
 method: 'POST',
 body: { user_id: Number(userId), amount: amount, direction: direction, reason: reason }
