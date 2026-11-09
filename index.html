@@ -1122,7 +1122,7 @@
 <input id="adminBalanceAmount" type="number" min="1" placeholder="10000">
 </div>
 <div class="edit-field">
-<label for="adminBalanceReason" data-i18n="admin_label_balance_reason">Причина (видна в истории)</label>
+<label for="adminBalanceReason" data-i18n="admin_label_balance_reason">Причина (обязательно, видна в истории)</label>
 <input id="adminBalanceReason" type="text" maxlength="200" data-i18n-placeholder="admin_balance_reason_ph" placeholder="Например: ошибочное начисление по сделке #123">
 </div>
 <div class="edit-row">
@@ -1160,11 +1160,11 @@
 <div class="profile-section-title" data-i18n="admin_section_commission">Заработано на комиссиях</div>
 <div class="money-btn-row">
 <div class="admin-commission-box">
-<div class="admin-commission-label" data-i18n="admin_commission_sale">С продаж (0.5%)</div>
+<div class="admin-commission-label" data-i18n="admin_commission_sale">С продаж</div>
 <div class="admin-commission-value" id="adminCommissionSale">—</div>
 </div>
 <div class="admin-commission-box">
-<div class="admin-commission-label" data-i18n="admin_commission_withdraw">С выводов (2.5%)</div>
+<div class="admin-commission-label" data-i18n="admin_commission_withdraw">С выводов</div>
 <div class="admin-commission-value" id="adminCommissionWithdraw">—</div>
 </div>
 </div>
@@ -1932,7 +1932,7 @@
 <input id="sPhoto" type="url" placeholder="https://..." required>
 </div>
 
-<div class="shop-hint" id="sellerFeeHint" style="margin-top:4px;">С продажи будет удержана комиссия площадки — 0.5% от цены. Она списывается автоматически при снятии холда, тебе ничего доплачивать не нужно.</div>
+<div class="shop-hint" id="sellerFeeHint" style="margin-top:4px;">С продажи будет удержана комиссия площадки. Она списывается автоматически при снятии холда, тебе ничего доплачивать не нужно.</div>
 
 <div class="edit-actions">
 <button type="button" id="addSkinCancel" data-i18n="btn_cancel">Отмена</button>
@@ -2575,10 +2575,10 @@
 </div>
 </div>
 <script src="app-core.js?v=21"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=48', en: 'app-i18n-en.js?v=47' };</script>
-<script src="app-i18n.js?v=171"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=49', en: 'app-i18n-en.js?v=48' };</script>
+<script src="app-i18n.js?v=172"></script>
 <script src="app-navigation.js?v=30"></script>
-<script src="app-shop.js?v=49"></script>
+<script src="app-shop.js?v=50"></script>
 <script src="app-legal.js?v=3"></script>
 <script src="app-deals.js?v=30"></script>
 <script src="app-catalog.js?v=38"></script>
@@ -2593,7 +2593,7 @@
 <script src="app-withdraw.js?v=40"></script>
 <script src="app-instant.js?v=1"></script>
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
-<script>window.DG_ADMIN_SRC = 'app-admin.js?v=33';</script>
+<script>window.DG_ADMIN_SRC = 'app-admin.js?v=34';</script>
 <!-- 3D-просмотрщик (210 КБ) грузится после открытия витрины — ensure3DScript в app-navigation.js. -->
 <script>window.DG_3D_SRC = 'app-3d.js?v=136';</script>
 <script src="app-auctions.js?v=9"></script>

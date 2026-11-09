@@ -1110,7 +1110,7 @@ admin_sellers_stats: 'Сделок: {trades} · лотов в продаже: {l
 admin_sellers_history: 'История',
 admin_sellers_adjust: 'Исправить баланс',
 admin_sellers_id_copied: 'ID {id} скопирован',
-admin_label_balance_reason: 'Причина (видна в истории)',
+admin_label_balance_reason: 'Причина (обязательно, видна в истории)',
 admin_balance_reason_ph: 'Например: ошибочное начисление по сделке #123',
 admin_section_disputes: "Споры",
 admin_section_fraud: "Антифрод: подозрительное",
