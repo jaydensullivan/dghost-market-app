@@ -1229,14 +1229,14 @@ const list = Array.isArray(params.colors) ? params.colors.slice(1, 4) : [];
 return list.every(c => !c || Math.max(c[0] || 0, c[1] || 0, c[2] || 0) < 0.01);
 }
 
-function skinColors(THREE, params){
+function skinColors(THREE, params, rawColors){
 const list = Array.isArray(params.colors) ? params.colors : [];
 const out = [];
 for (let i = 0; i < 4; i++){
 const c = list[i] || [0, 0, 0];
 const color = new THREE.Color();
 // Цвета из материала — в sRGB; шейдеру нужны линейные.
-if (THREE.SRGBColorSpace) color.setRGB(c[0], c[1], c[2], THREE.SRGBColorSpace);
+if (THREE.SRGBColorSpace && !rawColors) color.setRGB(c[0], c[1], c[2], THREE.SRGBColorSpace);
 else color.setRGB(c[0], c[1], c[2]);
 out.push(new THREE.Vector3(color.r, color.g, color.b));
 }
@@ -1500,6 +1500,13 @@ const placement = seedPlacement(skin.params, seed);
 // Закалка (gsch_…): палитра цветов, место в ней выбирает альфа узора.
 const hardening = skin.ramp ? (skin.params.case_hardening || {}) : null;
 
+// Fade на ножах (стиль 5 на полированном клинке): цвета материала и маску
+// берём как есть, без перевода из sRGB и без гаммы маски, и сдвигаем
+// градиент на −0.15 к началу маски. Иначе золото у основания клинка
+// уходило в оранжево-красное, а острие — в синее (в игре: серебро →
+// золото → розовый → фиолетовый). Сверка со Steam по 20 ножам Fade:
+// цветовой счёт 66.8 → 69.7, игровой 36.6 → 41.3.
+const knifeFadeLook = skin.params.paint_style === 5 && isKnifeName(weaponName);
 const uniforms = {
 uPattern: { value: pattern },
 uRamp: { value: skin.ramp || pattern },
@@ -1565,9 +1572,9 @@ uHasSkinMetal: { value: skin.metalness || maskMetal(skin) ? 1 : 0 },
 uPaintRoughness: { value: anodizedLook(skin, weaponName).roughness },
 uHasPaintRoughness: { value: isAnodized(skin.params) || legacyCaseHardened(skin) ? 1 : 0 },
 uUseColors: { value: skin.solid || skinUsesColorMask(skin.params) ? 1 : 0 },
-uColors: { value: skinColors(THREE, skin.params) },
+uColors: { value: skinColors(THREE, skin.params, knifeFadeLook) },
 // Узор грузится как sRGB, а маске нужны исходные значения каналов.
-uMaskGamma: { value: THREE.SRGBColorSpace ? 1 / 2.2 : 1 },
+uMaskGamma: { value: THREE.SRGBColorSpace && !knifeFadeLook ? 1 / 2.2 : 1 },
 uSmokeK: { value: dopplerSmokeK(skin, weaponName) },
 uAlphaZone: { value: hydroAlphaZone(skin) },
 uHydroFrame: { value: legacyHydroFrame(skin, weapon) ? 1 : 0 },
@@ -1615,6 +1622,7 @@ uniforms.uStkQ = { value: stk.Q };
 // Подобрано по всем 20 ножам, 8 из них — по скриншотам CSFloat.
 // [сторона, порог] по длинной оси ножа (−0.5…0.5 от центра): краска Fade
 // только там, где сторона·x ≥ порог — на клинке, не на рукояти.
+const KNIFE_FADE_SHIFT = -0.15;
 const KNIFE_FADE_BLADE = { knife_falchion: [-1, 0.1], knife_butterfly: [-1, 0.1] };
 // 03.11 по скриншотам игры (CSFloat, по 3 экземпляра на нож) у шести
 // ножей острие выходило оранжевым, а не сине-фиолетовым: Bayonet → 3,
@@ -1690,6 +1698,7 @@ uProjected: { value: projected ? 1 : 0 },
 uClampPattern: { value: projected && isGunFade(skin) ? 1 : 0 },
 uBladeCut: { value: new THREE.Vector2(...((knifeFade && KNIFE_FADE_BLADE[weapon.name]) || [0, 0])) },
 uFadeMirror: { value: knifeFade ? (KNIFE_FADE_MODE[weapon.name] || 0) : 0 },
+uFadeShift: { value: knifeFade ? KNIFE_FADE_SHIFT : 0 },
 uToRoot: { value: toRoot },
 uProjU: { value: projU },
 uProjV: { value: projV },
@@ -1845,6 +1854,7 @@ uniform int uProjected;
 uniform int uClampPattern;
 uniform vec2 uBladeCut;
 uniform int uFadeMirror;
+uniform float uFadeShift;
 varying vec2 vSkinUv;
 varying vec2 vProjUv;`)
 .replace('#include <color_fragment>', `#include <color_fragment>
@@ -1885,6 +1895,7 @@ puv = vec2(rc * puv.x - rs * puv.y, rs * puv.x + rc * puv.y);
 vec2 patternUv = uProjected == 1 ? puv * uPatternScale + 0.5 : (puv + 0.5) * uPatternScale;
 vec2 texUv = patternUv + uPatternOffset;
 if (uFadeMirror == 1 || uFadeMirror == 3) texUv.x = 1.0 - texUv.x;
+texUv.x += uFadeShift;
 if (uClampPattern == 1) texUv = clamp(texUv, 0.002, 0.998);
 vec4 patternTex = texture2D(uPattern, texUv);
 vec3 pattern = patternTex.rgb;
