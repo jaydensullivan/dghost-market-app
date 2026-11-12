@@ -1422,6 +1422,88 @@ g.computeBoundingSphere();
 });
 }
 
+// Деталь сбоку от корпуса: у XM1014 в обоих корпусах лежат 4 патрона на
+// 7 см ниже и до 10 см в сторону от ружья — dropStrayParts ищет разрыв
+// только вдоль длины модели и их не видит. Части корпуса (по общим
+// вершинам), чья рамка не касается основной (с запасом 2% длины),
+// убираем, если вместе это не больше 20% треугольников: по всем 55
+// моделям так отрезаются только патроны XM1014 (12–16%), патрон R8 и
+// один треугольник M249, а второй пистолет Dual Berettas (50%) остаётся.
+const DETACHED_MARGIN = 0.02;
+const DETACHED_MAX_SHARE = 0.2;
+function dropDetachedParts(geometries){
+geometries = geometries.filter(g => g && !g.userData.dgDetached && g.index && g.attributes && g.attributes.position);
+geometries.forEach(g => { g.userData.dgDetached = true; });
+const parts = [];
+const triPart = geometries.map(g => {
+const pos = g.attributes.position, idx = g.index.array;
+const weld = new Map(), vid = new Int32Array(pos.count);
+for (let i = 0; i < pos.count; i++){
+const key = Math.round(pos.getX(i) * 1e4) + ',' + Math.round(pos.getY(i) * 1e4) + ',' + Math.round(pos.getZ(i) * 1e4);
+let w = weld.get(key);
+if (w === undefined){ w = weld.size; weld.set(key, w); }
+vid[i] = w;
+}
+const parent = new Int32Array(weld.size).map((_, i) => i);
+const find = x => { while (parent[x] !== x){ parent[x] = parent[parent[x]]; x = parent[x]; } return x; };
+for (let i = 0; i < idx.length; i += 3){
+const a = find(vid[idx[i]]);
+parent[find(vid[idx[i + 1]])] = a;
+parent[find(vid[idx[i + 2]])] = a;
+}
+const byRoot = new Map(), out = new Int32Array(idx.length / 3);
+for (let i = 0, t = 0; i < idx.length; i += 3, t++){
+const r = find(vid[idx[i]]);
+let part = byRoot.get(r);
+if (!part){
+part = { i: parts.length, tris: 0, min: [Infinity, Infinity, Infinity], max: [-Infinity, -Infinity, -Infinity] };
+byRoot.set(r, part); parts.push(part);
+}
+part.tris++;
+for (let k = 0; k < 3; k++){
+const v = idx[i + k];
+const c = [pos.getX(v), pos.getY(v), pos.getZ(v)];
+for (let d = 0; d < 3; d++){
+if (c[d] < part.min[d]) part.min[d] = c[d];
+if (c[d] > part.max[d]) part.max[d] = c[d];
+}
+}
+out[t] = part.i;
+}
+return out;
+});
+if (parts.length < 2) return;
+const total = parts.reduce((n, q) => n + q.tris, 0);
+const lo = [0, 1, 2].map(d => Math.min(...parts.map(q => q.min[d])));
+const hi = [0, 1, 2].map(d => Math.max(...parts.map(q => q.max[d])));
+const margin = DETACHED_MARGIN * Math.max(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]);
+// Основа — самая большая часть; к ней прирастают все, чья рамка её касается.
+const main = parts.reduce((a, q) => (q.tris > a.tris ? q : a));
+const bmin = main.min.slice(), bmax = main.max.slice();
+main.keep = true;
+for (let grew = true; grew;){
+grew = false;
+parts.forEach(q => {
+if (q.keep) return;
+const apart = [0, 1, 2].some(d => q.min[d] > bmax[d] + margin || q.max[d] < bmin[d] - margin);
+if (apart) return;
+q.keep = true; grew = true;
+for (let d = 0; d < 3; d++){ bmin[d] = Math.min(bmin[d], q.min[d]); bmax[d] = Math.max(bmax[d], q.max[d]); }
+});
+}
+const dropped = parts.reduce((n, q) => n + (q.keep ? 0 : q.tris), 0);
+if (!dropped || dropped > DETACHED_MAX_SHARE * total) return;
+geometries.forEach((g, gi) => {
+const idx = g.index.array, kept = [];
+for (let i = 0, t = 0; i < idx.length; i += 3, t++){
+if (parts[triPart[gi][t]].keep) kept.push(idx[i], idx[i + 1], idx[i + 2]);
+}
+g.setIndex(kept);
+g.computeBoundingBox();
+g.computeBoundingSphere();
+});
+}
+
 function selectModelBody(object, useHd){
 let hasHd = false, hasLegacy = false;
 const bodies = { hd: [], legacy: [] };
@@ -1437,6 +1519,8 @@ if (name.indexOf('body_legacy') !== -1) hasLegacy = true;
 });
 dropStrayParts(bodies.hd);
 dropStrayParts(bodies.legacy);
+dropDetachedParts(bodies.hd);
+dropDetachedParts(bodies.legacy);
 if (!hasHd || !hasLegacy) return false;
 object.traverse(node => {
 const name = String(node.name || '').toLowerCase();
