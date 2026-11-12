@@ -523,6 +523,7 @@ return `<div class="deal-card">
 <div class="deal-title">${escapeHtml(d.title)} — ${formatCoins(d.price)}</div>
 <div class="deal-meta">${dict.admin_deal_seller}: ${escapeHtml(d.seller_username || String(d.seller_id))} · ${dict.admin_deal_buyer}: ${escapeHtml(d.buyer_username || String(d.buyer_id))}</div>
 <div class="deal-meta">${dealStatusLabel(d.status)}${d.remaining ? ' · ' + d.remaining : ''}</div>
+${d.risky_hold ? `<div class="deal-meta">⏳ ${escapeHtml(dict.admin_deal_hold_risky.replace('{reason}', d.hold_reason || dict.admin_deal_hold_reason_default))}</div>` : ''}
 </div>
 <div class="deal-actions">
 <button class="deal-action" data-finalize-deal="${d.skin_id}" type="button">${dict.admin_btn_finalize}</button>
@@ -588,8 +589,12 @@ const dict = I18N[currentLang] || I18N.ru;
 
 const finalizeBtn = e.target.closest('[data-finalize-deal]');
 if (finalizeBtn){
-showConfirm(dict.admin_confirm_finalize, () => {
-adminApiFetch('/api/admin/deals/' + finalizeBtn.dataset.finalizeDeal + '/finalize', { method: 'POST' })
+// Раньше срока — отдельное предупреждение: сделка отмечается «выплачено
+// досрочно», и проблемы по ней (откат обмена, спор) решает этот админ.
+const deal = adminDealsData.find(d => String(d.skin_id) === finalizeBtn.dataset.finalizeDeal);
+const early = !!(deal && deal.early);
+showConfirm(early ? dict.admin_confirm_finalize_early : dict.admin_confirm_finalize, () => {
+adminApiFetch('/api/admin/deals/' + finalizeBtn.dataset.finalizeDeal + '/finalize', { method: 'POST', body: { early_ack: early } })
 .then(() => loadAdminDeals())
 .catch(err => showErrorToast(err));
 });
