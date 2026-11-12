@@ -4676,9 +4676,17 @@ const MODELS_CDNS = ['https://3d.dghostmarket.com/'];
 let modelsBase = '';
 
 // «models/…» → полный адрес на выбранном хранилище; остальное как есть.
+// Пересобранные модели стволов: CDN держит файл 30 дней (кэш Cloudflare
+// по адресу без query), и новая сборка доходит только с новым ?r=. M4A4
+// (m4a1) до 11.11 собиралась из файлов M4A1-S — все её скины в «3D» были
+// на чужой модели с глушителем.
+const MODEL_REVISIONS = [[/^models\/(m4a1\.glb$|weapons\/m4a1\/)/, 1]];
+
 function modelsUrl(path){
 path = String(path || '');
-return path.indexOf('models/') === 0 ? modelsBase + path : path;
+if (path.indexOf('models/') !== 0) return path;
+const rev = MODEL_REVISIONS.find(([re]) => re.test(path));
+return modelsBase + path + (rev && path.indexOf('?') === -1 ? '?r=' + rev[1] : '');
 }
 
 function fetchModelIndex(base){
