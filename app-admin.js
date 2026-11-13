@@ -524,10 +524,12 @@ return `<div class="deal-card">
 <div class="deal-meta">${dict.admin_deal_seller}: ${escapeHtml(d.seller_username || String(d.seller_id))} · ${dict.admin_deal_buyer}: ${escapeHtml(d.buyer_username || String(d.buyer_id))}</div>
 <div class="deal-meta">${dealStatusLabel(d.status)}${d.remaining ? ' · ' + d.remaining : ''}</div>
 ${d.risky_hold ? `<div class="deal-meta">⏳ ${escapeHtml(dict.admin_deal_hold_risky.replace('{reason}', d.hold_reason || dict.admin_deal_hold_reason_default))}</div>` : ''}
+${d.paid_offline ? `<div class="deal-meta">${escapeHtml(dict.admin_deal_paid_offline.replace('{amount}', formatCoins(d.paid_offline)))}</div>` : ''}
 </div>
 <div class="deal-actions">
 <button class="deal-action" data-finalize-deal="${d.skin_id}" type="button">${dict.admin_btn_finalize}</button>
 <button class="deal-action secondary" data-refund-deal="${d.skin_id}" type="button">${dict.admin_btn_refund}</button>
+${!d.paid_offline && !d.direct ? `<button class="deal-action secondary" data-paid-offline-deal="${d.skin_id}" type="button">${dict.admin_btn_paid_offline}</button>` : ''}
 </div>
 </div>`;
 }
@@ -595,6 +597,20 @@ const deal = adminDealsData.find(d => String(d.skin_id) === finalizeBtn.dataset.
 const early = !!(deal && deal.early);
 showConfirm(early ? dict.admin_confirm_finalize_early : dict.admin_confirm_finalize, () => {
 adminApiFetch('/api/admin/deals/' + finalizeBtn.dataset.finalizeDeal + '/finalize', { method: 'POST', body: { early_ack: early } })
+.then(() => loadAdminDeals())
+.catch(err => showErrorToast(err));
+});
+return;
+}
+
+// Перевёл продавцу на карту до конца холда: сделка остаётся в холде,
+// а после него выплата зачислится и сразу спишется с баланса продавца.
+const paidBtn = e.target.closest('[data-paid-offline-deal]');
+if (paidBtn){
+const deal = adminDealsData.find(d => String(d.skin_id) === paidBtn.dataset.paidOfflineDeal);
+const amount = deal ? deal.payout : 0;
+showConfirm(dict.admin_confirm_paid_offline.replace('{amount}', formatCoins(amount)), () => {
+adminApiFetch('/api/admin/deals/' + paidBtn.dataset.paidOfflineDeal + '/paid_offline', { method: 'POST', body: { amount } })
 .then(() => loadAdminDeals())
 .catch(err => showErrorToast(err));
 });
