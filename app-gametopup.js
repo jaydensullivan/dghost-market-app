@@ -18,13 +18,25 @@ const d = gtDict();
 return d['gt_type_' + t] || t;
 }
 
+// Заглушка без обложки (у Steam её нет): свой цвет на каждую игру.
+const GT_PH_COLORS = [['#7B2CFF', '#C4169F'], ['#1d4ed8', '#7B2CFF'], ['#0f766e', '#2563eb'], ['#b45309', '#C4169F'], ['#be123c', '#7B2CFF']];
+const GT_KNOWN_ICONS = { steam: '🎮', telegram: '✈️', giftcard: '🎁', gamekey: '🔑' };
+
+function gtCoverHtml(c, cls){
+if (c.image) return `<img class="${cls}" src="${escapeHtml(c.image)}" alt="" loading="lazy">`;
+let h = 0;
+for (const ch of String(c.slug || c.name || '')) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+const [a, b] = GT_PH_COLORS[h % GT_PH_COLORS.length];
+const icon = GT_KNOWN_ICONS[c.type] || escapeHtml((c.name || '?').slice(0, 1).toUpperCase());
+return `<span class="${cls} gt-ph" style="background:linear-gradient(135deg, ${a}, ${b})">${icon}</span>`;
+}
+
 function gtTileHtml(c, compact){
-const img = c.image ? `<img src="${escapeHtml(c.image)}" alt="" loading="lazy">` : `<span class="gt-tile-ph">${escapeHtml((c.name || '?').slice(0, 2))}</span>`;
 if (compact){
-return `<button type="button" class="gt-chip-tile" data-gt-slug="${escapeHtml(c.slug)}">${img}<span>${escapeHtml(c.name)}</span></button>`;
+return `<button type="button" class="gt-chip-tile" data-gt-slug="${escapeHtml(c.slug)}"><span class="gt-chip-ring">${gtCoverHtml(c, 'gt-chip-img')}</span><span class="gt-chip-name">${escapeHtml(c.name)}</span></button>`;
 }
 const from = c.from_uzs ? `<span class="gt-tile-price">${escapeHtml(gtDict().gt_from.replace('{price}', formatCoins(c.from_uzs)))}</span>` : '';
-return `<button type="button" class="gt-tile" data-gt-slug="${escapeHtml(c.slug)}"><span class="gt-tile-img">${img}</span><span class="gt-tile-name">${escapeHtml(c.name)}</span>${from}</button>`;
+return `<button type="button" class="gt-tile" data-gt-slug="${escapeHtml(c.slug)}">${gtCoverHtml(c, 'gt-tile-cover')}<span class="gt-tile-shade"></span><span class="gt-tile-body"><span class="gt-tile-name">${escapeHtml(c.name)}</span>${from}</span></button>`;
 }
 
 function loadTopupCatalog(){
@@ -100,11 +112,14 @@ const c = data.category || {};
 const known = gtItems.find(x => x.slug === slug) || {};
 const name = c.name || known.name || slug;
 const image = c.image || known.image;
+const cover = { slug: slug, name: name, image: image, type: c.type || known.type };
 document.getElementById('gtDetailHead').innerHTML = `
-<div class="gt-head-img">${image ? `<img src="${escapeHtml(image)}" alt="">` : ''}</div>
-<div><div class="gt-head-name">${escapeHtml(name)}</div><div class="gt-head-badge">⚡ ${escapeHtml(d.gt_fast)}</div></div>`;
+${image ? `<img class="gt-head-bg" src="${escapeHtml(image)}" alt="">` : ''}
+<div class="gt-head-inner">${gtCoverHtml(cover, 'gt-head-img')}
+<div><div class="gt-head-name">${escapeHtml(name)}</div><div class="gt-head-badges"><span class="gt-pill">⚡ ${escapeHtml(d.gt_fast)}</span><span class="gt-pill">🛡 ${escapeHtml(d.gt_refund_badge)}</span></div></div></div>`;
 document.getElementById('gtOffers').innerHTML = (data.offers || []).map(o =>
 `<button type="button" class="gt-offer" data-gt-offer="${escapeHtml(o.id)}" ${o.in_stock ? '' : 'disabled'}>
+<span class="gt-offer-check" aria-hidden="true">✓</span>
 <span class="gt-offer-name">${escapeHtml(o.name)}</span>
 <span class="gt-offer-price">${o.in_stock ? formatCoins(o.price_uzs) : escapeHtml(d.gt_out_of_stock)}</span></button>`).join('')
 || `<div class="skins-empty skins-empty-md">${d.gt_nothing_found}</div>`;
@@ -266,7 +281,8 @@ ${(o.codes || []).map(c => `<button type="button" class="gt-code" data-gt-copy="
 document.addEventListener('click', (e) => {
 const tile = e.target.closest('[data-gt-slug]');
 if (tile){ openTopupCategory(tile.dataset.gtSlug); return; }
-if (e.target.closest('[data-gt-open-all]')){ gtType = ''; goToScreen('topup'); return; }
+// Любое место полосы в «Маркете», кроме плитки игры, — весь каталог.
+if (e.target.closest('[data-gt-open-all]') || e.target.closest('#gtStrip')){ gtType = ''; goToScreen('topup'); return; }
 const type = e.target.closest('[data-gt-type]');
 if (type){ gtType = type.dataset.gtType; loadTopupCatalog(); return; }
 const offer = e.target.closest('[data-gt-offer]');
@@ -294,3 +310,6 @@ gtSearchTimer = setTimeout(loadTopupCatalog, 350);
 
 // Плитки на главной: узнаём, включён ли раздел, сразу при запуске.
 loadTopupCatalog();
+document.getElementById('gtStrip').addEventListener('keydown', (e) => {
+if ((e.key === 'Enter' || e.key === ' ') && e.target.id === 'gtStrip'){ e.preventDefault(); gtType = ''; goToScreen('topup'); }
+});
