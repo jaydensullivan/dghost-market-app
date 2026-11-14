@@ -5417,3 +5417,8 @@ button.brand-logo{ width:44px; height:44px; }
 .gt-badge-bad{ background:rgba(239, 68, 68, .16); color:#f87171; }
 .gt-code{ display:block; width:100%; margin-top:8px; padding:10px 12px; min-height:44px; border-radius:12px; border:1px dashed var(--accent); background:rgba(123, 44, 255, .08); color:var(--text); font-family:monospace; font-size:14px; letter-spacing:.5px; cursor:pointer; text-align:left; }
 body.theme-light #gtPayBox{ background:rgba(255, 255, 255, .92); }
+.gt-recip-seg{ margin-bottom:10px; }
+.gt-recip-saved{ display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:52px; padding:10px 14px; margin-bottom:10px; border-radius:14px; border:1px solid transparent; background:linear-gradient(var(--surface), var(--surface)) padding-box, var(--cta-gradient) border-box; font-size:15px; font-weight:700; }
+.gt-recip-unlink{ flex:0 0 auto; min-height:36px; padding:0 12px; border-radius:10px; border:1px solid var(--red-dim); background:none; color:var(--muted); font-size:12px; cursor:pointer; }
+.gt-recip-save{ width:100%; margin:2px 0 8px; }
+.gt-recip-saved[hidden], .gt-recip-save[hidden], #gtFieldWrap[hidden]{ display:none; }
