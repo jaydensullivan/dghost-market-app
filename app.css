@@ -5354,38 +5354,52 @@ button.brand-logo{ width:44px; height:44px; }
 .lg-status.ok{ color:#4ade80; }
 
 /* ---------- Пополнения игр (app-gametopup.js) ---------- */
-.gt-strip{ margin:0 0 12px; padding:10px; border-radius:14px; border:1px solid var(--accent); background:var(--surface); }
-.gt-strip-head{ font-size:13px; font-weight:700; margin-bottom:8px; }
-.gt-strip-row{ display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; }
+.gt-strip{ position:relative; margin:0 0 12px; padding:12px 10px 10px; border-radius:16px; border:1px solid transparent; background:linear-gradient(var(--surface), var(--surface)) padding-box, var(--cta-gradient) border-box; box-shadow:0 6px 24px rgba(123, 44, 255, .18); }
+.gt-strip-head{ font-size:14px; font-weight:700; margin:0 2px 10px; }
+.gt-strip-row{ display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; }
 .gt-strip-row::-webkit-scrollbar{ display:none; }
-.gt-chip-tile{ flex:0 0 auto; width:68px; min-height:44px; display:flex; flex-direction:column; align-items:center; gap:4px; padding:4px 2px; border:none; background:none; color:var(--text); font-size:11px; cursor:pointer; }
-.gt-chip-tile img, .gt-chip-tile .gt-tile-ph{ width:44px; height:44px; border-radius:12px; object-fit:cover; }
-.gt-chip-tile span{ max-width:68px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.gt-chip-more{ justify-content:center; align-self:center; width:44px; height:44px; border-radius:50%; background:var(--red-dim); font-size:20px; color:var(--text); }
-.gt-tile-ph{ display:flex; align-items:center; justify-content:center; background:var(--red-dim); color:var(--text); font-weight:700; }
+.gt-chip-tile{ flex:0 0 auto; width:66px; display:flex; flex-direction:column; align-items:center; gap:6px; padding:0; border:none; background:none; color:var(--text); cursor:pointer; }
+.gt-chip-ring{ display:block; padding:2px; border-radius:16px; background:var(--cta-gradient); }
+.gt-chip-img{ display:flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:14px; object-fit:cover; border:2px solid var(--surface); font-size:22px; color:#fff; font-weight:700; }
+.gt-chip-name{ max-width:66px; font-size:11px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.gt-chip-more{ justify-content:center; align-self:flex-start; margin-top:12px; width:44px; height:44px; border-radius:50%; background:var(--red-dim); font-size:20px; color:var(--text); }
+.gt-ph{ display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; }
 .gt-grid{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; }
-.gt-tile{ display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 8px; border-radius:14px; border:1px solid var(--red-dim); background:var(--surface); color:var(--text); cursor:pointer; text-align:center; }
-.gt-tile-img img, .gt-tile-img .gt-tile-ph{ width:64px; height:64px; border-radius:14px; object-fit:cover; }
-.gt-tile-name{ font-size:13px; font-weight:600; }
-.gt-tile-price{ font-size:12px; padding:3px 8px; border-radius:8px; background:var(--red-dim); color:var(--red-glow); }
-.gt-head{ display:flex; align-items:center; gap:12px; margin-bottom:14px; }
-.gt-head-img img{ width:56px; height:56px; border-radius:14px; object-fit:cover; }
-.gt-head-name{ font-size:16px; font-weight:700; }
-.gt-head-badge{ font-size:12px; color:var(--muted); margin-top:2px; }
-.gt-offers{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; margin-bottom:14px; }
-.gt-offer{ display:flex; flex-direction:column; gap:2px; min-height:56px; padding:10px; border-radius:12px; border:1px solid var(--red-dim); background:var(--surface); color:var(--text); cursor:pointer; text-align:left; }
-.gt-offer.active{ border-color:var(--accent); box-shadow:0 0 0 1px var(--accent) inset; }
-.gt-offer:disabled{ opacity:.45; cursor:default; }
-.gt-offer-name{ font-size:13px; font-weight:600; }
+.gt-tile{ position:relative; display:block; aspect-ratio:1 / 1.12; padding:0; border-radius:18px; overflow:hidden; border:1px solid var(--red-dim); background:var(--surface); color:#fff; cursor:pointer; text-align:left; transition:transform .15s ease, border-color .15s ease; }
+.gt-tile:active{ transform:scale(.97); }
+.gt-tile-cover{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; font-size:44px; }
+.gt-tile-shade{ position:absolute; inset:0; background:linear-gradient(180deg, rgba(8, 7, 13, 0) 35%, rgba(8, 7, 13, .92) 100%); }
+.gt-tile-body{ position:absolute; left:10px; right:10px; bottom:10px; display:flex; flex-direction:column; align-items:flex-start; gap:6px; }
+.gt-tile-name{ font-size:14px; font-weight:700; line-height:1.2; text-shadow:0 1px 4px rgba(0, 0, 0, .6); }
+.gt-tile-price{ font-size:12px; font-weight:700; padding:4px 10px; border-radius:10px; background:var(--cta-gradient); color:#fff; }
+.gt-head{ position:relative; margin-bottom:16px; border-radius:18px; overflow:hidden; border:1px solid var(--red-dim); background:var(--surface); }
+.gt-head-bg{ position:absolute; inset:-20px; width:calc(100% + 40px); height:calc(100% + 40px); object-fit:cover; filter:blur(18px) brightness(.45); }
+.gt-head-inner{ position:relative; display:flex; align-items:center; gap:14px; padding:16px; }
+.gt-head-img{ flex:0 0 auto; width:72px; height:72px; border-radius:18px; object-fit:cover; font-size:30px; box-shadow:0 6px 18px rgba(0, 0, 0, .45); }
+.gt-head-name{ font-size:18px; font-weight:800; color:#fff; }
+.gt-head-badges{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.gt-pill{ font-size:11px; padding:4px 8px; border-radius:8px; background:rgba(255, 255, 255, .12); color:#fff; }
+.gt-offers{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; margin-bottom:16px; }
+.gt-offer{ position:relative; display:flex; flex-direction:column; justify-content:center; gap:4px; min-height:68px; padding:12px; border-radius:14px; border:1px solid var(--red-dim); background:var(--surface); color:var(--text); cursor:pointer; text-align:left; transition:border-color .15s ease, box-shadow .15s ease; }
+.gt-offer.active{ border-color:transparent; background:linear-gradient(var(--surface), var(--surface)) padding-box, var(--cta-gradient) border-box; box-shadow:0 4px 18px rgba(123, 44, 255, .3); }
+.gt-offer:disabled{ opacity:.4; cursor:default; }
+.gt-offer-check{ position:absolute; top:8px; right:8px; width:18px; height:18px; border-radius:50%; display:none; align-items:center; justify-content:center; font-size:11px; color:#fff; background:var(--cta-gradient); }
+.gt-offer.active .gt-offer-check{ display:flex; }
+.gt-offer-name{ font-size:15px; font-weight:800; padding-right:20px; }
 .gt-offer-price{ font-size:12px; color:var(--muted); }
+.gt-offer.active .gt-offer-price{ color:var(--red-glow); }
 .gt-check-btn{ margin-top:4px; }
-.gt-warn{ margin:10px 0; padding:10px 12px; border-radius:12px; border:1px solid #b3263e; background:rgba(179, 38, 62, .12); font-size:13px; }
-.gt-order{ padding:12px; border-radius:12px; border:1px solid var(--red-dim); background:var(--surface); margin-bottom:8px; }
+.gt-warn{ margin:12px 0; padding:12px; border-radius:14px; border:1px solid rgba(239, 68, 68, .55); background:rgba(239, 68, 68, .1); font-size:13px; line-height:1.35; }
+#gtPayBox{ position:sticky; bottom:84px; z-index:5; margin-top:8px; padding:12px; border-radius:16px; background:rgba(23, 16, 34, .92); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1px solid var(--red-dim); }
+#gtPayBtn{ width:100%; min-height:50px; border:none; border-radius:14px; background:var(--cta-gradient); color:#fff; font-size:16px; font-weight:800; box-shadow:0 6px 22px rgba(123, 44, 255, .35); }
+#gtPayBtn:disabled{ opacity:.5; box-shadow:none; }
+.gt-order{ padding:12px; border-radius:14px; border:1px solid var(--red-dim); background:var(--surface); margin-bottom:10px; }
 .gt-order-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
-.gt-order-name{ font-size:13px; font-weight:600; }
+.gt-order-name{ font-size:14px; font-weight:700; }
 .gt-order-meta{ font-size:12px; color:var(--muted); margin-top:4px; }
-.gt-badge{ flex:0 0 auto; font-size:11px; padding:2px 8px; border-radius:8px; }
+.gt-badge{ flex:0 0 auto; font-size:11px; font-weight:700; padding:3px 9px; border-radius:8px; }
 .gt-badge-ok{ background:rgba(34, 197, 94, .18); color:#4ade80; }
 .gt-badge-wait{ background:var(--red-dim); color:var(--red-glow); }
-.gt-badge-bad{ background:rgba(179, 38, 62, .18); color:#f87171; }
-.gt-code{ display:block; width:100%; margin-top:8px; padding:10px; min-height:44px; border-radius:10px; border:1px dashed var(--accent); background:none; color:var(--text); font-family:monospace; font-size:14px; cursor:pointer; text-align:left; }
+.gt-badge-bad{ background:rgba(239, 68, 68, .16); color:#f87171; }
+.gt-code{ display:block; width:100%; margin-top:8px; padding:10px 12px; min-height:44px; border-radius:12px; border:1px dashed var(--accent); background:rgba(123, 44, 255, .08); color:var(--text); font-family:monospace; font-size:14px; letter-spacing:.5px; cursor:pointer; text-align:left; }
+body.theme-light #gtPayBox{ background:rgba(255, 255, 255, .92); }
