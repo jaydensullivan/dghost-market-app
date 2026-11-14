@@ -183,17 +183,104 @@ document.getElementById('gtDetailHead').innerHTML = `<div class="skins-empty ski
 });
 }
 
+// «Себе / Другому» для Telegram (@username) и Steam (логин): «себе»
+// сохраняется на сервере и подставляется в следующий раз, можно отвязать.
+let gtRecip = null;
+let gtRecipMode = 'self';
+
+function gtRecipientKind(fields){
+const t = gtCurrent && gtCurrent.category && gtCurrent.category.type;
+return fields.length === 1 && (t === 'telegram' || t === 'steam') ? t : null;
+}
+
+function loadTopupRecipients(){
+if (!tg || !tg.initData) return Promise.resolve(null);
+if (gtRecip) return Promise.resolve(gtRecip);
+return fetch(API_BASE + '/api/game_topup/recipients?init_data=' + encodeURIComponent(tg.initData))
+.then(r => r.ok ? r.json() : null)
+.then(data => { gtRecip = data; return data; })
+.catch(() => null);
+}
+
 function renderTopupFields(fields){
 const d = gtDict();
-document.getElementById('gtFields').innerHTML = fields.map(f => `
-<div class="edit-field">
+const kind = gtRecipientKind(fields);
+const fieldHtml = fields.map(f => `
+<div class="edit-field" id="gtFieldWrap">
 <label>${escapeHtml(f.label)}${f.required ? ' *' : ''}</label>
 <div class="gt-field-row">
 <input type="text" data-gt-field="${escapeHtml(f.key)}" placeholder="${escapeHtml(f.placeholder || '')}" autocomplete="off" autocapitalize="off" spellcheck="false">
 </div>
-</div>`).join('')
+</div>`).join('');
+const recipHtml = kind ? `
+<div class="shop-tabs gt-recip-seg" data-gt-kind="${kind}">
+<button type="button" data-gt-recip="self">${escapeHtml(d.gt_recip_self)}</button>
+<button type="button" data-gt-recip="other">${escapeHtml(d.gt_recip_other)}</button>
+</div>
+<div id="gtRecipSaved" class="gt-recip-saved" hidden></div>` : '';
+document.getElementById('gtFields').innerHTML = recipHtml + fieldHtml
++ (kind ? `<button type="button" class="steam-link-btn gt-recip-save" id="gtRecipSaveBtn" hidden></button>` : '')
 + (fields.length ? `<button type="button" class="steam-link-btn secondary gt-check-btn" id="gtCheckBtn">${d.gt_check}</button><div class="shop-hint" id="gtCheckResult"></div>` : '')
 + `<div class="gt-warn">⚠️ ${d.gt_warn}</div>`;
+if (kind){
+gtRecipMode = 'self';
+loadTopupRecipients().then(() => renderTopupRecipient());
+}
+}
+
+function renderTopupRecipient(){
+const d = gtDict();
+const seg = document.querySelector('#gtFields .gt-recip-seg');
+if (!seg) return;
+const kind = seg.dataset.gtKind;
+const input = document.querySelector('#gtFields [data-gt-field]');
+const wrap = document.getElementById('gtFieldWrap');
+const savedBox = document.getElementById('gtRecipSaved');
+const saveBtn = document.getElementById('gtRecipSaveBtn');
+seg.querySelectorAll('[data-gt-recip]').forEach(b => b.classList.toggle('active', b.dataset.gtRecip === gtRecipMode));
+const saved = gtRecip && gtRecip.recipients && gtRecip.recipients[kind];
+if (gtRecipMode === 'other' || !gtRecip){
+// Другому (или гость без входа) — обычное поле, сохранённое не трогаем.
+savedBox.hidden = true;
+saveBtn.hidden = true;
+wrap.hidden = false;
+if (gtRecipMode === 'other') input.value = '';
+return;
+}
+if (saved){
+savedBox.hidden = false;
+savedBox.innerHTML = `<span>✓ ${escapeHtml(saved)}</span><button type="button" class="gt-recip-unlink" id="gtRecipUnlinkBtn">${escapeHtml(d.gt_recip_unlink)}</button>`;
+input.value = saved;
+wrap.hidden = true;
+saveBtn.hidden = true;
+return;
+}
+// Себе, ещё не сохранено: Telegram — подставляем свой @username.
+savedBox.hidden = true;
+wrap.hidden = false;
+if (kind === 'telegram' && gtRecip.tg_username && !input.value) input.value = '@' + gtRecip.tg_username;
+saveBtn.hidden = false;
+saveBtn.textContent = kind === 'telegram' && gtRecip.tg_username ? d.gt_recip_confirm : d.gt_recip_save;
+}
+
+function saveTopupRecipient(value){
+const d = gtDict();
+const seg = document.querySelector('#gtFields .gt-recip-seg');
+if (!seg || !tg || !tg.initData) return;
+fetch(API_BASE + '/api/game_topup/recipients', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData, kind: seg.dataset.gtKind, value: value }),
+})
+.then(r => r.json().then(data => ({ ok: r.ok, data })))
+.then(({ ok, data }) => {
+if (!ok){ showToast(d.gt_recip_bad); return; }
+gtRecip.recipients = data.recipients || {};
+if (value === null) document.querySelector('#gtFields [data-gt-field]').value = '';
+renderTopupRecipient();
+showToast(value === null ? d.gt_recip_unlinked : d.gt_recip_saved);
+})
+.catch(() => showToast(d.gt_err_generic));
 }
 
 function gtCollectFields(){
@@ -343,6 +430,14 @@ if (type){ gtType = type.dataset.gtType; if ((document.getElementById('gtSearch'
 const offer = e.target.closest('[data-gt-offer]');
 if (offer){ gtSelectOffer(offer.dataset.gtOffer); return; }
 if (e.target.closest('#gtCheckBtn')){ checkTopupId(); return; }
+const recip = e.target.closest('[data-gt-recip]');
+if (recip){ gtRecipMode = recip.dataset.gtRecip; renderTopupRecipient(); return; }
+if (e.target.closest('#gtRecipSaveBtn')){
+const v = (document.querySelector('#gtFields [data-gt-field]') || {}).value || '';
+if (v.trim()) saveTopupRecipient(v.trim());
+return;
+}
+if (e.target.closest('#gtRecipUnlinkBtn')){ saveTopupRecipient(null); return; }
 const seg = e.target.closest('#dealsSeg [data-deals-seg]');
 if (seg){ setDealsSeg(seg.dataset.dealsSeg); return; }
 const copy = e.target.closest('[data-gt-copy]');
