@@ -18,17 +18,34 @@ const d = gtDict();
 return d['gt_type_' + t] || t;
 }
 
-// Заглушка без обложки (у Steam её нет): свой цвет на каждую игру.
+// Без обложки (у Steam её нет в каталоге) — свой значок на фоне цвета
+// сервиса. Логотипы не рисуем: это товарные знаки.
+const GT_ICONS = {
+wallet: '<svg viewBox="0 0 24 24" width="55%" height="55%" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H18a1 1 0 0 1 1 1v2"/><path d="M3 7.5v10A2.5 2.5 0 0 0 5.5 20H20a1 1 0 0 0 1-1v-9a1 1 0 0 0-1-1H5.5A2.5 2.5 0 0 1 3 7.5Z"/><circle cx="16.5" cy="14.5" r="1.3" fill="currentColor"/></svg>',
+gift: '<svg viewBox="0 0 24 24" width="55%" height="55%" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8S10.5 3.5 8 4.5 9 8 12 8Zm0 0s1.5-4.5 4-3.5S15 8 12 8Z"/></svg>',
+key: '<svg viewBox="0 0 24 24" width="55%" height="55%" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l2 2M15 8l2 2"/></svg>',
+send: '<svg viewBox="0 0 24 24" width="55%" height="55%" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m21 3-9.5 9.5M21 3l-6.5 18-3-8.5-8.5-3L21 3Z"/></svg>',
+};
+const GT_THEMES = {
+steam: { from: '#1b2838', to: '#2f6a96', accent: '#8fd3ff', icon: 'wallet' },
+telegram: { from: '#1c93d6', to: '#2AABEE', accent: '#2AABEE', icon: 'send' },
+giftcard: { from: '#9d174d', to: '#db2777', accent: '#f472b6', icon: 'gift' },
+gamekey: { from: '#92400e', to: '#d97706', accent: '#fbbf24', icon: 'key' },
+};
 const GT_PH_COLORS = [['#7B2CFF', '#C4169F'], ['#1d4ed8', '#7B2CFF'], ['#0f766e', '#2563eb'], ['#b45309', '#C4169F'], ['#be123c', '#7B2CFF']];
-const GT_KNOWN_ICONS = { steam: '🎮', telegram: '✈️', giftcard: '🎁', gamekey: '🔑' };
+
+function gtTheme(c){ return GT_THEMES[c.type] || null; }
 
 function gtCoverHtml(c, cls){
 if (c.image) return `<img class="${cls}" src="${escapeHtml(c.image)}" alt="" loading="lazy">`;
+const theme = gtTheme(c);
+if (theme){
+return `<span class="${cls} gt-ph" style="background:linear-gradient(135deg, ${theme.from}, ${theme.to}); color:${theme.accent}">${GT_ICONS[theme.icon]}</span>`;
+}
 let h = 0;
 for (const ch of String(c.slug || c.name || '')) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
 const [a, b] = GT_PH_COLORS[h % GT_PH_COLORS.length];
-const icon = GT_KNOWN_ICONS[c.type] || escapeHtml((c.name || '?').slice(0, 1).toUpperCase());
-return `<span class="${cls} gt-ph" style="background:linear-gradient(135deg, ${a}, ${b})">${icon}</span>`;
+return `<span class="${cls} gt-ph" style="background:linear-gradient(135deg, ${a}, ${b})">${escapeHtml((c.name || '?').slice(0, 1).toUpperCase())}</span>`;
 }
 
 function gtTileHtml(c, compact){
@@ -39,9 +56,14 @@ const from = c.from_uzs ? `<span class="gt-tile-price">${escapeHtml(gtDict().gt_
 return `<button type="button" class="gt-tile" data-gt-slug="${escapeHtml(c.slug)}">${gtCoverHtml(c, 'gt-tile-cover')}<span class="gt-tile-shade"></span><span class="gt-tile-body"><span class="gt-tile-name">${escapeHtml(c.name)}</span>${from}</span></button>`;
 }
 
+// Сервисы (Steam, Telegram, карты) — компактными карточками сверху,
+// игры — большими обложками ниже. Переключатели: Все · Сервисы · Игры.
+const GT_SERVICE_TYPES = ['steam', 'telegram', 'giftcard'];
+
+function gtIsService(c){ return GT_SERVICE_TYPES.includes(c.type); }
+
 function loadTopupCatalog(){
 const params = new URLSearchParams();
-if (gtType) params.set('type', gtType);
 const q = (document.getElementById('gtSearch').value || '').trim();
 if (q) params.set('q', q);
 return fetch(API_BASE + '/api/game_topup/catalog?' + params.toString())
@@ -49,7 +71,7 @@ return fetch(API_BASE + '/api/game_topup/catalog?' + params.toString())
 .then(data => {
 gtEnabled = !!data.enabled;
 gtTypes = data.types || [];
-if (!q && !gtType) gtItems = data.items || [];
+if (!q) gtItems = data.items || [];
 renderTopupStrip();
 renderTopupCatalog(data.items || []);
 })
@@ -64,6 +86,29 @@ document.getElementById('gtStripRow').innerHTML = gtItems.slice(0, 8).map(c => g
 + `<button type="button" class="gt-chip-tile gt-chip-more" data-gt-open-all aria-label="${escapeHtml(gtDict().gt_all)}">→</button>`;
 }
 
+function gtServiceSubtitle(c){
+const d = gtDict();
+const slug = String(c.slug || '');
+if (/stars/.test(slug)) return d.gt_sub_stars;
+if (/premium/.test(slug)) return d.gt_sub_premium;
+if (c.type === 'steam') return d.gt_sub_steam;
+if (c.type === 'giftcard') return d.gt_sub_giftcard;
+return d.gt_sub_service;
+}
+
+function gtServiceCardHtml(c){
+const d = gtDict();
+const from = c.from_uzs ? `<span class="gt-svc-price">${escapeHtml(d.gt_from.replace('{price}', formatCoins(c.from_uzs)))}</span>` : '';
+const theme = gtTheme(c);
+const glow = theme ? ` style="--gt-glow:${theme.accent}"` : '';
+return `<button type="button" class="gt-svc" data-gt-slug="${escapeHtml(c.slug)}"${glow}>
+<span class="gt-svc-icon">${gtCoverHtml(c, 'gt-svc-img')}</span>
+<span class="gt-svc-name">${escapeHtml(c.type === 'steam' && /wallet/i.test(c.name || '') ? 'Steam' : c.name)}</span>
+<span class="gt-svc-sub">${escapeHtml(gtServiceSubtitle(c))}</span>
+<span class="gt-svc-foot">${from}<span class="gt-svc-time">⏱ ${escapeHtml(d.gt_time)}</span></span>
+</button>`;
+}
+
 function renderTopupCatalog(items){
 const d = gtDict();
 const grid = document.getElementById('gtGrid');
@@ -72,14 +117,22 @@ grid.innerHTML = `<div class="skins-empty skins-empty-md">${d.gt_disabled}</div>
 document.getElementById('gtTypeChips').innerHTML = '';
 return;
 }
-document.getElementById('gtTypeChips').innerHTML = [''].concat(gtTypes).map(t =>
-`<button type="button" class="${t === gtType ? 'active' : ''}" data-gt-type="${t}">${escapeHtml(t ? gtTypeLabel(t) : d.gt_type_all)}</button>`).join('');
+document.getElementById('gtTypeChips').innerHTML = [['', d.gt_type_all], ['services', d.gt_tab_services], ['games', d.gt_tab_games]].map(([t, label]) =>
+`<button type="button" class="${t === gtType ? 'active' : ''}" data-gt-type="${t}">${escapeHtml(label)}</button>`).join('');
 if (items === null){
 grid.innerHTML = `<div class="skins-empty skins-empty-md">${d.gt_load_failed}</div>`;
 return;
 }
-grid.innerHTML = items.length ? items.map(c => gtTileHtml(c, false)).join('')
-: `<div class="skins-empty skins-empty-md">${d.gt_nothing_found}</div>`;
+const services = gtType === 'games' ? [] : items.filter(gtIsService);
+const games = gtType === 'services' ? [] : items.filter(c => !gtIsService(c));
+let html = '';
+if (services.length){
+html += `<div class="gt-section-title">${escapeHtml(d.gt_section_services)}</div><div class="gt-svc-grid">${services.map(gtServiceCardHtml).join('')}</div>`;
+}
+if (games.length){
+html += `<div class="gt-section-title">${escapeHtml(d.gt_section_games)}</div><div class="gt-games-grid">${games.map(c => gtTileHtml(c, false)).join('')}</div>`;
+}
+grid.innerHTML = html || `<div class="skins-empty skins-empty-md">${d.gt_nothing_found}</div>`;
 }
 
 function showTopupView(detail){
@@ -284,7 +337,7 @@ if (tile){ openTopupCategory(tile.dataset.gtSlug); return; }
 // Любое место полосы в «Маркете», кроме плитки игры, — весь каталог.
 if (e.target.closest('[data-gt-open-all]') || e.target.closest('#gtStrip')){ gtType = ''; goToScreen('topup'); return; }
 const type = e.target.closest('[data-gt-type]');
-if (type){ gtType = type.dataset.gtType; loadTopupCatalog(); return; }
+if (type){ gtType = type.dataset.gtType; if ((document.getElementById('gtSearch').value || '').trim()) loadTopupCatalog(); else renderTopupCatalog(gtItems); return; }
 const offer = e.target.closest('[data-gt-offer]');
 if (offer){ gtSelectOffer(offer.dataset.gtOffer); return; }
 if (e.target.closest('#gtCheckBtn')){ checkTopupId(); return; }
