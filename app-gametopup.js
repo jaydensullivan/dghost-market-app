@@ -290,6 +290,8 @@ out.textContent = data.valid ? d.gt_check_ok.replace('{name}', data.name || '—
 .catch(() => { out.textContent = d.gt_check_unsupported; });
 }
 
+// Поля «куда зачислить» стоят над пакетами (index.html).
+
 // ---------- заказы во вкладке «Сделки» ----------
 
 function setDealsSeg(seg){
