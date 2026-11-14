@@ -649,7 +649,15 @@ const state = !d.configured ? dict.admin_gt_no_key
 .replace('{done}', o.completed || 0)
 .replace('{wait}', (o.processing || 0) + (o.submitting || 0))
 .replace('{refunded}', o.refunded || 0);
-document.getElementById('adminGtState').textContent = state;
+const profit = d.configured ? '\n' + dict.admin_gt_profit
+.replace('{revenue}', formatCoins(d.revenue_30d || 0))
+.replace('{cost}', formatCoins(d.cost_uzs_30d || 0))
+.replace('{usd}', '$' + Number(d.cost_usd_30d || 0).toFixed(2))
+.replace('{profit}', ((d.profit_30d || 0) >= 0 ? '+' : '−') + formatCoins(Math.abs(d.profit_30d || 0)))
++ '\n' + (d.webhook ? dict.admin_gt_webhook_on : dict.admin_gt_webhook_off) : '';
+const stateEl = document.getElementById('adminGtState');
+stateEl.style.whiteSpace = 'pre-line';
+stateEl.textContent = state + profit;
 })
 .catch(() => {});
 }
