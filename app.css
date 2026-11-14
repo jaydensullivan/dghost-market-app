@@ -5366,7 +5366,18 @@ button.brand-logo{ width:44px; height:44px; }
 .gt-chip-name{ max-width:66px; font-size:11px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .gt-chip-more{ justify-content:center; align-self:flex-start; margin-top:12px; width:44px; height:44px; border-radius:50%; background:var(--red-dim); font-size:20px; color:var(--text); }
 .gt-ph{ display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; }
-.gt-grid{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; }
+.gt-grid{ display:block; }
+.gt-section-title{ font-size:20px; font-weight:800; margin:6px 2px 12px; }
+.gt-svc-grid, .gt-games-grid{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; margin-bottom:18px; }
+.gt-svc{ display:flex; flex-direction:column; align-items:flex-start; gap:4px; padding:14px; border-radius:18px; border:1px solid var(--red-dim); background:var(--surface); color:var(--text); cursor:pointer; text-align:left; transition:transform .15s ease; }
+.gt-svc:active{ transform:scale(.97); }
+.gt-svc-icon{ display:block; margin-bottom:10px; }
+.gt-svc-img{ display:flex; align-items:center; justify-content:center; width:52px; height:52px; border-radius:14px; object-fit:cover; font-size:24px; }
+.gt-svc-name{ font-size:15px; font-weight:800; line-height:1.2; }
+.gt-svc-sub{ font-size:12px; color:var(--muted); }
+.gt-svc-foot{ display:flex; flex-direction:column; gap:4px; width:100%; margin-top:10px; padding-top:10px; border-top:1px solid var(--red-dim); }
+.gt-svc-price{ font-size:14px; font-weight:800; background:var(--cta-gradient); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.gt-svc-time{ font-size:12px; color:var(--muted); }
 .gt-tile{ position:relative; display:block; aspect-ratio:1 / 1.12; padding:0; border-radius:18px; overflow:hidden; border:1px solid var(--red-dim); background:var(--surface); color:#fff; cursor:pointer; text-align:left; transition:transform .15s ease, border-color .15s ease; }
 .gt-tile:active{ transform:scale(.97); }
 .gt-tile-cover{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; font-size:44px; }
