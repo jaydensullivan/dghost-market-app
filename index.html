@@ -1278,7 +1278,7 @@
 <input id="adminGtMarkup" type="number" min="0" max="100" step="0.5">
 </div>
 <div class="edit-field">
-<label for="adminGtRate" data-i18n="admin_gt_rate">Курс, сум за $1 (пусто — курс ЦБ)</label>
+<label for="adminGtRate" data-i18n="admin_gt_rate">Курс, по которому ты купил USDT (сум за 1). Пусто — курс ЦБ</label>
 <input id="adminGtRate" type="number" min="1000" step="10">
 </div>
 <div style="font-size:12px; color:var(--muted); margin:6px 0 4px;" data-i18n="admin_gt_types">Что показывать</div>
@@ -2635,8 +2635,8 @@
 </div>
 </div>
 <script src="app-core.js?v=21"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=55', en: 'app-i18n-en.js?v=54' };</script>
-<script src="app-i18n.js?v=177"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=56', en: 'app-i18n-en.js?v=55' };</script>
+<script src="app-i18n.js?v=178"></script>
 <script src="app-navigation.js?v=31"></script>
 <script src="app-shop.js?v=52"></script>
 <script src="app-legal.js?v=3"></script>
@@ -2654,7 +2654,7 @@
 <script src="app-withdraw.js?v=40"></script>
 <script src="app-instant.js?v=1"></script>
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
-<script>window.DG_ADMIN_SRC = 'app-admin.js?v=37';</script>
+<script>window.DG_ADMIN_SRC = 'app-admin.js?v=38';</script>
 <!-- 3D-просмотрщик (210 КБ) грузится после открытия витрины — ensure3DScript в app-navigation.js. -->
 <script>window.DG_3D_SRC = 'app-3d.js?v=139';</script>
 <script src="app-auctions.js?v=9"></script>
