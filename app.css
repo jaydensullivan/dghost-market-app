@@ -5352,3 +5352,40 @@ button.brand-logo{ width:44px; height:44px; }
 .lg-tg[hidden], .lg-form[hidden]{ display:none; }
 .lg-status{ margin-top:8px; }
 .lg-status.ok{ color:#4ade80; }
+
+/* ---------- Пополнения игр (app-gametopup.js) ---------- */
+.gt-strip{ margin:0 0 12px; padding:10px; border-radius:14px; border:1px solid var(--accent); background:var(--surface); }
+.gt-strip-head{ font-size:13px; font-weight:700; margin-bottom:8px; }
+.gt-strip-row{ display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; }
+.gt-strip-row::-webkit-scrollbar{ display:none; }
+.gt-chip-tile{ flex:0 0 auto; width:68px; min-height:44px; display:flex; flex-direction:column; align-items:center; gap:4px; padding:4px 2px; border:none; background:none; color:var(--text); font-size:11px; cursor:pointer; }
+.gt-chip-tile img, .gt-chip-tile .gt-tile-ph{ width:44px; height:44px; border-radius:12px; object-fit:cover; }
+.gt-chip-tile span{ max-width:68px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.gt-chip-more{ justify-content:center; align-self:center; width:44px; height:44px; border-radius:50%; background:var(--red-dim); font-size:20px; color:var(--text); }
+.gt-tile-ph{ display:flex; align-items:center; justify-content:center; background:var(--red-dim); color:var(--text); font-weight:700; }
+.gt-grid{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; }
+.gt-tile{ display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 8px; border-radius:14px; border:1px solid var(--red-dim); background:var(--surface); color:var(--text); cursor:pointer; text-align:center; }
+.gt-tile-img img, .gt-tile-img .gt-tile-ph{ width:64px; height:64px; border-radius:14px; object-fit:cover; }
+.gt-tile-name{ font-size:13px; font-weight:600; }
+.gt-tile-price{ font-size:12px; padding:3px 8px; border-radius:8px; background:var(--red-dim); color:var(--red-glow); }
+.gt-head{ display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+.gt-head-img img{ width:56px; height:56px; border-radius:14px; object-fit:cover; }
+.gt-head-name{ font-size:16px; font-weight:700; }
+.gt-head-badge{ font-size:12px; color:var(--muted); margin-top:2px; }
+.gt-offers{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; margin-bottom:14px; }
+.gt-offer{ display:flex; flex-direction:column; gap:2px; min-height:56px; padding:10px; border-radius:12px; border:1px solid var(--red-dim); background:var(--surface); color:var(--text); cursor:pointer; text-align:left; }
+.gt-offer.active{ border-color:var(--accent); box-shadow:0 0 0 1px var(--accent) inset; }
+.gt-offer:disabled{ opacity:.45; cursor:default; }
+.gt-offer-name{ font-size:13px; font-weight:600; }
+.gt-offer-price{ font-size:12px; color:var(--muted); }
+.gt-check-btn{ margin-top:4px; }
+.gt-warn{ margin:10px 0; padding:10px 12px; border-radius:12px; border:1px solid #b3263e; background:rgba(179, 38, 62, .12); font-size:13px; }
+.gt-order{ padding:12px; border-radius:12px; border:1px solid var(--red-dim); background:var(--surface); margin-bottom:8px; }
+.gt-order-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+.gt-order-name{ font-size:13px; font-weight:600; }
+.gt-order-meta{ font-size:12px; color:var(--muted); margin-top:4px; }
+.gt-badge{ flex:0 0 auto; font-size:11px; padding:2px 8px; border-radius:8px; }
+.gt-badge-ok{ background:rgba(34, 197, 94, .18); color:#4ade80; }
+.gt-badge-wait{ background:var(--red-dim); color:var(--red-glow); }
+.gt-badge-bad{ background:rgba(179, 38, 62, .18); color:#f87171; }
+.gt-code{ display:block; width:100%; margin-top:8px; padding:10px; min-height:44px; border-radius:10px; border:1px dashed var(--accent); background:none; color:var(--text); font-family:monospace; font-size:14px; cursor:pointer; text-align:left; }

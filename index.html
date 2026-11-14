@@ -16,7 +16,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=8"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=120">
+<link rel="stylesheet" href="app.css?v=121">
 <link rel="stylesheet" href="app-desktop.css?v=2" media="(min-width: 1280px)">
 </head>
 <body data-tab="shop">
@@ -234,6 +234,12 @@
 </button>
 <!-- Вид каталога: обычный → компакт → крупная. Значок показывает текущий. -->
 <button type="button" id="layoutCycleBtn" class="shop-filter-btn layout-cycle-btn" data-layout-cycle data-i18n-aria-label="aria_layout" aria-label="Вид каталога" title="Вид каталога"></button>
+</div>
+
+<!-- Пополнения игр, Steam, Telegram (app-gametopup.js): только когда раздел включён. -->
+<div class="gt-strip" id="gtStrip" hidden>
+<div class="gt-strip-head">⚡ <span data-i18n="gt_strip_title">Пополнения — за 1–5 минут</span></div>
+<div class="gt-strip-row" id="gtStripRow"></div>
 </div>
 
 <!-- Категории и инструменты каталога (сеты, билдер) — рисуются в app-catalog.js. -->
@@ -655,6 +661,13 @@
 
 <div class="profile-section-title" style="font-size:16px; margin-bottom:14px;" data-i18n="deals_screen_title">Мои сделки</div>
 
+<div class="shop-tabs" id="dealsSeg">
+<button type="button" class="active" data-deals-seg="skins" data-i18n="gt_seg_skins">Скины</button>
+<button type="button" data-deals-seg="topup" data-i18n="gt_seg_topup">Пополнения</button>
+</div>
+<div id="gtOrdersList" hidden></div>
+
+<div id="dealsSkinsPane">
 <div id="p2pStatusList"></div>
 
 <div id="dealsList">
@@ -665,7 +678,33 @@
 <div id="tradeOffersList">
 <div class="skins-empty skins-empty-md" data-i18n="loading">Загрузка...</div>
 </div>
+</div>
 
+</div>
+
+<div class="screen-profile" id="screenTopup" style="display:none; padding:76px 16px 100px;">
+<button type="button" class="back-btn u-mb12" id="gtBackBtn" aria-label="Назад" data-i18n-aria-label="btn_back">←</button>
+<div id="gtCatalogView">
+<div class="profile-section-title" style="font-size:16px; margin-bottom:12px;" data-i18n="gt_title">Пополнения</div>
+<label class="shop-search u-mb12">
+<svg class="gi" width="18" height="18" aria-hidden="true"><use href="#gi-search"/></svg>
+<input id="gtSearch" type="search" placeholder="Поиск игр, сервисов, карт" data-i18n-placeholder="gt_search_placeholder">
+</label>
+<div class="shop-tabs" id="gtTypeChips"></div>
+<div class="gt-grid" id="gtGrid"></div>
+</div>
+<div id="gtDetailView" hidden>
+<div class="gt-head" id="gtDetailHead"></div>
+<div class="profile-section-title" data-i18n="gt_choose_amount">Выберите сумму</div>
+<div class="gt-offers" id="gtOffers"></div>
+<div id="gtFields"></div>
+<div id="gtPayBox" hidden>
+<div class="shop-hint u-mt8" id="gtBalance"></div>
+<button type="button" class="steam-link-btn" id="gtPayBtn"></button>
+<button type="button" class="steam-link-btn secondary u-mt8" id="gtTopupBtn" hidden></button>
+</div>
+<div class="edit-status" id="gtStatus"></div>
+</div>
 </div>
 
 <div class="screen-profile" id="screenBuyRequests" style="display:none; padding:76px 16px 100px;">
@@ -1225,6 +1264,26 @@
 <label class="admin-perm-chip"><input type="checkbox" id="toggleDirectP2pPurchase"> 🏦 <span data-i18n="admin_direct_p2p">Оплата лота напрямую П2П (карта, ручное подтверждение)</span></label>
 </div>
 <div class="shop-hint u-mt8" data-i18n="admin_direct_payment_hint">Покупатель платит за лот картой (П2П). Оплата Stars и криптой убрана; оплаты с баланса у покупателя больше нет.</div>
+</div>
+
+<div class="profile-section admin-group" id="adminGameTopupSection" data-group="settings" style="margin-top:10px; display:none;" data-view="settings">
+<div class="profile-section-title" data-i18n="admin_gt_title">⚡ Пополнения игр (Arcadezy)</div>
+<div class="shop-hint u-mb10" id="adminGtState"></div>
+<div class="admin-perm-chips">
+<label class="admin-perm-chip"><input type="checkbox" id="adminGtEnabled"> <span data-i18n="admin_gt_enabled">Раздел включён</span></label>
+</div>
+<div class="edit-field u-mt8">
+<label for="adminGtMarkup" data-i18n="admin_gt_markup">Наценка, %</label>
+<input id="adminGtMarkup" type="number" min="0" max="100" step="0.5">
+</div>
+<div class="edit-field">
+<label for="adminGtRate" data-i18n="admin_gt_rate">Курс, сум за $1 (пусто — курс ЦБ)</label>
+<input id="adminGtRate" type="number" min="1000" step="10">
+</div>
+<div style="font-size:12px; color:var(--muted); margin:6px 0 4px;" data-i18n="admin_gt_types">Что показывать</div>
+<div class="admin-perm-chips" id="adminGtTypes"></div>
+<button type="button" id="adminGtSaveBtn" class="steam-link-btn secondary u-mt8" data-i18n="btn_save">Сохранить</button>
+<div class="edit-status" id="adminGtSaveStatus"></div>
 </div>
 
 <div class="profile-section admin-group" id="adminPromoSection" data-group="settings" style="margin-top:10px; display:none;" data-view="settings">
@@ -2575,9 +2634,9 @@
 </div>
 </div>
 <script src="app-core.js?v=21"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=52', en: 'app-i18n-en.js?v=51' };</script>
-<script src="app-i18n.js?v=174"></script>
-<script src="app-navigation.js?v=30"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=53', en: 'app-i18n-en.js?v=52' };</script>
+<script src="app-i18n.js?v=175"></script>
+<script src="app-navigation.js?v=31"></script>
 <script src="app-shop.js?v=52"></script>
 <script src="app-legal.js?v=3"></script>
 <script src="app-deals.js?v=30"></script>
@@ -2588,18 +2647,19 @@
 <script src="app-steam.js?v=17"></script>
 <script src="app-logins.js?v=2"></script>
 <script src="app-topup.js?v=5"></script>
+<script src="app-gametopup.js?v=1"></script>
 <script src="app-history.js?v=12"></script>
 <script src="app-referral.js?v=9"></script>
 <script src="app-withdraw.js?v=40"></script>
 <script src="app-instant.js?v=1"></script>
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
-<script>window.DG_ADMIN_SRC = 'app-admin.js?v=36';</script>
+<script>window.DG_ADMIN_SRC = 'app-admin.js?v=37';</script>
 <!-- 3D-просмотрщик (210 КБ) грузится после открытия витрины — ensure3DScript в app-navigation.js. -->
 <script>window.DG_3D_SRC = 'app-3d.js?v=139';</script>
 <script src="app-auctions.js?v=9"></script>
 <script src="app-reviews.js?v=4"></script>
 <script src="app-notifications.js?v=3"></script>
-<script src="app-telegram.js?v=17"></script>
+<script src="app-telegram.js?v=18"></script>
 <script src="app-raffle.js?v=13"></script>
 <script src="app-home.js?v=13"></script>
 <script src="app-desktop.js?v=2"></script>
