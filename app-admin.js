@@ -627,6 +627,51 @@ adminApiFetch('/api/admin/deals/' + refundBtn.dataset.refundDeal + '/refund', { 
 }
 });
 
+// ---------------- Пополнения игр (Arcadezy) ----------------
+// Только владелец: включить/выключить раздел, наценка, курс, категории.
+
+const GT_ADMIN_TYPES = ['steam', 'telegram', 'topup', 'giftcard', 'gamekey'];
+
+function loadAdminGameTopup(){
+const dict = I18N[currentLang] || I18N.ru;
+adminApiFetch('/api/admin/game_topup/settings')
+.then(d => {
+document.getElementById('adminGtEnabled').checked = !!d.enabled;
+document.getElementById('adminGtMarkup').value = d.markup;
+document.getElementById('adminGtRate').value = d.rate || '';
+document.getElementById('adminGtRate').placeholder = d.rate_effective ? String(Math.round(d.rate_effective)) : '';
+document.getElementById('adminGtTypes').innerHTML = GT_ADMIN_TYPES.map(t =>
+`<label class="admin-perm-chip"><input type="checkbox" data-gt-admin-type="${t}" ${(d.types || []).includes(t) ? 'checked' : ''}> ${escapeHtml(dict['gt_type_' + t] || t)}</label>`).join('');
+const o = d.orders_30d || {};
+const state = !d.configured ? dict.admin_gt_no_key
+: dict.admin_gt_state
+.replace('{balance}', d.balance_usd == null ? '—' : '$' + Number(d.balance_usd).toFixed(2))
+.replace('{done}', o.completed || 0)
+.replace('{wait}', (o.processing || 0) + (o.submitting || 0))
+.replace('{refunded}', o.refunded || 0);
+document.getElementById('adminGtState').textContent = state;
+})
+.catch(() => {});
+}
+
+document.getElementById('adminGtSaveBtn').addEventListener('click', () => {
+const dict = I18N[currentLang] || I18N.ru;
+const status = document.getElementById('adminGtSaveStatus');
+const body = {
+enabled: document.getElementById('adminGtEnabled').checked,
+markup: Number(document.getElementById('adminGtMarkup').value) || 0,
+rate: document.getElementById('adminGtRate').value.trim(),
+types: [...document.querySelectorAll('[data-gt-admin-type]:checked')].map(i => i.dataset.gtAdminType),
+};
+adminApiFetch('/api/admin/game_topup/settings', { method: 'POST', body: body })
+.then(() => {
+status.textContent = dict.admin_gt_saved;
+loadAdminGameTopup();
+if (typeof loadTopupCatalog === 'function') loadTopupCatalog();
+})
+.catch(err => { status.textContent = err.message; });
+});
+
 // ---------------- Холды ----------------
 
 function loadAdminHolds(){
@@ -1473,6 +1518,8 @@ document.getElementById('adminReferralPercent').value = data.referral_bonus_perc
 document.getElementById('adminCommissionSale').textContent = formatCoins(data.commission_sale_total || 0);
 document.getElementById('adminCommissionWithdraw').textContent = formatCoins(data.commission_withdraw_total || 0);
 document.getElementById('adminFeatureTogglesSection').style.display = data.is_owner ? '' : 'none';
+document.getElementById('adminGameTopupSection').style.display = data.is_owner ? '' : 'none';
+if (data.is_owner) loadAdminGameTopup();
 document.getElementById('toggleTopupCard').checked = data.topup_card_enabled !== false;
 document.getElementById('toggleWithdrawCard').checked = data.withdraw_card_enabled !== false;
 document.getElementById('toggleDirectP2pPurchase').checked = data.direct_p2p_purchase_enabled === true;

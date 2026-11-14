@@ -277,7 +277,9 @@ document.getElementById('screenBuyRequests').style.display = name === 'buyReques
 document.getElementById('screenSupport').style.display = name === 'support' ? 'block' : 'none';
 document.getElementById('screenLots').style.display = name === 'lots' ? 'block' : 'none';
 document.getElementById('screenPro').style.display = name === 'pro' ? 'block' : 'none';
-tabShopBtn.classList.toggle('active', name === 'shop');
+document.getElementById('screenTopup').style.display = name === 'topup' ? 'block' : 'none';
+// Пополнения игр — часть «Маркета»: внизу подсвечен «Маркет».
+tabShopBtn.classList.toggle('active', name === 'shop' || name === 'topup');
 // Кабинет PRO — часть профиля: в нижней навигации подсвечен «Профиль».
 tabProfileBtn.classList.toggle('active', name === 'profile' || name === 'pro');
 document.getElementById('tabDealsBtn').classList.toggle('active', name === 'deals');
@@ -290,6 +292,9 @@ loadSkins();
 }
 if (name === 'timer' && typeof loadRaffle === 'function'){
 loadRaffle();
+}
+if (name === 'topup' && typeof loadTopupScreen === 'function'){
+loadTopupScreen();
 }
 if (name === 'shop'){
 loadMe();

@@ -201,9 +201,12 @@ body: JSON.stringify({ visitor: vid, src: saved.src, target: saved.target, init_
 let target = null;
 try { target = new URLSearchParams(location.search).get('open'); } catch(e) {}
 if (!target && tg && tg.initDataUnsafe && typeof tg.initDataUnsafe.start_param === 'string') target = tg.initDataUnsafe.start_param;
-if (target !== 'deals' && target !== 'sell' && target !== 'wants' && target !== 'search' && target !== 'pro') return;
+if (target !== 'deals' && target !== 'sell' && target !== 'wants' && target !== 'search' && target !== 'pro' && target !== 'topup') return;
 setTimeout(() => {
-if (target === 'deals'){
+if (target === 'topup'){
+// Пополнения игр: /games в боте, ссылка ?startapp=topup.
+goToScreen('topup');
+} else if (target === 'deals'){
 switchTab('deals');
 } else if (target === 'pro'){
 // С сайта (тарифы PRO): кабинет, если подписка есть, иначе окно тарифов.
