@@ -281,7 +281,8 @@ ${(o.codes || []).map(c => `<button type="button" class="gt-code" data-gt-copy="
 document.addEventListener('click', (e) => {
 const tile = e.target.closest('[data-gt-slug]');
 if (tile){ openTopupCategory(tile.dataset.gtSlug); return; }
-if (e.target.closest('[data-gt-open-all]')){ gtType = ''; goToScreen('topup'); return; }
+// Любое место полосы в «Маркете», кроме плитки игры, — весь каталог.
+if (e.target.closest('[data-gt-open-all]') || e.target.closest('#gtStrip')){ gtType = ''; goToScreen('topup'); return; }
 const type = e.target.closest('[data-gt-type]');
 if (type){ gtType = type.dataset.gtType; loadTopupCatalog(); return; }
 const offer = e.target.closest('[data-gt-offer]');
@@ -309,3 +310,6 @@ gtSearchTimer = setTimeout(loadTopupCatalog, 350);
 
 // Плитки на главной: узнаём, включён ли раздел, сразу при запуске.
 loadTopupCatalog();
+document.getElementById('gtStrip').addEventListener('keydown', (e) => {
+if ((e.key === 'Enter' || e.key === ' ') && e.target.id === 'gtStrip'){ e.preventDefault(); gtType = ''; goToScreen('topup'); }
+});

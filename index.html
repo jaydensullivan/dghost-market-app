@@ -16,7 +16,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=8"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=122">
+<link rel="stylesheet" href="app.css?v=123">
 <link rel="stylesheet" href="app-desktop.css?v=2" media="(min-width: 1280px)">
 </head>
 <body data-tab="shop">
@@ -237,8 +237,8 @@
 </div>
 
 <!-- Пополнения игр, Steam, Telegram (app-gametopup.js): только когда раздел включён. -->
-<div class="gt-strip" id="gtStrip" hidden>
-<div class="gt-strip-head">⚡ <span data-i18n="gt_strip_title">Пополнения — за 1–5 минут</span></div>
+<div class="gt-strip" id="gtStrip" role="button" tabindex="0" hidden>
+<div class="gt-strip-head"><span>⚡ <span data-i18n="gt_strip_title">Пополнения — за 1–5 минут</span></span><span class="gt-strip-all"><span data-i18n="gt_type_all">Все</span> →</span></div>
 <div class="gt-strip-row" id="gtStripRow"></div>
 </div>
 
@@ -2647,7 +2647,7 @@
 <script src="app-steam.js?v=17"></script>
 <script src="app-logins.js?v=2"></script>
 <script src="app-topup.js?v=5"></script>
-<script src="app-gametopup.js?v=2"></script>
+<script src="app-gametopup.js?v=3"></script>
 <script src="app-history.js?v=12"></script>
 <script src="app-referral.js?v=9"></script>
 <script src="app-withdraw.js?v=40"></script>

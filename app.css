@@ -5355,7 +5355,9 @@ button.brand-logo{ width:44px; height:44px; }
 
 /* ---------- Пополнения игр (app-gametopup.js) ---------- */
 .gt-strip{ position:relative; margin:0 0 12px; padding:12px 10px 10px; border-radius:16px; border:1px solid transparent; background:linear-gradient(var(--surface), var(--surface)) padding-box, var(--cta-gradient) border-box; box-shadow:0 6px 24px rgba(123, 44, 255, .18); }
-.gt-strip-head{ font-size:14px; font-weight:700; margin:0 2px 10px; }
+.gt-strip{ cursor:pointer; }
+.gt-strip-head{ display:flex; justify-content:space-between; align-items:center; font-size:14px; font-weight:700; margin:0 2px 10px; }
+.gt-strip-all{ font-size:12px; font-weight:600; color:var(--red-glow); }
 .gt-strip-row{ display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; }
 .gt-strip-row::-webkit-scrollbar{ display:none; }
 .gt-chip-tile{ flex:0 0 auto; width:66px; display:flex; flex-direction:column; align-items:center; gap:6px; padding:0; border:none; background:none; color:var(--text); cursor:pointer; }
