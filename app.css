@@ -5369,14 +5369,15 @@ button.brand-logo{ width:44px; height:44px; }
 .gt-grid{ display:block; }
 .gt-section-title{ font-size:20px; font-weight:800; margin:6px 2px 12px; }
 .gt-svc-grid, .gt-games-grid{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; margin-bottom:18px; }
-.gt-svc{ display:flex; flex-direction:column; align-items:flex-start; gap:4px; padding:14px; border-radius:18px; border:1px solid var(--red-dim); background:var(--surface); color:var(--text); cursor:pointer; text-align:left; transition:transform .15s ease; }
+.gt-svc{ --gt-glow:#7B2CFF; position:relative; overflow:hidden; display:flex; flex-direction:column; align-items:flex-start; gap:4px; padding:14px; border-radius:20px; border:1px solid rgba(255, 255, 255, .06); background:radial-gradient(120% 70% at 0% 0%, color-mix(in srgb, var(--gt-glow) 22%, transparent), transparent 60%), var(--surface); color:var(--text); cursor:pointer; text-align:left; transition:transform .15s ease, border-color .15s ease; }
 .gt-svc:active{ transform:scale(.97); }
-.gt-svc-icon{ display:block; margin-bottom:10px; }
-.gt-svc-img{ display:flex; align-items:center; justify-content:center; width:52px; height:52px; border-radius:14px; object-fit:cover; font-size:24px; }
-.gt-svc-name{ font-size:15px; font-weight:800; line-height:1.2; }
+.gt-svc-icon{ display:block; margin-bottom:12px; border-radius:16px; box-shadow:0 8px 22px color-mix(in srgb, var(--gt-glow) 35%, transparent); }
+.gt-svc-img{ display:flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:16px; object-fit:cover; font-size:24px; }
+.gt-svc-name{ font-size:16px; font-weight:800; line-height:1.2; }
 .gt-svc-sub{ font-size:12px; color:var(--muted); }
-.gt-svc-foot{ display:flex; flex-direction:column; gap:4px; width:100%; margin-top:10px; padding-top:10px; border-top:1px solid var(--red-dim); }
-.gt-svc-price{ font-size:14px; font-weight:800; background:var(--cta-gradient); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.gt-svc-foot{ display:flex; flex-direction:column; gap:4px; width:100%; margin-top:auto; padding-top:12px; border-top:1px solid rgba(255, 255, 255, .07); }
+.gt-svc-sub{ margin-bottom:12px; }
+.gt-svc-price{ font-size:15px; font-weight:800; background:var(--cta-gradient); -webkit-background-clip:text; background-clip:text; color:transparent; }
 .gt-svc-time{ font-size:12px; color:var(--muted); }
 .gt-tile{ position:relative; display:block; aspect-ratio:1 / 1.12; padding:0; border-radius:18px; overflow:hidden; border:1px solid var(--red-dim); background:var(--surface); color:#fff; cursor:pointer; text-align:left; transition:transform .15s ease, border-color .15s ease; }
 .gt-tile:active{ transform:scale(.97); }
