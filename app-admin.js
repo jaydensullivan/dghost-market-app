@@ -645,12 +645,37 @@ document.getElementById('adminGtSlugAdd').addEventListener('click', () => {
 const dict = I18N[currentLang] || I18N.ru;
 const name = document.getElementById('adminGtSlugPick').value.trim();
 const value = document.getElementById('adminGtSlugValue').value.trim();
-const c = gtAdminCategories.find(x => x.name === name || x.slug === name);
+const c = gtAdminCategories.find(x => x.slug === gtAdminPicked) || gtAdminCategories.find(x => x.name === name || x.slug === name);
 if (!c || value === ''){ showToast(dict.admin_gt_pick_hint); return; }
 gtAdminMarkups.slugs = Object.assign({}, gtAdminMarkups.slugs, { [c.slug]: Number(value) });
 document.getElementById('adminGtSlugPick').value = '';
 document.getElementById('adminGtSlugValue').value = '';
+gtAdminPicked = null;
 renderAdminGtSlugMarkups();
+});
+
+// Поиск игры: свой список под полем (у iPhone подсказки — только 3 над клавиатурой).
+let gtAdminPicked = null;
+function renderAdminGtResults(){
+const dict = I18N[currentLang] || I18N.ru;
+const box = document.getElementById('adminGtSlugResults');
+const q = document.getElementById('adminGtSlugPick').value.trim().toLowerCase();
+if (!q){ box.hidden = true; box.innerHTML = ''; return; }
+const hits = gtAdminCategories.filter(c => c.name.toLowerCase().includes(q) || c.slug.includes(q)).slice(0, 8);
+box.hidden = false;
+box.innerHTML = hits.length ? hits.map(c =>
+`<button type="button" data-gt-pick="${escapeHtml(c.slug)}"><span>${escapeHtml(c.name)}</span><small>${escapeHtml(dict['gt_type_' + c.type] || c.type)}</small></button>`).join('')
+: `<div class="shop-hint">${escapeHtml(dict.gt_nothing_found)}</div>`;
+}
+document.getElementById('adminGtSlugPick').addEventListener('input', () => { gtAdminPicked = null; renderAdminGtResults(); });
+document.getElementById('adminGtSlugResults').addEventListener('click', (e) => {
+const b = e.target.closest('[data-gt-pick]');
+if (!b) return;
+const c = gtAdminCategories.find(x => x.slug === b.dataset.gtPick);
+gtAdminPicked = c ? c.slug : null;
+document.getElementById('adminGtSlugPick').value = c ? c.name : '';
+document.getElementById('adminGtSlugResults').hidden = true;
+document.getElementById('adminGtSlugValue').focus();
 });
 
 document.getElementById('adminGtSlugMarkups').addEventListener('click', (e) => {
@@ -678,7 +703,6 @@ gtAdminMarkups = d.markups || { types: {}, slugs: {} };
 gtAdminCategories = d.categories || [];
 document.getElementById('adminGtTypeMarkups').innerHTML = GT_ADMIN_TYPES.map(t =>
 `<label class="gt-adm-cell"><span>${escapeHtml(dict['gt_type_' + t] || t)}</span><input type="number" min="0" max="100" step="0.5" data-gt-type-markup="${t}" value="${gtAdminMarkups.types[t] != null ? gtAdminMarkups.types[t] : ''}" placeholder="${escapeHtml(String(d.markup))}"></label>`).join('');
-document.getElementById('adminGtSlugList').innerHTML = gtAdminCategories.map(c => `<option value="${escapeHtml(c.name)}">`).join('');
 renderAdminGtSlugMarkups();
 document.getElementById('adminGtTypes').innerHTML = GT_ADMIN_TYPES.map(t =>
 `<label class="admin-perm-chip"><input type="checkbox" data-gt-admin-type="${t}" ${(d.types || []).includes(t) ? 'checked' : ''}> ${escapeHtml(dict['gt_type_' + t] || t)}</label>`).join('');
