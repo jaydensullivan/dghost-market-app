@@ -291,9 +291,47 @@ return out;
 }
 
 function gtSelectOffer(id){
+resetTopupPromo();
 gtOffer = ((gtCurrent && gtCurrent.offers) || []).find(o => o.id === id) || null;
 document.querySelectorAll('#gtOffers [data-gt-offer]').forEach(b => b.classList.toggle('active', b.dataset.gtOffer === id));
 updateTopupPayBox();
+}
+
+// ---------- промокод ----------
+let gtPromo = null;
+
+function gtPrice(){ return gtPromo ? gtPromo.price_uzs : (gtOffer ? gtOffer.price_uzs : 0); }
+
+function resetTopupPromo(){
+gtPromo = null;
+const input = document.getElementById('gtPromoInput');
+if (input) input.value = '';
+const res = document.getElementById('gtPromoResult');
+if (res){ res.textContent = ''; res.className = 'gt-promo-result'; }
+}
+
+function applyTopupPromo(){
+const d = gtDict();
+const code = document.getElementById('gtPromoInput').value.trim().toUpperCase();
+const res = document.getElementById('gtPromoResult');
+if (!code || !gtOffer || !gtCurrent) return;
+if (!tg || !tg.initData){ res.textContent = d.gt_err_unauthorized; return; }
+res.className = 'gt-promo-result';
+res.textContent = d.gt_checking;
+fetch(API_BASE + '/api/game_topup/promo', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData, code: code, slug: gtCurrent.category.slug, offer_id: gtOffer.id }),
+})
+.then(r => r.json().then(data => ({ ok: r.ok, data })))
+.then(({ ok, data }) => {
+if (!ok){ gtPromo = null; res.className = 'gt-promo-result bad'; res.textContent = d['gt_' + data.error] || d.gt_err_generic; updateTopupPayBox(); return; }
+gtPromo = data;
+res.className = 'gt-promo-result ok';
+res.innerHTML = `🎟 ${escapeHtml(data.code)}: <s>${escapeHtml(formatCoins(data.old_price_uzs))}</s> <b>${escapeHtml(formatCoins(data.price_uzs))}</b> (−${escapeHtml(formatCoins(data.discount_uzs))})`;
+updateTopupPayBox();
+})
+.catch(() => { res.textContent = d.gt_err_generic; });
 }
 
 function updateTopupPayBox(){
@@ -302,7 +340,7 @@ const box = document.getElementById('gtPayBox');
 box.hidden = !gtOffer;
 if (!gtOffer) return;
 const payBtn = document.getElementById('gtPayBtn');
-payBtn.textContent = d.gt_pay.replace('{price}', formatCoins(gtOffer.price_uzs));
+payBtn.textContent = d.gt_pay.replace('{price}', formatCoins(gtPrice()));
 const balEl = document.getElementById('gtBalance');
 const topupBtn = document.getElementById('gtTopupBtn');
 if (!tg || !tg.initData){
@@ -314,7 +352,7 @@ fetch(API_BASE + '/api/me?init_data=' + encodeURIComponent(tg.initData))
 .then(r => r.json())
 .then(me => {
 const available = Number(me.available) || 0;
-const missing = gtOffer ? gtOffer.price_uzs - available : 0;
+const missing = gtOffer ? gtPrice() - available : 0;
 balEl.textContent = d.gt_balance.replace('{balance}', formatCoins(available));
 balEl.classList.toggle('cart-short', missing > 0);
 const openTopup = document.getElementById('openTopupBtn');
@@ -324,7 +362,7 @@ payBtn.disabled = missing > 0;
 // Баланса не хватает — оплата картой с чеком (если включена П2П-оплата лотов).
 const cardBtn = document.getElementById('gtCardBtn');
 cardBtn.hidden = !(missing > 0 && typeof directP2pPurchaseEnabled !== 'undefined' && directP2pPurchaseEnabled);
-cardBtn.textContent = d.gt_card_pay.replace('{price}', formatCoins(gtOffer.price_uzs));
+cardBtn.textContent = d.gt_card_pay.replace('{price}', formatCoins(gtPrice()));
 // Не хватает и есть оплата картой — серую «Оплатить с баланса» прячем.
 payBtn.hidden = !cardBtn.hidden;
 })
@@ -344,7 +382,7 @@ status.textContent = d.gt_paying;
 fetch(API_BASE + '/api/game_topup/order', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ init_data: tg.initData, slug: gtCurrent.category.slug, offer_id: gtOffer.id, fields: gtCollectFields(), pay: 'card' }),
+body: JSON.stringify({ init_data: tg.initData, slug: gtCurrent.category.slug, offer_id: gtOffer.id, fields: gtCollectFields(), pay: 'card', promo: gtPromo ? gtPromo.code : null }),
 })
 .then(r => r.json().then(data => ({ ok: r.ok, data })))
 .then(({ ok, data }) => {
@@ -426,7 +464,7 @@ status.textContent = d.gt_paying;
 fetch(API_BASE + '/api/game_topup/order', {
 method: 'POST',
 headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ init_data: tg.initData, slug: gtCurrent.category.slug, offer_id: gtOffer.id, fields: fields }),
+body: JSON.stringify({ init_data: tg.initData, slug: gtCurrent.category.slug, offer_id: gtOffer.id, fields: fields, promo: gtPromo ? gtPromo.code : null }),
 })
 .then(r => r.json().then(data => ({ ok: r.ok, data })))
 .then(({ ok, data }) => {
@@ -533,6 +571,7 @@ navigator.clipboard.writeText(copy.dataset.gtCopy).then(() => showToast(gtDict()
 
 document.getElementById('gtPayBtn').addEventListener('click', payTopup);
 document.getElementById('gtCardBtn').addEventListener('click', startTopupCardPayment);
+document.getElementById('gtPromoBtn').addEventListener('click', applyTopupPromo);
 document.getElementById('gtCardSendBtn').addEventListener('click', sendTopupCardReceipt);
 document.getElementById('gtCardDetails').addEventListener('click', (e) => {
 const text = e.currentTarget.dataset.copy || '';
