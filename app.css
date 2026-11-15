@@ -5499,3 +5499,5 @@ body.theme-light #gtPayBox{ background:rgba(255, 255, 255, .92); }
 .gt-offers-title{ grid-column:1 / -1; margin:8px 2px -2px; font-size:14px; font-weight:800; color:var(--text); }
 .gt-offers-title:first-child{ margin-top:0; }
 .gt-offer-best{ position:absolute; top:8px; left:8px; padding:2px 8px; border-radius:999px; background:#16a34a; color:#fff; font-size:10px; font-weight:800; }
+
+.gt-adm-cell[hidden]{ display:none; }

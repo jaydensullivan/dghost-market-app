@@ -652,8 +652,7 @@ return general !== null ? general : gtAdminMarkup;
 function renderAdminGtPreview(){
 const dict = I18N[currentLang] || I18N.ru;
 const box = document.getElementById('adminGtPreview');
-const ownRate = Number(document.getElementById('adminGtRate').value) || 0;
-const rate = ownRate > 1000 ? ownRate : gtAdminRate;
+const rate = gtAdminCurrentRate();
 if (!gtAdminPreview.length || !rate){ box.innerHTML = `<div class="shop-hint">${escapeHtml(dict.admin_gt_preview_empty)}</div>`; return; }
 box.innerHTML = gtAdminPreview.map(item => {
 const m = gtAdminEffectiveMarkup(item);
@@ -667,8 +666,33 @@ return `<div class="gt-preview-row"><span class="gt-preview-name">${escapeHtml(i
 
 // Пересчёт на каждое изменение наценки или курса — ещё до «Сохранить».
 document.getElementById('adminGameTopupSection').addEventListener('input', (e) => {
-if (e.target.matches('#adminGtMarkup, #adminGtRate, [data-gt-type-markup]')) renderAdminGtPreview();
+if (e.target.matches('#adminGtMarkup, #adminGtRate, #adminGtRateFee, #adminGtRateMode, [data-gt-type-markup]')){
+renderAdminGtRate();
+renderAdminGtPreview();
+}
 });
+document.getElementById('adminGtRateMode').addEventListener('change', () => { renderAdminGtRate(); renderAdminGtPreview(); });
+
+// Курс USDT: авто (Binance или Voluto + комиссия пополнения) или свой.
+let gtAdminRates = { binance: null, voluto: null };
+function gtAdminCurrentRate(){
+const mode = document.getElementById('adminGtRateMode').value;
+const own = Number(document.getElementById('adminGtRate').value) || 0;
+if (mode === 'manual') return own > 1000 ? own : gtAdminRate;
+const fee = Number(document.getElementById('adminGtRateFee').value) || 0;
+const base = gtAdminRates[mode] || gtAdminRates.binance || gtAdminRates.voluto;
+return base ? Math.round(base * (1 + fee / 100) * 100) / 100 : gtAdminRate;
+}
+function renderAdminGtRate(){
+const dict = I18N[currentLang] || I18N.ru;
+const mode = document.getElementById('adminGtRateMode').value;
+document.getElementById('adminGtRateCell').hidden = mode !== 'manual';
+document.getElementById('adminGtRateFeeCell').hidden = mode === 'manual';
+const fmt = v => v ? formatCoins(Math.round(v)) : '—';
+const rate = gtAdminCurrentRate();
+document.getElementById('adminGtRateNow').textContent = dict.admin_gt_rate_sources.replace('{b}', fmt(gtAdminRates.binance)).replace('{v}', fmt(gtAdminRates.voluto))
++ '\n' + dict.admin_gt_rate_now.replace('{rate}', fmt(rate)).replace('{source}', dict['admin_gt_rate_src_' + mode] || '');
+}
 let gtAdminCategories = [];
 
 function renderAdminGtSlugMarkups(){
@@ -736,9 +760,11 @@ document.getElementById('adminGtEnabled').checked = !!d.enabled;
 document.getElementById('adminGtMarkup').value = d.markup;
 document.getElementById('adminGtRate').value = d.rate || '';
 document.getElementById('adminGtRate').placeholder = d.rate_effective ? String(Math.round(d.rate_effective)) : '';
-document.getElementById('adminGtRateNow').textContent = d.rate_effective
-? dict.admin_gt_rate_now.replace('{rate}', formatCoins(Math.round(d.rate_effective))).replace('{source}', dict['admin_gt_rate_src_' + (d.rate_source || 'cbu')] || '')
-: '';
+document.getElementById('adminGtRateMode').value = d.rate_mode || 'binance';
+document.getElementById('adminGtRateFee').value = d.rate_fee != null ? d.rate_fee : 2;
+document.getElementById('adminGtLowBalance').value = d.low_balance != null ? d.low_balance : '';
+gtAdminRates = { binance: d.rate_binance || null, voluto: d.rate_voluto || null };
+document.getElementById('adminGtRateNow').style.whiteSpace = 'pre-line';
 gtAdminMarkups = d.markups || { types: {}, slugs: {} };
 gtAdminCategories = d.categories || [];
 document.getElementById('adminGtTypeMarkups').innerHTML = GT_ADMIN_TYPES.map(t =>
@@ -749,6 +775,7 @@ fillAdminGtpGames();
 gtAdminPreview = d.preview || [];
 gtAdminRate = d.rate_effective || 0;
 gtAdminMarkup = Number(d.markup) || 0;
+renderAdminGtRate();
 renderAdminGtPreview();
 document.getElementById('adminGtTypes').innerHTML = GT_ADMIN_TYPES.map(t =>
 `<label class="admin-perm-chip"><input type="checkbox" data-gt-admin-type="${t}" ${(d.types || []).includes(t) ? 'checked' : ''}> ${escapeHtml(dict['gt_type_' + t] || t)}</label>`).join('');
@@ -779,6 +806,9 @@ const body = {
 enabled: document.getElementById('adminGtEnabled').checked,
 markup: Number(document.getElementById('adminGtMarkup').value) || 0,
 rate: document.getElementById('adminGtRate').value.trim(),
+rate_mode: document.getElementById('adminGtRateMode').value,
+rate_fee: Number(document.getElementById('adminGtRateFee').value) || 0,
+low_balance: Number(document.getElementById('adminGtLowBalance').value) || 0,
 types: [...document.querySelectorAll('[data-gt-admin-type]:checked')].map(i => i.dataset.gtAdminType),
 markups: {
 types: Object.fromEntries([...document.querySelectorAll('[data-gt-type-markup]')].filter(i => i.value.trim() !== '').map(i => [i.dataset.gtTypeMarkup, Number(i.value)])),
@@ -818,7 +848,7 @@ const items = d.items || [];
 document.getElementById('adminGtPromoList').innerHTML = items.length ? items.map(p => {
 const expired = new Date(p.expires_at) < new Date();
 const value = p.kind === 'percent' ? p.value + '%' : formatCoins(p.value);
-const uses = p.uses + (p.max_uses ? ' / ' + p.max_uses : '');
+const uses = p.uses + (p.max_uses ? ' / ' + p.max_uses : '') + (p.per_user ? ' · ' + dict.admin_gtp_per_user_text.replace('{n}', p.per_user) : '');
 const state = !p.active ? dict.admin_gtp_off : (expired ? dict.admin_gtp_expired : dict.admin_gtp_until.replace('{date}', new Date(p.expires_at).toLocaleDateString()));
 return `<div class="gt-adm-row gtp-row${p.active && !expired ? '' : ' off'}"><span><b>${escapeHtml(p.code)}</b> −${escapeHtml(value)} · ${escapeHtml(gtpScopeText(p))}<br><small>${escapeHtml(state)} · ${escapeHtml(dict.admin_gtp_uses)}: ${escapeHtml(uses)}</small></span>`
 + `<button type="button" class="gt-recip-unlink" data-gtp-toggle="${escapeHtml(p.code)}" data-gtp-active="${p.active ? 1 : 0}">${escapeHtml(p.active ? dict.admin_gtp_disable : dict.admin_gtp_enable)}</button></div>`;
@@ -850,7 +880,8 @@ scope_type: game ? game.type : (document.getElementById('adminGtpScopeType').val
 scope_slug: slug || null,
 days: Number(document.getElementById('adminGtpDays').value) || 7,
 max_uses: document.getElementById('adminGtpMax').value.trim() || null,
-per_user: document.getElementById('adminGtpOnce').checked ? 1 : 0,
+// Пусто — без ограничения на человека.
+per_user: Math.max(0, parseInt(document.getElementById('adminGtpPerUser').value, 10) || 0),
 };
 adminApiFetch('/api/admin/game_topup/settings/promos', { method: 'POST', body: body })
 .then(() => {
