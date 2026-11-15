@@ -101,7 +101,9 @@ document.getElementById('sellerStatusPending').style.display = (status === 'pend
 document.getElementById('sellerStatusRejected').style.display = (status === 'rejected') ? '' : 'none';
 document.getElementById('sellerStatusVerified').style.display = (status === 'verified') ? '' : 'none';
 // Продавец без паспорта (Steam и телефон подтверждены) тоже выводит деньги — до порога.
-document.getElementById('profileMoneyButtons').style.display = (status === 'verified' || instantCanWithdraw) ? '' : 'none';
+// Пополнить — всем (баланс нужен покупателям); вывести — только продавцам.
+document.getElementById('profileMoneyButtons').style.display = '';
+document.getElementById('openWithdrawBtn').style.display = (withdrawCardEnabled && (status === 'verified' || instantCanWithdraw)) ? '' : 'none';
 // Проверенному продавцу блок «Стать продавцом» не нужен — вместо него
 // галочка у имени; история и CSV — только продавцам.
 document.getElementById('profileSellerSection').style.display = (status === 'verified') ? 'none' : '';

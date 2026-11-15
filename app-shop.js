@@ -586,8 +586,8 @@ withdrawCardEnabled = data.withdraw_card_enabled !== false;
 currentUserTrust = data.trust || null;
 renderTrustBadge();
 if (typeof updateTopupMethods === 'function') updateTopupMethods();
-document.getElementById('openTopupBtn').style.display = (topupCardEnabled && sellerKycStatus === 'verified') ? '' : 'none';
-document.getElementById('openWithdrawBtn').style.display = withdrawCardEnabled ? '' : 'none';
+document.getElementById('openTopupBtn').style.display = (topupCardEnabled || (typeof starsInfo !== 'undefined' && starsInfo)) ? '' : 'none';
+document.getElementById('openWithdrawBtn').style.display = (withdrawCardEnabled && (sellerKycStatus === 'verified' || instantCanWithdraw)) ? '' : 'none';
 if (data.language && data.language !== currentLang){
 ensureLanguage(data.language).then(() => applyServerLanguage(data.language)).catch(() => {});
 }
@@ -680,8 +680,8 @@ withdrawCardEnabled = data.withdraw_card_enabled !== false;
 currentUserTrust = data.trust || null;
 renderTrustBadge();
 if (typeof updateTopupMethods === 'function') updateTopupMethods();
-document.getElementById('openTopupBtn').style.display = (topupCardEnabled && sellerKycStatus === 'verified') ? '' : 'none';
-document.getElementById('openWithdrawBtn').style.display = withdrawCardEnabled ? '' : 'none';
+document.getElementById('openTopupBtn').style.display = (topupCardEnabled || (typeof starsInfo !== 'undefined' && starsInfo)) ? '' : 'none';
+document.getElementById('openWithdrawBtn').style.display = (withdrawCardEnabled && (sellerKycStatus === 'verified' || instantCanWithdraw)) ? '' : 'none';
 updateSteamBlockVisibility();
 updateMandatorySteamOverlay();
 updateProfileSteamBlock();
