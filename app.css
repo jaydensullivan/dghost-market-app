@@ -5501,3 +5501,13 @@ body.theme-light #gtPayBox{ background:rgba(255, 255, 255, .92); }
 .gt-offer-best{ position:absolute; top:8px; left:8px; padding:2px 8px; border-radius:999px; background:#16a34a; color:#fff; font-size:10px; font-weight:800; }
 
 .gt-adm-cell[hidden]{ display:none; }
+
+/* Пополнение баланса Telegram Stars */
+.stars-topup{ margin-bottom:14px; padding:14px; border-radius:14px; border:1px solid rgba(251, 191, 36, .35); background:rgba(251, 191, 36, .06); }
+.stars-topup[hidden]{ display:none; }
+.stars-topup-title{ font-size:14px; font-weight:800; margin-bottom:10px; }
+.stars-topup-row{ display:flex; gap:8px; }
+.stars-topup-row input{ flex:1 1 auto; min-width:0; padding:10px 12px; border-radius:4px; border:1px solid var(--red-dim); background:rgba(255,255,255,0.03); color:var(--silver); font-family:'Inter', sans-serif; font-size:16px; }
+.stars-topup-row input:focus{ outline:none; border-color:var(--red); }
+.stars-topup-row .steam-link-btn{ flex:0 0 auto; width:auto; padding-left:16px; padding-right:16px; }
+.stars-topup-or{ margin-top:12px; text-align:center; font-size:12px; color:var(--muted); }

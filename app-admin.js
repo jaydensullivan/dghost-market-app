@@ -764,6 +764,10 @@ document.getElementById('adminGtRateMode').value = d.rate_mode || 'binance';
 document.getElementById('adminGtRateFee').value = d.rate_fee != null ? d.rate_fee : 2;
 document.getElementById('adminGtLowBalance').value = d.low_balance != null ? d.low_balance : '';
 gtAdminRates = { binance: d.rate_binance || null, voluto: d.rate_voluto || null };
+document.getElementById('adminStarsEnabled').checked = !!d.stars_enabled;
+document.getElementById('adminStarsRate').value = d.stars_rate || '';
+const s30 = d.stars_30d || {};
+document.getElementById('adminStarsState').textContent = dict.admin_stars_state.replace('{n}', s30.count || 0).replace('{stars}', s30.stars || 0).replace('{sum}', formatCoins(s30.amount_uzs || 0));
 document.getElementById('adminGtRateNow').style.whiteSpace = 'pre-line';
 gtAdminMarkups = d.markups || { types: {}, slugs: {} };
 gtAdminCategories = d.categories || [];
@@ -809,6 +813,8 @@ rate: document.getElementById('adminGtRate').value.trim(),
 rate_mode: document.getElementById('adminGtRateMode').value,
 rate_fee: Number(document.getElementById('adminGtRateFee').value) || 0,
 low_balance: Number(document.getElementById('adminGtLowBalance').value) || 0,
+stars_enabled: document.getElementById('adminStarsEnabled').checked,
+stars_rate: Number(document.getElementById('adminStarsRate').value) || 150,
 types: [...document.querySelectorAll('[data-gt-admin-type]:checked')].map(i => i.dataset.gtAdminType),
 markups: {
 types: Object.fromEntries([...document.querySelectorAll('[data-gt-type-markup]')].filter(i => i.value.trim() !== '').map(i => [i.dataset.gtTypeMarkup, Number(i.value)])),

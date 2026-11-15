@@ -16,7 +16,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=8"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=135">
+<link rel="stylesheet" href="app.css?v=136">
 <link rel="stylesheet" href="app-desktop.css?v=2" media="(min-width: 1280px)">
 </head>
 <body data-tab="shop">
@@ -1311,6 +1311,11 @@
 </div>
 <div class="shop-hint" id="adminGtRateNow"></div>
 <div class="edit-field u-mt8">
+<label for="adminStarsRate" data-i18n="admin_stars_rate">Пополнение баланса Stars: сум за 1 ⭐</label>
+<div class="gt-adm-grid"><label class="admin-perm-chip"><input type="checkbox" id="adminStarsEnabled"> <span data-i18n="admin_stars_enabled">Включено</span></label><input id="adminStarsRate" type="number" min="1" max="10000" step="1"></div>
+<div class="shop-hint" id="adminStarsState"></div>
+</div>
+<div class="edit-field u-mt8">
 <label for="adminGtLowBalance" data-i18n="admin_gt_low_balance">Написать мне, когда на Arcadezy меньше, $ (0 — не писать)</label>
 <input id="adminGtLowBalance" type="number" min="0" step="1">
 </div>
@@ -1607,6 +1612,22 @@
 <div class="edit-sheet">
 <div style="margin:-20px -20px 16px; padding:20px; border-radius:14px 14px 0 0; background-image:linear-gradient(180deg, rgba(10,7,16,0.55), rgba(10,7,16,0.92)), url('coins-scattered.webp'); background-size:cover; background-position:center 25%;">
 <h2 data-i18n="section_topup" style="margin:0;">Пополнить баланс</h2>
+</div>
+<div class="stars-topup" id="starsTopupBox" hidden>
+<div class="stars-topup-title" data-i18n="stars_topup_title">⭐ Пополнить через Telegram Stars</div>
+<div class="stars-topup-row">
+<input id="starsAmount" type="number" min="50" step="50" placeholder="100" inputmode="numeric">
+<button type="button" id="starsPayBtn" class="steam-link-btn" data-i18n="stars_topup_pay">Оплатить ⭐</button>
+</div>
+<div class="quick-amount-row">
+<button type="button" class="quick-amount-btn" data-quick-stars="100">100 ⭐</button>
+<button type="button" class="quick-amount-btn" data-quick-stars="250">250 ⭐</button>
+<button type="button" class="quick-amount-btn" data-quick-stars="500">500 ⭐</button>
+<button type="button" class="quick-amount-btn" data-quick-stars="1000">1000 ⭐</button>
+</div>
+<div class="shop-hint" id="starsPreview"></div>
+<div class="edit-status" id="starsStatus"></div>
+<div class="stars-topup-or" data-i18n="stars_topup_or">или переводом на карту</div>
 </div>
 <div class="topup-details-box" id="topupDetailsBox">
 <div class="topup-details-text" id="topupDetailsText">Загрузка реквизитов...</div>
@@ -2697,8 +2718,8 @@
 </div>
 </div>
 <script src="app-core.js?v=21"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=67', en: 'app-i18n-en.js?v=66' };</script>
-<script src="app-i18n.js?v=189"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=68', en: 'app-i18n-en.js?v=67' };</script>
+<script src="app-i18n.js?v=190"></script>
 <script src="app-navigation.js?v=31"></script>
 <script src="app-shop.js?v=52"></script>
 <script src="app-legal.js?v=3"></script>
@@ -2709,14 +2730,14 @@
 <script src="app-music.js?v=2"></script>
 <script src="app-steam.js?v=17"></script>
 <script src="app-logins.js?v=2"></script>
-<script src="app-topup.js?v=5"></script>
+<script src="app-topup.js?v=6"></script>
 <script src="app-gametopup.js?v=13"></script>
 <script src="app-history.js?v=12"></script>
 <script src="app-referral.js?v=9"></script>
 <script src="app-withdraw.js?v=40"></script>
 <script src="app-instant.js?v=1"></script>
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
-<script>window.DG_ADMIN_SRC = 'app-admin.js?v=45';</script>
+<script>window.DG_ADMIN_SRC = 'app-admin.js?v=46';</script>
 <!-- 3D-просмотрщик (210 КБ) грузится после открытия витрины — ensure3DScript в app-navigation.js. -->
 <script>window.DG_3D_SRC = 'app-3d.js?v=139';</script>
 <script src="app-auctions.js?v=9"></script>
