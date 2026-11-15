@@ -53,6 +53,8 @@ return adminPermissions.includes(chip);
 // сервере). Например, «Витрина» собирает аукционы, раздачу и сеты —
 // у каждого своё право; кнопка видна, если доступен хоть один блок.
 function sectionAllowed(el){
+// «Донат» (пополнения Arcadezy) — только владелец, как и на сервере.
+if (el.dataset.view === 'donat' && !isOwner) return false;
 return (!ADMIN_ONLY_SECTIONS.has(el.id) || isAdmin) && hasChipPermission(el.dataset.group);
 }
 
@@ -1671,8 +1673,6 @@ document.getElementById('adminReferralPercent').value = data.referral_bonus_perc
 document.getElementById('adminCommissionSale').textContent = formatCoins(data.commission_sale_total || 0);
 document.getElementById('adminCommissionWithdraw').textContent = formatCoins(data.commission_withdraw_total || 0);
 document.getElementById('adminFeatureTogglesSection').style.display = data.is_owner ? '' : 'none';
-document.getElementById('adminGameTopupSection').style.display = data.is_owner ? '' : 'none';
-document.getElementById('adminGtPromoSection').style.display = data.is_owner ? '' : 'none';
 if (data.is_owner){ loadAdminGameTopup(); loadAdminGtPromos(); }
 document.getElementById('toggleTopupCard').checked = data.topup_card_enabled !== false;
 document.getElementById('toggleWithdrawCard').checked = data.withdraw_card_enabled !== false;
