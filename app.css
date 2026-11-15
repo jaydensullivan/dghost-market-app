@@ -5490,3 +5490,12 @@ body.theme-light #gtPayBox{ background:rgba(255, 255, 255, .92); }
 .gt-offer-unit{ font-size:12px; color:var(--muted); }
 .gt-offer .gt-offer-price{ margin-top:auto; padding-top:8px; font-size:15px; font-weight:800; color:var(--red-glow); }
 .gt-offer-badge{ position:absolute; top:-1px; left:50%; transform:translateX(-50%); padding:2px 10px; border-radius:0 0 8px 8px; background:linear-gradient(90deg, #dc2626, #b91c1c); color:#fff; font-size:10px; font-weight:700; white-space:nowrap; }
+
+/* Цвет игры, разделы пакетов, «Выгодно» */
+.gt-offers{ --gt-accent:#7c3aed; }
+.gt-offer{ border-color:color-mix(in srgb, var(--gt-accent) 30%, var(--red-dim)); background:radial-gradient(120% 70% at 50% 0%, color-mix(in srgb, var(--gt-accent) 24%, transparent), transparent 72%), var(--surface); }
+.gt-offer.active{ background:radial-gradient(120% 70% at 50% 0%, color-mix(in srgb, var(--gt-accent) 34%, transparent), transparent 72%) padding-box, var(--surface) padding-box, var(--cta-gradient) border-box; box-shadow:0 6px 22px color-mix(in srgb, var(--gt-accent) 40%, transparent); }
+.gt-offer-icon{ filter:drop-shadow(0 4px 12px color-mix(in srgb, var(--gt-accent) 45%, transparent)); }
+.gt-offers-title{ grid-column:1 / -1; margin:8px 2px -2px; font-size:14px; font-weight:800; color:var(--text); }
+.gt-offers-title:first-child{ margin-top:0; }
+.gt-offer-best{ position:absolute; top:8px; left:8px; padding:2px 8px; border-radius:999px; background:#16a34a; color:#fff; font-size:10px; font-weight:800; }

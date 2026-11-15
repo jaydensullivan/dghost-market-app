@@ -198,47 +198,122 @@ let n = String(name || '').trim();
 let bonus = false;
 n = n.replace(/\s*\((first|1st)[^)]*\)/i, () => { bonus = true; return ''; }).trim();
 const m = /^(\d[\d.,]*(?:\s*[+x×]\s*\d[\d.,]*)?)\s+(.+)$/i.exec(n);
-if (m) return { big: m[1].replace(/\s*\+\s*/g, ' + '), unit: m[2], bonus: bonus, num: parseFloat(m[1].replace(/[,\s]/g, '')) || 0 };
-return { big: n, unit: '', bonus: bonus, num: 0 };
+if (!m) return { big: n, unit: '', bonus: bonus, num: 0, total: 0 };
+const nums = m[1].split(/[+x×]/).map(x => parseFloat(x.replace(/[,\s]/g, '')) || 0);
+// «1860 + 335» — 2195 единиц; «2 x 50» — множитель.
+const total = /[x×]/.test(m[1]) ? nums.reduce((a, b) => a * b, 1) : nums.reduce((a, b) => a + b, 0);
+return { big: m[1].replace(/\s*\+\s*/g, ' + '), unit: m[2], bonus: bonus, num: nums[0], total: total };
 }
 
+// Валюта пакета по названию — своя иконка для каждой (рисуем сами, не арт игр).
+function gtCurrencyKind(p){
+const u = (p.unit + ' ' + p.big).toLowerCase();
+const t = gtCurrent && gtCurrent.category && gtCurrent.category.type;
+if (/\bstars?\b/.test(u)) return 'star';
+if (/\buc\b/.test(u)) return 'uc';
+if (/\bvp\b|valorant point|riot point|\brp\b|wild core/.test(u)) return 'vp';
+if (/\bcp\b|cod point/.test(u)) return 'cp';
+if (/bundle|chest|crate|\bbox\b|newbie|starter/.test(u)) return 'chest';
+if (/pass|pack|card|month|week|member|subscri|premium|elite|vip|battle|access|welkin|blessing|level up|gift/.test(u)) return 'ticket';
+if (/crystal|primogem|genesis|lunite|astrite|oneiric|jade|shard|quartz|orb\b|stellar/.test(u)) return 'crystal';
+if (/diamond|\bgems?\b/.test(u)) return 'diamond';
+if (t === 'steam' || /usd|eur|\$|wallet|\bidr\b|\brub\b|\btry\b|\bmyr\b|\bphp\b|\bthb\b/.test(u)) return 'wallet';
+if (/coin|gold|token|shell|candy|ticket|cash|point|credit|bean|ruby|chip|money|silver/.test(u)) return 'coin';
+return p.total ? 'diamond' : 'ticket';
+}
+const GT_CURRENCY_KINDS = ['diamond', 'crystal', 'uc', 'vp', 'cp', 'coin', 'star', 'wallet'];
+
 const GT_GEM = '<path d="M6 0h12l6 7-12 15L0 7z" fill="#38bdf8"/><path d="M0 7h24L12 22z" fill="#0369a1"/><path d="M6 0l3 7h6l3-7z" fill="#e0f2fe"/><path d="M9 7l3 15 3-15z" fill="#0ea5e9"/>';
+const GT_SHARD = '<path d="M8 0l8 10-8 22-8-22z" fill="#c084fc"/><path d="M8 0l8 10H0z" fill="#f3e8ff"/><path d="M8 32L0 10h8z" fill="#7e22ce"/><path d="M8 32l8-22H8z" fill="#a855f7"/>';
 const GT_GEM_LAYOUT = [
 [[20, 13, 1]],
 [[8, 18, .85], [28, 12, 1.05]],
 [[2, 22, .8], [20, 8, 1.1], [40, 22, .8]],
 [[0, 25, .75], [14, 9, .95], [32, 14, 1.1], [46, 27, .7]],
 ];
+const GT_SHARD_LAYOUT = [
+[[24, 10, 1.25]],
+[[14, 16, 1], [32, 8, 1.3]],
+[[6, 18, .95], [24, 4, 1.4], [44, 18, .95]],
+[[2, 22, .85], [16, 8, 1.15], [34, 4, 1.4], [50, 22, .8]],
+];
+const GT_SPARK = '<path d="M54 6l1.5 3.5L59 11l-3.5 1.5L54 16l-1.5-3.5L49 11l3.5-1.5z" fill="#fef9c3"/>';
+// Монета с буквами валюты: [заливка, обод, текст].
+const GT_COIN_STYLE = { uc: ['#fbbf24', '#b45309', '#78350f', 'UC'], vp: ['#fb7185', '#be123c', '#fff', 'VP'], cp: ['#fdba74', '#c2410c', '#431407', 'CP'], coin: ['#fde047', '#ca8a04', '#713f12', '¤'] };
 
-function gtOfferIcon(o, parsed){
-const text = (parsed.unit + ' ' + parsed.big).toLowerCase();
-const t = gtCurrent && gtCurrent.category && gtCurrent.category.type;
+function gtTier(n){ return n >= 1500 ? 3 : n >= 300 ? 2 : n >= 60 ? 1 : 0; }
+
+function gtCoinSvg(kind, tier){
+const [fill, rim, ink, label] = GT_COIN_STYLE[kind];
+const spots = [[[32, 26]], [[24, 30], [38, 22]], [[18, 32], [32, 20], [46, 32]], [[14, 34], [26, 24], [40, 33], [47, 19]]][tier];
+return spots.map(([x, y], i) => {
+const front = i === spots.length - 1;
+return `<g transform="translate(${x} ${y})"><circle r="15" fill="${rim}"/><circle r="12.5" fill="${fill}"/><circle r="10" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.5"/>`
++ (front ? `<text y="4.5" text-anchor="middle" font-family="Arial, sans-serif" font-weight="900" font-size="${label.length > 1 ? 11 : 14}" fill="${ink}">${label}</text>` : '') + '</g>';
+}).join('');
+}
+
+function gtOfferIcon(p, kind){
+const tier = gtTier(p.total);
 let body;
-if (/star/.test(text) || t === 'telegram' && /star/.test(String(o.name).toLowerCase())){
+if (kind === 'star'){
 body = '<path d="M32 4l7.6 15.4 17 2.5-12.3 12 2.9 16.9L32 42.8 16.8 50.8l2.9-16.9-12.3-12 17-2.5z" fill="#fbbf24" stroke="#f59e0b" stroke-width="2" stroke-linejoin="round"/><path d="M32 12l4 9 9 1.3" fill="none" stroke="#fef3c7" stroke-width="2.5" stroke-linecap="round"/>';
-} else if (/pass|pack|card|month|week|member|bundle|subscri|premium|elite|vip|battle|gift/.test(text)){
+} else if (kind === 'ticket'){
 body = '<rect x="6" y="9" width="52" height="30" rx="7" fill="#7c3aed" transform="rotate(-8 32 24)"/><rect x="10" y="13" width="44" height="22" rx="5" fill="#a78bfa" transform="rotate(-8 32 24)"/><g transform="translate(20 13)">' + GT_GEM + '</g>';
-} else if (/usd|eur|\$|wallet|coin|gold|rub|try|idr/.test(text) || t === 'steam'){
+} else if (kind === 'chest'){
+body = '<rect x="10" y="22" width="44" height="24" rx="4" fill="#92400e"/><path d="M10 26q0-16 22-16t22 16z" fill="#b45309"/><rect x="10" y="24" width="44" height="5" fill="#fbbf24"/><rect x="28" y="22" width="8" height="12" rx="2" fill="#fde68a"/><g transform="translate(14 4) scale(.6)">' + GT_GEM + '</g><g transform="translate(36 6) scale(.55)">' + GT_GEM + '</g>';
+} else if (kind === 'wallet'){
 body = '<ellipse cx="32" cy="38" rx="20" ry="7" fill="#b45309"/><rect x="12" y="24" width="40" height="14" fill="#d97706"/><ellipse cx="32" cy="24" rx="20" ry="7" fill="#fbbf24"/><ellipse cx="32" cy="24" rx="12" ry="3.5" fill="none" stroke="#fef3c7" stroke-width="2"/>';
+} else if (GT_COIN_STYLE[kind]){
+body = gtCoinSvg(kind, tier);
+} else if (kind === 'crystal'){
+body = GT_SHARD_LAYOUT[tier].map(([x, y, sc]) => `<g transform="translate(${x} ${y}) scale(${sc * .85})">${GT_SHARD}</g>`).join('') + (tier >= 2 ? GT_SPARK : '');
 } else {
-const n = parsed.num;
-const tier = n >= 1500 ? 3 : n >= 300 ? 2 : n >= 60 ? 1 : 0;
-body = GT_GEM_LAYOUT[tier].map(([x, y, sc]) => `<g transform="translate(${x} ${y}) scale(${sc})">${GT_GEM}</g>`).join('')
-+ (tier >= 2 ? '<path d="M54 6l1.5 3.5L59 11l-3.5 1.5L54 16l-1.5-3.5L49 11l3.5-1.5z" fill="#fef9c3"/>' : '');
+body = GT_GEM_LAYOUT[tier].map(([x, y, sc]) => `<g transform="translate(${x} ${y}) scale(${sc})">${GT_GEM}</g>`).join('') + (tier >= 2 ? GT_SPARK : '');
 }
 return `<svg class="gt-offer-icon" viewBox="0 0 64 52" aria-hidden="true">${body}</svg>`;
 }
 
-function gtOfferHtml(o){
+function gtOfferHtml(o, p, kind, best, inSection){
 const d = gtDict();
-const p = gtParseOffer(o.name);
 return `<button type="button" class="gt-offer" data-gt-offer="${escapeHtml(o.id)}" ${o.in_stock ? '' : 'disabled'}>
-${p.bonus ? `<span class="gt-offer-badge">${escapeHtml(d.gt_first_bonus)}</span>` : ''}
+${p.bonus && !inSection ? `<span class="gt-offer-badge">${escapeHtml(d.gt_first_bonus)}</span>` : ''}
+${best ? `<span class="gt-offer-best">${escapeHtml(d.gt_best_value)}</span>` : ''}
 <span class="gt-offer-check" aria-hidden="true">✓</span>
-${gtOfferIcon(o, p)}
+${gtOfferIcon(p, kind)}
 <span class="gt-offer-big${p.unit ? '' : ' is-text'}">${escapeHtml(p.big)}</span>
 ${p.unit ? `<span class="gt-offer-unit">${escapeHtml(p.unit)}</span>` : ''}
 <span class="gt-offer-price">${o.in_stock ? formatCoins(o.price_uzs) : escapeHtml(d.gt_out_of_stock)}</span></button>`;
+}
+
+// Пакеты разделами: бонус 1-го пополнения · валюта · пропуски и наборы.
+// «Выгодно» — самая низкая цена за единицу среди обычных пакетов одной валюты.
+function gtOffersHtml(offers){
+const d = gtDict();
+const rows = offers.map(o => { const p = gtParseOffer(o.name); return { o: o, p: p, kind: gtCurrencyKind(p) }; });
+const isCurrency = r => r.p.total > 0 && GT_CURRENCY_KINDS.includes(r.kind);
+const groups = [
+['bonus', d.gt_offers_bonus, rows.filter(r => r.p.bonus)],
+['currency', d.gt_offers_currency, rows.filter(r => !r.p.bonus && isCurrency(r))],
+['packs', d.gt_offers_packs, rows.filter(r => !r.p.bonus && !isCurrency(r))],
+].filter(g => g[2].length);
+const best = new Set();
+const byUnit = {};
+for (const r of rows){
+if (r.p.bonus || !isCurrency(r) || !r.o.in_stock || !r.o.price_uzs) continue;
+(byUnit[r.p.unit.toLowerCase()] = byUnit[r.p.unit.toLowerCase()] || []).push(r);
+}
+for (const list of Object.values(byUnit)){
+if (list.length < 3) continue;
+const top = list.reduce((a, b) => (b.o.price_uzs / b.p.total < a.o.price_uzs / a.p.total ? b : a));
+// Не метим, если выгода копеечная (< 3% к среднему).
+const avg = list.reduce((s, r) => s + r.o.price_uzs / r.p.total, 0) / list.length;
+if (top.o.price_uzs / top.p.total < avg * 0.97) best.add(top.o.id);
+}
+const showTitles = groups.length > 1;
+return groups.map(([id, title, list]) =>
+(showTitles ? `<div class="gt-offers-title">${escapeHtml(title)}</div>` : '')
++ list.map(r => gtOfferHtml(r.o, r.p, r.kind, best.has(r.o.id), showTitles)).join('')).join('');
 }
 
 function loadTopupCatalog(){
@@ -403,7 +478,10 @@ ${image ? `<img class="gt-head-bg" src="${escapeHtml(image)}" alt="">` : ''}
 <div><div class="gt-head-name">${escapeHtml(name)}</div><div class="gt-head-badges"><span class="gt-pill">⚡ ${escapeHtml(d.gt_fast)}</span><span class="gt-pill">🛡 ${escapeHtml(d.gt_refund_badge)}</span></div></div></div>`;
 gtPaintFavBtn(document.getElementById('gtFavBtn'), favKey);
 renderTopupRegions(slug);
-document.getElementById('gtOffers').innerHTML = (data.offers || []).map(gtOfferHtml).join('')
+const accent = c.color || (group && group.color) || known.color || (gtTheme(cover) || {}).accent || '';
+const offersBox = document.getElementById('gtOffers');
+if (accent) offersBox.style.setProperty('--gt-accent', accent); else offersBox.style.removeProperty('--gt-accent');
+offersBox.innerHTML = gtOffersHtml(data.offers || [])
 || `<div class="skins-empty skins-empty-md">${d.gt_nothing_found}</div>`;
 renderTopupFields((data.fields || []));
 })
