@@ -640,6 +640,9 @@ document.getElementById('adminGtEnabled').checked = !!d.enabled;
 document.getElementById('adminGtMarkup').value = d.markup;
 document.getElementById('adminGtRate').value = d.rate || '';
 document.getElementById('adminGtRate').placeholder = d.rate_effective ? String(Math.round(d.rate_effective)) : '';
+document.getElementById('adminGtRateNow').textContent = d.rate_effective
+? dict.admin_gt_rate_now.replace('{rate}', formatCoins(Math.round(d.rate_effective))).replace('{source}', dict['admin_gt_rate_src_' + (d.rate_source || 'cbu')] || '')
+: '';
 document.getElementById('adminGtTypes').innerHTML = GT_ADMIN_TYPES.map(t =>
 `<label class="admin-perm-chip"><input type="checkbox" data-gt-admin-type="${t}" ${(d.types || []).includes(t) ? 'checked' : ''}> ${escapeHtml(dict['gt_type_' + t] || t)}</label>`).join('');
 const o = d.orders_30d || {};
