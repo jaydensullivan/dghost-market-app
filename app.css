@@ -5465,3 +5465,10 @@ body.theme-light #gtPayBox{ background:rgba(255, 255, 255, .92); }
 .gt-preview-price small{ font-size:11px; }
 .gt-preview-price small.ok{ color:#4ade80; }
 .gt-preview-price small.bad{ color:#f87171; }
+/* Жанры игр в каталоге пополнений */
+.gt-genres{ display:flex; gap:6px; margin:-4px 0 12px; overflow-x:auto; scrollbar-width:none; }
+.gt-genres[hidden]{ display:none; }
+.gt-genres::-webkit-scrollbar{ display:none; }
+.gt-genre{ flex:0 0 auto; padding:7px 12px; border-radius:999px; border:1px solid var(--red-dim); background:var(--surface); color:var(--muted); font-size:12px; font-weight:600; white-space:nowrap; cursor:pointer; }
+.gt-genre.active{ background:var(--cta-gradient); border-color:transparent; color:#fff; }
+.gt-section-count{ margin-left:4px; font-size:12px; font-weight:600; color:var(--muted); }

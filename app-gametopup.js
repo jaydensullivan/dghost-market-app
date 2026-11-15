@@ -7,6 +7,7 @@ let gtEnabled = false;
 let gtItems = [];
 let gtTypes = [];
 let gtType = '';
+let gtGenre = '';
 let gtCurrent = null;
 let gtOffer = null;
 let gtBusy = false;
@@ -61,6 +62,38 @@ return `<button type="button" class="gt-tile" data-gt-slug="${escapeHtml(c.slug)
 const GT_SERVICE_TYPES = ['steam', 'telegram', 'giftcard'];
 
 function gtIsService(c){ return GT_SERVICE_TYPES.includes(c.type); }
+
+// Жанры игр. У Arcadezy категорий нет — делим по названию. Порядок важен:
+// игра попадает в первый подходящий жанр, всё неопознанное — в RPG и приключения.
+const GT_GENRES = [
+{ id: 'popular', re: /^(PUBG Mobile|Mobile Legends \((Global|RU)\)|Free Fire \(CIS\)|Genshin Impact \(Global\)|Call of Duty Mobile|Marvel Rivals|Delta Force$|Stumble Guys|Wuthering Waves|Arena Breakout: Infinite|Blood Strike$|Honkai Impact 3rd \(SG\)|Valorant \(SG\)|Magic Chess Go Go \(RU\))/i },
+{ id: 'apps', re: /bigo|chamet|mico|poppo|starmaker|hago|tik ?tok|capcut|mangatoon|qq coin|wesing|sugo|soulchill|jaco|^lita|dazz|migo|nimo|^imo$|sawa|firefly live|yoho/i },
+{ id: 'shooter', re: /pubg|free fire|call of duty|valorant|delta force|blood strike|arena breakout|farlight|rainbow six|pixel gun|point blank|crossfire|hyper front|knives out|sausage man|bullet echo|frag pro|modern strike|badlanders|marvel rivals|t3 arena|undawn|once human|mecha break|destiny|division|crossout|ballistic|omega legends|project entropy|warships|metal slug|warborne/i },
+{ id: 'moba', re: /mobile legends(?!: adventure)|wild rift|league of legends|arena of valor|onmyoji arena|heroes evolved|extraordinary ones/i },
+{ id: 'strategy', re: /age of empire|lords mobile|state of survival|whiteout|kingshot|stormshot|puzzles & survival|clash of plants|civilization|rise to war|the ants|lagrange|eve echoes|x-clash|kings choice|ludus|be the king|runeterra|magic chess|tft|golden spatula|hero clash|dynasty heroes/i },
+{ id: 'sport', re: /eafc|football|tsubasa|dunk|kuroko|asphalt|racing|drifters|ace racer|8 ball/i },
+{ id: 'casual', re: /stumble|eggy|super sus|tom and jerry|ludo|teen patti|singing monsters|growtopia|cats:|fashion|nikki|life makeover|heartopia|spring valley|hatsune|ensemble stars|idol party|enhypen|sky: children|deepspace|isekai feast|realms of pixel|tomb busters|identity v/i },
+{ id: 'rpg', re: null },
+];
+// Порядок чипов и разделов (отличается от порядка проверки).
+const GT_GENRE_ORDER = ['popular', 'shooter', 'moba', 'strategy', 'rpg', 'sport', 'casual', 'apps'];
+const gtPrimaryCache = new Map();
+function gtPrimaryGenre(c){
+const name = c.name || '';
+if (!gtPrimaryCache.has(name)){
+const g = GT_GENRES.find(x => x.re ? x.re.test(name) : true);
+gtPrimaryCache.set(name, g.id);
+}
+return gtPrimaryCache.get(name);
+}
+// Жанр игры без учёта «Популярных»: популярный шутер виден и в «Шутерах».
+function gtSecondaryGenre(c){
+const name = c.name || '';
+return GT_GENRES.find(x => x.id !== 'popular' && (x.re ? x.re.test(name) : true)).id;
+}
+function gtGenreOf(c, id){
+return id === 'popular' ? gtPrimaryGenre(c) === 'popular' : gtSecondaryGenre(c) === id;
+}
 
 function loadTopupCatalog(){
 const params = new URLSearchParams();
@@ -124,13 +157,27 @@ grid.innerHTML = `<div class="skins-empty skins-empty-md">${d.gt_load_failed}</d
 return;
 }
 const services = gtType === 'games' ? [] : items.filter(gtIsService);
-const games = gtType === 'services' ? [] : items.filter(c => !gtIsService(c));
+const allGames = gtType === 'services' ? [] : items.filter(c => !gtIsService(c));
+const genreBox = document.getElementById('gtGenreChips');
+const present = GT_GENRE_ORDER.map(id => ({ id })).filter(g => allGames.some(c => gtGenreOf(c, g.id)));
+if (gtGenre && !present.some(g => g.id === gtGenre)) gtGenre = '';
+genreBox.hidden = gtType === 'services' || present.length < 2;
+genreBox.innerHTML = [['', d.gt_genre_all]].concat(present.map(g => [g.id, d['gt_genre_' + g.id]])).map(([id, label]) =>
+`<button type="button" class="gt-genre${id === gtGenre ? ' active' : ''}" data-gt-genre="${id}">${escapeHtml(label)}</button>`).join('');
 let html = '';
-if (services.length){
+if (services.length && !gtGenre){
 html += `<div class="gt-section-title">${escapeHtml(d.gt_section_services)}</div><div class="gt-svc-grid">${services.map(gtServiceCardHtml).join('')}</div>`;
 }
-if (games.length){
-html += `<div class="gt-section-title">${escapeHtml(d.gt_section_games)}</div><div class="gt-games-grid">${games.map(c => gtTileHtml(c, false)).join('')}</div>`;
+const gameGrid = (title, list) => list.length ? `<div class="gt-section-title">${escapeHtml(title)} <span class="gt-section-count">${list.length}</span></div><div class="gt-games-grid">${list.map(c => gtTileHtml(c, false)).join('')}</div>` : '';
+if (gtGenre){
+html += gameGrid(d['gt_genre_' + gtGenre], allGames.filter(c => gtGenreOf(c, gtGenre)));
+} else if (present.length < 2){
+html += gameGrid(d.gt_section_games, allGames);
+} else {
+// Каждая игра — в одном разделе: популярные сверху, остальные по жанру.
+for (const g of present){
+html += gameGrid(d['gt_genre_' + g.id], allGames.filter(c => gtPrimaryGenre(c) === g.id));
+}
 }
 grid.innerHTML = html || `<div class="skins-empty skins-empty-md">${d.gt_nothing_found}</div>`;
 }
@@ -547,9 +594,11 @@ document.addEventListener('click', (e) => {
 const tile = e.target.closest('[data-gt-slug]');
 if (tile){ openTopupCategory(tile.dataset.gtSlug); return; }
 // Любое место полосы в «Маркете», кроме плитки игры, — весь каталог.
-if (e.target.closest('[data-gt-open-all]') || e.target.closest('#gtStrip')){ gtType = ''; goToScreen('topup'); return; }
+if (e.target.closest('[data-gt-open-all]') || e.target.closest('#gtStrip')){ gtType = ''; gtGenre = ''; goToScreen('topup'); return; }
 const type = e.target.closest('[data-gt-type]');
-if (type){ gtType = type.dataset.gtType; if ((document.getElementById('gtSearch').value || '').trim()) loadTopupCatalog(); else renderTopupCatalog(gtItems); return; }
+const genre = e.target.closest('[data-gt-genre]');
+if (genre){ gtGenre = genre.dataset.gtGenre; renderTopupCatalog(gtItems); return; }
+if (type){ gtType = type.dataset.gtType; gtGenre = ''; if ((document.getElementById('gtSearch').value || '').trim()) loadTopupCatalog(); else renderTopupCatalog(gtItems); return; }
 const offer = e.target.closest('[data-gt-offer]');
 if (offer){ gtSelectOffer(offer.dataset.gtOffer); return; }
 if (e.target.closest('#gtCheckBtn')){ checkTopupId(); return; }
@@ -599,5 +648,5 @@ gtSearchTimer = setTimeout(loadTopupCatalog, 350);
 // Плитки на главной: узнаём, включён ли раздел, сразу при запуске.
 loadTopupCatalog();
 document.getElementById('gtStrip').addEventListener('keydown', (e) => {
-if ((e.key === 'Enter' || e.key === ' ') && e.target.id === 'gtStrip'){ e.preventDefault(); gtType = ''; goToScreen('topup'); }
+if ((e.key === 'Enter' || e.key === ' ') && e.target.id === 'gtStrip'){ e.preventDefault(); gtType = ''; gtGenre = ''; goToScreen('topup'); }
 });
