@@ -251,11 +251,38 @@ return fetch(API_BASE + '/api/game_topup/catalog?' + params.toString())
 gtEnabled = !!data.enabled;
 gtTypes = data.types || [];
 const items = gtGroupItems(data.items || []);
-if (!q) gtItems = items;
+if (!q){
+gtItems = items;
+gtRetry = 0;
+try { localStorage.setItem('gt_catalog', JSON.stringify({ at: Date.now(), enabled: gtEnabled, types: gtTypes, items: data.items || [] })); } catch (e){}
+}
 renderTopupStrip();
 renderTopupCatalog(items);
 })
-.catch(() => renderTopupCatalog(null));
+.catch(() => {
+// Бот перезапускается (выкатка) или сеть моргнула — не прячем раздел
+// до следующего запуска, а пробуем ещё: 3 с, 10 с, 30 с, 1 мин.
+if (!q && gtRetry < 4){
+setTimeout(loadTopupCatalog, [3000, 10000, 30000, 60000][gtRetry]);
+gtRetry++;
+}
+if (gtItems.length && !q) renderTopupCatalog(gtItems); else renderTopupCatalog(null);
+});
+}
+
+let gtRetry = 0;
+
+// Последний каталог из памяти телефона — полоса на «Маркете» видна сразу,
+// даже если бот отвечает медленно; свежий подменит его через миг.
+function gtRestoreCachedCatalog(){
+try {
+const c = JSON.parse(localStorage.getItem('gt_catalog') || 'null');
+if (!c || !c.enabled || !Array.isArray(c.items) || Date.now() - c.at > 3 * 86400 * 1000) return;
+gtEnabled = true;
+gtTypes = c.types || [];
+gtItems = gtGroupItems(c.items);
+renderTopupStrip();
+} catch (e){}
 }
 
 function renderTopupStrip(){
@@ -804,9 +831,14 @@ gtSearchTimer = setTimeout(loadTopupCatalog, 350);
 });
 
 // Плитки на главной: узнаём, включён ли раздел, сразу при запуске.
+gtLoadFavs();
+gtRestoreCachedCatalog();
 loadTopupCatalog();
+// Вернулись в приложение, а каталога так и нет — пробуем снова.
+document.addEventListener('visibilitychange', () => {
+if (document.visibilityState === 'visible' && !gtItems.length) loadTopupCatalog();
+});
 document.getElementById('gtStrip').addEventListener('keydown', (e) => {
 if ((e.key === 'Enter' || e.key === ' ') && e.target.id === 'gtStrip'){ e.preventDefault(); gtType = ''; gtGenre = ''; goToScreen('topup'); }
 });
 
-gtLoadFavs();
