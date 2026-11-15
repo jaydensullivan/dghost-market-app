@@ -54,7 +54,9 @@ if (compact){
 return `<button type="button" class="gt-chip-tile" data-gt-slug="${escapeHtml(c.slug)}"><span class="gt-chip-ring">${gtCoverHtml(c, 'gt-chip-img')}</span><span class="gt-chip-name">${escapeHtml(c.name)}</span></button>`;
 }
 const from = c.from_uzs ? `<span class="gt-tile-price">${escapeHtml(gtDict().gt_from.replace('{price}', formatCoins(c.from_uzs)))}</span>` : '';
-return `<button type="button" class="gt-tile" data-gt-slug="${escapeHtml(c.slug)}">${gtCoverHtml(c, 'gt-tile-cover')}<span class="gt-tile-shade"></span><span class="gt-tile-body"><span class="gt-tile-name">${escapeHtml(c.name)}</span>${from}</span></button>`;
+const regions = c.gtVariants && c.gtVariants.length > 1 ? `<span class="gt-tile-regions">🌍 ${c.gtVariants.length}</span>` : '';
+const fav = gtIsFav(gtFavKey(c)) ? '<span class="gt-tile-fav" aria-hidden="true">★</span>' : '';
+return `<button type="button" class="gt-tile" data-gt-slug="${escapeHtml(c.slug)}">${gtCoverHtml(c, 'gt-tile-cover')}<span class="gt-tile-shade"></span>${regions}${fav}<span class="gt-tile-body"><span class="gt-tile-name">${escapeHtml(c.name)}</span>${from}</span></button>`;
 }
 
 // Сервисы (Steam, Telegram, карты) — компактными карточками сверху,
@@ -79,7 +81,7 @@ const GT_GENRES = [
 const GT_GENRE_ORDER = ['popular', 'shooter', 'moba', 'strategy', 'rpg', 'sport', 'casual', 'apps'];
 const gtPrimaryCache = new Map();
 function gtPrimaryGenre(c){
-const name = c.name || '';
+const name = c.gtRepName || c.name || '';
 if (!gtPrimaryCache.has(name)){
 const g = GT_GENRES.find(x => x.re ? x.re.test(name) : true);
 gtPrimaryCache.set(name, g.id);
@@ -88,11 +90,155 @@ return gtPrimaryCache.get(name);
 }
 // Жанр игры без учёта «Популярных»: популярный шутер виден и в «Шутерах».
 function gtSecondaryGenre(c){
-const name = c.name || '';
+const name = c.gtRepName || c.name || '';
 return GT_GENRES.find(x => x.id !== 'popular' && (x.re ? x.re.test(name) : true)).id;
 }
 function gtGenreOf(c, id){
 return id === 'popular' ? gtPrimaryGenre(c) === 'popular' : gtSecondaryGenre(c) === id;
+}
+
+// ---------- регионы ----------
+// «Free Fire (CIS)», «Free Fire (LATAM)»… — одна плитка, регион выбирается внутри.
+const GT_REGION_PREF = ['global', '', 'cis', 'ru', 'sg', 'united states', 'us', 'naeu', 'eu', 'americas', 'asia', 'sea'];
+const gtGroupBySlug = new Map();
+
+function gtSplitRegion(name){
+const m = /^(.*\S)\s*\(([^()]+)\)\s*$/.exec(String(name || ''));
+return m ? { base: m[1], region: m[2] } : { base: String(name || ''), region: '' };
+}
+
+function gtGroupItems(items){
+const groups = new Map();
+const out = [];
+for (const c of items){
+if (gtIsService(c)){ out.push(c); continue; }
+const { base, region } = gtSplitRegion(c.name);
+const key = base.toLowerCase();
+let g = groups.get(key);
+if (!g){ g = { gtKey: key, gtBase: base, gtVariants: [] }; groups.set(key, g); out.push(g); }
+g.gtVariants.push({ slug: c.slug, region: region, item: c });
+}
+const rank = v => { const i = GT_REGION_PREF.indexOf(v.region.toLowerCase()); return i < 0 ? 99 : i; };
+for (const g of groups.values()){
+g.gtVariants.sort((a, b) => rank(a) - rank(b) || a.region.localeCompare(b.region));
+const main = g.gtVariants[0].item;
+const prices = g.gtVariants.map(v => v.item.from_uzs).filter(Boolean);
+Object.assign(g, main, {
+name: g.gtVariants.length > 1 ? g.gtBase : main.name,
+gtRepName: main.name,
+from_uzs: prices.length ? Math.min(...prices) : main.from_uzs,
+image: main.image || ((g.gtVariants.find(v => v.item.image) || { item: {} }).item.image),
+});
+for (const v of g.gtVariants) gtGroupBySlug.set(v.slug, g);
+}
+return out;
+}
+
+function renderTopupRegions(slug){
+const d = gtDict();
+const box = document.getElementById('gtRegions');
+const g = gtGroupBySlug.get(slug);
+if (!g || g.gtVariants.length < 2){ box.hidden = true; box.innerHTML = ''; return; }
+box.hidden = false;
+box.innerHTML = `<div class="gt-regions-title">${escapeHtml(d.gt_regions_title)}</div><div class="gt-regions-row">${g.gtVariants.map(v =>
+`<button type="button" class="gt-genre${v.slug === slug ? ' active' : ''}" data-gt-region="${escapeHtml(v.slug)}">${escapeHtml(v.region || d.gt_region_main)}</button>`).join('')}</div>`;
+const act = box.querySelector('.active');
+if (act && act.scrollIntoView) act.scrollIntoView({ block: 'nearest', inline: 'center' });
+}
+
+// ---------- избранное ----------
+// Хранится в Telegram CloudStorage (общий для всех устройств пользователя),
+// копия — в localStorage, чтобы показать сразу и работать вне Telegram.
+let gtFavs = [];
+function gtFavKey(c){ return (c && (c.gtKey || c.slug)) || ''; }
+function gtIsFav(key){ return !!key && gtFavs.includes(key); }
+function gtCloud(){ try { return (tg && tg.CloudStorage && tg.CloudStorage.getItem) ? tg.CloudStorage : null; } catch (e){ return null; } }
+
+function gtLoadFavs(){
+try { gtFavs = JSON.parse(localStorage.getItem('gt_favs') || '[]') || []; } catch (e){ gtFavs = []; }
+const cs = gtCloud();
+if (!cs) return;
+try {
+cs.getItem('gt_favs', (err, v) => {
+if (err || !v) return;
+try { gtFavs = JSON.parse(v) || []; } catch (e){ return; }
+try { localStorage.setItem('gt_favs', JSON.stringify(gtFavs)); } catch (e){}
+renderTopupStrip();
+if (gtItems.length && !(document.getElementById('gtSearch').value || '').trim()) renderTopupCatalog(gtItems);
+});
+} catch (e){}
+}
+
+function gtToggleFav(key){
+if (!key) return;
+gtFavs = gtIsFav(key) ? gtFavs.filter(k => k !== key) : [key].concat(gtFavs).slice(0, 50);
+const raw = JSON.stringify(gtFavs);
+try { localStorage.setItem('gt_favs', raw); } catch (e){}
+const cs = gtCloud();
+if (cs){ try { cs.setItem('gt_favs', raw); } catch (e){} }
+renderTopupStrip();
+const btn = document.getElementById('gtFavBtn');
+if (btn) gtPaintFavBtn(btn, key);
+}
+
+function gtPaintFavBtn(btn, key){
+const d = gtDict();
+const on = gtIsFav(key);
+btn.classList.toggle('on', on);
+btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+btn.setAttribute('aria-label', on ? d.gt_fav_remove : d.gt_fav_add);
+btn.textContent = on ? '★' : '☆';
+}
+
+// ---------- карточки пакетов ----------
+// «1860 + 335 Diamonds» → крупно «1860 + 335», под ним «Diamonds»;
+// картинок у пакетов нет — рисуем свою иконку: кристаллы, пропуск, звезда, монеты.
+function gtParseOffer(name){
+let n = String(name || '').trim();
+let bonus = false;
+n = n.replace(/\s*\((first|1st)[^)]*\)/i, () => { bonus = true; return ''; }).trim();
+const m = /^(\d[\d.,]*(?:\s*[+x×]\s*\d[\d.,]*)?)\s+(.+)$/i.exec(n);
+if (m) return { big: m[1].replace(/\s*\+\s*/g, ' + '), unit: m[2], bonus: bonus, num: parseFloat(m[1].replace(/[,\s]/g, '')) || 0 };
+return { big: n, unit: '', bonus: bonus, num: 0 };
+}
+
+const GT_GEM = '<path d="M6 0h12l6 7-12 15L0 7z" fill="#38bdf8"/><path d="M0 7h24L12 22z" fill="#0369a1"/><path d="M6 0l3 7h6l3-7z" fill="#e0f2fe"/><path d="M9 7l3 15 3-15z" fill="#0ea5e9"/>';
+const GT_GEM_LAYOUT = [
+[[20, 13, 1]],
+[[8, 18, .85], [28, 12, 1.05]],
+[[2, 22, .8], [20, 8, 1.1], [40, 22, .8]],
+[[0, 25, .75], [14, 9, .95], [32, 14, 1.1], [46, 27, .7]],
+];
+
+function gtOfferIcon(o, parsed){
+const text = (parsed.unit + ' ' + parsed.big).toLowerCase();
+const t = gtCurrent && gtCurrent.category && gtCurrent.category.type;
+let body;
+if (/star/.test(text) || t === 'telegram' && /star/.test(String(o.name).toLowerCase())){
+body = '<path d="M32 4l7.6 15.4 17 2.5-12.3 12 2.9 16.9L32 42.8 16.8 50.8l2.9-16.9-12.3-12 17-2.5z" fill="#fbbf24" stroke="#f59e0b" stroke-width="2" stroke-linejoin="round"/><path d="M32 12l4 9 9 1.3" fill="none" stroke="#fef3c7" stroke-width="2.5" stroke-linecap="round"/>';
+} else if (/pass|pack|card|month|week|member|bundle|subscri|premium|elite|vip|battle|gift/.test(text)){
+body = '<rect x="6" y="9" width="52" height="30" rx="7" fill="#7c3aed" transform="rotate(-8 32 24)"/><rect x="10" y="13" width="44" height="22" rx="5" fill="#a78bfa" transform="rotate(-8 32 24)"/><g transform="translate(20 13)">' + GT_GEM + '</g>';
+} else if (/usd|eur|\$|wallet|coin|gold|rub|try|idr/.test(text) || t === 'steam'){
+body = '<ellipse cx="32" cy="38" rx="20" ry="7" fill="#b45309"/><rect x="12" y="24" width="40" height="14" fill="#d97706"/><ellipse cx="32" cy="24" rx="20" ry="7" fill="#fbbf24"/><ellipse cx="32" cy="24" rx="12" ry="3.5" fill="none" stroke="#fef3c7" stroke-width="2"/>';
+} else {
+const n = parsed.num;
+const tier = n >= 1500 ? 3 : n >= 300 ? 2 : n >= 60 ? 1 : 0;
+body = GT_GEM_LAYOUT[tier].map(([x, y, sc]) => `<g transform="translate(${x} ${y}) scale(${sc})">${GT_GEM}</g>`).join('')
++ (tier >= 2 ? '<path d="M54 6l1.5 3.5L59 11l-3.5 1.5L54 16l-1.5-3.5L49 11l3.5-1.5z" fill="#fef9c3"/>' : '');
+}
+return `<svg class="gt-offer-icon" viewBox="0 0 64 52" aria-hidden="true">${body}</svg>`;
+}
+
+function gtOfferHtml(o){
+const d = gtDict();
+const p = gtParseOffer(o.name);
+return `<button type="button" class="gt-offer" data-gt-offer="${escapeHtml(o.id)}" ${o.in_stock ? '' : 'disabled'}>
+${p.bonus ? `<span class="gt-offer-badge">${escapeHtml(d.gt_first_bonus)}</span>` : ''}
+<span class="gt-offer-check" aria-hidden="true">✓</span>
+${gtOfferIcon(o, p)}
+<span class="gt-offer-big${p.unit ? '' : ' is-text'}">${escapeHtml(p.big)}</span>
+${p.unit ? `<span class="gt-offer-unit">${escapeHtml(p.unit)}</span>` : ''}
+<span class="gt-offer-price">${o.in_stock ? formatCoins(o.price_uzs) : escapeHtml(d.gt_out_of_stock)}</span></button>`;
 }
 
 function loadTopupCatalog(){
@@ -104,9 +250,10 @@ return fetch(API_BASE + '/api/game_topup/catalog?' + params.toString())
 .then(data => {
 gtEnabled = !!data.enabled;
 gtTypes = data.types || [];
-if (!q) gtItems = data.items || [];
+const items = gtGroupItems(data.items || []);
+if (!q) gtItems = items;
 renderTopupStrip();
-renderTopupCatalog(data.items || []);
+renderTopupCatalog(items);
 })
 .catch(() => renderTopupCatalog(null));
 }
@@ -115,7 +262,8 @@ function renderTopupStrip(){
 const strip = document.getElementById('gtStrip');
 strip.hidden = !gtEnabled || !gtItems.length;
 if (strip.hidden) return;
-document.getElementById('gtStripRow').innerHTML = gtItems.slice(0, 8).map(c => gtTileHtml(c, true)).join('')
+const favFirst = gtItems.filter(c => gtIsFav(gtFavKey(c))).concat(gtItems.filter(c => !gtIsFav(gtFavKey(c))));
+document.getElementById('gtStripRow').innerHTML = favFirst.slice(0, 8).map(c => gtTileHtml(c, true)).join('')
 + `<button type="button" class="gt-chip-tile gt-chip-more" data-gt-open-all aria-label="${escapeHtml(gtDict().gt_all)}">→</button>`;
 }
 
@@ -165,6 +313,10 @@ genreBox.hidden = gtType === 'services' || present.length < 2;
 genreBox.innerHTML = [['', d.gt_genre_all]].concat(present.map(g => [g.id, d['gt_genre_' + g.id]])).map(([id, label]) =>
 `<button type="button" class="gt-genre${id === gtGenre ? ' active' : ''}" data-gt-genre="${id}">${escapeHtml(label)}</button>`).join('');
 let html = '';
+const favs = gtType || gtGenre ? [] : items.filter(c => gtIsFav(gtFavKey(c)));
+if (favs.length){
+html += `<div class="gt-section-title">${escapeHtml(d.gt_favorites)} <span class="gt-section-count">${favs.length}</span></div><div class="gt-games-grid">${favs.map(c => gtTileHtml(c, false)).join('')}</div>`;
+}
 if (services.length && !gtGenre){
 html += `<div class="gt-section-title">${escapeHtml(d.gt_section_services)}</div><div class="gt-svc-grid">${services.map(gtServiceCardHtml).join('')}</div>`;
 }
@@ -201,6 +353,7 @@ gtCurrent = null;
 gtOffer = null;
 document.getElementById('gtDetailHead').innerHTML = `<div class="skins-empty skins-empty-md">${d.loading}</div>`;
 document.getElementById('gtOffers').innerHTML = '';
+if (!gtGroupBySlug.has(slug) || document.getElementById('gtDetailView').hidden) document.getElementById('gtRegions').hidden = true;
 document.getElementById('gtFields').innerHTML = '';
 document.getElementById('gtStatus').textContent = '';
 document.getElementById('gtPayBox').hidden = true;
@@ -211,18 +364,19 @@ fetch(API_BASE + '/api/game_topup/category/' + encodeURIComponent(slug))
 gtCurrent = data;
 const c = data.category || {};
 const known = gtItems.find(x => x.slug === slug) || {};
-const name = c.name || known.name || slug;
+const group = gtGroupBySlug.get(slug);
+const name = group && group.gtVariants.length > 1 ? group.gtBase : (c.name || known.name || slug);
+const favKey = group ? group.gtKey : slug;
 const image = c.image || known.image;
 const cover = { slug: slug, name: name, image: image, type: c.type || known.type };
 document.getElementById('gtDetailHead').innerHTML = `
 ${image ? `<img class="gt-head-bg" src="${escapeHtml(image)}" alt="">` : ''}
+<button type="button" class="gt-fav-btn" id="gtFavBtn" data-gt-fav="${escapeHtml(favKey)}"></button>
 <div class="gt-head-inner">${gtCoverHtml(cover, 'gt-head-img')}
 <div><div class="gt-head-name">${escapeHtml(name)}</div><div class="gt-head-badges"><span class="gt-pill">⚡ ${escapeHtml(d.gt_fast)}</span><span class="gt-pill">🛡 ${escapeHtml(d.gt_refund_badge)}</span></div></div></div>`;
-document.getElementById('gtOffers').innerHTML = (data.offers || []).map(o =>
-`<button type="button" class="gt-offer" data-gt-offer="${escapeHtml(o.id)}" ${o.in_stock ? '' : 'disabled'}>
-<span class="gt-offer-check" aria-hidden="true">✓</span>
-<span class="gt-offer-name">${escapeHtml(o.name)}</span>
-<span class="gt-offer-price">${o.in_stock ? formatCoins(o.price_uzs) : escapeHtml(d.gt_out_of_stock)}</span></button>`).join('')
+gtPaintFavBtn(document.getElementById('gtFavBtn'), favKey);
+renderTopupRegions(slug);
+document.getElementById('gtOffers').innerHTML = (data.offers || []).map(gtOfferHtml).join('')
 || `<div class="skins-empty skins-empty-md">${d.gt_nothing_found}</div>`;
 renderTopupFields((data.fields || []));
 })
@@ -591,6 +745,10 @@ ${(o.codes || []).map(c => `<button type="button" class="gt-code" data-gt-copy="
 // ---------- события ----------
 
 document.addEventListener('click', (e) => {
+const favBtn = e.target.closest('[data-gt-fav]');
+if (favBtn){ gtToggleFav(favBtn.dataset.gtFav); return; }
+const region = e.target.closest('[data-gt-region]');
+if (region){ if (!region.classList.contains('active')) openTopupCategory(region.dataset.gtRegion); return; }
 const tile = e.target.closest('[data-gt-slug]');
 if (tile){ openTopupCategory(tile.dataset.gtSlug); return; }
 // Любое место полосы в «Маркете», кроме плитки игры, — весь каталог.
@@ -650,3 +808,5 @@ loadTopupCatalog();
 document.getElementById('gtStrip').addEventListener('keydown', (e) => {
 if ((e.key === 'Enter' || e.key === ' ') && e.target.id === 'gtStrip'){ e.preventDefault(); gtType = ''; gtGenre = ''; goToScreen('topup'); }
 });
+
+gtLoadFavs();
