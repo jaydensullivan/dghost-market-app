@@ -5472,3 +5472,21 @@ body.theme-light #gtPayBox{ background:rgba(255, 255, 255, .92); }
 .gt-genre{ flex:0 0 auto; padding:7px 12px; border-radius:999px; border:1px solid var(--red-dim); background:var(--surface); color:var(--muted); font-size:12px; font-weight:600; white-space:nowrap; cursor:pointer; }
 .gt-genre.active{ background:var(--cta-gradient); border-color:transparent; color:#fff; }
 .gt-section-count{ margin-left:4px; font-size:12px; font-weight:600; color:var(--muted); }
+
+/* Регионы одной игры, избранное, карточки пакетов */
+.gt-regions{ margin:-4px 0 14px; }
+.gt-regions[hidden]{ display:none; }
+.gt-regions-title{ margin-bottom:8px; font-size:13px; font-weight:600; color:var(--muted); }
+.gt-regions-row{ display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; }
+.gt-regions-row::-webkit-scrollbar{ display:none; }
+.gt-tile-regions{ position:absolute; top:8px; left:8px; z-index:2; padding:3px 7px; border-radius:999px; background:rgba(0, 0, 0, .55); color:#fff; font-size:11px; font-weight:700; backdrop-filter:blur(6px); }
+.gt-tile-fav{ position:absolute; top:6px; right:8px; z-index:2; color:#fbbf24; font-size:18px; text-shadow:0 1px 4px rgba(0, 0, 0, .6); }
+.gt-fav-btn{ position:absolute; top:10px; right:10px; z-index:2; width:40px; height:40px; border-radius:50%; border:1px solid rgba(255, 255, 255, .18); background:rgba(0, 0, 0, .4); color:#fff; font-size:20px; line-height:1; cursor:pointer; backdrop-filter:blur(6px); }
+.gt-fav-btn.on{ color:#fbbf24; border-color:rgba(251, 191, 36, .5); }
+.gt-offer{ align-items:center; justify-content:flex-start; gap:2px; min-height:150px; padding:16px 10px 14px; border-radius:18px; text-align:center; }
+.gt-offer-icon{ width:64px; height:52px; margin-bottom:8px; filter:drop-shadow(0 4px 10px rgba(56, 189, 248, .25)); }
+.gt-offer-big{ font-size:19px; font-weight:800; line-height:1.15; letter-spacing:-.01em; }
+.gt-offer-big.is-text{ font-size:16px; }
+.gt-offer-unit{ font-size:12px; color:var(--muted); }
+.gt-offer .gt-offer-price{ margin-top:auto; padding-top:8px; font-size:15px; font-weight:800; color:var(--red-glow); }
+.gt-offer-badge{ position:absolute; top:-1px; left:50%; transform:translateX(-50%); padding:2px 10px; border-radius:0 0 8px 8px; background:linear-gradient(90deg, #dc2626, #b91c1c); color:#fff; font-size:10px; font-weight:700; white-space:nowrap; }
