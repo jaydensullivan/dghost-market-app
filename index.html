@@ -16,7 +16,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=8"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=136">
+<link rel="stylesheet" href="app.css?v=137">
 <link rel="stylesheet" href="app-desktop.css?v=2" media="(min-width: 1280px)">
 </head>
 <body data-tab="shop">
@@ -1613,8 +1613,14 @@
 <div style="margin:-20px -20px 16px; padding:20px; border-radius:14px 14px 0 0; background-image:linear-gradient(180deg, rgba(10,7,16,0.55), rgba(10,7,16,0.92)), url('coins-scattered.webp'); background-size:cover; background-position:center 25%;">
 <h2 data-i18n="section_topup" style="margin:0;">Пополнить баланс</h2>
 </div>
-<div class="stars-topup" id="starsTopupBox" hidden>
-<div class="stars-topup-title" data-i18n="stars_topup_title">⭐ Пополнить через Telegram Stars</div>
+<div class="pay-acc" id="topupAcc">
+<div class="pay-acc-item" data-acc="stars" id="starsTopupBox" hidden>
+<button type="button" class="pay-acc-head" data-acc-toggle="stars" aria-expanded="false">
+<span class="pay-acc-icon" aria-hidden="true">⭐</span>
+<span class="pay-acc-text"><span class="pay-acc-name" data-i18n="stars_topup_title">Telegram Stars</span><span class="pay-acc-sub" data-i18n="acc_stars_sub">Мгновенно, без чека</span></span>
+<span class="pay-acc-chev" aria-hidden="true"></span>
+</button>
+<div class="pay-acc-body"><div class="pay-acc-inner">
 <div class="stars-topup-row">
 <input id="starsAmount" type="number" min="50" step="50" placeholder="100" inputmode="numeric">
 <button type="button" id="starsPayBtn" class="steam-link-btn" data-i18n="stars_topup_pay">Оплатить ⭐</button>
@@ -1627,8 +1633,15 @@
 </div>
 <div class="shop-hint" id="starsPreview"></div>
 <div class="edit-status" id="starsStatus"></div>
-<div class="stars-topup-or" data-i18n="stars_topup_or">или переводом на карту</div>
+</div></div>
 </div>
+<div class="pay-acc-item" data-acc="card">
+<button type="button" class="pay-acc-head" data-acc-toggle="card" aria-expanded="false">
+<span class="pay-acc-icon" aria-hidden="true">💳</span>
+<span class="pay-acc-text"><span class="pay-acc-name" data-i18n="acc_card_name">Перевод на карту</span><span class="pay-acc-sub" data-i18n="acc_card_sub">Humo / Uzcard, по чеку</span></span>
+<span class="pay-acc-chev" aria-hidden="true"></span>
+</button>
+<div class="pay-acc-body"><div class="pay-acc-inner">
 <div class="topup-details-box" id="topupDetailsBox">
 <div class="topup-details-text" id="topupDetailsText">Загрузка реквизитов...</div>
 <button type="button" id="topupCopyBtn" class="topup-copy-btn">
@@ -1647,11 +1660,14 @@
 <button type="button" class="quick-amount-btn" data-quick-amount="5000000">5 000 000</button>
 </div>
 </div>
+<button type="button" id="topupSubmitBtn" class="steam-link-btn" data-i18n="btn_paid">Я оплатил</button>
+<div class="edit-status" id="topupStatus"></div>
+</div></div>
+</div>
+</div>
 <div class="edit-actions">
 <button type="button" id="topupCancel" data-i18n="btn_cancel">Отмена</button>
-<button type="button" id="topupSubmitBtn" class="save" data-i18n="btn_paid">Я оплатил</button>
 </div>
-<div class="edit-status" id="topupStatus"></div>
 </div>
 </div>
 
@@ -2718,8 +2734,8 @@
 </div>
 </div>
 <script src="app-core.js?v=21"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=68', en: 'app-i18n-en.js?v=67' };</script>
-<script src="app-i18n.js?v=190"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=69', en: 'app-i18n-en.js?v=68' };</script>
+<script src="app-i18n.js?v=191"></script>
 <script src="app-navigation.js?v=31"></script>
 <script src="app-shop.js?v=52"></script>
 <script src="app-legal.js?v=3"></script>
@@ -2730,10 +2746,10 @@
 <script src="app-music.js?v=2"></script>
 <script src="app-steam.js?v=17"></script>
 <script src="app-logins.js?v=2"></script>
-<script src="app-topup.js?v=6"></script>
+<script src="app-topup.js?v=7"></script>
 <script src="app-gametopup.js?v=13"></script>
 <script src="app-history.js?v=12"></script>
-<script src="app-referral.js?v=9"></script>
+<script src="app-referral.js?v=10"></script>
 <script src="app-withdraw.js?v=40"></script>
 <script src="app-instant.js?v=1"></script>
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->

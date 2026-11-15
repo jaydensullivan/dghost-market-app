@@ -174,6 +174,10 @@ loadReferralInfo();
 function updateTopupMethods(){
 document.getElementById('topupDetailsBox').style.display = topupCardEnabled ? '' : 'none';
 topupSubmitBtn.style.display = topupCardEnabled ? '' : 'none';
+// Перевод на карту выключен — прячем весь пункт аккордеона.
+const cardItem = document.querySelector('#topupAcc [data-acc="card"]');
+if (cardItem) cardItem.hidden = !topupCardEnabled;
+if (typeof gtAccAutoOpen === 'function') gtAccAutoOpen();
 }
 
 topupSubmitBtn.addEventListener('click', () => {
