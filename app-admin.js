@@ -632,6 +632,43 @@ adminApiFetch('/api/admin/deals/' + refundBtn.dataset.refundDeal + '/refund', { 
 // ---------------- Пополнения игр (Arcadezy) ----------------
 
 let gtAdminMarkups = { types: {}, slugs: {} };
+let gtAdminPreview = [];
+let gtAdminRate = 0;
+let gtAdminMarkup = 0;
+
+// Предпросмотр: цена = себестоимость $ × курс × (1 + наценка), вверх до 100 сум —
+// как на сервере (price_uzs). Наценка: игры → раздела → общая, из полей формы.
+function gtAdminEffectiveMarkup(item){
+const num = v => (v === '' || v === null || v === undefined || isNaN(Number(v))) ? null : Number(v);
+const slug = num((gtAdminMarkups.slugs || {})[item.slug]);
+if (slug !== null) return slug;
+const typeInput = document.querySelector(`[data-gt-type-markup="${item.type}"]`);
+const type = typeInput ? num(typeInput.value.trim()) : null;
+if (type !== null) return type;
+const general = num(document.getElementById('adminGtMarkup').value.trim());
+return general !== null ? general : gtAdminMarkup;
+}
+
+function renderAdminGtPreview(){
+const dict = I18N[currentLang] || I18N.ru;
+const box = document.getElementById('adminGtPreview');
+const ownRate = Number(document.getElementById('adminGtRate').value) || 0;
+const rate = ownRate > 1000 ? ownRate : gtAdminRate;
+if (!gtAdminPreview.length || !rate){ box.innerHTML = `<div class="shop-hint">${escapeHtml(dict.admin_gt_preview_empty)}</div>`; return; }
+box.innerHTML = gtAdminPreview.map(item => {
+const m = gtAdminEffectiveMarkup(item);
+const cost = Math.round(item.usd * rate);
+const price = Math.ceil(item.usd * rate * (1 + m / 100) / 100) * 100;
+const profit = price - cost;
+return `<div class="gt-preview-row"><span class="gt-preview-name">${escapeHtml(item.name)}<small>${escapeHtml(dict.admin_gt_preview_cost.replace('{cost}', formatCoins(cost)).replace('{m}', String(m)))}</small></span>`
++ `<span class="gt-preview-price"><b>${escapeHtml(formatCoins(price))}</b><small class="${profit >= 0 ? 'ok' : 'bad'}">${profit >= 0 ? '+' : '−'}${escapeHtml(formatCoins(Math.abs(profit)))}</small></span></div>`;
+}).join('');
+}
+
+// Пересчёт на каждое изменение наценки или курса — ещё до «Сохранить».
+document.getElementById('adminGameTopupSection').addEventListener('input', (e) => {
+if (e.target.matches('#adminGtMarkup, #adminGtRate, [data-gt-type-markup]')) renderAdminGtPreview();
+});
 let gtAdminCategories = [];
 
 function renderAdminGtSlugMarkups(){
@@ -641,6 +678,7 @@ document.getElementById('adminGtSlugMarkups').innerHTML = rows.length ? rows.map
 const c = gtAdminCategories.find(x => x.slug === slug);
 return `<div class="gt-adm-row"><span>${escapeHtml(c ? c.name : slug)}</span><b>${escapeHtml(String(v))}%</b><button type="button" class="gt-adm-del" data-gt-slug-del="${escapeHtml(slug)}" aria-label="✕">✕</button></div>`;
 }).join('') : `<div class="shop-hint">${escapeHtml(dict.admin_gt_no_slug_markups)}</div>`;
+renderAdminGtPreview();
 }
 
 document.getElementById('adminGtSlugAdd').addEventListener('click', () => {
@@ -654,7 +692,6 @@ document.getElementById('adminGtSlugPick').value = '';
 document.getElementById('adminGtSlugValue').value = '';
 gtAdminPicked = null;
 renderAdminGtSlugMarkups();
-fillAdminGtpGames();
 });
 
 // Поиск игры: свой список под полем (у iPhone подсказки — только 3 над клавиатурой).
@@ -707,6 +744,12 @@ gtAdminCategories = d.categories || [];
 document.getElementById('adminGtTypeMarkups').innerHTML = GT_ADMIN_TYPES.map(t =>
 `<label class="gt-adm-cell"><span>${escapeHtml(dict['gt_type_' + t] || t)}</span><input type="number" min="0" max="100" step="0.5" data-gt-type-markup="${t}" value="${gtAdminMarkups.types[t] != null ? gtAdminMarkups.types[t] : ''}" placeholder="${escapeHtml(String(d.markup))}"></label>`).join('');
 renderAdminGtSlugMarkups();
+// Списки игр (промокоды) и предпросмотр цен — после того, как пришёл каталог.
+fillAdminGtpGames();
+gtAdminPreview = d.preview || [];
+gtAdminRate = d.rate_effective || 0;
+gtAdminMarkup = Number(d.markup) || 0;
+renderAdminGtPreview();
 document.getElementById('adminGtTypes').innerHTML = GT_ADMIN_TYPES.map(t =>
 `<label class="admin-perm-chip"><input type="checkbox" data-gt-admin-type="${t}" ${(d.types || []).includes(t) ? 'checked' : ''}> ${escapeHtml(dict['gt_type_' + t] || t)}</label>`).join('');
 const o = d.orders_30d || {};
