@@ -5457,3 +5457,11 @@ body.theme-light #gtPayBox{ background:rgba(255, 255, 255, .92); }
 .gtp-row small{ color:var(--muted); }
 .gtp-row.off{ opacity:.55; }
 #adminGtpCode{ text-transform:uppercase; }
+.gt-preview{ display:flex; flex-direction:column; gap:6px; }
+.gt-preview-row{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:8px 10px; border-radius:12px; border:1px solid var(--red-dim); background:var(--surface); }
+.gt-preview-name{ display:flex; flex-direction:column; gap:2px; min-width:0; font-size:13px; font-weight:600; }
+.gt-preview-name small{ font-size:11px; font-weight:400; color:var(--muted); }
+.gt-preview-price{ display:flex; flex-direction:column; align-items:flex-end; flex:0 0 auto; font-size:14px; }
+.gt-preview-price small{ font-size:11px; }
+.gt-preview-price small.ok{ color:#4ade80; }
+.gt-preview-price small.bad{ color:#f87171; }
