@@ -108,6 +108,7 @@ fetch(API_BASE + '/api/stars/info')
 const can = !!(d.enabled && tg && tg.openInvoice && tg.initData);
 starsInfo = can ? d : null;
 document.getElementById('starsTopupBox').hidden = !can;
+if (can) document.getElementById('openTopupBtn').style.display = '';
 gtAccAutoOpen();
 if (can) document.getElementById('starsAmount').min = d.min;
 renderStarsPreview();
