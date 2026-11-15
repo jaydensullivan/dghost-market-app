@@ -157,6 +157,7 @@ document.getElementById('gtOffers').innerHTML = '';
 document.getElementById('gtFields').innerHTML = '';
 document.getElementById('gtStatus').textContent = '';
 document.getElementById('gtPayBox').hidden = true;
+document.getElementById('gtCardBox').hidden = true;
 fetch(API_BASE + '/api/game_topup/category/' + encodeURIComponent(slug))
 .then(r => r.ok ? r.json() : Promise.reject(r.status))
 .then(data => {
@@ -320,8 +321,92 @@ const openTopup = document.getElementById('openTopupBtn');
 topupBtn.hidden = !(missing > 0 && openTopup && openTopup.style.display !== 'none');
 topupBtn.textContent = d.gt_topup_missing.replace('{missing}', formatCoins(Math.max(missing, 0)));
 payBtn.disabled = missing > 0;
+// Баланса не хватает — оплата картой с чеком (если включена П2П-оплата лотов).
+const cardBtn = document.getElementById('gtCardBtn');
+cardBtn.hidden = !(missing > 0 && typeof directP2pPurchaseEnabled !== 'undefined' && directP2pPurchaseEnabled);
+cardBtn.textContent = d.gt_card_pay.replace('{price}', formatCoins(gtOffer.price_uzs));
+// Не хватает и есть оплата картой — серую «Оплатить с баланса» прячем.
+payBtn.hidden = !cardBtn.hidden;
 })
 .catch(() => {});
+}
+
+// ---------- оплата картой ----------
+let gtCardOrderId = null;
+let gtCardPhoto = null;
+
+function startTopupCardPayment(){
+const d = gtDict();
+if (gtBusy || !gtCurrent || !gtOffer || !tg || !tg.initData) return;
+const status = document.getElementById('gtStatus');
+gtBusy = true;
+status.textContent = d.gt_paying;
+fetch(API_BASE + '/api/game_topup/order', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData, slug: gtCurrent.category.slug, offer_id: gtOffer.id, fields: gtCollectFields(), pay: 'card' }),
+})
+.then(r => r.json().then(data => ({ ok: r.ok, data })))
+.then(({ ok, data }) => {
+if (!ok){ status.textContent = gtErrorText(data.error); return; }
+status.textContent = '';
+gtCardOrderId = data.order.id;
+gtCardPhoto = null;
+document.getElementById('gtPayBox').hidden = true;
+const box = document.getElementById('gtCardBox');
+box.hidden = false;
+document.getElementById('gtCardAmount').textContent = formatCoins(data.order.price_uzs);
+document.getElementById('gtCardDetails').textContent = (data.card_details || '') + '  📋';
+document.getElementById('gtCardDetails').dataset.copy = data.card_details || '';
+document.getElementById('gtCardHint').textContent = d.gt_card_hint.replace('{hours}', data.expires_hours || 2);
+document.getElementById('gtCardFileLabel').textContent = d.gt_card_attach;
+document.getElementById('gtCardStatus').textContent = '';
+box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+})
+.catch(() => { status.textContent = d.gt_err_generic; })
+.finally(() => { gtBusy = false; });
+}
+
+function gtCompressImage(file){
+return new Promise((resolve, reject) => {
+const img = new Image();
+const url = URL.createObjectURL(file);
+img.onload = () => {
+const scale = Math.min(1, 1600 / Math.max(img.width, img.height));
+const c = document.createElement('canvas');
+c.width = Math.round(img.width * scale);
+c.height = Math.round(img.height * scale);
+c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+URL.revokeObjectURL(url);
+resolve(c.toDataURL('image/jpeg', 0.85));
+};
+img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('image')); };
+img.src = url;
+});
+}
+
+function sendTopupCardReceipt(){
+const d = gtDict();
+const status = document.getElementById('gtCardStatus');
+const payer = document.getElementById('gtCardPayer').value.trim();
+if (payer.split(/\s+/).length < 2){ status.textContent = d.gt_card_need_payer; return; }
+if (!gtCardPhoto){ status.textContent = d.gt_card_need_photo; return; }
+if (gtBusy) return;
+gtBusy = true;
+status.textContent = d.gt_card_sending;
+fetch(API_BASE + '/api/game_topup/orders/' + gtCardOrderId + '/receipt', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData, payer_name: payer, photo_base64: gtCardPhoto }),
+})
+.then(r => r.json().then(data => ({ ok: r.ok, data })))
+.then(({ ok, data }) => {
+if (!ok){ status.textContent = d['gt_card_err_' + data.error] || d.gt_err_generic; return; }
+status.textContent = d.gt_card_sent;
+setTimeout(() => openTopupOrders(), 1500);
+})
+.catch(() => { status.textContent = d.gt_err_generic; })
+.finally(() => { gtBusy = false; });
 }
 
 function gtErrorText(code){
@@ -395,7 +480,7 @@ setDealsSeg('topup');
 
 function gtStatusBadge(s){
 const d = gtDict();
-const cls = s === 'completed' ? 'ok' : (s === 'refunded' ? 'bad' : 'wait');
+const cls = s === 'completed' ? 'ok' : (['refunded', 'rejected', 'expired'].includes(s) ? 'bad' : 'wait');
 return `<span class="gt-badge gt-badge-${cls}">${escapeHtml(d['gt_status_' + s] || d.gt_status_processing)}</span>`;
 }
 
@@ -447,6 +532,20 @@ navigator.clipboard.writeText(copy.dataset.gtCopy).then(() => showToast(gtDict()
 });
 
 document.getElementById('gtPayBtn').addEventListener('click', payTopup);
+document.getElementById('gtCardBtn').addEventListener('click', startTopupCardPayment);
+document.getElementById('gtCardSendBtn').addEventListener('click', sendTopupCardReceipt);
+document.getElementById('gtCardDetails').addEventListener('click', (e) => {
+const text = e.currentTarget.dataset.copy || '';
+if (text && navigator.clipboard) navigator.clipboard.writeText(text.replace(/[^\d]/g, '').length >= 16 ? (text.match(/\d[\d ]{14,}\d/) || [text])[0].replace(/\s/g, '') : text).then(() => showToast(gtDict().gt_copied)).catch(() => {});
+});
+document.getElementById('gtCardFile').addEventListener('change', (e) => {
+const file = e.target.files && e.target.files[0];
+if (!file) return;
+gtCompressImage(file).then(data => {
+gtCardPhoto = data;
+document.getElementById('gtCardFileLabel').textContent = '✅ ' + gtDict().gt_card_attached;
+}).catch(() => showToast(gtDict().gt_err_generic));
+});
 document.getElementById('gtTopupBtn').addEventListener('click', () => document.getElementById('openTopupBtn').click());
 document.getElementById('gtBackBtn').addEventListener('click', () => {
 if (!document.getElementById('gtDetailView').hidden) showTopupView(false);
