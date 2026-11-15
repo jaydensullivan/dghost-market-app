@@ -5404,7 +5404,7 @@ button.brand-logo{ width:44px; height:44px; }
 .gt-offer.active .gt-offer-price{ color:var(--red-glow); }
 .gt-check-btn{ margin-top:4px; }
 .gt-warn{ margin:12px 0; padding:12px; border-radius:14px; border:1px solid rgba(239, 68, 68, .55); background:rgba(239, 68, 68, .1); font-size:13px; line-height:1.35; }
-#gtPayBox{ position:sticky; bottom:84px; z-index:5; margin-top:8px; padding:12px; border-radius:16px; background:rgba(23, 16, 34, .92); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1px solid var(--red-dim); }
+#gtPayBox{ position:relative; margin-top:8px; padding:12px; border-radius:16px; background:rgba(23, 16, 34, .92); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border:1px solid var(--red-dim); }
 #gtPayBtn{ width:100%; min-height:50px; border:none; border-radius:14px; background:var(--cta-gradient); color:#fff; font-size:16px; font-weight:800; box-shadow:0 6px 22px rgba(123, 44, 255, .35); }
 #gtPayBtn:disabled{ opacity:.5; box-shadow:none; }
 .gt-order{ padding:12px; border-radius:14px; border:1px solid var(--red-dim); background:var(--surface); margin-bottom:10px; }
@@ -5445,3 +5445,15 @@ body.theme-light #gtPayBox{ background:rgba(255, 255, 255, .92); }
 .gt-card-amount{ font-size:26px; font-weight:800; margin:4px 0 10px; }
 .gt-card-details{ display:block; width:100%; min-height:52px; padding:12px; margin-bottom:6px; border-radius:12px; border:1px dashed var(--accent); background:rgba(123, 44, 255, .08); color:var(--text); font-size:15px; font-weight:700; letter-spacing:.3px; text-align:left; white-space:pre-line; cursor:pointer; }
 .gt-card-file{ display:flex; align-items:center; justify-content:center; width:100%; margin-top:8px; cursor:pointer; }
+.gt-promo-row{ display:grid; grid-template-columns:1fr auto; gap:8px; }
+.gt-promo-row input{ width:100%; min-height:44px; padding:10px 12px; border-radius:10px; border:1px solid var(--red-dim); background:rgba(255,255,255,0.03); color:var(--silver); font-size:14px; text-transform:uppercase; }
+.gt-promo-row .steam-link-btn{ margin:0; min-height:44px; padding:0 14px; }
+.gt-promo-result{ min-height:18px; margin-top:6px; font-size:13px; color:var(--muted); }
+.gt-promo-result.ok{ color:#4ade80; }
+.gt-promo-result.bad{ color:#f87171; }
+.gt-promo-result s{ color:var(--muted); }
+.gt-adm-cell select, .gt-adm-inline select{ min-height:44px; padding:10px 8px; border-radius:4px; border:1px solid var(--red-dim); background:var(--surface); color:var(--silver); font-size:14px; width:100%; }
+.gt-adm-inline{ display:grid; grid-template-columns:1fr 70px; gap:6px; }
+.gtp-row small{ color:var(--muted); }
+.gtp-row.off{ opacity:.55; }
+#adminGtpCode{ text-transform:uppercase; }

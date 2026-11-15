@@ -652,6 +652,7 @@ document.getElementById('adminGtSlugPick').value = '';
 document.getElementById('adminGtSlugValue').value = '';
 gtAdminPicked = null;
 renderAdminGtSlugMarkups();
+fillAdminGtpGames();
 });
 
 // Поиск игры: свой список под полем (у iPhone подсказки — только 3 над клавиатурой).
@@ -746,6 +747,82 @@ loadAdminGameTopup();
 if (typeof loadTopupCatalog === 'function') loadTopupCatalog();
 })
 .catch(err => { status.textContent = err.message; });
+});
+
+// ---------------- Промокоды на пополнения ----------------
+
+function gtpScopeText(p){
+const dict = I18N[currentLang] || I18N.ru;
+if (p.scope_slug){
+const c = gtAdminCategories.find(x => x.slug === p.scope_slug);
+return c ? c.name : p.scope_slug;
+}
+return p.scope_type ? (dict['gt_type_' + p.scope_type] || p.scope_type) : dict.admin_gtp_all;
+}
+
+function loadAdminGtPromos(){
+const dict = I18N[currentLang] || I18N.ru;
+const typeSel = document.getElementById('adminGtpScopeType');
+if (!typeSel.options.length){
+typeSel.innerHTML = `<option value="">${escapeHtml(dict.admin_gtp_all)}</option>` + GT_ADMIN_TYPES.map(t => `<option value="${t}">${escapeHtml(dict['gt_type_' + t] || t)}</option>`).join('');
+}
+fillAdminGtpGames();
+adminApiFetch('/api/admin/game_topup/settings/promos')
+.then(d => {
+const items = d.items || [];
+document.getElementById('adminGtPromoList').innerHTML = items.length ? items.map(p => {
+const expired = new Date(p.expires_at) < new Date();
+const value = p.kind === 'percent' ? p.value + '%' : formatCoins(p.value);
+const uses = p.uses + (p.max_uses ? ' / ' + p.max_uses : '');
+const state = !p.active ? dict.admin_gtp_off : (expired ? dict.admin_gtp_expired : dict.admin_gtp_until.replace('{date}', new Date(p.expires_at).toLocaleDateString()));
+return `<div class="gt-adm-row gtp-row${p.active && !expired ? '' : ' off'}"><span><b>${escapeHtml(p.code)}</b> −${escapeHtml(value)} · ${escapeHtml(gtpScopeText(p))}<br><small>${escapeHtml(state)} · ${escapeHtml(dict.admin_gtp_uses)}: ${escapeHtml(uses)}</small></span>`
++ `<button type="button" class="gt-recip-unlink" data-gtp-toggle="${escapeHtml(p.code)}" data-gtp-active="${p.active ? 1 : 0}">${escapeHtml(p.active ? dict.admin_gtp_disable : dict.admin_gtp_enable)}</button></div>`;
+}).join('') : `<div class="shop-hint">${escapeHtml(dict.admin_gtp_empty)}</div>`;
+})
+.catch(() => {});
+}
+
+function fillAdminGtpGames(){
+const dict = I18N[currentLang] || I18N.ru;
+const type = document.getElementById('adminGtpScopeType').value;
+const games = gtAdminCategories.filter(c => !type || c.type === type);
+document.getElementById('adminGtpScopeSlug').innerHTML = `<option value="">${escapeHtml(dict.admin_gtp_any_game)}</option>`
++ games.map(c => `<option value="${escapeHtml(c.slug)}">${escapeHtml(c.name)}</option>`).join('');
+}
+
+document.getElementById('adminGtpScopeType').addEventListener('change', fillAdminGtpGames);
+
+document.getElementById('adminGtpCreateBtn').addEventListener('click', () => {
+const dict = I18N[currentLang] || I18N.ru;
+const status = document.getElementById('adminGtpStatus');
+const slug = document.getElementById('adminGtpScopeSlug').value;
+const game = gtAdminCategories.find(c => c.slug === slug);
+const body = {
+code: document.getElementById('adminGtpCode').value.trim().toUpperCase(),
+kind: document.getElementById('adminGtpKind').value,
+value: Number(document.getElementById('adminGtpValue').value),
+scope_type: game ? game.type : (document.getElementById('adminGtpScopeType').value || null),
+scope_slug: slug || null,
+days: Number(document.getElementById('adminGtpDays').value) || 7,
+max_uses: document.getElementById('adminGtpMax').value.trim() || null,
+per_user: document.getElementById('adminGtpOnce').checked ? 1 : 0,
+};
+adminApiFetch('/api/admin/game_topup/settings/promos', { method: 'POST', body: body })
+.then(() => {
+status.textContent = dict.admin_gtp_created.replace('{code}', body.code);
+document.getElementById('adminGtpCode').value = '';
+document.getElementById('adminGtpValue').value = '';
+loadAdminGtPromos();
+})
+.catch(err => { status.textContent = err.message; });
+});
+
+document.getElementById('adminGtPromoList').addEventListener('click', (e) => {
+const b = e.target.closest('[data-gtp-toggle]');
+if (!b) return;
+adminApiFetch('/api/admin/game_topup/settings/promos', { method: 'POST', body: { code: b.dataset.gtpToggle, active: b.dataset.gtpActive !== '1' } })
+.then(() => loadAdminGtPromos())
+.catch(err => showErrorToast(err));
 });
 
 // ---------------- Холды ----------------
@@ -1595,7 +1672,8 @@ document.getElementById('adminCommissionSale').textContent = formatCoins(data.co
 document.getElementById('adminCommissionWithdraw').textContent = formatCoins(data.commission_withdraw_total || 0);
 document.getElementById('adminFeatureTogglesSection').style.display = data.is_owner ? '' : 'none';
 document.getElementById('adminGameTopupSection').style.display = data.is_owner ? '' : 'none';
-if (data.is_owner) loadAdminGameTopup();
+document.getElementById('adminGtPromoSection').style.display = data.is_owner ? '' : 'none';
+if (data.is_owner){ loadAdminGameTopup(); loadAdminGtPromos(); }
 document.getElementById('toggleTopupCard').checked = data.topup_card_enabled !== false;
 document.getElementById('toggleWithdrawCard').checked = data.withdraw_card_enabled !== false;
 document.getElementById('toggleDirectP2pPurchase').checked = data.direct_p2p_purchase_enabled === true;
