@@ -108,6 +108,7 @@ fetch(API_BASE + '/api/stars/info')
 const can = !!(d.enabled && tg && tg.openInvoice && tg.initData);
 starsInfo = can ? d : null;
 document.getElementById('starsTopupBox').hidden = !can;
+gtAccAutoOpen();
 if (can) document.getElementById('starsAmount').min = d.min;
 renderStarsPreview();
 })
@@ -147,3 +148,28 @@ status.textContent = d.stars_topup_failed;
 });
 
 loadStarsInfo();
+
+// ---------- аккордеон способов оплаты ----------
+// Нажал на один — он раскрывается, другой закрывается; повторное нажатие
+// закрывает. Если способ один (Stars выключены) — он открыт сразу.
+function setTopupAcc(name){
+document.querySelectorAll('#topupAcc .pay-acc-item').forEach(item => {
+const open = item.dataset.acc === name;
+item.classList.toggle('open', open);
+item.querySelector('.pay-acc-head').setAttribute('aria-expanded', open ? 'true' : 'false');
+});
+}
+let topupAccChosen = false;
+function gtAccAutoOpen(){
+if (topupAccChosen) return;
+const visible = [...document.querySelectorAll('#topupAcc .pay-acc-item')].filter(i => !i.hidden);
+setTopupAcc(visible.length === 1 ? visible[0].dataset.acc : '');
+}
+document.getElementById('topupAcc').addEventListener('click', (e) => {
+const head = e.target.closest('[data-acc-toggle]');
+if (!head) return;
+const item = head.closest('.pay-acc-item');
+topupAccChosen = true;
+setTopupAcc(item.classList.contains('open') ? '' : head.dataset.accToggle);
+});
+gtAccAutoOpen();

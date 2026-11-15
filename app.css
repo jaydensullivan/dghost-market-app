@@ -5503,11 +5503,31 @@ body.theme-light #gtPayBox{ background:rgba(255, 255, 255, .92); }
 .gt-adm-cell[hidden]{ display:none; }
 
 /* Пополнение баланса Telegram Stars */
-.stars-topup{ margin-bottom:14px; padding:14px; border-radius:14px; border:1px solid rgba(251, 191, 36, .35); background:rgba(251, 191, 36, .06); }
-.stars-topup[hidden]{ display:none; }
-.stars-topup-title{ font-size:14px; font-weight:800; margin-bottom:10px; }
 .stars-topup-row{ display:flex; gap:8px; }
 .stars-topup-row input{ flex:1 1 auto; min-width:0; padding:10px 12px; border-radius:4px; border:1px solid var(--red-dim); background:rgba(255,255,255,0.03); color:var(--silver); font-family:'Inter', sans-serif; font-size:16px; }
 .stars-topup-row input:focus{ outline:none; border-color:var(--red); }
 .stars-topup-row .steam-link-btn{ flex:0 0 auto; width:auto; padding-left:16px; padding-right:16px; }
-.stars-topup-or{ margin-top:12px; text-align:center; font-size:12px; color:var(--muted); }
+
+/* Окно пополнения: способы оплаты аккордеоном — открыт только один */
+.edit-overlay{ overflow-x:hidden; }
+.edit-sheet{ max-width:min(420px, 100%); overflow-x:hidden; touch-action:pan-y; }
+.pay-acc{ display:flex; flex-direction:column; gap:10px; margin-bottom:12px; }
+.pay-acc-item{ border-radius:14px; border:1px solid var(--red-dim); background:rgba(255,255,255,0.02); transition:border-color .25s ease, background .25s ease; }
+.pay-acc-item[hidden]{ display:none; }
+.pay-acc-item[data-acc="stars"].open{ border-color:rgba(251, 191, 36, .45); background:rgba(251, 191, 36, .05); }
+.pay-acc-item[data-acc="card"].open{ border-color:var(--red); background:rgba(123, 44, 255, .06); }
+.pay-acc-head{ display:flex; align-items:center; gap:12px; width:100%; min-height:60px; padding:12px 14px; border:none; background:none; color:var(--text); cursor:pointer; text-align:left; -webkit-tap-highlight-color:transparent; }
+.pay-acc-head:active{ transform:scale(.99); }
+.pay-acc-icon{ flex:0 0 auto; display:flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:10px; background:rgba(255,255,255,0.06); font-size:18px; }
+.pay-acc-text{ flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:2px; }
+.pay-acc-name{ font-size:15px; font-weight:800; }
+.pay-acc-sub{ font-size:12px; color:var(--muted); }
+.pay-acc-chev{ flex:0 0 auto; width:10px; height:10px; margin-right:4px; border-right:2px solid var(--muted); border-bottom:2px solid var(--muted); transform:rotate(45deg) translateY(-3px); transition:transform .3s ease; }
+.pay-acc-item.open .pay-acc-chev{ transform:rotate(-135deg) translateY(-3px); }
+.pay-acc-body{ display:grid; grid-template-rows:0fr; transition:grid-template-rows .35s cubic-bezier(.2, .8, .2, 1); }
+.pay-acc-item.open .pay-acc-body{ grid-template-rows:1fr; }
+.pay-acc-inner{ min-height:0; overflow:hidden; padding:0 14px; opacity:0; transform:translateY(-6px); transition:opacity .25s ease, transform .3s ease, padding .35s ease; }
+.pay-acc-item.open .pay-acc-inner{ padding:0 14px 14px; opacity:1; transform:none; }
+.pay-acc-inner .topup-details-box{ margin-top:0; }
+#topupSubmitBtn{ width:100%; margin-top:12px; }
+@media (prefers-reduced-motion: reduce){ .pay-acc-body, .pay-acc-inner, .pay-acc-chev{ transition:none; } }
