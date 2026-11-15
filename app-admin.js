@@ -628,6 +628,37 @@ adminApiFetch('/api/admin/deals/' + refundBtn.dataset.refundDeal + '/refund', { 
 });
 
 // ---------------- Пополнения игр (Arcadezy) ----------------
+
+let gtAdminMarkups = { types: {}, slugs: {} };
+let gtAdminCategories = [];
+
+function renderAdminGtSlugMarkups(){
+const dict = I18N[currentLang] || I18N.ru;
+const rows = Object.entries(gtAdminMarkups.slugs || {});
+document.getElementById('adminGtSlugMarkups').innerHTML = rows.length ? rows.map(([slug, v]) => {
+const c = gtAdminCategories.find(x => x.slug === slug);
+return `<div class="gt-adm-row"><span>${escapeHtml(c ? c.name : slug)}</span><b>${escapeHtml(String(v))}%</b><button type="button" class="gt-adm-del" data-gt-slug-del="${escapeHtml(slug)}" aria-label="✕">✕</button></div>`;
+}).join('') : `<div class="shop-hint">${escapeHtml(dict.admin_gt_no_slug_markups)}</div>`;
+}
+
+document.getElementById('adminGtSlugAdd').addEventListener('click', () => {
+const dict = I18N[currentLang] || I18N.ru;
+const name = document.getElementById('adminGtSlugPick').value.trim();
+const value = document.getElementById('adminGtSlugValue').value.trim();
+const c = gtAdminCategories.find(x => x.name === name || x.slug === name);
+if (!c || value === ''){ showToast(dict.admin_gt_pick_hint); return; }
+gtAdminMarkups.slugs = Object.assign({}, gtAdminMarkups.slugs, { [c.slug]: Number(value) });
+document.getElementById('adminGtSlugPick').value = '';
+document.getElementById('adminGtSlugValue').value = '';
+renderAdminGtSlugMarkups();
+});
+
+document.getElementById('adminGtSlugMarkups').addEventListener('click', (e) => {
+const del = e.target.closest('[data-gt-slug-del]');
+if (!del) return;
+delete gtAdminMarkups.slugs[del.dataset.gtSlugDel];
+renderAdminGtSlugMarkups();
+});
 // Только владелец: включить/выключить раздел, наценка, курс, категории.
 
 const GT_ADMIN_TYPES = ['steam', 'telegram', 'topup', 'giftcard', 'gamekey'];
@@ -643,6 +674,12 @@ document.getElementById('adminGtRate').placeholder = d.rate_effective ? String(M
 document.getElementById('adminGtRateNow').textContent = d.rate_effective
 ? dict.admin_gt_rate_now.replace('{rate}', formatCoins(Math.round(d.rate_effective))).replace('{source}', dict['admin_gt_rate_src_' + (d.rate_source || 'cbu')] || '')
 : '';
+gtAdminMarkups = d.markups || { types: {}, slugs: {} };
+gtAdminCategories = d.categories || [];
+document.getElementById('adminGtTypeMarkups').innerHTML = GT_ADMIN_TYPES.map(t =>
+`<label class="gt-adm-cell"><span>${escapeHtml(dict['gt_type_' + t] || t)}</span><input type="number" min="0" max="100" step="0.5" data-gt-type-markup="${t}" value="${gtAdminMarkups.types[t] != null ? gtAdminMarkups.types[t] : ''}" placeholder="${escapeHtml(String(d.markup))}"></label>`).join('');
+document.getElementById('adminGtSlugList').innerHTML = gtAdminCategories.map(c => `<option value="${escapeHtml(c.name)}">`).join('');
+renderAdminGtSlugMarkups();
 document.getElementById('adminGtTypes').innerHTML = GT_ADMIN_TYPES.map(t =>
 `<label class="admin-perm-chip"><input type="checkbox" data-gt-admin-type="${t}" ${(d.types || []).includes(t) ? 'checked' : ''}> ${escapeHtml(dict['gt_type_' + t] || t)}</label>`).join('');
 const o = d.orders_30d || {};
@@ -673,6 +710,10 @@ enabled: document.getElementById('adminGtEnabled').checked,
 markup: Number(document.getElementById('adminGtMarkup').value) || 0,
 rate: document.getElementById('adminGtRate').value.trim(),
 types: [...document.querySelectorAll('[data-gt-admin-type]:checked')].map(i => i.dataset.gtAdminType),
+markups: {
+types: Object.fromEntries([...document.querySelectorAll('[data-gt-type-markup]')].filter(i => i.value.trim() !== '').map(i => [i.dataset.gtTypeMarkup, Number(i.value)])),
+slugs: gtAdminMarkups.slugs || {},
+},
 };
 adminApiFetch('/api/admin/game_topup/settings', { method: 'POST', body: body })
 .then(() => {

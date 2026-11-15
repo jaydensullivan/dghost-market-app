@@ -5422,3 +5422,13 @@ body.theme-light #gtPayBox{ background:rgba(255, 255, 255, .92); }
 .gt-recip-unlink{ flex:0 0 auto; min-height:36px; padding:0 12px; border-radius:10px; border:1px solid var(--red-dim); background:none; color:var(--muted); font-size:12px; cursor:pointer; }
 .gt-recip-save{ width:100%; margin:2px 0 8px; }
 .gt-recip-saved[hidden], .gt-recip-save[hidden], #gtFieldWrap[hidden]{ display:none; }
+.gt-adm-grid{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; }
+.gt-adm-cell{ display:flex; flex-direction:column; gap:4px; font-size:12px; color:var(--muted); }
+.gt-adm-cell input, .gt-adm-add input{ min-height:44px; }
+.gt-adm-row{ display:flex; align-items:center; gap:10px; min-height:44px; padding:6px 10px; margin-bottom:6px; border-radius:12px; border:1px solid var(--red-dim); background:var(--surface); font-size:13px; }
+.gt-adm-row span{ flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.gt-adm-del{ width:36px; height:36px; border:none; border-radius:10px; background:var(--red-dim); color:var(--text); cursor:pointer; }
+.gt-adm-add{ display:grid; grid-template-columns:1fr 80px 52px; gap:8px; align-items:center; margin-top:6px; }
+.gt-adm-add .steam-link-btn{ margin:0; min-height:44px; padding:0; }
+.gt-adm-cell input, .gt-adm-add input{ width:100%; padding:10px 12px; border-radius:4px; border:1px solid var(--red-dim); background:rgba(255,255,255,0.03); color:var(--silver); font-family:'Inter', sans-serif; font-size:14px; }
+.gt-adm-cell input:focus, .gt-adm-add input:focus{ outline:none; border-color:var(--red); }
