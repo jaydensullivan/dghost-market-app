@@ -127,7 +127,7 @@ const d = starsDict();
 const status = document.getElementById('starsStatus');
 const stars = parseInt(document.getElementById('starsAmount').value, 10) || 0;
 if (!starsInfo || stars < starsInfo.min || stars > starsInfo.max){
-status.textContent = d.stars_topup_bad_amount.replace('{min}', starsInfo ? starsInfo.min : 50);
+status.textContent = d.stars_topup_bad_amount.replace('{min}', starsInfo ? starsInfo.min : 1);
 return;
 }
 status.textContent = d.loading;
