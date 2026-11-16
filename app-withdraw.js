@@ -87,6 +87,10 @@ return (I18N[currentLang] || I18N.ru).withdraw_single_limit.replace('{sum}', for
 if (data.error === 'daily_limit'){
 return (I18N[currentLang] || I18N.ru).withdraw_daily_limit.replace('{sum}', formatCoins(data.limit));
 }
+if (data.error === 'stars_hold'){
+const until = data.unlock_at ? new Date(data.unlock_at).toLocaleDateString() : '—';
+return (I18N[currentLang] || I18N.ru).withdraw_stars_hold.replace('{days}', data.hold_days || 21).replace('{sum}', formatCoins(data.withdrawable || 0)).replace('{date}', until);
+}
 return null;
 }
 
