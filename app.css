@@ -5449,6 +5449,9 @@ body.theme-light #gtPayBox{ background:rgba(255, 255, 255, .92); }
 .gt-card-amount{ font-size:26px; font-weight:800; margin:4px 0 10px; }
 .gt-card-details{ display:block; width:100%; min-height:52px; padding:12px; margin-bottom:6px; border-radius:12px; border:1px dashed var(--accent); background:rgba(123, 44, 255, .08); color:var(--text); font-size:15px; font-weight:700; letter-spacing:.3px; text-align:left; white-space:pre-line; cursor:pointer; }
 .topup-receipt-btn{ display:flex; align-items:center; justify-content:center; gap:10px; width:100%; margin:4px 0 10px; cursor:pointer; }
+.topup-receipt-btn.need{ border-color:#f87171; animation:topupShake .4s; }
+@keyframes topupShake{ 25%{ transform:translateX(-5px); } 75%{ transform:translateX(5px); } }
+@media (prefers-reduced-motion: reduce){ .topup-receipt-btn.need{ animation:none; } }
 .topup-receipt-btn.attached{ border-color:rgba(74,222,128,.55); color:#86efac; }
 .topup-receipt-thumb{ width:32px; height:32px; object-fit:cover; border-radius:6px; flex:none; }
 .gt-card-file{ display:flex; align-items:center; justify-content:center; width:100%; margin-top:8px; cursor:pointer; }

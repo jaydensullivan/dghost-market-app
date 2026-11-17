@@ -17,16 +17,22 @@ let topupCardNumber = '';
 const TOPUP_ERROR_MESSAGES_RU = {
 below_minimum: 'Сумма меньше минимальной для пополнения.',
 bad_photo: 'Не удалось прочитать фото чека — попробуй другой скриншот.',
+receipt_required: 'Прикрепи скриншот чека — без него заявку не отправить.',
+payer_name_required: 'Впиши имя и фамилию владельца карты.',
 feature_disabled: 'Пополнение сейчас временно недоступно.',
 };
 const TOPUP_ERROR_MESSAGES_UZ = {
 below_minimum: "Summa to'ldirish uchun minimaldan kam.",
 bad_photo: "Chek rasmini o'qib bo'lmadi — boshqa skrinshot yuboring.",
+receipt_required: "Chek skrinshotini biriktiring — usiz ariza yuborilmaydi.",
+payer_name_required: "Karta egasining ism va familiyasini kiriting.",
 feature_disabled: "To'ldirish hozircha vaqtincha mavjud emas.",
 };
 const TOPUP_ERROR_MESSAGES_EN = {
 below_minimum: 'The amount is below the top-up minimum.',
 bad_photo: "Couldn't read the receipt photo — try another screenshot.",
+receipt_required: "Attach a receipt screenshot — the request can't be sent without it.",
+payer_name_required: "Enter the card owner's first and last name.",
 feature_disabled: 'Top-ups are temporarily unavailable.',
 };
 
@@ -208,6 +214,7 @@ const btn = label.closest('.topup-receipt-btn');
 thumb.hidden = !data;
 if (data) thumb.src = data; else thumb.removeAttribute('src');
 btn.classList.toggle('attached', !!data);
+if (data) btn.classList.remove('need');
 label.textContent = data ? '✅ ' + d.topup_attached : d.topup_attach;
 if (!data) document.getElementById('topupReceiptFile').value = '';
 }
