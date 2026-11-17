@@ -640,11 +640,27 @@ updateTopupPayBox();
 .catch(() => { res.textContent = d.gt_err_generic; });
 }
 
+let gtMissing = 0;
+
+// Баланса не хватает на пакет — открываем «Пополнить баланс» с суммой недостачи.
+function gtOpenBalanceTopup(){
+const openTopup = document.getElementById('openTopupBtn');
+if (!openTopup) return;
+openTopup.click();
+const amount = document.getElementById('tAmount');
+if (amount) amount.value = String(gtMissing);
+if (typeof setTopupAcc === 'function' && !document.querySelector('#topupAcc [data-acc="card"]').hidden){
+topupAccChosen = true;
+setTopupAcc('card');
+}
+showToast(gtDict().gt_need_topup.replace('{missing}', formatCoins(gtMissing)));
+}
+
 function updateTopupPayBox(){
 const d = gtDict();
 const box = document.getElementById('gtPayBox');
 box.hidden = !gtOffer;
-if (!gtOffer) return;
+if (!gtOffer) return Promise.resolve();
 const payBtn = document.getElementById('gtPayBtn');
 payBtn.textContent = d.gt_pay.replace('{price}', formatCoins(gtPrice()));
 const balEl = document.getElementById('gtBalance');
@@ -652,9 +668,9 @@ const topupBtn = document.getElementById('gtTopupBtn');
 if (!tg || !tg.initData){
 balEl.textContent = '';
 topupBtn.hidden = true;
-return;
+return Promise.resolve();
 }
-fetch(API_BASE + '/api/me?init_data=' + encodeURIComponent(tg.initData))
+return fetch(API_BASE + '/api/me?init_data=' + encodeURIComponent(tg.initData))
 .then(r => r.json())
 .then(me => {
 const available = Number(me.available) || 0;
@@ -662,15 +678,13 @@ const missing = gtOffer ? gtPrice() - available : 0;
 balEl.textContent = d.gt_balance.replace('{balance}', formatCoins(available));
 balEl.classList.toggle('cart-short', missing > 0);
 const openTopup = document.getElementById('openTopupBtn');
-topupBtn.hidden = !(missing > 0 && openTopup && openTopup.style.display !== 'none');
-topupBtn.textContent = d.gt_topup_missing.replace('{missing}', formatCoins(Math.max(missing, 0)));
-payBtn.disabled = missing > 0;
-// Баланса не хватает — оплата картой с чеком (если включена П2П-оплата лотов).
-const cardBtn = document.getElementById('gtCardBtn');
-cardBtn.hidden = !(missing > 0 && typeof directP2pPurchaseEnabled !== 'undefined' && directP2pPurchaseEnabled);
-cardBtn.textContent = d.gt_card_pay.replace('{price}', formatCoins(gtPrice()));
-// Не хватает и есть оплата картой — серую «Оплатить с баланса» прячем.
-payBtn.hidden = !cardBtn.hidden;
+// Одна кнопка «Купить»: денег не хватает — она ведёт к пополнению
+// баланса (сумма недостачи уже вписана), а не к отдельной оплате картой.
+gtMissing = openTopup && openTopup.style.display !== 'none' ? Math.max(missing, 0) : 0;
+topupBtn.hidden = true;
+document.getElementById('gtCardBtn').hidden = true;
+payBtn.hidden = false;
+payBtn.disabled = false;
 })
 .catch(() => {});
 }
@@ -762,6 +776,7 @@ function payTopup(){
 const d = gtDict();
 if (gtBusy || !gtCurrent || !gtOffer) return;
 if (!tg || !tg.initData){ showToast(d.gt_err_unauthorized); return; }
+if (gtMissing > 0){ gtOpenBalanceTopup(); return; }
 const fields = gtCollectFields();
 const status = document.getElementById('gtStatus');
 gtBusy = true;
@@ -775,6 +790,12 @@ body: JSON.stringify({ init_data: tg.initData, slug: gtCurrent.category.slug, of
 .then(r => r.json().then(data => ({ ok: r.ok, data })))
 .then(({ ok, data }) => {
 if (!ok){
+// Баланс успел измениться — сразу ведём к пополнению на недостачу.
+if (data.error === 'insufficient_balance'){
+status.textContent = '';
+updateTopupPayBox().then(() => { if (gtMissing > 0) gtOpenBalanceTopup(); });
+return;
+}
 status.textContent = gtErrorText(data.error);
 updateTopupPayBox();
 return;
