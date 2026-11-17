@@ -200,6 +200,14 @@ topupStatus.textContent = (I18N[currentLang] || I18N.ru).gt_card_need_payer;
 return;
 }
 
+// Без чека заявку не отправляем — админ подтверждает только по чеку.
+if (!topupReceiptPhoto){
+topupStatus.textContent = (I18N[currentLang] || I18N.ru).topup_need_receipt;
+const rb = document.querySelector('.topup-receipt-btn');
+if (rb){ rb.classList.remove('need'); void rb.offsetWidth; rb.classList.add('need'); }
+return;
+}
+
 topupSubmitBtn.disabled = true;
 topupStatus.textContent = (I18N[currentLang] || I18N.ru).withdraw_sending;
 
