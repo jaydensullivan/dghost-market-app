@@ -109,6 +109,10 @@ overflow:hidden;
 }
 
 .welcome-overlay.show{ display:flex; }
+/* Окна правил и Steam открываются посреди страницы (по ошибке сервера при
+   первой оплате) — absolute ставил их в самый верх документа, за пределы
+   экрана, если страница была прокручена. fixed — всегда поверх экрана. */
+#mandatoryAgreementOverlay, #mandatorySteamOverlay{ position:fixed; top:0; left:0; }
 
 .onboarding-dot{
 width:7px;
