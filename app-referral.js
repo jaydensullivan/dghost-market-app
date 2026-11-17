@@ -202,6 +202,7 @@ headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({
 init_data: tg.initData,
 amount: amount,
+photo_base64: topupReceiptPhoto || undefined,
 })
 })
 .then(async r => {
@@ -212,8 +213,10 @@ throw new Error(langMessage(TOPUP_ERROR_MESSAGES_RU, TOPUP_ERROR_MESSAGES_UZ, TO
 return r.json();
 })
 .then(data => {
-topupStatus.textContent = (I18N[currentLang] || I18N.ru).topup_created.replace('{id}', data.id);
+const d = I18N[currentLang] || I18N.ru;
+topupStatus.textContent = (data.receipt ? d.topup_created_receipt : d.topup_created).replace('{id}', data.id);
 tAmount.value = '';
+setTopupReceipt(null);
 if (tg.close) {
 // оставляем мини-апп открытым — пользователь сам
 // переключится в чат, чтобы отправить фото

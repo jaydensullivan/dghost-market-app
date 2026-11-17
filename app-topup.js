@@ -10,18 +10,23 @@ const topupDetailsBox = document.getElementById('topupDetailsBox');
 const topupCopyBtn = document.getElementById('topupCopyBtn');
 
 let topupDetailsRaw = '';
+// Чек к переводу на карту (data URL JPEG) — уходит вместе с заявкой.
+let topupReceiptPhoto = null;
 let topupCardNumber = '';
 
 const TOPUP_ERROR_MESSAGES_RU = {
 below_minimum: 'Сумма меньше минимальной для пополнения.',
+bad_photo: 'Не удалось прочитать фото чека — попробуй другой скриншот.',
 feature_disabled: 'Пополнение сейчас временно недоступно.',
 };
 const TOPUP_ERROR_MESSAGES_UZ = {
 below_minimum: "Summa to'ldirish uchun minimaldan kam.",
+bad_photo: "Chek rasmini o'qib bo'lmadi — boshqa skrinshot yuboring.",
 feature_disabled: "To'ldirish hozircha vaqtincha mavjud emas.",
 };
 const TOPUP_ERROR_MESSAGES_EN = {
 below_minimum: 'The amount is below the top-up minimum.',
+bad_photo: "Couldn't read the receipt photo — try another screenshot.",
 feature_disabled: 'Top-ups are temporarily unavailable.',
 };
 
@@ -174,3 +179,42 @@ topupAccChosen = true;
 setTopupAcc(item.classList.contains('open') ? '' : head.dataset.accToggle);
 });
 gtAccAutoOpen();
+
+// ---------- чек к переводу на карту ----------
+// Сжимаем до 1600px JPEG, чтобы заявка с фото быстро ушла и с мобильного.
+function topupCompressImage(file){
+return new Promise((resolve, reject) => {
+const img = new Image();
+const url = URL.createObjectURL(file);
+img.onload = () => {
+const scale = Math.min(1, 1600 / Math.max(img.width, img.height));
+const c = document.createElement('canvas');
+c.width = Math.round(img.width * scale);
+c.height = Math.round(img.height * scale);
+c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+URL.revokeObjectURL(url);
+resolve(c.toDataURL('image/jpeg', 0.85));
+};
+img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('image')); };
+img.src = url;
+});
+}
+function setTopupReceipt(data){
+const d = I18N[currentLang] || I18N.ru;
+topupReceiptPhoto = data;
+const thumb = document.getElementById('topupReceiptThumb');
+const label = document.getElementById('topupReceiptLabel');
+const btn = label.closest('.topup-receipt-btn');
+thumb.hidden = !data;
+if (data) thumb.src = data; else thumb.removeAttribute('src');
+btn.classList.toggle('attached', !!data);
+label.textContent = data ? '✅ ' + d.topup_attached : d.topup_attach;
+if (!data) document.getElementById('topupReceiptFile').value = '';
+}
+document.getElementById('topupReceiptFile').addEventListener('change', (e) => {
+const file = e.target.files && e.target.files[0];
+if (!file) return;
+topupCompressImage(file).then(setTopupReceipt).catch(() => {
+topupStatus.textContent = (I18N[currentLang] || I18N.ru).topup_bad_photo;
+});
+});
