@@ -193,6 +193,13 @@ topupStatus.textContent = (I18N[currentLang] || I18N.ru).withdraw_need_amount;
 return;
 }
 
+// Имя владельца карты — админ сверяет его с чеком (как в оплате доната).
+const payerName = document.getElementById('topupPayer').value.trim();
+if (payerName.split(/\s+/).length < 2){
+topupStatus.textContent = (I18N[currentLang] || I18N.ru).gt_card_need_payer;
+return;
+}
+
 topupSubmitBtn.disabled = true;
 topupStatus.textContent = (I18N[currentLang] || I18N.ru).withdraw_sending;
 
@@ -202,6 +209,7 @@ headers: { 'Content-Type': 'application/json' },
 body: JSON.stringify({
 init_data: tg.initData,
 amount: amount,
+payer_name: payerName,
 photo_base64: topupReceiptPhoto || undefined,
 })
 })
