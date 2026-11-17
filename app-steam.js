@@ -149,7 +149,12 @@ return r.json();
 .then(() => {
 agreementAccepted = true;
 status.textContent = '';
+// Правила спросили посреди пополнения — не уводим к привязке Steam
+// (для пополнения она не нужна) и сами повторяем «Я оплатил».
+const topupOpen = document.getElementById('topupOverlay').classList.contains('show');
+if (topupOpen) steamLinkSkippedThisSession = true;
 updateMandatorySteamOverlay();
+if (topupOpen && tAmount.value) topupSubmitBtn.click();
 })
 .catch(err => {
 status.textContent = friendlyErrorMessage(err);
