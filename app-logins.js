@@ -37,6 +37,9 @@ card.innerHTML =
 const anchor = document.getElementById('profileSteamSection');
 if (!anchor) return;
 anchor.parentNode.insertBefore(card, anchor);
+// До ответа сервера карточку не показываем: у гостя на сайте (без входа)
+// она была пустой рамкой без заголовка.
+card.hidden = true;
 
 const $ = s => card.querySelector(s);
 const tg = window.Telegram && window.Telegram.WebApp;
@@ -105,6 +108,7 @@ if (window.confirm(ask)) go();
 
 function render(){
 if (!state) return;
+card.hidden = false;
 const dict = d();
 const tgName = state.telegram && state.telegram.username ? String(state.telegram.username).replace(/^@+/, '') : '';
 const tgOn = state.telegram ? (tgName ? '@' + tgName : dict.lg_connected) : '';
