@@ -181,26 +181,19 @@ const box = $('.lg-tg');
 $('.lg-form').hidden = true;
 box.hidden = false;
 setStatus(d().lg_tg_hint);
-if (box.querySelector('script')) return;
-const s = document.createElement('script');
-s.async = true;
-s.src = 'https://telegram.org/js/telegram-widget.js?22';
-s.setAttribute('data-telegram-login', 'dghostmarketbot');
-s.setAttribute('data-size', 'large');
-s.setAttribute('data-radius', '12');
-s.setAttribute('data-request-access', 'write');
-s.setAttribute('data-onauth', 'dgLinkTelegram(user)');
-box.appendChild(s);
+if (box.firstChild) return;
+if (typeof window.dgTelegramButton !== 'function') return;
+window.dgTelegramButton(box, (idToken) => linkTelegram({ id_token: idToken }), (code) => setStatus(errText(code)));
 }
 
-window.dgLinkTelegram = function(user){
-post('/api/account/telegram', { telegram: user })
+function linkTelegram(body){
+post('/api/account/telegram', body)
 .then(data => {
 // Дальше сайт работает с аккаунтом Telegram — новая сессия.
 if (typeof window.dgWebSetSession === 'function') window.dgWebSetSession(data);
 })
 .catch(code => setStatus(errText(code)));
-};
+}
 
 // ---------- когда грузить ----------
 

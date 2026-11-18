@@ -4390,6 +4390,8 @@ color:#f2eefa; text-align:center; box-shadow:0 20px 60px rgba(123,44,255,.25);
 .dgw-btn-steam{ min-height:48px; font-size:15px; }
 .dgw-gate-or{ margin:14px 0 10px; font-size:12px; opacity:.6; }
 .dgw-gate-widget{ min-height:48px; display:flex; justify-content:center; }
+.dgw-btn.dgw-btn-tg{ display:flex; align-items:center; justify-content:center; gap:10px; width:100%; min-height:48px; background:#2aabee; border-color:#2aabee; color:#fff; font-weight:600; }
+.dgw-btn.dgw-btn-tg:hover{ background:#229ed9; }
 .dgw-gate-status{ min-height:18px; margin:8px 0; font-size:13px; color:#ff6b8a; }
 .dgw-btn-email{ margin-top:10px; }
 .dgw-email-form{ margin-top:10px; display:flex; flex-direction:column; gap:8px; }

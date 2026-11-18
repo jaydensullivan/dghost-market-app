@@ -18,7 +18,6 @@ const real = window.Telegram && window.Telegram.WebApp;
 if (real && real.initData) return;
 
 const API = 'https://api.dghostmarket.uz';
-const BOT_LOGIN = 'dghostmarketbot';
 const KEY = 'dg_web_session';
 
 let session = null;
@@ -43,6 +42,7 @@ too_many: 'Слишком много попыток. Подожди 15 мину�
 mail_failed: 'Не удалось отправить письмо. Попробуй позже или войди через Steam / Telegram.',
 steam: 'Войти через Steam',
 or_tg: 'или через Telegram',
+tg_btn: 'Войти через Telegram',
 guest: 'Смотреть без входа',
 need: 'Войти через Telegram',
 failed: 'Не удалось войти. Попробуй ещё раз.',
@@ -64,6 +64,7 @@ too_many: "Urinishlar juda ko'p. 15 daqiqa kuting.",
 mail_failed: "Xat yuborib bo'lmadi. Keyinroq urinib ko'ring yoki Steam / Telegram orqali kiring.",
 steam: 'Steam orqali kirish',
 or_tg: 'yoki Telegram orqali',
+tg_btn: 'Telegram orqali kirish',
 guest: "Kirmasdan ko'rish",
 need: 'Telegram orqali kirish',
 failed: "Kirib bo'lmadi. Qayta urinib ko'ring.",
@@ -85,6 +86,7 @@ too_many: 'Too many attempts. Wait 15 minutes.',
 mail_failed: 'Could not send the email. Try later or log in with Steam / Telegram.',
 steam: 'Log in with Steam',
 or_tg: 'or with Telegram',
+tg_btn: 'Log in with Telegram',
 guest: 'Browse without logging in',
 need: 'Log in with Telegram',
 failed: 'Login failed. Please try again.',
@@ -205,17 +207,57 @@ function steamLogin(){
 location.href = API + '/web/steam/start?return=' + encodeURIComponent(location.origin + location.pathname);
 }
 
-window.dgWebOnAuth = function(user){
-const fd = new FormData();
-Object.keys(user || {}).forEach(k => { if (user[k] != null) fd.append(k, String(user[k])); });
-fetch(API + '/api/web_login', { method: 'POST', body: fd })
+// Новый Telegram Login (OpenID Connect): Telegram показывает своё окно
+// «Log in to …» с устройством и IP, отдаёт подписанный id_token — сервер
+// проверяет его по ключам Telegram. Client ID — id бота.
+const TG_CLIENT_ID = 8737084971;
+let tgLibPromise = null;
+function loadTgLogin(){
+if (window.Telegram && window.Telegram.Login) return Promise.resolve();
+if (!tgLibPromise){
+tgLibPromise = new Promise((resolve, reject) => {
+const s = document.createElement('script');
+s.src = 'https://telegram.org/js/telegram-login.js';
+s.async = true;
+s.onload = resolve;
+s.onerror = () => { tgLibPromise = null; reject(new Error('tg_login_load')); };
+document.head.appendChild(s);
+});
+}
+return tgLibPromise;
+}
+// Кнопка «Войти через Telegram» в box; onToken(id_token) — после подтверждения.
+window.dgTelegramButton = function(box, onToken, onError){
+box.textContent = '';
+const btn = document.createElement('button');
+btn.type = 'button';
+btn.className = 'dgw-btn dgw-btn-tg';
+btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.9 4.3 18.7 19.4c-.2 1.1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.3-5 9.1-8.2c.4-.4-.1-.6-.6-.2L6.2 13.1l-4.8-1.5c-1-.3-1.1-1 .2-1.5L20.6 2.8c.9-.3 1.6.2 1.3 1.5z"/></svg><span></span>';
+btn.querySelector('span').textContent = T.tg_btn;
+btn.addEventListener('click', () => {
+loadTgLogin().then(() => {
+window.Telegram.Login.auth({ client_id: TG_CLIENT_ID, request_access: 'write', lang: lang }, (res) => {
+if (res && res.id_token) onToken(res.id_token);
+else if (onError && res && res.error && !/cancel|closed/i.test(res.error)) onError(res.error);
+});
+}).catch(() => { if (onError) onError('load'); });
+});
+box.appendChild(btn);
+};
+
+function tgOidcLogin(idToken){
+fetch(API + '/api/web_login', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ id_token: idToken }),
+})
 .then(r => r.ok ? r.json() : Promise.reject(r.status))
 .then(data => { saveSession(data); location.reload(); })
 .catch(() => {
 const st = document.querySelector('.dgw-gate-status');
 if (st) st.textContent = T.failed;
 });
-};
+}
 
 // Вход по почте: адрес → код из письма → сессия.
 function emailLogin(gate){
@@ -313,15 +355,10 @@ gate.querySelector('.dgw-code').placeholder = T.code_ph;
 gate.querySelector('.dgw-email-send').textContent = T.send_code;
 gate.querySelector('.dgw-gate-note').textContent = T.note;
 gate.querySelector('.dgw-gate-guest').addEventListener('click', () => gate.remove());
-const s = document.createElement('script');
-s.async = true;
-s.src = 'https://telegram.org/js/telegram-widget.js?22';
-s.setAttribute('data-telegram-login', BOT_LOGIN);
-s.setAttribute('data-size', 'large');
-s.setAttribute('data-radius', '12');
-s.setAttribute('data-request-access', 'write');
-s.setAttribute('data-onauth', 'dgWebOnAuth(user)');
-gate.querySelector('.dgw-gate-widget').appendChild(s);
+window.dgTelegramButton(gate.querySelector('.dgw-gate-widget'), tgOidcLogin, () => {
+const st = gate.querySelector('.dgw-gate-status');
+if (st) st.textContent = T.failed;
+});
 document.body.appendChild(gate);
 }
 window.dgWebLogin = openGate;
