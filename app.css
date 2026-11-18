@@ -5524,7 +5524,10 @@ body.theme-light #gtPayBox{ background:rgba(255, 255, 255, .92); }
 
 /* Окно пополнения: способы оплаты аккордеоном — открыт только один */
 .edit-overlay{ overflow-x:hidden; }
-.edit-sheet{ max-width:min(420px, 100%); overflow-x:hidden; touch-action:pan-y; }
+/* Только у окон-шторок: меню под аватаркой тоже .edit-sheet, и max-width:100%
+   от узкого блока шапки сжимал его до ~100px — пункты ломались в столбик. */
+.edit-overlay .edit-sheet{ max-width:min(420px, 100%); overflow-x:hidden; touch-action:pan-y; }
+#headerMenu{ max-width:calc(100vw - 24px); }
 .pay-acc{ display:flex; flex-direction:column; gap:10px; margin-bottom:12px; }
 .pay-acc-item{ border-radius:14px; border:1px solid var(--red-dim); background:rgba(255,255,255,0.02); transition:border-color .25s ease, background .25s ease; }
 .pay-acc-item[hidden]{ display:none; }
