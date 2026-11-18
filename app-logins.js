@@ -60,7 +60,7 @@ st.textContent = text || '';
 st.classList.toggle('ok', !!ok);
 }
 
-function row(name, value, action){
+function row(name, value, action, unlink){
 const r = card.querySelector('[data-lg="' + name + '"]');
 const dict = d();
 const val = r.querySelector('.lg-val');
@@ -76,19 +76,47 @@ b.textContent = dict.lg_connect;
 b.addEventListener('click', action);
 act.appendChild(b);
 }
+if (unlink){
+const b = document.createElement('button');
+b.type = 'button';
+b.className = 'pf-btn lg-btn lg-unlink';
+b.textContent = dict.lg_unlink;
+b.addEventListener('click', unlink);
+act.appendChild(b);
+}
+}
+
+// Отвязать Steam или почту. Сервер оставляет хотя бы один способ входа
+// и не даёт отвязать Steam, пока есть лоты или незавершённые сделки.
+function unlinkMethod(method){
+const dict = d();
+const ask = dict.lg_unlink_confirm.replace('{name}', method === 'steam' ? 'Steam' : dict.lg_email);
+const go = () => {
+setStatus(dict.lg_sending);
+post('/api/account/unlink', { method: method })
+.then(data => { state = data; render(); setStatus(dict.lg_unlinked, true); })
+.catch(code => setStatus(errText(code)));
+};
+if (tg && typeof tg.showConfirm === 'function' && tg.platform && tg.platform !== 'unknown'){
+try { tg.showConfirm(ask, ok => { if (ok) go(); }); return; } catch(e) {}
+}
+if (window.confirm(ask)) go();
 }
 
 function render(){
 if (!state) return;
 const dict = d();
-const tgOn = state.telegram ? (state.telegram.username ? '@' + state.telegram.username : dict.lg_connected) : '';
+const tgName = state.telegram && state.telegram.username ? String(state.telegram.username).replace(/^@+/, '') : '';
+const tgOn = state.telegram ? (tgName ? '@' + tgName : dict.lg_connected) : '';
+// Сколько способов входа подключено: последний отвязать нельзя.
+const count = (state.telegram ? 1 : 0) + (state.steam ? 1 : 0) + (state.email ? 1 : 0);
 // Подключить Telegram можно только на сайте: в мини-аппе он уже есть.
 row('telegram', tgOn, (!state.telegram && window.DG_WEB) ? openTelegram : null);
 row('steam', state.steam ? (state.steam.persona || dict.lg_connected) : '', state.steam ? null : () => {
 const btn = document.getElementById('steamLoginBtn');
 if (btn) btn.click();
-});
-row('email', state.email || '', state.email ? null : openEmail);
+}, state.steam && count > 1 ? () => unlinkMethod('steam') : null);
+row('email', state.email || '', state.email ? null : openEmail, state.email && count > 1 ? () => unlinkMethod('email') : null);
 label();
 }
 
