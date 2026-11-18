@@ -4390,6 +4390,8 @@ color:#f2eefa; text-align:center; box-shadow:0 20px 60px rgba(123,44,255,.25);
 .dgw-btn-steam{ min-height:48px; font-size:15px; }
 .dgw-gate-or{ margin:14px 0 10px; font-size:12px; opacity:.6; }
 .dgw-gate-widget{ min-height:48px; display:flex; justify-content:center; }
+.dgw-btn.dgw-btn-tg{ display:flex; align-items:center; justify-content:center; gap:10px; width:100%; min-height:48px; background:#2aabee; border-color:#2aabee; color:#fff; font-weight:600; }
+.dgw-btn.dgw-btn-tg:hover{ background:#229ed9; }
 .dgw-gate-status{ min-height:18px; margin:8px 0; font-size:13px; color:#ff6b8a; }
 .dgw-btn-email{ margin-top:10px; }
 .dgw-email-form{ margin-top:10px; display:flex; flex-direction:column; gap:8px; }
@@ -5352,6 +5354,7 @@ button.brand-logo{ width:44px; height:44px; }
 .lg-form{ margin-top:12px; }
 .lg-input{ width:100%; box-sizing:border-box; min-height:44px; margin-bottom:8px; padding:0 12px; border-radius:10px; border:1px solid var(--red-dim); background:rgba(0,0,0,.25); color:var(--silver); font-size:15px; }
 .lg-input:disabled{ opacity:.6; }
+.lg-unlink{ background:transparent; border:1px solid rgba(248,113,113,.45); color:#fca5a5; }
 .lg-tg{ display:flex; justify-content:center; margin-top:12px; min-height:48px; }
 .lg-tg[hidden], .lg-form[hidden]{ display:none; }
 .lg-status{ margin-top:8px; }
