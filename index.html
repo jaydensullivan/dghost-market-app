@@ -16,7 +16,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=9"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=143">
+<link rel="stylesheet" href="app.css?v=144">
 <link rel="stylesheet" href="app-desktop.css?v=2" media="(min-width: 1280px)">
 </head>
 <body data-tab="shop">
@@ -1289,6 +1289,33 @@
 <label class="admin-perm-chip"><input type="checkbox" id="toggleDirectP2pPurchase"> 🏦 <span data-i18n="admin_direct_p2p">Оплата лота напрямую П2П (карта, ручное подтверждение)</span></label>
 </div>
 <div class="shop-hint u-mt8" data-i18n="admin_direct_payment_hint">Покупатель платит за лот картой (П2П). Оплата Stars и криптой убрана; оплаты с баланса у покупателя больше нет.</div>
+</div>
+
+<div class="profile-section admin-group" id="adminHumoSection" data-group="settings" style="margin-top:10px; display:none;" data-view="settings">
+<div class="profile-section-title" data-i18n="admin_humo_title">🏦 Автоподтверждение пополнений (HUMO)</div>
+<div class="shop-hint u-mb10" data-i18n="admin_humo_hint">Бот читает уведомления HUMO Card в отдельном аккаунте Telegram и сам подтверждает заявку, если сумма совпала точно, а заявка пришла в течение 30 минут после перевода. Всё неоднозначное остаётся тебе.</div>
+<div class="shop-hint" id="adminHumoState"></div>
+<div id="adminHumoLogin" hidden>
+<div class="edit-field u-mt8"><label for="adminHumoPhone" data-i18n="admin_humo_phone">Номер отдельного аккаунта (не основного!)</label><input id="adminHumoPhone" type="tel" placeholder="+998901234567" autocomplete="off"></div>
+<button type="button" id="adminHumoSendCode" class="steam-link-btn secondary" data-i18n="admin_humo_send_code">Получить код</button>
+<div id="adminHumoCodeBox" hidden>
+<div class="edit-field u-mt8"><label for="adminHumoCode" data-i18n="admin_humo_code">Код из Telegram</label><input id="adminHumoCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6"></div>
+<div class="edit-field" id="adminHumoPasswordBox" hidden><label for="adminHumoPassword" data-i18n="admin_humo_password">Облачный пароль аккаунта</label><input id="adminHumoPassword" type="password" autocomplete="off"></div>
+<button type="button" id="adminHumoSignIn" class="steam-link-btn secondary" data-i18n="admin_humo_sign_in">Войти</button>
+</div>
+</div>
+<div id="adminHumoConnected" hidden>
+<div class="admin-perm-chips u-mt8"><label class="admin-perm-chip"><input type="checkbox" id="adminHumoEnabled"> <span data-i18n="admin_humo_enabled">Подтверждать автоматически</span></label></div>
+<div class="gt-adm-grid">
+<label class="gt-adm-cell"><span data-i18n="admin_humo_max">Не больше, сум</span><input id="adminHumoMax" type="number" min="0" step="1000"></label>
+<label class="gt-adm-cell"><span data-i18n="admin_humo_last4">Карта (последние 4 цифры)</span><input id="adminHumoLast4" type="text" inputmode="numeric" maxlength="4"></label>
+</div>
+<button type="button" id="adminHumoSave" class="steam-link-btn secondary u-mt8" data-i18n="btn_save">Сохранить</button>
+<div style="font-size:12px; color:var(--muted); margin:10px 0 4px;" data-i18n="admin_humo_recent">Последние поступления</div>
+<div id="adminHumoCredits" class="shop-hint"></div>
+<button type="button" id="adminHumoLogout" class="steam-link-btn secondary u-mt8" data-i18n="admin_humo_logout">Отключить аккаунт</button>
+</div>
+<div class="edit-status" id="adminHumoStatus"></div>
 </div>
 
 <div class="profile-section admin-group" id="adminGameTopupSection" data-group="settings" style="margin-top:10px; display:none;" data-view="donat">
@@ -2743,8 +2770,8 @@
 </div>
 </div>
 <script src="app-core.js?v=21"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=74', en: 'app-i18n-en.js?v=73' };</script>
-<script src="app-i18n.js?v=196"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=75', en: 'app-i18n-en.js?v=74' };</script>
+<script src="app-i18n.js?v=197"></script>
 <script src="app-navigation.js?v=31"></script>
 <script src="app-shop.js?v=54"></script>
 <script src="app-legal.js?v=3"></script>
@@ -2762,7 +2789,7 @@
 <script src="app-withdraw.js?v=41"></script>
 <script src="app-instant.js?v=1"></script>
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
-<script>window.DG_ADMIN_SRC = 'app-admin.js?v=46';</script>
+<script>window.DG_ADMIN_SRC = 'app-admin.js?v=47';</script>
 <!-- 3D-просмотрщик (210 КБ) грузится после открытия витрины — ensure3DScript в app-navigation.js. -->
 <script>window.DG_3D_SRC = 'app-3d.js?v=139';</script>
 <script src="app-auctions.js?v=9"></script>

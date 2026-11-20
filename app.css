@@ -5548,3 +5548,6 @@ body.theme-light #gtPayBox{ background:rgba(255, 255, 255, .92); }
 .pay-acc-inner .topup-details-box{ margin-top:0; }
 #topupSubmitBtn{ width:100%; margin-top:12px; }
 @media (prefers-reduced-motion: reduce){ .pay-acc-body, .pay-acc-inner, .pay-acc-chev{ transition:none; } }
+
+/* Автоподтверждение HUMO — только владельцу: раздел виден после ответа сервера. */
+#adminHumoSection:not([data-humo-ok]){ display:none !important; }
