@@ -5594,3 +5594,47 @@ button.pf-acc.pf-acc-hd{ border:1px solid var(--red-dim); background:var(--surfa
 .pf-acc-in > .pf-card{ opacity:1; transform:none; }
 .pf-acc-dot{ animation:none; }
 }
+
+/* ---------- Единый моушн (app-motion.js) ----------
+   Три скорости, одна кривая; двигаем только transform/opacity.
+   «Меньше анимаций» (html.dg-calm) и системная настройка телефона
+   гасят всё движение. */
+:root{
+--m-t1:.15s; --m-t2:.25s; --m-t3:.35s;
+--m-ease:cubic-bezier(.2,.8,.2,1);
+--m-spring:cubic-bezier(.34,1.36,.5,1);
+}
+/* Появление экранов: вкладка — снизу, экран «вглубь» — справа, назад — слева. */
+.dg-in-up{ animation:dgInUp var(--m-t2) var(--m-ease); }
+.dg-in-right{ animation:dgInRight var(--m-t3) var(--m-ease); }
+.dg-in-left{ animation:dgInLeft var(--m-t3) var(--m-ease); }
+@keyframes dgInUp{ from{ opacity:0; transform:translateY(10px); } }
+@keyframes dgInRight{ from{ opacity:.2; transform:translateX(36px); } }
+@keyframes dgInLeft{ from{ opacity:.2; transform:translateX(-28px); } }
+/* Нижнее меню: подсветка переезжает, иконка подпрыгивает. */
+.bottom-nav{ isolation:isolate; }
+.nav-btn{ position:relative; z-index:1; -webkit-tap-highlight-color:transparent; transition:color var(--m-t2); }
+.nav-btn:active .nav-icon{ transform:scale(.9); }
+.nav-icon{ transition:transform var(--m-t1) var(--m-ease); }
+.nav-pill{ position:absolute; top:5px; left:0; bottom:calc(env(safe-area-inset-bottom, 0px) + 5px); z-index:0; border-radius:14px; background:rgba(168,85,247,.13); border:1px solid rgba(168,85,247,.28); pointer-events:none; transition:transform var(--m-t3) var(--m-spring), width var(--m-t3) var(--m-ease), opacity var(--m-t2); }
+.nav-btn.dg-hop .nav-icon{ animation:dgHop .42s var(--m-spring); }
+@keyframes dgHop{ 40%{ transform:translateY(-5px) scale(1.12); } }
+/* Окна снизу: фон проявляется, окно выезжает с лёгкой пружиной. */
+.edit-overlay.show, .buy-overlay.show{ animation:dgFade var(--m-t2) var(--m-ease); }
+.edit-overlay.show > .edit-sheet, .buy-overlay.show > .buy-sheet{ animation:dgSheetUp var(--m-t3) var(--m-spring); }
+@keyframes dgFade{ from{ opacity:0; } }
+@keyframes dgSheetUp{ from{ opacity:.3; transform:translateY(60px); } }
+.edit-sheet, .buy-sheet{ transition:transform var(--m-t2) var(--m-ease); }
+.edit-sheet.dg-dragging, .buy-sheet.dg-dragging{ transition:none; }
+/* Нажатие на кнопки — лёгкое «вдавливание». */
+.pf-money-btn:active, .steam-link-btn:active, .welcome-btn:active, .pf-btn:active, .pf-set-btn:active{ transform:scale(.97); }
+.pf-money-btn, .steam-link-btn, .welcome-btn, .pf-btn, .pf-set-btn{ transition:transform var(--m-t1) var(--m-ease); }
+/* Встряска при ошибке — общий класс для любых полей и кнопок. */
+.dg-shake{ animation:dgShake .4s; }
+@keyframes dgShake{ 20%,60%{ transform:translateX(-7px); } 40%,80%{ transform:translateX(7px); } }
+
+html.dg-calm *, html.dg-calm *::before, html.dg-calm *::after{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; transition-delay:0s !important; scroll-behavior:auto !important; }
+@media (prefers-reduced-motion: reduce){
+.dg-in-up, .dg-in-right, .dg-in-left, .nav-btn.dg-hop .nav-icon, .edit-overlay.show, .buy-overlay.show, .edit-overlay.show > .edit-sheet, .buy-overlay.show > .buy-sheet, .dg-shake{ animation:none; }
+.nav-pill, .edit-sheet, .buy-sheet{ transition:none; }
+}
