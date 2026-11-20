@@ -1753,7 +1753,7 @@ document.getElementById('adminReferralPercent').value = data.referral_bonus_perc
 document.getElementById('adminCommissionSale').textContent = formatCoins(data.commission_sale_total || 0);
 document.getElementById('adminCommissionWithdraw').textContent = formatCoins(data.commission_withdraw_total || 0);
 document.getElementById('adminFeatureTogglesSection').style.display = data.is_owner ? '' : 'none';
-if (data.is_owner){ loadAdminGameTopup(); loadAdminGtPromos(); }
+if (data.is_owner){ loadAdminGameTopup(); loadAdminGtPromos(); loadAdminHumo(); }
 document.getElementById('toggleTopupCard').checked = data.topup_card_enabled !== false;
 document.getElementById('toggleWithdrawCard').checked = data.withdraw_card_enabled !== false;
 document.getElementById('toggleDirectP2pPurchase').checked = data.direct_p2p_purchase_enabled === true;
@@ -2342,4 +2342,81 @@ const chip = e.target.closest('[data-admin-group]');
 if (!chip) return;
 if (chip.dataset.adminGroup === 'reels') loadAdminReels();
 else { stopReelsPreview(); clearTimeout(reelsPollTimer); }
+});
+
+// ---------- Автоподтверждение пополнений по HUMO (только владелец) ----------
+function humoErr(code){
+const d = I18N[currentLang] || I18N.ru;
+return d['admin_humo_err_' + code] || d.err_something_wrong;
+}
+function humoPost(path, body){
+return fetch(API_BASE + path, {
+method: 'POST', headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify(Object.assign({ init_data: tg.initData }, body || {})),
+}).then(r => r.json().catch(() => ({})).then(d => (r.ok ? d : Promise.reject(d.error || 'error'))));
+}
+function renderHumo(s){
+const d = I18N[currentLang] || I18N.ru;
+const sec = document.getElementById('adminHumoSection');
+sec.dataset.humoOk = '1';
+const state = document.getElementById('adminHumoState');
+if (!s.api_configured){ state.textContent = d.admin_humo_no_api; }
+else if (s.connected){ state.textContent = d.admin_humo_connected.replace('{acc}', s.account || '?'); }
+else { state.textContent = s.error === 'session_expired' ? d.admin_humo_expired : d.admin_humo_not_connected; }
+document.getElementById('adminHumoLogin').hidden = !s.api_configured || s.connected;
+document.getElementById('adminHumoConnected').hidden = !s.connected;
+document.getElementById('adminHumoEnabled').checked = !!s.enabled;
+document.getElementById('adminHumoMax').value = s.max || '';
+document.getElementById('adminHumoLast4').value = s.card_last4 || '';
+const list = document.getElementById('adminHumoCredits');
+list.innerHTML = '';
+(s.credits || []).forEach(c => {
+const row = document.createElement('div');
+const when = new Date(c.credited_at).toLocaleString(currentLang === 'en' ? 'en-GB' : 'ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+row.textContent = when + ' · ' + formatCoins(c.amount) + ' · ' + (c.topup_id ? d.admin_humo_matched.replace('{id}', c.topup_id) : d.admin_humo_unmatched);
+list.appendChild(row);
+});
+if (!list.firstChild) list.textContent = d.admin_humo_no_credits;
+}
+function loadAdminHumo(){
+adminApiFetch('/api/admin/humo/settings')
+.then(renderHumo)
+.catch(() => { delete document.getElementById('adminHumoSection').dataset.humoOk; });
+}
+document.getElementById('adminHumoSendCode').addEventListener('click', () => {
+const st = document.getElementById('adminHumoStatus');
+st.textContent = (I18N[currentLang] || I18N.ru).withdraw_sending;
+humoPost('/api/admin/humo/settings/login_start', { phone: document.getElementById('adminHumoPhone').value })
+.then(() => { document.getElementById('adminHumoCodeBox').hidden = false; st.textContent = (I18N[currentLang] || I18N.ru).admin_humo_code_sent; document.getElementById('adminHumoCode').focus(); })
+.catch(code => { st.textContent = humoErr(code); });
+});
+document.getElementById('adminHumoSignIn').addEventListener('click', () => {
+const st = document.getElementById('adminHumoStatus');
+const pwBox = document.getElementById('adminHumoPasswordBox');
+humoPost('/api/admin/humo/settings/login_finish', {
+code: document.getElementById('adminHumoCode').value,
+password: pwBox.hidden ? '' : document.getElementById('adminHumoPassword').value,
+})
+.then(s => { st.textContent = ''; document.getElementById('adminHumoPassword').value = ''; renderHumo(s); })
+.catch(code => {
+if (code === 'password_needed'){ pwBox.hidden = false; document.getElementById('adminHumoPassword').focus(); }
+st.textContent = humoErr(code);
+});
+});
+document.getElementById('adminHumoSave').addEventListener('click', () => {
+const st = document.getElementById('adminHumoStatus');
+humoPost('/api/admin/humo/settings', {
+enabled: document.getElementById('adminHumoEnabled').checked,
+max: Number(document.getElementById('adminHumoMax').value) || 0,
+card_last4: document.getElementById('adminHumoLast4').value,
+})
+.then(s => { renderHumo(s); st.textContent = (I18N[currentLang] || I18N.ru).admin_humo_saved; })
+.catch(code => { st.textContent = humoErr(code); });
+});
+document.getElementById('adminHumoLogout').addEventListener('click', () => {
+const d = I18N[currentLang] || I18N.ru;
+if (!window.confirm(d.admin_humo_logout_confirm)) return;
+humoPost('/api/admin/humo/settings/logout').then(renderHumo).catch(code => {
+document.getElementById('adminHumoStatus').textContent = humoErr(code);
+});
 });
