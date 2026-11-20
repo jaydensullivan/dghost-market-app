@@ -1821,16 +1821,53 @@ result.innerHTML = '<div class="skins-empty skins-empty-sm">Загрузка...<
 adminApiFetch('/api/admin/finance/client_history?user_id=' + id)
 .then(data => {
 const items = data.items || [];
-const header = `<div class="deal-meta" style="margin-bottom:8px;">${escapeHtml(data.username || ('ID ' + data.user_id))} · баланс ${formatCoins(data.balance)} (в холде ${formatCoins(data.held)})</div>`;
+const s = data.summary || {};
+const when = v => { if (!v) return ''; const d = new Date(v); return isNaN(d) ? '' : d.toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }); };
+const line = (label, value) => value ? `<div class="deal-meta">${label}: <b>${value}</b></div>` : '';
+const header = `<div class="deal-card" style="padding:10px 12px; margin-bottom:10px;"><div class="deal-info">
+<div class="deal-title">${escapeHtml(data.username || ('ID ' + data.user_id))} · ID ${data.user_id}</div>
+${line('Баланс', formatCoins(data.balance) + (data.held ? ' (в холде ' + formatCoins(data.held) + ')' : ''))}
+${line('Регистрация', when(s.registered_at))}
+${line('Пригласил', s.referrer ? escapeHtml((s.referrer.username || '') + ' · ID ' + s.referrer.user_id) : '')}
+${line('ФИО из проверки', s.kyc_name ? escapeHtml(s.kyc_name) : '')}
+${line('Пополнения', s.topups && s.topups.count ? s.topups.count + ' на ' + formatCoins(s.topups.sum) + (s.topups_pending ? ' · ждут: ' + s.topups_pending : '') : (s.topups_pending ? 'ждут: ' + s.topups_pending : ''))}
+${line('Донат', s.donat && s.donat.count ? s.donat.count + ' заказ(а) на ' + formatCoins(s.donat.sum) : '')}
+${line('Скины', (s.skins_bought || s.skins_sold || s.skins_listed) ? 'куплено ' + (s.skins_bought || 0) + ' · продано ' + (s.skins_sold || 0) + ' · на витрине ' + (s.skins_listed || 0) : '')}
+${line('Выводы', s.withdrawn && s.withdrawn.count ? s.withdrawn.count + ' на ' + formatCoins(s.withdrawn.sum) : '')}
+</div></div>`;
 if (!items.length){
 result.innerHTML = header + `<div class="skins-empty skins-empty-sm">Транзакций нет</div>`;
 return;
 }
+const TX = {
+topup_manual: '💳 Пополнение картой', topup: '💳 Пополнение', stars_topup: '⭐ Пополнение Stars',
+game_topup: '🎮 Донат', game_topup_refund: '↩️ Возврат за донат', purchase: '🛒 Покупка скина', sale: '💰 Продажа скина',
+commission: '🏷 Комиссия', hold: '🔒 Заморозка', release: '🔓 Разморозка', refund_sale: '↩️ Возврат за скин',
+refund_delivery: '↩️ Возврат (не доставлен)', refund_to_balance: '↩️ Возврат на баланс', withdrawal_paid: '🏦 Вывод на карту',
+payout: '🏦 Выплата', admin_balance_adjust: '🛠 Корректировка админом', admin_adjust: '🛠 Корректировка админом',
+referral_claim: '🎁 Реферальный кошелёк', referral_bonus: '🎁 Реферальный бонус', promo: '🏷 Промокод',
+};
+const ST = { approved: '✅ подтверждено', rejected: '❌ отклонено', pending: '⏳ ждёт', completed: '✅ выполнен', refunded: '↩️ возврат', processing: '⏳ в работе', submitting: '⏳ отправляется', awaiting_payment: '⏳ ждёт оплату', pending_review: '⏳ на проверке', released: '✅ завершена', sold: '⏳ ждёт передачи', cancelled: '❌ отменена', available: 'на витрине', deleted: 'удалён' };
+const detail = d => {
+if (!d) return '';
+if (d.kind === 'topup'){
+const by = d.by === 'humo' ? 'автоматически (HUMO' + (d.bank_at ? ', перевод ' + when(d.bank_at) : '') + ')' : (d.by ? escapeHtml(d.by) : '');
+return `<div class="deal-meta">Заявка #${d.id} · ${ST[d.status] || escapeHtml(d.status)}${by ? ' · ' + by : ''}${d.requested_at ? ' · подана ' + when(d.requested_at) : ''}</div>`;
+}
+if (d.kind === 'game_topup'){
+return `<div class="deal-meta">Заказ #${d.id} · ${ST[d.status] || escapeHtml(d.status)}${d.to ? ' · → ' + escapeHtml(d.to) : ''}${d.promo ? ' · промокод ' + escapeHtml(d.promo) : ''}${d.error ? ' · причина: ' + escapeHtml(d.error) : ''}</div>`;
+}
+if (d.kind === 'skin'){
+return `<div class="deal-meta">Лот #${d.id}${d.title ? ' · ' + escapeHtml(d.title) : ''} · ${ST[d.status] || escapeHtml(d.status || '')}</div>`;
+}
+return '';
+};
 const rows = items.map(t => `
 <div class="deal-card" style="padding:8px 12px;">
 <div class="deal-info">
-<div class="deal-title" style="font-size:12px;">${escapeHtml(t.type)}</div>
-<div class="deal-meta">${t.amount >= 0 ? '+' : ''}${formatCoins(t.amount)} · ${escapeHtml(t.note || '')}</div>
+<div class="deal-title" style="font-size:12px; display:flex; justify-content:space-between; gap:8px;"><span>${escapeHtml(TX[t.type] || t.type)}</span><span style="color:${t.amount >= 0 ? '#4ade80' : '#f87171'}; white-space:nowrap;">${t.amount >= 0 ? '+' : ''}${formatCoins(t.amount)}</span></div>
+<div class="deal-meta">${when(t.created_at)}${t.note ? ' · ' + escapeHtml(t.note) : ''}</div>
+${detail(t.detail)}
 </div>
 </div>`).join('');
 result.innerHTML = header + rows;
