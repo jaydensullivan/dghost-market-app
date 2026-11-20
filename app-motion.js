@@ -34,6 +34,7 @@ function dgMotionScreen(name){
 const prev = dgPrevScreen;
 dgPrevScreen = name;
 dgNavPill();
+(DG_ARM_ON_SCREEN[name] || []).forEach(dgArm);
 if (prev === null){ dgPrevNavBtn = document.querySelector('#bottomNav .nav-btn.active'); return; }
 if (prev === name) return;
 const el = document.getElementById(DG_SCREEN_EL[name]);
@@ -109,6 +110,66 @@ s.style.transform = '';
 document.addEventListener('touchend', end);
 document.addEventListener('touchcancel', end);
 })();
+
+// ---------- списки: карточки появляются по очереди ----------
+// Только при первом показе (вход на экран, смена раздела), а не на каждую
+// букву в поиске. Первые 14 карточек; остальные — сразу, без ожидания.
+function dgCascade(items){
+items.slice(0, 14).forEach((el, i) => {
+el.style.setProperty('--dg-i', i);
+el.classList.add('dg-rise');
+el.addEventListener('animationend', () => { el.classList.remove('dg-rise'); el.style.removeProperty('--dg-i'); }, { once: true });
+});
+}
+const dgCascadeArmed = {};
+function dgArm(id){ dgCascadeArmed[id] = true; }
+function dgWatchList(id, selector){
+const box = document.getElementById(id);
+if (!box) return;
+dgArm(id);
+new MutationObserver(() => {
+if (!dgCascadeArmed[id]) return;
+const items = [...box.querySelectorAll(selector)];
+if (!items.length) return;
+dgCascadeArmed[id] = false;
+if (!dgMotionCalm()) dgCascade(items);
+}).observe(box, { childList: true, subtree: true });
+}
+dgWatchList('skinsList', '.skin-card');
+dgWatchList('gtGrid', '.gt-tile, .gt-svc');
+dgWatchList('gtOffers', '[data-gt-offer]');
+
+// Взводим каскад заново: вход на экран, смена раздела каталога, открытие игры.
+const DG_ARM_ON_SCREEN = { shop: ['skinsList'], topup: ['gtGrid'] };
+document.addEventListener('click', (e) => {
+if (e.target.closest('[data-gt-type], [data-gt-genre]')) dgArm('gtGrid');
+if (e.target.closest('[data-gt-slug], [data-gt-region]')) dgArm('gtOffers');
+}, true);
+
+// ---------- ♡ и ★: «бьётся» и разбрасывает искры ----------
+function dgSparks(host, color){
+if (dgMotionCalm() || !host) return;
+for (let k = 0; k < 7; k++){
+const sp = document.createElement('i');
+sp.className = 'dg-spark';
+const a = k / 7 * Math.PI * 2;
+sp.style.setProperty('--x', Math.round(Math.cos(a) * 20) + 'px');
+sp.style.setProperty('--y', Math.round(Math.sin(a) * 20) + 'px');
+if (color) sp.style.background = color;
+host.appendChild(sp);
+setTimeout(() => sp.remove(), 560);
+}
+}
+document.addEventListener('click', (e) => {
+const fav = e.target.closest('.skin-fav, .gt-fav-btn');
+if (fav){
+dgReplay(fav, 'dg-beat');
+dgSparks(fav, fav.classList.contains('gt-fav-btn') ? '#fbbf24' : '#ff2bd6');
+return;
+}
+const offer = e.target.closest('[data-gt-offer]');
+if (offer) dgReplay(offer, 'dg-pop');
+}, true);
 
 // ---------- выключатель «Меньше анимаций» в Настройках ----------
 (function dgCalmToggle(){

@@ -437,8 +437,11 @@ grid.innerHTML = html || `<div class="skins-empty skins-empty-md">${d.gt_nothing
 }
 
 function showTopupView(detail){
+const wasDetail = !document.getElementById('gtDetailView').hidden;
 document.getElementById('gtCatalogView').hidden = detail;
 document.getElementById('gtDetailView').hidden = !detail;
+// Страница игры выезжает справа, возврат к каталогу — слева.
+if (wasDetail !== detail && typeof dgReplay === 'function') dgReplay(document.getElementById(detail ? 'gtDetailView' : 'gtCatalogView'), detail ? 'dg-in-right' : 'dg-in-left');
 window.scrollTo(0, 0);
 }
 
@@ -685,6 +688,8 @@ topupBtn.hidden = true;
 document.getElementById('gtCardBtn').hidden = true;
 payBtn.hidden = false;
 payBtn.disabled = false;
+// Денег не хватает — кнопка мягко «зовёт»: нажатие ведёт к пополнению.
+payBtn.classList.toggle('dg-attn', gtMissing > 0 && typeof dgMotionCalm === 'function' && !dgMotionCalm());
 })
 .catch(() => {});
 }

@@ -5638,3 +5638,22 @@ html.dg-calm *, html.dg-calm *::before, html.dg-calm *::after{ animation-duratio
 .dg-in-up, .dg-in-right, .dg-in-left, .nav-btn.dg-hop .nav-icon, .edit-overlay.show, .buy-overlay.show, .edit-overlay.show > .edit-sheet, .buy-overlay.show > .buy-sheet, .dg-shake{ animation:none; }
 .nav-pill, .edit-sheet, .buy-sheet{ transition:none; }
 }
+/* Карточки по очереди (витрина, каталог донатов, пакеты, сделки). */
+.dg-rise{ animation:dgInUp .42s var(--m-ease) both; animation-delay:calc(var(--dg-i, 0) * 45ms); }
+/* ♡ / ★ бьётся, искры разлетаются. */
+.dg-beat{ animation:dgBeat .45s var(--m-spring); }
+@keyframes dgBeat{ 30%{ transform:scale(1.35); } 60%{ transform:scale(.9); } }
+.dg-spark{ position:absolute; left:50%; top:50%; width:5px; height:5px; margin:-2.5px 0 0 -2.5px; border-radius:50%; background:#ff2bd6; pointer-events:none; animation:dgSpark .5s var(--m-ease) forwards; }
+@keyframes dgSpark{ to{ transform:translate(var(--x), var(--y)) scale(.2); opacity:0; } }
+/* Выбранный пакет «встаёт» на место. */
+.dg-pop{ animation:dgPop .32s var(--m-spring); }
+@keyframes dgPop{ 40%{ transform:scale(1.04); } }
+.gt-offer, .gt-tile, .gt-svc{ transition:transform var(--m-t1) var(--m-ease), border-color var(--m-t2), box-shadow var(--m-t2); }
+.gt-tile:active, .gt-svc:active, .gt-offer:active{ transform:scale(.97); }
+/* «Купить», когда не хватает денег: мягкая пульсация зовёт пополнить. */
+.dg-attn{ animation:dgAttn 1.8s ease-in-out 2; }
+@keyframes dgAttn{ 50%{ box-shadow:0 0 0 6px rgba(168,85,247,.25), 0 0 22px rgba(196,22,159,.45); } }
+@media (prefers-reduced-motion: reduce){
+.dg-rise, .dg-beat, .dg-spark, .dg-pop, .dg-attn{ animation:none; }
+.dg-spark{ display:none; }
+}
