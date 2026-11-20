@@ -5551,3 +5551,46 @@ body.theme-light #gtPayBox{ background:rgba(255, 255, 255, .92); }
 
 /* Автоподтверждение HUMO — только владельцу: раздел виден после ответа сервера. */
 #adminHumoSection:not([data-humo-ok]){ display:none !important; }
+
+/* ---------- Меню профиля: строки-аккордеон (app-pfmenu.js) ---------- */
+.pf-menu{ display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+.pf-acc{ border-radius:16px; border:1px solid var(--red-dim); background:var(--surface); overflow:hidden; transition:border-color .3s ease, box-shadow .3s ease; }
+.pf-acc[hidden]{ display:none; }
+.pf-acc.open{ border-color:rgba(168,85,247,.7); box-shadow:0 0 0 1px rgba(168,85,247,.22), 0 8px 26px -12px rgba(168,85,247,.6); }
+.pf-acc-hd{ display:flex; align-items:center; gap:12px; width:100%; min-height:60px; padding:10px 14px; border:none; background:none; color:var(--text); font:inherit; text-align:left; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .15s ease; }
+button.pf-acc.pf-acc-hd{ border:1px solid var(--red-dim); background:var(--surface); }
+.pf-acc-hd:active{ transform:scale(.98); }
+.pf-acc-hd:focus-visible{ outline:2px solid var(--red); outline-offset:-2px; border-radius:16px; }
+.pf-acc-hd .pf-ico{ flex:0 0 38px; height:38px; border-radius:11px; }
+.pf-acc-t{ flex:1 1 auto; min-width:0; font-size:15px; font-weight:700; color:var(--silver, var(--text)); }
+.pf-acc-hint{ flex:0 1 auto; min-width:0; max-width:46%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12.5px; color:var(--muted); }
+.pf-acc-ok{ color:#4ade80; }
+.pf-acc-dot{ display:inline-block; width:7px; height:7px; margin-right:6px; border-radius:50%; background:#f87171; vertical-align:1px; animation:pfAccPulse 2s infinite; }
+@keyframes pfAccPulse{ 0%{ box-shadow:0 0 0 0 rgba(248,113,113,.55); } 70%,100%{ box-shadow:0 0 0 6px rgba(248,113,113,0); } }
+.pf-acc-ch{ flex:0 0 auto; color:var(--muted); transition:transform .35s cubic-bezier(.2,.8,.2,1), color .3s; }
+.pf-acc.open .pf-acc-ch{ transform:rotate(90deg); color:var(--red); }
+/* Высота плавно: grid 0fr → 1fr, без прыжков страницы. */
+.pf-acc-bd{ display:grid; grid-template-rows:0fr; visibility:hidden; transition:grid-template-rows .35s cubic-bezier(.2,.8,.2,1), visibility 0s linear .35s; }
+.pf-acc.open .pf-acc-bd{ grid-template-rows:1fr; visibility:visible; transition:grid-template-rows .35s cubic-bezier(.2,.8,.2,1), visibility 0s; }
+.pf-acc-in{ min-height:0; overflow:hidden; }
+/* Карточки внутри строки — без своей рамки, через тонкий разделитель. */
+.pf-acc-in > .pf-card{ margin:0; border:0; border-top:1px solid var(--red-dim); border-radius:0; background:none; box-shadow:none; }
+.pf-acc-in > .pf-card[hidden]{ display:none; }
+.pf-acc-in > .pf-card, .pf-acc-in > details.pf-card{ opacity:0; transform:translateY(8px); transition:opacity .3s ease, transform .3s ease; }
+.pf-acc.open .pf-acc-in > .pf-card{ opacity:1; transform:none; }
+.pf-acc.open .pf-acc-in > .pf-card:nth-child(1){ transition-delay:.08s; }
+.pf-acc.open .pf-acc-in > .pf-card:nth-child(2){ transition-delay:.14s; }
+.pf-acc.open .pf-acc-in > .pf-card:nth-child(3){ transition-delay:.20s; }
+.pf-acc.open .pf-acc-in > .pf-card:nth-child(4){ transition-delay:.26s; }
+/* Заголовок рефералки повторяет строку меню — оставляем только текст про бонус. */
+.pf-acc-in > #profileReferralSection > .pf-card-head .pf-ico,
+.pf-acc-in > #profileReferralSection > .pf-card-head .pf-title{ display:none; }
+.pf-acc-in > #profileReferralSection > .pf-card-head .pf-sub{ margin-top:0; }
+/* Полоски кошельков заполняются при открытии строки. */
+.pf-acc .pf-wallet-bar > div{ transition:width .9s cubic-bezier(.2,.8,.2,1) .2s; }
+.pf-acc:not(.open) .pf-wallet-bar > div{ width:0 !important; }
+@media (prefers-reduced-motion: reduce){
+.pf-acc, .pf-acc-hd, .pf-acc-ch, .pf-acc-bd, .pf-acc-in > .pf-card, .pf-acc .pf-wallet-bar > div{ transition:none !important; }
+.pf-acc-in > .pf-card{ opacity:1; transform:none; }
+.pf-acc-dot{ animation:none; }
+}
