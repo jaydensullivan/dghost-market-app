@@ -105,6 +105,7 @@ referralBonusText.textContent = dict.referral_bonus_text(data.bonus_percent);
 referralWalletValue.textContent = `${formatCoins(data.wallet)} / ${formatCoins(data.wallet_cap)}`;
 document.getElementById('referralWalletBar').style.width = (data.wallet_cap ? Math.min(100, data.wallet / data.wallet_cap * 100) : 0) + '%';
 referralClaimBtn.style.display = data.wallet > 0 ? '' : 'none';
+loadStarRef();
 if (data.dashboard) renderReferralDashboard(data.dashboard);
 })
 .catch(() => {
@@ -246,3 +247,54 @@ topupSubmitBtn.disabled = false;
 });
 });
 
+
+// ---------- Stars за друзей ----------
+let starRef = null;
+function renderStarRef(){
+const box = document.getElementById('starRefBox');
+if (!starRef || !starRef.enabled){ box.hidden = true; return; }
+const d = I18N[currentLang] || I18N.ru;
+box.hidden = false;
+const need = starRef.claim || 100;
+document.getElementById('starRefValue').textContent = starRef.balance + ' / ' + need + ' ⭐';
+document.getElementById('starRefBar').style.width = Math.min(100, starRef.balance / need * 100) + '%';
+document.getElementById('starRefHint').textContent = d.star_ref_hint
+.replace('{reward}', starRef.reward).replace('{min}', starRef.min_purchase)
+.replace('{claim}', need).replace('{cap}', starRef.monthly_cap).replace('{month}', starRef.earned_month);
+const can = starRef.balance >= need;
+document.getElementById('starRefClaimBox').hidden = !can;
+document.getElementById('starRefClaimBtn').textContent = d.star_ref_claim.replace('{n}', need);
+const u = document.getElementById('starRefUsername');
+const me = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
+if (can && !u.value && me && me.username) u.value = '@' + me.username;
+}
+function loadStarRef(){
+if (!tg || !tg.initData) return;
+fetch(API_BASE + '/api/stars_ref/info?init_data=' + encodeURIComponent(tg.initData))
+.then(r => r.ok ? r.json() : Promise.reject())
+.then(data => { starRef = data; renderStarRef(); })
+.catch(() => {});
+}
+document.getElementById('starRefClaimBtn').addEventListener('click', () => {
+const d = I18N[currentLang] || I18N.ru;
+const st = document.getElementById('starRefStatus');
+const btn = document.getElementById('starRefClaimBtn');
+const username = document.getElementById('starRefUsername').value.trim();
+if (!/^@?[A-Za-z][A-Za-z0-9_]{4,31}$/.test(username)){ st.textContent = d.star_ref_err_bad_username; return; }
+btn.disabled = true;
+st.textContent = d.withdraw_sending;
+fetch(API_BASE + '/api/stars_ref/claim', {
+method: 'POST', headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData, username: username }),
+})
+.then(r => r.json().then(data => ({ ok: r.ok, data })))
+.then(({ ok, data }) => {
+if (!ok){ st.textContent = d['star_ref_err_' + data.error] || d.err_something_wrong; return; }
+starRef = data;
+renderStarRef();
+st.textContent = d.star_ref_claimed.replace('{n}', data.claim || 100);
+})
+.catch(() => { st.textContent = d.err_something_wrong; })
+.finally(() => { btn.disabled = false; });
+});
+loadStarRef();
