@@ -286,6 +286,7 @@ document.getElementById('tabDealsBtn').classList.toggle('active', name === 'deal
 document.getElementById('tabLotsBtn').classList.toggle('active', name === 'lots');
 // Нижняя навигация видна везде, кроме панели Admin — там своя кнопка «Назад».
 document.getElementById('bottomNav').style.display = name === 'admin' ? 'none' : 'flex';
+if (typeof dgMotionScreen === 'function') dgMotionScreen(name);
 if (name === 'lots' && typeof renderMyLots === 'function'){
 renderMyLots();
 loadSkins();

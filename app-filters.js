@@ -2712,6 +2712,7 @@ return r.json();
 })
 .then(() => {
 buyStatus.textContent = (I18N[currentLang] || I18N.ru).status_bought_ok;
+if (typeof dgSuccess === 'function') dgSuccess((I18N[currentLang] || I18N.ru).status_bought_ok);
 loadMe();
 loadSkins();
 setTimeout(() => {
@@ -2721,6 +2722,7 @@ pendingBuySkin = null;
 })
 .catch(err => {
 buyStatus.textContent = friendlyErrorMessage(err);
+if (typeof dgShake === 'function') dgShake(buyConfirmBalance);
 })
 .finally(() => {
 buyConfirmBalance.disabled = false;

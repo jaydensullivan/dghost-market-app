@@ -437,8 +437,11 @@ grid.innerHTML = html || `<div class="skins-empty skins-empty-md">${d.gt_nothing
 }
 
 function showTopupView(detail){
+const wasDetail = !document.getElementById('gtDetailView').hidden;
 document.getElementById('gtCatalogView').hidden = detail;
 document.getElementById('gtDetailView').hidden = !detail;
+// Страница игры выезжает справа, возврат к каталогу — слева.
+if (wasDetail !== detail && typeof dgReplay === 'function') dgReplay(document.getElementById(detail ? 'gtDetailView' : 'gtCatalogView'), detail ? 'dg-in-right' : 'dg-in-left');
 window.scrollTo(0, 0);
 }
 
@@ -685,6 +688,8 @@ topupBtn.hidden = true;
 document.getElementById('gtCardBtn').hidden = true;
 payBtn.hidden = false;
 payBtn.disabled = false;
+// Денег не хватает — кнопка мягко «зовёт»: нажатие ведёт к пополнению.
+payBtn.classList.toggle('dg-attn', gtMissing > 0 && typeof dgMotionCalm === 'function' && !dgMotionCalm());
 })
 .catch(() => {});
 }
@@ -797,11 +802,13 @@ updateTopupPayBox().then(() => { if (gtMissing > 0) gtOpenBalanceTopup(); });
 return;
 }
 status.textContent = gtErrorText(data.error);
+if (typeof dgShake === 'function') dgShake(document.getElementById('gtPayBtn'));
 updateTopupPayBox();
 return;
 }
 const o = data.order || {};
 status.textContent = o.status === 'refunded' ? d.gt_refunded : (o.status === 'completed' ? d.gt_done : d.gt_accepted);
+if (o.status !== 'refunded' && typeof dgSuccess === 'function') dgSuccess(o.status === 'completed' ? d.gt_done : d.gt_accepted);
 if (o.status !== 'refunded') setTimeout(() => openTopupOrders(), 1200);
 })
 .catch(() => { status.textContent = d.gt_err_generic; updateTopupPayBox(); })
@@ -835,6 +842,9 @@ function setDealsSeg(seg){
 document.querySelectorAll('#dealsSeg [data-deals-seg]').forEach(b => b.classList.toggle('active', b.dataset.dealsSeg === seg));
 document.getElementById('dealsSkinsPane').hidden = seg !== 'skins';
 document.getElementById('gtOrdersList').hidden = seg !== 'topup';
+// Список сменяется с лёгким сдвигом, карточки — по очереди.
+if (typeof dgReplay === 'function') dgReplay(document.getElementById(seg === 'topup' ? 'gtOrdersList' : 'dealsSkinsPane'), 'dg-in-up');
+if (typeof dgArm === 'function'){ dgArm('dealsList'); dgArm('gtOrdersList'); }
 if (seg === 'topup') loadTopupOrders();
 }
 
