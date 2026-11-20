@@ -5657,3 +5657,41 @@ html.dg-calm *, html.dg-calm *::before, html.dg-calm *::after{ animation-duratio
 .dg-rise, .dg-beat, .dg-spark, .dg-pop, .dg-attn{ animation:none; }
 .dg-spark{ display:none; }
 }
+/* Деньги: рост суммы вспыхивает зелёным. */
+.dg-money-up{ animation:dgMoneyUp 1.1s var(--m-ease); }
+@keyframes dgMoneyUp{ 0%,35%{ color:#4ade80; text-shadow:0 0 18px rgba(74,222,128,.55); } }
+/* Сделки: полоски прогресса заполняются по очереди при первом показе списка. */
+.dg-rise .deal-progress-seg.done, .dg-rise .deal-progress-seg.current{ transform-origin:left center; animation:dgFill .45s var(--m-ease) both; animation-delay:calc(var(--dg-i, 0) * 45ms + 180ms); }
+.dg-rise .deal-progress-seg:nth-child(2){ animation-delay:calc(var(--dg-i, 0) * 45ms + 300ms); }
+.dg-rise .deal-progress-seg:nth-child(3){ animation-delay:calc(var(--dg-i, 0) * 45ms + 420ms); }
+.dg-rise .deal-progress-seg:nth-child(4){ animation-delay:calc(var(--dg-i, 0) * 45ms + 540ms); }
+.dg-rise .deal-progress-seg:nth-child(5){ animation-delay:calc(var(--dg-i, 0) * 45ms + 660ms); }
+@keyframes dgFill{ from{ transform:scaleX(0); } }
+/* Шаги сделки в подробностях: появляются сверху вниз, точки «встают». */
+.dstep-list .dstep{ animation:dgInUp .35s var(--m-ease) both; }
+.dstep-list .dstep:nth-child(2){ animation-delay:.07s; } .dstep-list .dstep:nth-child(3){ animation-delay:.14s; }
+.dstep-list .dstep:nth-child(4){ animation-delay:.21s; } .dstep-list .dstep:nth-child(5){ animation-delay:.28s; }
+.dstep-list .dstep:nth-child(6){ animation-delay:.35s; } .dstep-list .dstep:nth-child(7){ animation-delay:.42s; }
+.dstep.done .dstep-dot{ animation:dgPop .4s var(--m-spring) both; animation-delay:inherit; }
+.deal-card, .gt-order{ transition:transform var(--m-t1) var(--m-ease); }
+/* Успех: галочка рисуется, конфетти падает. */
+.dg-success{ position:fixed; inset:0; z-index:12000; display:grid; place-items:center; background:rgba(8,7,13,.84); opacity:0; pointer-events:none; overflow:hidden; transition:opacity var(--m-t2) var(--m-ease); }
+.dg-success.on{ opacity:1; pointer-events:auto; }
+.dg-success-box{ text-align:center; padding:0 24px; transform:scale(.9); transition:transform var(--m-t3) var(--m-spring); }
+.dg-success.on .dg-success-box{ transform:none; }
+.dg-success-ring{ display:block; width:84px; height:84px; margin:0 auto 14px; }
+.dg-success-ring circle{ fill:none; stroke:#4ade80; stroke-width:4; stroke-dasharray:240; stroke-dashoffset:240; }
+.dg-success-ring path{ fill:none; stroke:#4ade80; stroke-width:5; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:60; stroke-dashoffset:60; }
+.dg-success.on .dg-success-ring circle{ stroke-dashoffset:0; transition:stroke-dashoffset .5s var(--m-ease); }
+.dg-success.on .dg-success-ring path{ stroke-dashoffset:0; transition:stroke-dashoffset .35s var(--m-ease) .4s; }
+.dg-success-title{ font-size:18px; font-weight:800; color:var(--text); }
+.dg-success-sub{ margin-top:6px; font-size:13px; color:var(--muted); }
+.dg-success-sub:empty{ display:none; }
+.dg-conf{ position:absolute; top:-12px; width:7px; height:11px; border-radius:2px; pointer-events:none; animation:dgFall 1.5s cubic-bezier(.3,.6,.4,1) forwards; }
+@keyframes dgFall{ to{ transform:translate(var(--x), 105vh) rotate(var(--r)); opacity:.2; } }
+@media (prefers-reduced-motion: reduce){
+.dg-money-up, .dg-rise .deal-progress-seg, .dstep-list .dstep, .dstep.done .dstep-dot, .dg-conf{ animation:none; }
+.dg-success-ring circle, .dg-success-ring path{ stroke-dashoffset:0 !important; transition:none !important; }
+.dg-success, .dg-success-box{ transition:none; }
+}
+html.dg-calm .dg-success-ring circle, html.dg-calm .dg-success-ring path{ stroke-dashoffset:0; }

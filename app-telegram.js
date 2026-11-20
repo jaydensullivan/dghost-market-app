@@ -12,6 +12,8 @@ const TG_HAS_V61 = !!(tg && tg.isVersionAtLeast && tg.isVersionAtLeast('6.1'));
 // ---------- вибрация ----------
 
 function haptic(kind){
+// Ошибка в ответ на нажатие — кнопка ещё и трясётся (app-motion.js).
+if (kind === 'error' && typeof dgShakeLast === 'function') dgShakeLast();
 if (!TG_HAS_V61 || !tg.HapticFeedback) return;
 try {
 if (kind === 'success' || kind === 'error' || kind === 'warning'){

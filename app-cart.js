@@ -198,6 +198,7 @@ loadSkins();
 
 if (!failed.length){
 status.textContent = dict.cart_success;
+if (typeof dgSuccess === 'function') dgSuccess(dict.cart_success);
 setTimeout(() => {
 document.getElementById('cartOverlay').classList.remove('show');
 status.textContent = '';
@@ -209,7 +210,7 @@ renderCartOverlay();
 status.textContent = errorMessage(failed[0].error);
 }
 })
-.catch(err => { status.textContent = friendlyErrorMessage(err); })
+.catch(err => { status.textContent = friendlyErrorMessage(err); if (typeof dgShake === 'function') dgShake(btn); })
 .finally(() => { btn.disabled = false; });
 });
 

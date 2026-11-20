@@ -543,7 +543,7 @@ return fetch(API_BASE + '/api/me?init_data=' + encodeURIComponent(tg.initData))
 .then(r => r.json())
 .then(data => {
 if (!data || data.error) return;
-document.getElementById('balanceAmount').textContent = formatCoins(data.available);
+if (typeof dgSetMoney === 'function') dgSetMoney(document.getElementById('balanceAmount'), data.available); else document.getElementById('balanceAmount').textContent = formatCoins(data.available);
 myAvailableBalance = Number(data.available) || 0;
 balancePill.style.display = '';
 isAdmin = !!data.is_admin;
@@ -692,8 +692,8 @@ updateProfileSteamBlock();
 profileName.textContent = data.username || ('ID ' + data.user_id);
 profileName.onclick = null;
 profileName.style.cursor = '';
-profileBalanceAmount.textContent = formatCoins(data.available);
 profileBalanceAmount.classList.remove('is-loading');
+if (typeof dgSetMoney === 'function') dgSetMoney(profileBalanceAmount, data.available); else profileBalanceAmount.textContent = formatCoins(data.available);
 myAvailableBalance = Number(data.available) || 0;
 profileHeld.innerHTML = data.held > 0
 ? (LOCK_ICON + ' ' + (I18N[currentLang] || I18N.ru).profile_held_label + ' ' + formatCoins(data.held))

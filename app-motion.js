@@ -118,7 +118,9 @@ function dgCascade(items){
 items.slice(0, 14).forEach((el, i) => {
 el.style.setProperty('--dg-i', i);
 el.classList.add('dg-rise');
-el.addEventListener('animationend', () => { el.classList.remove('dg-rise'); el.style.removeProperty('--dg-i'); }, { once: true });
+// Снимаем класс по таймеру, а не по animationend: внутри (полоски сделки)
+// свои анимации, им нужно доиграть.
+setTimeout(() => { el.classList.remove('dg-rise'); el.style.removeProperty('--dg-i'); }, i * 45 + 1500);
 });
 }
 const dgCascadeArmed = {};
@@ -138,9 +140,11 @@ if (!dgMotionCalm()) dgCascade(items);
 dgWatchList('skinsList', '.skin-card');
 dgWatchList('gtGrid', '.gt-tile, .gt-svc');
 dgWatchList('gtOffers', '[data-gt-offer]');
+dgWatchList('dealsList', '.deal-card');
+dgWatchList('gtOrdersList', '.gt-order');
 
 // Взводим каскад заново: вход на экран, смена раздела каталога, открытие игры.
-const DG_ARM_ON_SCREEN = { shop: ['skinsList'], topup: ['gtGrid'] };
+const DG_ARM_ON_SCREEN = { shop: ['skinsList'], topup: ['gtGrid'], deals: ['dealsList', 'gtOrdersList'] };
 document.addEventListener('click', (e) => {
 if (e.target.closest('[data-gt-type], [data-gt-genre]')) dgArm('gtGrid');
 if (e.target.closest('[data-gt-slug], [data-gt-region]')) dgArm('gtOffers');
@@ -170,6 +174,80 @@ return;
 const offer = e.target.closest('[data-gt-offer]');
 if (offer) dgReplay(offer, 'dg-pop');
 }, true);
+
+// ---------- деньги: сумма досчитывает, рост вспыхивает зелёным ----------
+// el.dataset.dgMoney хранит прошлое значение; первый показ — сразу, без счёта.
+function dgSetMoney(el, value){
+if (!el) return;
+const to = Number(value) || 0;
+const had = el.dataset.dgMoney !== undefined && el.dataset.dgMoney !== '';
+const from = had ? Number(el.dataset.dgMoney) : to;
+el.dataset.dgMoney = String(to);
+if (el.dgMoneyRaf) cancelAnimationFrame(el.dgMoneyRaf);
+if (!had || from === to || dgMotionCalm()){ el.textContent = formatCoins(to); return; }
+if (to > from){ el.classList.remove('dg-money-up'); void el.offsetWidth; el.classList.add('dg-money-up'); }
+const t0 = performance.now(), ms = 900;
+const step = (t) => {
+const k = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - k, 3);
+el.textContent = formatCoins(Math.round(from + (to - from) * e));
+if (k < 1) el.dgMoneyRaf = requestAnimationFrame(step); else el.dgMoneyRaf = 0;
+};
+el.dgMoneyRaf = requestAnimationFrame(step);
+}
+
+// ---------- ошибка: встряска кнопки, по которой только что нажали ----------
+let dgLastTap = null, dgLastTapAt = 0;
+document.addEventListener('click', (e) => {
+const b = e.target.closest && e.target.closest('button, .steam-link-btn, .welcome-btn');
+if (b){ dgLastTap = b; dgLastTapAt = Date.now(); }
+}, true);
+function dgShake(el){ dgReplay(el, 'dg-shake'); }
+// Зовётся из haptic('error'): ошибка пришла в ответ на нажатие — трясём кнопку.
+function dgShakeLast(){
+if (dgLastTap && Date.now() - dgLastTapAt < 8000 && dgLastTap.isConnected && dgLastTap.offsetParent) dgShake(dgLastTap);
+}
+
+// ---------- успех: галочка рисуется + фиолетовое конфетти ----------
+let dgSuccessTimer = 0;
+function dgSuccess(title, sub){
+let box = document.getElementById('dgSuccess');
+if (!box){
+box = document.createElement('div');
+box.id = 'dgSuccess';
+box.className = 'dg-success';
+box.setAttribute('role', 'status');
+box.innerHTML = '<div class="dg-success-box"><svg class="dg-success-ring" viewBox="0 0 84 84" aria-hidden="true"><circle cx="42" cy="42" r="38" transform="rotate(-90 42 42)"/><path d="M26 43l11 11 21-23"/></svg><div class="dg-success-title"></div><div class="dg-success-sub"></div></div>';
+box.addEventListener('click', () => dgSuccessHide());
+document.body.appendChild(box);
+}
+box.querySelector('.dg-success-title').textContent = title || '';
+box.querySelector('.dg-success-sub').textContent = sub || '';
+box.classList.remove('on');
+void box.offsetWidth;
+box.classList.add('on');
+if (typeof haptic === 'function') haptic('success');
+if (!dgMotionCalm()){
+const cols = ['#7B2CFF', '#C4169F', '#A855F7', '#ff2bd6', '#c081fa'];
+for (let k = 0; k < 36; k++){
+const p = document.createElement('i');
+p.className = 'dg-conf';
+p.style.left = (Math.random() * 100) + '%';
+p.style.background = cols[k % cols.length];
+p.style.setProperty('--x', Math.round(Math.random() * 120 - 60) + 'px');
+p.style.setProperty('--r', Math.round(Math.random() * 720 - 360) + 'deg');
+p.style.animationDelay = (Math.random() * 0.25).toFixed(2) + 's';
+box.appendChild(p);
+setTimeout(() => p.remove(), 1900);
+}
+}
+clearTimeout(dgSuccessTimer);
+dgSuccessTimer = setTimeout(dgSuccessHide, 1700);
+}
+function dgSuccessHide(){
+const box = document.getElementById('dgSuccess');
+if (box) box.classList.remove('on');
+clearTimeout(dgSuccessTimer);
+}
 
 // ---------- выключатель «Меньше анимаций» в Настройках ----------
 (function dgCalmToggle(){
