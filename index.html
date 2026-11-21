@@ -16,7 +16,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=9"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);if(localStorage.getItem('dg_calm')==='1')document.documentElement.classList.add('dg-calm');}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=147">
+<link rel="stylesheet" href="app.css?v=148">
 <link rel="stylesheet" href="app-desktop.css?v=2" media="(min-width: 1280px)">
 </head>
 <body data-tab="shop">
@@ -241,6 +241,13 @@
 <div class="gt-strip-head"><span>⚡ <span data-i18n="gt_strip_title">Пополнения — за 1–5 минут</span></span><span class="gt-strip-all"><span data-i18n="gt_type_all">Все</span> →</span></div>
 <div class="gt-strip-row" id="gtStripRow"></div>
 </div>
+
+<!-- Маркет подарков Telegram за сумы (app-gifts.js): виден, когда хранилище подключено. -->
+<button type="button" class="gf-entry" id="giftsEntry" hidden>
+<span class="gf-entry-ico" aria-hidden="true">🎁</span>
+<span class="gf-entry-text"><b data-i18n="gf_entry_title">Подарки Telegram</b><span data-i18n="gf_entry_sub">Покупай и продавай NFT-подарки за сумы</span></span>
+<span class="gf-entry-go" aria-hidden="true">→</span>
+</button>
 
 <!-- Категории и инструменты каталога (сеты, билдер) — рисуются в app-catalog.js. -->
 <div class="category-chips shop-cats" id="categoryChips"></div>
@@ -706,6 +713,36 @@
 </div>
 </div>
 
+</div>
+
+<!-- Маркет подарков Telegram (app-gifts.js). -->
+<div class="screen-profile" id="screenGifts" style="display:none; padding:76px 16px 110px;">
+<button type="button" class="back-btn u-mb12" id="gfBackBtn" aria-label="Назад" data-i18n-aria-label="btn_back">←</button>
+<div class="profile-section-title" style="font-size:16px; margin-bottom:12px;" data-i18n="gf_title">Подарки Telegram</div>
+<div class="shop-tabs" id="gfTabs">
+<button type="button" class="active" data-gf-tab="buy" data-i18n="gf_tab_buy">Купить</button>
+<button type="button" data-gf-tab="mine" data-i18n="gf_tab_mine">Мои подарки</button>
+</div>
+<div id="gfBuyPane">
+<label class="shop-search u-mb12">
+<svg class="gi" width="18" height="18" aria-hidden="true"><use href="#gi-search"/></svg>
+<input id="gfSearch" type="search" placeholder="Подарок, модель, фон" data-i18n-placeholder="gf_search_placeholder">
+</label>
+<div class="gf-toolbar">
+<div class="gf-chips" id="gfChips"></div>
+<select id="gfSort" class="gf-sort" aria-label="Сортировка">
+<option value="new" data-i18n="gf_sort_new">Новые</option>
+<option value="cheap" data-i18n="gf_sort_cheap">Дешевле</option>
+<option value="expensive" data-i18n="gf_sort_expensive">Дороже</option>
+<option value="rare" data-i18n="gf_sort_rare">Редкие</option>
+</select>
+</div>
+<div class="gf-grid" id="gfGrid"></div>
+</div>
+<div id="gfMinePane" hidden>
+<div class="gf-how" id="gfHow"></div>
+<div id="gfMine"></div>
+</div>
 </div>
 
 <div class="screen-profile" id="screenTopup" style="display:none; padding:76px 16px 100px;">
@@ -1987,6 +2024,13 @@
 </div>
 </div>
 
+<div class="edit-overlay" id="giftOverlay">
+<div class="edit-sheet gf-sheet">
+<button type="button" class="buy-close-btn" id="gfClose" aria-label="Закрыть" data-i18n-aria-label="btn_close">✕</button>
+<div id="gfDetail"></div>
+</div>
+</div>
+
 <div class="edit-overlay" id="notificationsOverlay">
 <div class="edit-sheet" style="max-height:80vh; overflow-y:auto;">
 <h2 data-i18n="notif_title">Уведомления</h2>
@@ -2796,9 +2840,9 @@
 </div>
 </div>
 <script src="app-core.js?v=21"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=78', en: 'app-i18n-en.js?v=77' };</script>
-<script src="app-i18n.js?v=200"></script>
-<script src="app-navigation.js?v=32"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=79', en: 'app-i18n-en.js?v=78' };</script>
+<script src="app-i18n.js?v=201"></script>
+<script src="app-navigation.js?v=33"></script>
 <script src="app-shop.js?v=55"></script>
 <script src="app-legal.js?v=3"></script>
 <script src="app-deals.js?v=30"></script>
@@ -2813,7 +2857,8 @@
 <script src="app-history.js?v=12"></script>
 <script src="app-referral.js?v=14"></script>
 <script src="app-pfmenu.js?v=1"></script>
-<script src="app-motion.js?v=2"></script>
+<script src="app-motion.js?v=3"></script>
+<script src="app-gifts.js?v=1"></script>
 <script src="app-withdraw.js?v=41"></script>
 <script src="app-instant.js?v=1"></script>
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
@@ -2823,7 +2868,7 @@
 <script src="app-auctions.js?v=9"></script>
 <script src="app-reviews.js?v=4"></script>
 <script src="app-notifications.js?v=3"></script>
-<script src="app-telegram.js?v=19"></script>
+<script src="app-telegram.js?v=20"></script>
 <script src="app-raffle.js?v=13"></script>
 <script src="app-home.js?v=13"></script>
 <script src="app-desktop.js?v=2"></script>

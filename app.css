@@ -5695,3 +5695,56 @@ html.dg-calm *, html.dg-calm *::before, html.dg-calm *::after{ animation-duratio
 .dg-success, .dg-success-box{ transition:none; }
 }
 html.dg-calm .dg-success-ring circle, html.dg-calm .dg-success-ring path{ stroke-dashoffset:0; }
+
+/* ---------- Маркет подарков Telegram (app-gifts.js) ---------- */
+.gf-entry{ display:flex; align-items:center; gap:12px; width:100%; margin:0 0 12px; padding:12px 14px; border-radius:16px; border:1px solid transparent; background:linear-gradient(var(--surface), var(--surface)) padding-box, linear-gradient(135deg, #38bdf8, #7B2CFF, #C4169F) border-box; color:var(--text); text-align:left; cursor:pointer; transition:transform var(--m-t1) var(--m-ease); }
+.gf-entry:active{ transform:scale(.98); }
+.gf-entry-ico{ font-size:28px; line-height:1; }
+.gf-entry-text{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+.gf-entry-text b{ font-size:15px; }
+.gf-entry-text span{ font-size:12px; color:var(--muted); }
+.gf-entry-go{ font-size:18px; color:var(--red-glow); }
+.gf-toolbar{ display:flex; gap:8px; align-items:center; margin-bottom:12px; }
+.gf-chips{ flex:1; min-width:0; display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; }
+.gf-chips::-webkit-scrollbar{ display:none; }
+.gf-chip{ flex:0 0 auto; padding:7px 12px; border-radius:999px; border:1px solid var(--red-dim); background:var(--surface); color:var(--text); font-size:13px; cursor:pointer; }
+.gf-chip.active{ border-color:var(--red); background:rgba(123,44,255,.18); }
+.gf-sort{ flex:0 0 auto; padding:7px 8px; border-radius:10px; border:1px solid var(--red-dim); background:var(--surface); color:var(--text); font-size:13px; }
+.gf-grid{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; }
+.gf-card{ display:flex; flex-direction:column; padding:0; border-radius:18px; overflow:hidden; border:1px solid var(--red-dim); background:var(--surface); color:var(--text); text-align:left; cursor:pointer; transition:transform var(--m-t1) var(--m-ease); }
+.gf-card:active{ transform:scale(.97); }
+.gf-card-art{ display:block; aspect-ratio:1/1; overflow:hidden; }
+.gf-card-art img{ display:block; width:100%; height:100%; object-fit:cover; }
+.gf-card-body{ display:flex; flex-direction:column; gap:3px; padding:9px 10px 11px; }
+.gf-card-name{ font-size:14px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gf-card-model{ font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.gf-card-model b{ color:#c4b5fd; font-weight:600; }
+.gf-card-price{ margin-top:4px; align-self:flex-start; padding:4px 10px; border-radius:10px; background:var(--cta-gradient); color:#fff; font-size:13px; font-weight:700; font-variant-numeric:tabular-nums; }
+.gf-sheet{ max-height:90vh; overflow-y:auto; position:relative; }
+.gf-hero{ display:block; width:min(100%, 280px); aspect-ratio:1/1; margin:0 auto 12px; border-radius:20px; overflow:hidden; }
+.gf-hero img{ display:block; width:100%; height:100%; object-fit:cover; }
+.gf-detail-name{ font-size:19px; font-weight:800; margin-bottom:10px; }
+.gf-traits{ display:grid; gap:6px; margin-bottom:12px; }
+.gf-trait{ display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:12px; border:1px solid var(--red-dim); }
+.gf-trait span{ width:64px; color:var(--muted); font-size:13px; }
+.gf-trait b{ flex:1; min-width:0; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.gf-trait i{ font-style:normal; font-size:12px; padding:2px 8px; border-radius:999px; background:rgba(123,44,255,.18); color:#c4b5fd; }
+.gf-detail-price{ font-size:24px; font-weight:800; font-variant-numeric:tabular-nums; margin:4px 0; }
+.gf-detail-note{ font-size:12px; color:var(--muted); margin-bottom:12px; line-height:1.45; }
+.gf-how{ padding:14px; margin-bottom:12px; border-radius:16px; border:1px solid var(--red-dim); background:var(--surface); }
+.gf-how-title{ font-weight:700; margin-bottom:8px; }
+.gf-how-steps{ margin:0; padding-left:18px; display:grid; gap:6px; font-size:13px; line-height:1.45; color:var(--muted); }
+.gf-how-steps b{ color:var(--text); }
+.gf-copy{ cursor:pointer; text-decoration:underline dotted; }
+.gf-mine{ display:flex; gap:12px; padding:12px; margin-bottom:10px; border-radius:16px; border:1px solid var(--red-dim); background:var(--surface); }
+.gf-mine-art{ flex:0 0 72px; height:72px; border-radius:14px; overflow:hidden; }
+.gf-mine-art img{ display:block; width:100%; height:100%; object-fit:cover; }
+.gf-mine-body{ flex:1; min-width:0; display:flex; flex-direction:column; gap:6px; }
+.gf-mine-name{ font-weight:700; }
+.gf-mine-status{ font-size:12px; color:var(--muted); }
+.gf-mine-status.listed{ color:#4ade80; }
+.gf-mine-row{ display:flex; gap:8px; flex-wrap:wrap; }
+.gf-price-input{ flex:1; min-width:110px; padding:9px 10px; border-radius:10px; border:1px solid var(--red-dim); background:var(--bg); color:var(--text); font-size:14px; }
+.gf-ghost{ background:none; }
+.gf-mine-hint{ font-size:12px; color:var(--muted); min-height:0; }
+.gf-mine-hint:empty{ display:none; }
