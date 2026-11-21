@@ -24,9 +24,9 @@ if (!dgMotionCalm()) el.classList.add(cls);
 const DG_SCREEN_EL = {
 shop: 'screenShop', profile: 'screenProfile', admin: 'screenAdmin', auctions: 'screenAuctions',
 deals: 'screenDeals', buyRequests: 'screenBuyRequests', support: 'screenSupport', lots: 'screenLots',
-pro: 'screenPro', topup: 'screenTopup', timer: 'screenTimer'
+pro: 'screenPro', topup: 'screenTopup', timer: 'screenTimer', gifts: 'screenGifts'
 };
-const DG_PUSH_SCREENS = ['buyRequests', 'support', 'pro', 'topup', 'auctions', 'timer'];
+const DG_PUSH_SCREENS = ['buyRequests', 'support', 'pro', 'topup', 'auctions', 'timer', 'gifts'];
 let dgPrevScreen = null;
 let dgPrevNavBtn = null;
 
@@ -142,9 +142,10 @@ dgWatchList('gtGrid', '.gt-tile, .gt-svc');
 dgWatchList('gtOffers', '[data-gt-offer]');
 dgWatchList('dealsList', '.deal-card');
 dgWatchList('gtOrdersList', '.gt-order');
+dgWatchList('gfGrid', '.gf-card');
 
 // Взводим каскад заново: вход на экран, смена раздела каталога, открытие игры.
-const DG_ARM_ON_SCREEN = { shop: ['skinsList'], topup: ['gtGrid'], deals: ['dealsList', 'gtOrdersList'] };
+const DG_ARM_ON_SCREEN = { shop: ['skinsList'], topup: ['gtGrid'], deals: ['dealsList', 'gtOrdersList'], gifts: ['gfGrid'] };
 document.addEventListener('click', (e) => {
 if (e.target.closest('[data-gt-type], [data-gt-genre]')) dgArm('gtGrid');
 if (e.target.closest('[data-gt-slug], [data-gt-region]')) dgArm('gtOffers');
