@@ -181,34 +181,57 @@ if (cardItem) cardItem.hidden = !topupCardEnabled;
 if (typeof gtAccAutoOpen === 'function') gtAccAutoOpen();
 }
 
+// Ошибка в форме пополнения: окно с текстом (его не пропустишь), красная
+// плашка под кнопкой и красная рамка у поля, которое нужно исправить.
+function topupFail(message, field){
+topupStatus.textContent = message;
+topupStatus.classList.add('is-error');
+document.querySelectorAll('#topupOverlay .field-error').forEach(el => el.classList.remove('field-error'));
+if (field){
+field.classList.add('field-error');
+if (typeof dgShake === 'function') dgShake(field);
+if (field.focus && field.tagName === 'INPUT') field.focus();
+}
+if (typeof haptic === 'function') haptic('error');
+if (typeof showAlert === 'function') showAlert('⚠️ ' + message);
+}
+function topupClearError(){
+topupStatus.classList.remove('is-error');
+document.querySelectorAll('#topupOverlay .field-error').forEach(el => el.classList.remove('field-error'));
+}
+document.getElementById('topupOverlay').addEventListener('input', (e) => {
+if (e.target.classList && e.target.classList.contains('field-error')) e.target.classList.remove('field-error');
+});
+
 topupSubmitBtn.addEventListener('click', () => {
 if (!tg || !tg.initData){
-topupStatus.textContent = errorMessage('unauthorized');
+topupFail(errorMessage('unauthorized'));
 return;
 }
 
 const amount = Number(tAmount.value);
 
 if (!amount || amount <= 0){
-topupStatus.textContent = (I18N[currentLang] || I18N.ru).withdraw_need_amount;
+topupFail((I18N[currentLang] || I18N.ru).withdraw_need_amount, tAmount);
 return;
 }
 
 // Имя владельца карты — админ сверяет его с чеком (как в оплате доната).
 const payerName = document.getElementById('topupPayer').value.trim();
 if (payerName.split(/\s+/).length < 2){
-topupStatus.textContent = (I18N[currentLang] || I18N.ru).gt_card_need_payer;
+topupFail((I18N[currentLang] || I18N.ru).gt_card_need_payer, document.getElementById('topupPayer'));
 return;
 }
 
 // Без чека заявку не отправляем — админ подтверждает только по чеку.
 if (!topupReceiptPhoto){
-topupStatus.textContent = (I18N[currentLang] || I18N.ru).topup_need_receipt;
 const rb = document.querySelector('.topup-receipt-btn');
 if (rb){ rb.classList.remove('need'); void rb.offsetWidth; rb.classList.add('need'); }
+topupFail((I18N[currentLang] || I18N.ru).topup_need_receipt);
 return;
 }
 
+topupClearError();
 topupSubmitBtn.disabled = true;
 topupStatus.textContent = (I18N[currentLang] || I18N.ru).withdraw_sending;
 
@@ -240,7 +263,7 @@ if (tg.close) {
 }
 })
 .catch(err => {
-topupStatus.textContent = friendlyErrorMessage(err);
+topupFail(friendlyErrorMessage(err));
 })
 .finally(() => {
 topupSubmitBtn.disabled = false;
