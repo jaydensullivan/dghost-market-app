@@ -16,7 +16,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=9"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);if(localStorage.getItem('dg_calm')==='1')document.documentElement.classList.add('dg-calm');}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=149">
+<link rel="stylesheet" href="app.css?v=150">
 <link rel="stylesheet" href="app-desktop.css?v=2" media="(min-width: 1280px)">
 </head>
 <body data-tab="shop">
@@ -740,8 +740,12 @@
 <div class="gf-grid" id="gfGrid"></div>
 </div>
 <div id="gfMinePane" hidden>
-<div class="gf-how" id="gfHow"></div>
+<!-- Подарки из профиля Telegram: «Выставить на продажу» → передать хранилищу → сразу на витрине. -->
+<div class="gf-sec-title" data-i18n="gf_profile_title">В твоём профиле Telegram</div>
+<div class="gf-grid u-mb12" id="gfProfile"></div>
+<div class="gf-sec-title" data-i18n="gf_vault_title">На хранении у маркета</div>
 <div id="gfMine"></div>
+<div class="gf-how" id="gfHow"></div>
 </div>
 </div>
 
@@ -2840,8 +2844,8 @@
 </div>
 </div>
 <script src="app-core.js?v=21"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=80', en: 'app-i18n-en.js?v=79' };</script>
-<script src="app-i18n.js?v=202"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=81', en: 'app-i18n-en.js?v=80' };</script>
+<script src="app-i18n.js?v=203"></script>
 <script src="app-navigation.js?v=33"></script>
 <script src="app-shop.js?v=55"></script>
 <script src="app-legal.js?v=3"></script>
@@ -2858,7 +2862,7 @@
 <script src="app-referral.js?v=15"></script>
 <script src="app-pfmenu.js?v=1"></script>
 <script src="app-motion.js?v=3"></script>
-<script src="app-gifts.js?v=3"></script>
+<script src="app-gifts.js?v=4"></script>
 <script src="app-withdraw.js?v=41"></script>
 <script src="app-instant.js?v=1"></script>
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
