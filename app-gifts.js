@@ -273,11 +273,121 @@ gfPost('/api/gifts/prelist_cancel', { name: item.name }).then(() => { closeGift(
 document.getElementById('giftOverlay').classList.add('show');
 }
 
+// ---------- «Отправить»: обычные подарки Telegram за сумы ----------
+// Бот покупает подарок за свои звёзды и отправляет себе или другу.
+
+let gsItems = [];
+let gsState = 'idle';   // idle | loading | ok | failed | off
+let gsTo = 'self';
+
+function loadGiftShop(){
+if (gsState === 'ok' && gsItems.length) { renderGiftShop(); return Promise.resolve(); }
+gsState = 'loading'; renderGiftShop();
+return fetch(API_BASE + '/api/gifts/shop?lang=' + encodeURIComponent(currentLang || 'ru'))
+.then(r => r.json().then(data => ({ ok: r.ok, data })))
+.then(({ ok, data }) => {
+if (!ok){ gsState = 'failed'; renderGiftShop(); return; }
+gsItems = data.items || [];
+gsState = data.enabled === false ? 'off' : 'ok';
+renderGiftShop();
+})
+.catch(() => { gsState = 'failed'; renderGiftShop(); });
+}
+
+function gsArt(it, cls){
+const img = it.img ? `<img src="${escapeHtml(API_BASE + it.img)}" alt="" loading="lazy" data-gs-emoji="${escapeHtml(it.emoji || '🎁')}">` : '';
+return `<span class="${cls}">${img || `<span class="gs-emoji">${escapeHtml(it.emoji || '🎁')}</span>`}</span>`;
+}
+
+function renderGiftShop(){
+const d = gfDict();
+const box = document.getElementById('gsGrid');
+if (!box) return;
+if (gsState === 'loading'){ box.innerHTML = `<div class="gf-empty-note">${escapeHtml(d.gs_loading)}</div>`; return; }
+if (gsState === 'failed'){ box.innerHTML = `<div class="gf-empty-note">${escapeHtml(d.gs_load_failed)}</div>`; return; }
+if (gsState === 'off' || !gsItems.length){ box.innerHTML = `<div class="gf-empty-note">${escapeHtml(d.gs_off)}</div>`; return; }
+box.innerHTML = gsItems.map(it => `<button type="button" class="gf-card gs-card" data-gs-id="${escapeHtml(it.id)}">
+${gsArt(it, 'gs-art')}
+<span class="gf-card-body">
+<span class="gf-card-name">${escapeHtml(it.name)}</span>
+${it.limited && it.remaining != null ? `<span class="gs-limited">${escapeHtml(d.gs_left.replace('{n}', Number(it.remaining).toLocaleString('ru-RU')))}</span>` : ''}
+<span class="gf-card-price">${escapeHtml(formatCoins(it.price_uzs))}</span>
+</span>
+</button>`).join('');
+}
+
+function gsRecipient(){
+const d = gfDict();
+if (gsTo === 'self') return { to: 'self', label: d.gs_to_self };
+const u = String(document.getElementById('gsUsername').value || '').trim().replace(/^@/, '');
+return { to: 'friend', username: u, label: '@' + u };
+}
+
+function openShopGift(it){
+const d = gfDict();
+const rec = gsRecipient();
+const total = (up) => it.price_uzs + (up && it.upgrade_price_uzs ? it.upgrade_price_uzs : 0);
+document.getElementById('gfDetail').innerHTML = `
+${gsArt(it, 'gs-hero')}
+<div class="gf-detail-name" style="text-align:center">${escapeHtml(it.name)}</div>
+<div class="gf-detail-note" style="text-align:center">${escapeHtml(d.gs_for.replace('{who}', rec.to === 'self' ? d.gs_to_self_long : rec.label))}</div>
+${it.upgrade_price_uzs ? `<label class="gs-check"><input type="checkbox" id="gsUpgrade"><span>${escapeHtml(d.gs_upgrade.replace('{sum}', formatCoins(it.upgrade_price_uzs)))}</span></label>` : ''}
+<button type="button" class="welcome-btn primary u-w100" id="gsSendBtn">${escapeHtml(d.gs_btn_send.replace('{price}', formatCoins(total(false))))}</button>
+<div class="edit-status" id="gsStatus"></div>`;
+const up = document.getElementById('gsUpgrade');
+const btn = document.getElementById('gsSendBtn');
+if (up) up.addEventListener('change', () => { btn.textContent = d.gs_btn_send.replace('{price}', formatCoins(total(up.checked))); });
+btn.onclick = () => {
+const status = document.getElementById('gsStatus');
+if (!tg || !tg.initData){ status.className = 'edit-status is-error'; status.textContent = d.gf_err_unauthorized; return; }
+if (rec.to === 'friend' && !/^[A-Za-z0-9_]{4,32}$/.test(rec.username || '')){ status.className = 'edit-status is-error'; status.textContent = d.gs_err_username; return; }
+btn.disabled = true;
+status.className = 'edit-status';
+status.textContent = d.gs_sending;
+gfPost('/api/gifts/shop/send', { gift_id: it.id, to: rec.to, username: rec.username || '', text: document.getElementById('gsText').value || '', upgrade: !!(up && up.checked) })
+.then(({ ok, data }) => {
+if (!ok){
+if (data.error === 'insufficient_balance'){
+status.className = 'edit-status is-error';
+status.textContent = d.gf_err_insufficient_balance;
+if (typeof haptic === 'function') haptic('error');
+setTimeout(() => { closeGift(); const t = document.getElementById('openTopupBtn'); if (t) t.click(); }, 900);
+return;
+}
+status.className = 'edit-status is-error';
+status.textContent = d['gs_err_' + data.error] || gfError(data.error);
+if (typeof haptic === 'function') haptic('error');
+return;
+}
+closeGift();
+if (typeof dgSuccess === 'function') dgSuccess(d.gs_sent, data.self ? d.gs_sent_self : d.gs_sent_friend.replace('{who}', rec.label));
+else showToast(d.gs_sent);
+document.getElementById('gsText').value = '';
+if (typeof loadMe === 'function') loadMe();
+})
+.catch(() => { status.className = 'edit-status is-error'; status.textContent = d.gf_err_generic; })
+.finally(() => { btn.disabled = false; });
+};
+document.getElementById('giftOverlay').classList.add('show');
+}
+
+// Превью стикера не загрузилось — показываем эмодзи.
+document.addEventListener('error', (e) => {
+const img = e.target;
+if (!(img instanceof HTMLImageElement) || !img.dataset.gsEmoji) return;
+const span = document.createElement('span');
+span.className = 'gs-emoji';
+span.textContent = img.dataset.gsEmoji;
+img.replaceWith(span);
+}, true);
+
 function setGiftsTab(tab){
 document.querySelectorAll('#gfTabs [data-gf-tab]').forEach(b => b.classList.toggle('active', b.dataset.gfTab === tab));
 document.getElementById('gfBuyPane').hidden = tab !== 'buy';
 document.getElementById('gfMinePane').hidden = tab !== 'mine';
+document.getElementById('gfSendPane').hidden = tab !== 'send';
 if (tab === 'mine'){ renderGiftsHow(); loadGiftsMine(); loadGiftsProfile(); }
+if (tab === 'send') loadGiftShop();
 }
 
 function loadGiftsScreen(){
@@ -368,6 +478,17 @@ const chip = e.target.closest('[data-gf-col]');
 if (chip){ gfCollection = chip.dataset.gfCol; if (typeof dgArm === 'function') dgArm('gfGrid'); renderGiftChips(); renderGiftsGrid(); return; }
 const tgLink = e.target.closest('[data-gf-tg]');
 if (tgLink){ e.preventDefault(); if (tg && typeof tg.openTelegramLink === 'function') tg.openTelegramLink(tgLink.dataset.gfTg); else window.open(tgLink.dataset.gfTg, '_blank'); return; }
+const gsTab = e.target.closest('[data-gs-to]');
+if (gsTab){
+gsTo = gsTab.dataset.gsTo;
+document.querySelectorAll('#gsTo [data-gs-to]').forEach(b => b.classList.toggle('active', b === gsTab));
+const u = document.getElementById('gsUsername');
+u.hidden = gsTo !== 'friend';
+if (gsTo === 'friend') u.focus();
+return;
+}
+const gsCard = e.target.closest('[data-gs-id]');
+if (gsCard){ const it = gsItems.find(x => x.id === gsCard.dataset.gsId); if (it) openShopGift(it); return; }
 const prof = e.target.closest('[data-gf-prof]');
 if (prof){ const it = gfProfileItems.find(x => x.name === prof.dataset.gfProf); if (it) openProfileGift(it); return; }
 const card = e.target.closest('[data-gf-id]');
