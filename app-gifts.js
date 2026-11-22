@@ -172,7 +172,7 @@ document.getElementById('gfDetail').innerHTML = `
 <div class="gf-detail-name">${escapeHtml(item.title)}</div>
 <div class="gf-traits">${traits.map(([k, v, r]) => `<div class="gf-trait"><span>${escapeHtml(k)}</span><b>${escapeHtml(v || '—')}</b><i>${gfPct(r)}</i></div>`).join('')}</div>
 <div class="gf-detail-price">${escapeHtml(formatCoins(item.price_uzs))}</div>
-<div class="gf-detail-note">${escapeHtml(d.gf_buy_note)}</div>
+<div class="gf-detail-note">${escapeHtml(gfInfo.manual ? d.gf_buy_note_manual : d.gf_buy_note)}</div>
 <button type="button" class="welcome-btn primary u-w100" id="gfBuyBtn">${escapeHtml(d.gf_btn_buy.replace('{price}', formatCoins(item.price_uzs)))}</button>
 <div class="edit-status" id="gfBuyStatus"></div>`;
 document.getElementById('gfBuyBtn').onclick = () => buyGift(item);
@@ -204,7 +204,7 @@ return;
 }
 status.textContent = '';
 closeGift();
-if (typeof dgSuccess === 'function') dgSuccess(d.gf_bought, d.gf_bought_sub);
+if (typeof dgSuccess === 'function') dgSuccess(data.manual ? d.gf_paid : d.gf_bought, data.manual ? d.gf_paid_sub : d.gf_bought_sub);
 if (typeof loadMe === 'function') loadMe();
 loadGifts();
 })
@@ -264,7 +264,7 @@ if (ret){
 ret.disabled = true;
 gfPost('/api/gifts/return', { id: Number(ret.dataset.gfReturn) })
 .then(({ ok, data }) => {
-showToast(ok ? d.gf_returned_ok : gfError(data.error));
+showToast(ok ? (data.manual ? d.gf_return_requested : d.gf_returned_ok) : gfError(data.error));
 loadGiftsMine(); loadGifts();
 })
 .catch(() => showToast(d.gf_err_generic))
@@ -283,6 +283,17 @@ const fee = Number(gfInfo.fee_percent) || 0;
 const payout = Math.max(0, price - Math.round(price * fee / 100 / 100) * 100);
 if (hint) hint.textContent = price ? gfDict().gf_you_get.replace('{sum}', formatCoins(payout)) : '';
 });
+
+// Fragment иногда отдаёт картинку подарка с ошибкой с первого раза (рисует её
+// при первом запросе) — пробуем ещё дважды с паузой.
+document.addEventListener('error', (e) => {
+const img = e.target;
+if (!(img instanceof HTMLImageElement) || !/nft\.fragment\.com\/gift\//.test(img.src)) return;
+const n = Number(img.dataset.gfRetry || 0);
+if (n >= 2) return;
+img.dataset.gfRetry = String(n + 1);
+setTimeout(() => { img.src = img.src.split('?')[0] + '?r=' + (n + 1); }, 1500 * (n + 1));
+}, true);
 
 // Вход на главной показываем, только если маркет работает.
 loadGifts();
