@@ -172,7 +172,7 @@ document.getElementById('gfDetail').innerHTML = `
 <div class="gf-detail-name">${escapeHtml(item.title)}</div>
 <div class="gf-traits">${traits.map(([k, v, r]) => `<div class="gf-trait"><span>${escapeHtml(k)}</span><b>${escapeHtml(v || '—')}</b><i>${gfPct(r)}</i></div>`).join('')}</div>
 <div class="gf-detail-price">${escapeHtml(formatCoins(item.price_uzs))}</div>
-<div class="gf-detail-note">${escapeHtml(d.gf_buy_note)}</div>
+<div class="gf-detail-note">${escapeHtml(gfInfo.manual ? d.gf_buy_note_manual : d.gf_buy_note)}</div>
 <button type="button" class="welcome-btn primary u-w100" id="gfBuyBtn">${escapeHtml(d.gf_btn_buy.replace('{price}', formatCoins(item.price_uzs)))}</button>
 <div class="edit-status" id="gfBuyStatus"></div>`;
 document.getElementById('gfBuyBtn').onclick = () => buyGift(item);
@@ -204,7 +204,7 @@ return;
 }
 status.textContent = '';
 closeGift();
-if (typeof dgSuccess === 'function') dgSuccess(d.gf_bought, d.gf_bought_sub);
+if (typeof dgSuccess === 'function') dgSuccess(data.manual ? d.gf_paid : d.gf_bought, data.manual ? d.gf_paid_sub : d.gf_bought_sub);
 if (typeof loadMe === 'function') loadMe();
 loadGifts();
 })
@@ -264,7 +264,7 @@ if (ret){
 ret.disabled = true;
 gfPost('/api/gifts/return', { id: Number(ret.dataset.gfReturn) })
 .then(({ ok, data }) => {
-showToast(ok ? d.gf_returned_ok : gfError(data.error));
+showToast(ok ? (data.manual ? d.gf_return_requested : d.gf_returned_ok) : gfError(data.error));
 loadGiftsMine(); loadGifts();
 })
 .catch(() => showToast(d.gf_err_generic))
