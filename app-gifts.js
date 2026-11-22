@@ -1,8 +1,8 @@
 // Маркет подарков Telegram за сумы (бот: gift_market.py).
 // «Купить» — подарки в продаже, фильтр по коллекции, сортировка,
 // карточка с моделью/узором/фоном и редкостью, покупка с баланса.
-// «Мои подарки» — подарки из профиля Telegram («Выставить на продажу» →
-// передать хранилищу → сразу на витрине) и то, что уже лежит на хранилище.
+// «Мои подарки» — подарки из профиля Telegram («Выставить на продажу» → сразу
+// на витрине; купили — передаёшь покупателю сам), сделки и старое хранилище.
 
 let gfItems = [];
 let gfInfo = { enabled: false, fee_percent: 5, escrow_username: null };
@@ -89,7 +89,7 @@ if (!gfLoaded) document.getElementById('gfGrid').innerHTML = `<div class="skins-
 
 function gfStatusLabel(item){
 const d = gfDict();
-return { held: d.gf_st_held, listed: d.gf_st_listed, selling: d.gf_st_selling, returning: d.gf_st_returning }[item.status] || item.status;
+return { held: d.gf_st_held, listed: d.gf_st_listed, selling: d.gf_st_selling, returning: d.gf_st_returning, dispute: d.gf_st_dispute }[item.status] || item.status;
 }
 
 function renderGiftsHow(){
@@ -107,11 +107,22 @@ box.innerHTML = `<div class="gf-how-title">${escapeHtml(d.gf_how_title)}</div>
 function renderGiftsMine(){
 const d = gfDict();
 const box = document.getElementById('gfMine');
-if (!gfMineItems.length){
+// Выставленное из профиля показываем в сетке профиля; здесь — сделки и хранилище.
+const list = gfMineItems.filter(it => !(it.p2p && it.status === 'listed'));
+if (!list.length){
 box.innerHTML = `<div class="skins-empty skins-empty-md">${escapeHtml(d.gf_mine_empty)}</div>`;
 return;
 }
-box.innerHTML = gfMineItems.map(it => `
+box.innerHTML = list.map(it => it.p2p ? `
+<div class="gf-mine">
+<span class="gf-mine-art" style="background:${gfBg(it)}"><img src="${escapeHtml(it.image || '')}" alt="" loading="lazy"></span>
+<div class="gf-mine-body">
+<div class="gf-mine-name">${escapeHtml(it.title)}</div>
+<div class="gf-mine-status selling">${escapeHtml(it.status === 'selling' ? d.gf_pass_to.replace('{who}', it.buyer_username ? '@' + it.buyer_username : '—') : d.gf_st_dispute)}${it.price_uzs ? ' · ' + escapeHtml(formatCoins(it.price_uzs)) : ''}</div>
+${it.status === 'selling' ? `<div class="gf-mine-hint">${escapeHtml(d.gf_pass_hint)}</div>
+<div class="gf-mine-row"><a class="pf-btn gf-set gf-open-tg" href="${escapeHtml(it.link)}" data-gf-tg="${escapeHtml(it.link)}">${escapeHtml(d.gf_btn_open_gift)}</a></div>` : ''}
+</div>
+</div>` : `
 <div class="gf-mine" data-gf-mine="${it.id}">
 <span class="gf-mine-art" style="background:${gfBg(it)}"><img src="${escapeHtml(it.image || '')}" alt="" loading="lazy"></span>
 <div class="gf-mine-body">
@@ -139,11 +150,12 @@ return fetch(API_BASE + '/api/gifts/mine?init_data=' + encodeURIComponent(tg.ini
 .catch(() => {});
 }
 
-// ---------- из профиля Telegram ----------
+// ---------- из профиля Telegram (P2P, без хранилища) ----------
+// Подарок выставляется прямо из профиля и остаётся у продавца. Купили —
+// бот пишет продавцу, кому передать; деньги у маркета, пока подарок не дойдёт.
 
 let gfProfileItems = [];
 let gfProfileState = 'idle';   // idle | loading | ok | failed
-let gfPollTimer = null;
 
 function loadGiftsProfile(fresh){
 if (!tg || !tg.initData){ gfProfileItems = []; gfProfileState = 'ok'; renderGiftsProfile(); return Promise.resolve(); }
@@ -153,25 +165,20 @@ return fetch(API_BASE + '/api/gifts/profile?init_data=' + encodeURIComponent(tg.
 .then(({ ok, data }) => {
 if (!ok){ gfProfileState = 'failed'; renderGiftsProfile(); return; }
 gfProfileItems = data.items || [];
-if (data.escrow_username) gfInfo.escrow_username = data.escrow_username;
+if (data.fee_percent != null) gfInfo.fee_percent = data.fee_percent;
 gfProfileState = 'ok';
 renderGiftsProfile();
-gfSchedulePoll();
 })
 .catch(() => { gfProfileState = 'failed'; renderGiftsProfile(); });
 }
 
-// Пока есть подарок «ждём передачу» — раз в 15 с обновляем: как только он
-// придёт на хранилище, он исчезнет из профиля и появится «В продаже».
-function gfSchedulePoll(){
-clearTimeout(gfPollTimer);
-const pane = document.getElementById('gfMinePane');
-if (!gfProfileItems.some(it => it.pending_price_uzs) || !pane || pane.hidden) return;
-gfPollTimer = setTimeout(() => {
-const p = document.getElementById('gfMinePane');
-if (!p || p.hidden || document.getElementById('screenGifts').style.display === 'none') return;
-Promise.all([loadGiftsMine(), loadGiftsProfile(true)]).then(() => loadGifts());
-}, 15000);
+function gfProfileBadge(it){
+const d = gfDict();
+const l = it.listing;
+if (!l) return ['is-sell', d.gf_btn_sell];
+if (l.status === 'listed') return ['', d.gf_on_sale.replace('{price}', formatCoins(l.price_uzs))];
+if (l.status === 'selling') return ['is-wait', d.gf_sold_pass];
+return ['is-wait', d.gf_st_dispute];
 }
 
 function renderGiftsProfile(){
@@ -181,17 +188,18 @@ if (!box) return;
 if (gfProfileState === 'loading'){ box.innerHTML = `<div class="gf-empty-note">${escapeHtml(d.gf_profile_loading)}</div>`; return; }
 if (gfProfileState === 'failed'){ box.innerHTML = `<div class="gf-empty-note">${escapeHtml(d.gf_err_profile_failed)}</div>`; return; }
 if (!gfProfileItems.length){ box.innerHTML = `<div class="gf-empty-note">${escapeHtml(d.gf_profile_empty)}</div>`; return; }
-box.innerHTML = gfProfileItems.map(it => `<button type="button" class="gf-card" data-gf-prof="${escapeHtml(it.name)}">
+box.innerHTML = gfProfileItems.map(it => {
+const [cls, label] = gfProfileBadge(it);
+return `<button type="button" class="gf-card" data-gf-prof="${escapeHtml(it.name)}">
 <span class="gf-card-art" style="background:${gfBg(it)}"><img src="${escapeHtml(it.image || '')}" alt="" loading="lazy"></span>
 <span class="gf-card-body">
 <span class="gf-card-name">${escapeHtml(it.title)}</span>
 <span class="gf-card-model">${escapeHtml(it.model || '')} <b>${gfPct(it.model_rarity)}</b></span>
-<span class="gf-card-price ${it.pending_price_uzs ? 'is-wait' : 'is-sell'}">${escapeHtml(it.pending_price_uzs ? d.gf_wait_transfer : d.gf_btn_sell)}</span>
+<span class="gf-card-price ${cls}">${escapeHtml(label)}</span>
 </span>
-</button>`).join('');
+</button>`;
+}).join('');
 }
-
-function gfEscrowName(){ return gfInfo.escrow_username ? '@' + gfInfo.escrow_username : '—'; }
 
 function gfTransferAfter(item){
 if (!item.next_transfer_at) return '';
@@ -200,24 +208,32 @@ if (!(t > new Date())) return '';
 return gfDict().gf_transfer_after.replace('{date}', t.toLocaleString(currentLang === 'en' ? 'en-GB' : 'ru-RU', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }));
 }
 
+function gfRefreshAll(){ loadGiftsProfile(true); loadGiftsMine(); loadGifts(); }
+
 function openProfileGift(item){
 const d = gfDict();
 const traits = [[d.gf_model, item.model, item.model_rarity], [d.gf_symbol, item.symbol, item.symbol_rarity], [d.gf_backdrop, item.backdrop, item.backdrop_rarity]];
-const pending = item.pending_price_uzs;
+const l = item.listing;
+const listed = l && l.status === 'listed';
+const busy = l && !listed;
 const after = gfTransferAfter(item);
 document.getElementById('gfDetail').innerHTML = `
 <div class="gf-hero" style="background:${gfBg(item)}"><img src="${escapeHtml(item.image || '')}" alt=""></div>
 <div class="gf-detail-name">${escapeHtml(item.title)}</div>
 <div class="gf-traits">${traits.map(([k, v, r]) => `<div class="gf-trait"><span>${escapeHtml(k)}</span><b>${escapeHtml(v || '—')}</b><i>${gfPct(r)}</i></div>`).join('')}</div>
+${busy ? `<div class="gf-step">${escapeHtml(l.status === 'selling' ? d.gf_sold_pass_long : d.gf_st_dispute)}</div>
+<a class="welcome-btn primary u-w100 gf-open-tg" href="${escapeHtml(item.link)}" data-gf-tg="${escapeHtml(item.link)}">${escapeHtml(d.gf_btn_open_gift)}</a>` : `
+${listed ? `<div class="gf-detail-note">${escapeHtml(d.gf_on_sale.replace('{price}', formatCoins(l.price_uzs)))}</div>` : ''}
 <div class="gf-sell-row">
-<input type="text" inputmode="numeric" class="gf-price-input" id="gfSellPrice" placeholder="${escapeHtml(d.gf_price_ph)}" value="${pending || ''}">
+<input type="text" inputmode="numeric" class="gf-price-input" id="gfSellPrice" placeholder="${escapeHtml(d.gf_price_ph)}" value="${listed ? l.price_uzs : ''}">
 </div>
 <div class="gf-mine-hint" id="gfSellHint"></div>
-${pending ? `<div class="gf-step">${escapeHtml(d.gf_step_transfer.replace('{price}', formatCoins(pending))).replace('{who}', `<b>${escapeHtml(gfEscrowName())}</b>`)}${after ? '<br>' + escapeHtml(after) : ''}</div>` : (after ? `<div class="gf-detail-note">${escapeHtml(after)}</div>` : '')}
-<button type="button" class="welcome-btn primary u-w100" id="gfSellBtn">${escapeHtml(pending ? d.gf_btn_transfer_tg : d.gf_btn_sell)}</button>
-${pending ? `<button type="button" class="gf-link-btn" id="gfSellSave">${escapeHtml(d.gf_btn_change)}</button><button type="button" class="gf-link-btn" id="gfSellCancel">${escapeHtml(d.gf_btn_prelist_cancel)}</button>` : ''}
-<div class="edit-status" id="gfSellStatus"></div>`;
+${after ? `<div class="gf-detail-note">${escapeHtml(after)}</div>` : `<div class="gf-detail-note">${escapeHtml(d.gf_sell_note)}</div>`}
+<button type="button" class="welcome-btn primary u-w100" id="gfSellBtn"${after ? ' disabled' : ''}>${escapeHtml(listed ? d.gf_btn_change : d.gf_btn_sell)}</button>
+${listed ? `<button type="button" class="gf-link-btn" id="gfSellCancel">${escapeHtml(d.gf_btn_unlist)}</button>` : ''}
+<div class="edit-status" id="gfSellStatus"></div>`}`;
 const input = document.getElementById('gfSellPrice');
+if (input){
 const hint = document.getElementById('gfSellHint');
 const updHint = () => {
 const price = parseInt(String(input.value).replace(/\D/g, ''), 10) || 0;
@@ -226,57 +242,35 @@ hint.textContent = price ? d.gf_you_get.replace('{sum}', formatCoins(Math.max(0,
 };
 input.addEventListener('input', updHint);
 updHint();
-const save = (thenOpen) => {
+document.getElementById('gfSellBtn').onclick = () => {
+const btn = document.getElementById('gfSellBtn');
 const status = document.getElementById('gfSellStatus');
 const price = parseInt(String(input.value).replace(/\D/g, ''), 10) || 0;
 status.className = 'edit-status';
 status.textContent = d.gf_saving;
-return gfPost('/api/gifts/prelist', { name: item.name, price_uzs: price }).then(({ ok, data }) => {
+btn.disabled = true;
+gfPost('/api/gifts/prelist', { name: item.name, price_uzs: price }).then(({ ok, data }) => {
 if (!ok){
 status.className = 'edit-status is-error';
 status.textContent = gfError(data.error);
 input.classList.add('field-error');
 if (typeof haptic === 'function') haptic('error');
-return false;
+return;
 }
-input.classList.remove('field-error');
-item.pending_price_uzs = price;
-if (data.escrow_username) gfInfo.escrow_username = data.escrow_username;
+closeGift();
 if (typeof haptic === 'function') haptic('success');
-renderGiftsProfile();
-gfSchedulePoll();
-openProfileGift(item);
-if (thenOpen) gfOpenInTelegram(item);
-return true;
-}).catch(() => { status.className = 'edit-status is-error'; status.textContent = d.gf_err_generic; return false; });
+if (typeof dgSuccess === 'function') dgSuccess(d.gf_listed_title, d.gf_listed_sub);
+else showToast(d.gf_listed_ok);
+gfRefreshAll();
+}).catch(() => { status.className = 'edit-status is-error'; status.textContent = d.gf_err_generic; })
+.finally(() => { btn.disabled = false; });
 };
-document.getElementById('gfSellBtn').onclick = () => {
-if (!pending){ save(true); return; }
-gfOpenInTelegram(item);
-};
-const saveBtn = document.getElementById('gfSellSave');
-if (saveBtn) saveBtn.onclick = () => save(false).then(ok => { if (ok) showToast(d.gf_prelist_saved); });
+}
 const cancelBtn = document.getElementById('gfSellCancel');
 if (cancelBtn) cancelBtn.onclick = () => {
-gfPost('/api/gifts/prelist_cancel', { name: item.name }).then(() => {
-item.pending_price_uzs = null;
-renderGiftsProfile();
-closeGift();
-});
+gfPost('/api/gifts/prelist_cancel', { name: item.name }).then(() => { closeGift(); showToast(d.gf_unlisted_ok); gfRefreshAll(); });
 };
 document.getElementById('giftOverlay').classList.add('show');
-}
-
-// Подарок открывается в Telegram: там «⋯ → Передать» хранилищу.
-function gfOpenInTelegram(item){
-const d = gfDict();
-const who = gfEscrowName();
-try { navigator.clipboard.writeText(who); } catch (e) {}
-showToast(d.gf_transfer_hint.split('{who}').join(who));
-setTimeout(() => {
-if (tg && typeof tg.openTelegramLink === 'function') tg.openTelegramLink(item.link);
-else window.open(item.link, '_blank');
-}, 700);
 }
 
 function setGiftsTab(tab){
@@ -313,7 +307,7 @@ document.getElementById('gfDetail').innerHTML = `
 <div class="gf-detail-name">${escapeHtml(item.title)}</div>
 <div class="gf-traits">${traits.map(([k, v, r]) => `<div class="gf-trait"><span>${escapeHtml(k)}</span><b>${escapeHtml(v || '—')}</b><i>${gfPct(r)}</i></div>`).join('')}</div>
 <div class="gf-detail-price">${escapeHtml(formatCoins(item.price_uzs))}</div>
-<div class="gf-detail-note">${escapeHtml(gfInfo.manual ? d.gf_buy_note_manual : d.gf_buy_note)}</div>
+<div class="gf-detail-note">${escapeHtml(item.p2p ? d.gf_buy_note_p2p : (gfInfo.manual ? d.gf_buy_note_manual : d.gf_buy_note))}</div>
 <button type="button" class="welcome-btn primary u-w100" id="gfBuyBtn">${escapeHtml(d.gf_btn_buy.replace('{price}', formatCoins(item.price_uzs)))}</button>
 <div class="edit-status" id="gfBuyStatus"></div>`;
 document.getElementById('gfBuyBtn').onclick = () => buyGift(item);
@@ -345,7 +339,7 @@ return;
 }
 status.textContent = '';
 closeGift();
-if (typeof dgSuccess === 'function') dgSuccess(data.manual ? d.gf_paid : d.gf_bought, data.manual ? d.gf_paid_sub : d.gf_bought_sub);
+if (typeof dgSuccess === 'function') dgSuccess(data.manual || data.p2p ? d.gf_paid : d.gf_bought, data.p2p ? d.gf_paid_sub_p2p : (data.manual ? d.gf_paid_sub : d.gf_bought_sub));
 if (typeof loadMe === 'function') loadMe();
 loadGifts();
 })
@@ -358,7 +352,11 @@ loadGifts();
 document.getElementById('giftsEntry').addEventListener('click', () => { goToScreen('gifts'); setGiftsTab('buy'); });
 document.getElementById('gfBackBtn').addEventListener('click', () => goToScreen('shop'));
 document.getElementById('gfClose').addEventListener('click', closeGift);
-document.getElementById('giftOverlay').addEventListener('click', (e) => { if (e.target.id === 'giftOverlay') closeGift(); });
+document.getElementById('giftOverlay').addEventListener('click', (e) => {
+if (e.target.id === 'giftOverlay'){ closeGift(); return; }
+const tgLink = e.target.closest('[data-gf-tg]');
+if (tgLink){ e.preventDefault(); if (tg && typeof tg.openTelegramLink === 'function') tg.openTelegramLink(tgLink.dataset.gfTg); else window.open(tgLink.dataset.gfTg, '_blank'); }
+});
 document.getElementById('gfSort').addEventListener('change', renderGiftsGrid);
 let gfSearchTimer = null;
 document.getElementById('gfSearch').addEventListener('input', () => { clearTimeout(gfSearchTimer); gfSearchTimer = setTimeout(renderGiftsGrid, 200); });
@@ -368,6 +366,8 @@ const tab = e.target.closest('[data-gf-tab]');
 if (tab){ setGiftsTab(tab.dataset.gfTab); return; }
 const chip = e.target.closest('[data-gf-col]');
 if (chip){ gfCollection = chip.dataset.gfCol; if (typeof dgArm === 'function') dgArm('gfGrid'); renderGiftChips(); renderGiftsGrid(); return; }
+const tgLink = e.target.closest('[data-gf-tg]');
+if (tgLink){ e.preventDefault(); if (tg && typeof tg.openTelegramLink === 'function') tg.openTelegramLink(tgLink.dataset.gfTg); else window.open(tgLink.dataset.gfTg, '_blank'); return; }
 const prof = e.target.closest('[data-gf-prof]');
 if (prof){ const it = gfProfileItems.find(x => x.name === prof.dataset.gfProf); if (it) openProfileGift(it); return; }
 const card = e.target.closest('[data-gf-id]');
