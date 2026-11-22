@@ -284,5 +284,16 @@ const payout = Math.max(0, price - Math.round(price * fee / 100 / 100) * 100);
 if (hint) hint.textContent = price ? gfDict().gf_you_get.replace('{sum}', formatCoins(payout)) : '';
 });
 
+// Fragment иногда отдаёт картинку подарка с ошибкой с первого раза (рисует её
+// при первом запросе) — пробуем ещё дважды с паузой.
+document.addEventListener('error', (e) => {
+const img = e.target;
+if (!(img instanceof HTMLImageElement) || !/nft\.fragment\.com\/gift\//.test(img.src)) return;
+const n = Number(img.dataset.gfRetry || 0);
+if (n >= 2) return;
+img.dataset.gfRetry = String(n + 1);
+setTimeout(() => { img.src = img.src.split('?')[0] + '?r=' + (n + 1); }, 1500 * (n + 1));
+}, true);
+
 // Вход на главной показываем, только если маркет работает.
 loadGifts();
