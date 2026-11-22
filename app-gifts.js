@@ -30,6 +30,47 @@ if (!c) return 'var(--surface)';
 return `radial-gradient(circle at 50% 42%, ${gfColor(c.center, '#3b2a55')} 0%, ${gfColor(c.edge, '#171022')} 78%)`;
 }
 
+// ---------- анимация подарка (Lottie) ----------
+// Уникальные: готовая анимация Fragment (фон, узор, модель). Обычные из
+// магазина: стикер через бота. Картинка видна сразу, анимация — поверх,
+// когда загрузится. «Меньше анимаций» — только картинка.
+
+const GF_LOTTIE_SRC = 'https://cdn.jsdelivr.net/npm/lottie-web@5.12.2/build/player/lottie_light.min.js';
+let gfLottieLib = null;
+let gfAnim = null;
+
+function gfLoadLottie(){
+if (window.lottie) return Promise.resolve(window.lottie);
+if (!gfLottieLib) gfLottieLib = new Promise((res, rej) => {
+const sc = document.createElement('script');
+sc.src = GF_LOTTIE_SRC; sc.async = true;
+sc.onload = () => window.lottie ? res(window.lottie) : rej(new Error('no lottie'));
+sc.onerror = () => { gfLottieLib = null; rej(new Error('lottie load')); };
+document.head.appendChild(sc);
+});
+return gfLottieLib;
+}
+
+function gfStopAnim(){ if (gfAnim){ try { gfAnim.destroy(); } catch (e) {} gfAnim = null; } }
+
+function gfPlayAnim(hero, url){
+gfStopAnim();
+if (!hero || !url || (typeof dgMotionCalm === 'function' && dgMotionCalm())) return;
+Promise.all([gfLoadLottie(), fetch(url).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })])
+.then(([lottie, data]) => {
+if (!hero.isConnected) return;
+const box = document.createElement('div');
+box.className = 'gf-anim';
+hero.appendChild(box);
+gfStopAnim();
+gfAnim = lottie.loadAnimation({ container: box, renderer: 'svg', loop: true, autoplay: true, animationData: data });
+gfAnim.addEventListener('DOMLoaded', () => hero.classList.add('is-anim'));
+})
+.catch(() => {});
+}
+
+function gfAnimUrl(item){ return item.name ? `https://nft.fragment.com/gift/${String(item.name).toLowerCase()}.lottie.json` : null; }
+
 function gfRarityScore(item){
 // Чем меньше доля, тем реже: суммируем «редкость» трёх признаков.
 return [item.model_rarity, item.symbol_rarity, item.backdrop_rarity].reduce((s, r) => s + (r ? 1000 / r : 0), 0);
@@ -218,7 +259,7 @@ const listed = l && l.status === 'listed';
 const busy = l && !listed;
 const after = gfTransferAfter(item);
 document.getElementById('gfDetail').innerHTML = `
-<div class="gf-hero" style="background:${gfBg(item)}"><img src="${escapeHtml(item.image || '')}" alt=""></div>
+<div class="gf-hero" id="gfHero" style="background:${gfBg(item)}"><img src="${escapeHtml(item.image || '')}" alt=""></div>
 <div class="gf-detail-name">${escapeHtml(item.title)}</div>
 <div class="gf-traits">${traits.map(([k, v, r]) => `<div class="gf-trait"><span>${escapeHtml(k)}</span><b>${escapeHtml(v || '—')}</b><i>${gfPct(r)}</i></div>`).join('')}</div>
 ${busy ? `<div class="gf-step">${escapeHtml(l.status === 'selling' ? d.gf_sold_pass_long : d.gf_st_dispute)}</div>
@@ -271,6 +312,7 @@ if (cancelBtn) cancelBtn.onclick = () => {
 gfPost('/api/gifts/prelist_cancel', { name: item.name }).then(() => { closeGift(); showToast(d.gf_unlisted_ok); gfRefreshAll(); });
 };
 document.getElementById('giftOverlay').classList.add('show');
+gfPlayAnim(document.getElementById('gfHero'), gfAnimUrl(item));
 }
 
 // ---------- «Отправить»: обычные подарки Telegram за сумы ----------
@@ -369,6 +411,7 @@ if (typeof loadMe === 'function') loadMe();
 .finally(() => { btn.disabled = false; });
 };
 document.getElementById('giftOverlay').classList.add('show');
+if (it.anim) gfPlayAnim(document.querySelector('#gfDetail .gs-hero'), API_BASE + it.anim);
 }
 
 // Превью стикера не загрузилось — показываем эмодзи.
@@ -413,7 +456,7 @@ function openGift(item){
 const d = gfDict();
 const traits = [[d.gf_model, item.model, item.model_rarity], [d.gf_symbol, item.symbol, item.symbol_rarity], [d.gf_backdrop, item.backdrop, item.backdrop_rarity]];
 document.getElementById('gfDetail').innerHTML = `
-<div class="gf-hero" style="background:${gfBg(item)}"><img src="${escapeHtml(item.image || '')}" alt=""></div>
+<div class="gf-hero" id="gfHero" style="background:${gfBg(item)}"><img src="${escapeHtml(item.image || '')}" alt=""></div>
 <div class="gf-detail-name">${escapeHtml(item.title)}</div>
 <div class="gf-traits">${traits.map(([k, v, r]) => `<div class="gf-trait"><span>${escapeHtml(k)}</span><b>${escapeHtml(v || '—')}</b><i>${gfPct(r)}</i></div>`).join('')}</div>
 <div class="gf-detail-price">${escapeHtml(formatCoins(item.price_uzs))}</div>
@@ -422,9 +465,10 @@ document.getElementById('gfDetail').innerHTML = `
 <div class="edit-status" id="gfBuyStatus"></div>`;
 document.getElementById('gfBuyBtn').onclick = () => buyGift(item);
 document.getElementById('giftOverlay').classList.add('show');
+gfPlayAnim(document.getElementById('gfHero'), gfAnimUrl(item));
 }
 
-function closeGift(){ document.getElementById('giftOverlay').classList.remove('show'); }
+function closeGift(){ gfStopAnim(); document.getElementById('giftOverlay').classList.remove('show'); }
 
 function buyGift(item){
 const d = gfDict();
