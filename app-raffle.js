@@ -105,13 +105,21 @@ btn.onclick = () => open3DViewer(entry.model, ps.title || c.title, entry.skin, N
 
 function renderRaffleJoin(c, me){
 const dict = rfDict();
-const need = raffleData.invites_required;
-const perTicket = raffleData.invites_per_ticket;
+const need = c.invites_required || raffleData.invites_required;
+const perTicket = c.invites_per_ticket || raffleData.invites_per_ticket;
 const have = me ? me.invites : 0;
+// Раздача «пригласи в канал»: друг засчитывается, когда вступит в канал по личной ссылке.
+const toChannel = c.invite_target === 'channel';
 // Второе условие — подписка на канал (флаг раздачи require_sub).
 const needSub = !!(c.require_sub || raffleData.require_sub);
 const subscribed = !!(me && me.subscribed);
-document.getElementById('rfCondition').textContent = (needSub ? dict.rf_condition_sub : dict.rf_condition).replace('{n}', need);
+if (toChannel && me && me.channel_invite_link){
+raffleInviteLink = me.channel_invite_link;
+document.getElementById('rfLinkText').textContent = raffleInviteLink.replace(/^https:\/\//, '');
+document.getElementById('rfLinkRow').style.display = '';
+}
+document.getElementById('rfCondition').textContent = (toChannel ? dict.rf_condition_channel : needSub ? dict.rf_condition_sub : dict.rf_condition).replace('{n}', need)
++ (c.winners_count > 1 ? ' · ' + dict.rf_winners_n.replace('{n}', c.winners_count) : '');
 document.getElementById('rfSub').style.display = needSub ? '' : 'none';
 document.getElementById('rfSubState').textContent = subscribed ? dict.rf_sub_yes : dict.rf_sub_no;
 document.getElementById('rfSubActions').style.display = needSub && !subscribed ? '' : 'none';
@@ -126,7 +134,7 @@ status.innerHTML = `<div class="raffle-in">${dict.rf_you_in}</div>`
 } else if (needSub && !subscribed && have >= need){
 status.innerHTML = `<div class="raffle-hint">${dict.rf_need_sub}</div>`;
 } else {
-status.innerHTML = `<div class="raffle-hint">${dict.rf_need_more.replace('{n}', Math.max(0, need - have))}</div>`;
+status.innerHTML = `<div class="raffle-hint">${(toChannel ? dict.rf_need_more_channel : dict.rf_need_more).replace('{n}', Math.max(0, need - have))}</div>`;
 }
 const pending = document.getElementById('rfPending');
 pending.textContent = [
@@ -135,7 +143,7 @@ me && me.invites_waiting_sub ? dict.rf_waiting_sub.replace('{n}', me.invites_wai
 me && me.invites_rejected ? dict.rf_rejected.replace('{n}', me.invites_rejected) : '',
 ].filter(Boolean).join(' · ');
 pending.style.display = pending.textContent ? '' : 'none';
-document.getElementById('rfRules').innerHTML = (needSub ? dict.rf_rules_sub_html : '') + dict.rf_rules_html
+document.getElementById('rfRules').innerHTML = (toChannel ? dict.rf_rules_channel_html : (needSub ? dict.rf_rules_sub_html : '') + dict.rf_rules_html)
 .replace(/\{n\}/g, need).replace(/\{t\}/g, perTicket);
 }
 
@@ -145,10 +153,10 @@ const box = document.getElementById('rfResult');
 const won = me && me.is_winner;
 box.innerHTML = `<div class="raffle-result-title">${dict.rf_finished}</div>`
 + (c.winner
-? `<div class="raffle-result-row">🏆 ${dict.rf_winner}: <b>${escapeHtml(c.winner)}</b>${won ? ` <span class="gw-you">${dict.gw_you}</span>` : ''}</div>`
+? `<div class="raffle-result-row">🏆 ${(c.winners && c.winners.length > 1) ? dict.rf_winners : dict.rf_winner}: <b>${escapeHtml((c.winners && c.winners.length ? c.winners : [c.winner]).join(', '))}</b>${won ? ` <span class="gw-you">${dict.gw_you}</span>` : ''}</div>`
 : `<div class="raffle-result-row">${dict.rf_no_winner}</div>`)
 + `<div class="raffle-result-row">🎁 ${dict.rf_prize}: <b>${escapeHtml(c.title)}</b></div>`
-+ (won ? `<div class="raffle-hint">${c.delivered ? dict.rf_delivered : dict.rf_you_won}</div>` : '')
++ (won ? `<div class="raffle-hint">${c.delivered ? dict.rf_delivered : (c.prize_stars ? dict.rf_you_won_stars : dict.rf_you_won)}</div>` : '')
 + (!won ? `<div class="raffle-lost">${dict.rf_not_won}</div>`
 + `<button type="button" class="cta raffle-cta" id="rfMarketBtn">${dict.rf_open_market}</button>` : '');
 const btn = document.getElementById('rfMarketBtn');
@@ -275,6 +283,8 @@ if (typeof applyFiltersAndRender === 'function') applyFiltersAndRender();
 // Ссылку грузим заранее: тогда «Копировать» работает сразу.
 function prefetchRaffleLink(){
 if (raffleInviteLink || !tg || !tg.initData) return;
+// В раздаче «пригласи в канал» ссылка своя — личная ссылка в канал (приходит в me).
+if (raffleData && raffleData.current && raffleData.current.invite_target === 'channel') return;
 fetch(API_BASE + '/api/referral_info?init_data=' + encodeURIComponent(tg.initData))
 .then(r => r.json())
 .then(data => {
