@@ -203,6 +203,8 @@ body: JSON.stringify({ visitor: vid, src: saved.src, target: saved.target, init_
 let target = null;
 try { target = new URLSearchParams(location.search).get('open'); } catch(e) {}
 if (!target && tg && tg.initDataUnsafe && typeof tg.initDataUnsafe.start_param === 'string') target = tg.initDataUnsafe.start_param;
+// Подарок из поста в канале или уведомления: startapp=gift_<id>.
+if (target && /^gift_\d+$/.test(target)){ const gid = target.slice(5); setTimeout(() => { if (typeof openGiftById === 'function') openGiftById(gid); }, 400); return; }
 if (target !== 'deals' && target !== 'sell' && target !== 'wants' && target !== 'search' && target !== 'pro' && target !== 'topup' && target !== 'gifts') return;
 setTimeout(() => {
 if (target === 'gifts'){

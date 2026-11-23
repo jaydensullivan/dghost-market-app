@@ -5755,6 +5755,18 @@ html.dg-calm .dg-success-ring circle, html.dg-calm .dg-success-ring path{ stroke
 .gf-ghost{ background:none; }
 .gf-mine-hint{ font-size:12px; color:var(--muted); min-height:0; }
 .gf-mine-hint:empty{ display:none; }
+/* Цена рынка и подписки на подарки (app-gifts.js: gfMarketLine, openWants). */
+.gf-card-off{ align-self:flex-start; font-size:11px; font-weight:700; color:#4ade80; }
+.gf-market{ font-size:13px; color:var(--muted); margin:2px 0 10px; line-height:1.45; }
+.gf-market b{ color:#4ade80; }
+.gf-quick{ display:flex; gap:8px; margin:-2px 0 10px; }
+.gf-quick button{ flex:1; padding:8px 6px; border-radius:10px; border:1px solid var(--red-dim); background:none; color:var(--text); font-size:12px; font-weight:700; cursor:pointer; }
+.gf-wants-btn{ display:block; width:100%; padding:11px 12px; border-radius:14px; border:1px dashed rgba(168,85,247,.55); background:rgba(123,44,255,.08); color:#ddd6fe; font-weight:700; font-size:13px; cursor:pointer; }
+#gfDetail .gs-input{ margin-bottom:8px; }
+.gf-wants{ display:grid; gap:8px; margin-top:12px; }
+.gf-want{ display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:12px; border:1px solid var(--red-dim); font-size:13px; }
+.gf-want span{ flex:1; min-width:0; }
+.gf-want button{ border:0; background:none; color:var(--muted); font-size:20px; line-height:1; cursor:pointer; padding:0 4px; }
 /* Обычные подарки Telegram за сумы (app-gifts.js: renderGiftShop). */
 .gs-box{ padding:14px; border-radius:16px; border:1px solid var(--red-dim); background:var(--surface); display:grid; gap:10px; }
 .gs-label{ font-weight:700; }

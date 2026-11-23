@@ -71,6 +71,23 @@ gfAnim.addEventListener('DOMLoaded', () => hero.classList.add('is-anim'));
 
 function gfAnimUrl(item){ return item.name ? `https://nft.fragment.com/gift/${String(item.name).toLowerCase()}.lottie.json` : null; }
 
+// ---------- цена рынка (Fragment) ----------
+
+function gfTon(v){ return (Math.round(Number(v) * 10) / 10).toLocaleString('ru-RU'); }
+
+function gfDiscount(item){
+if (!item.market_uzs || !item.price_uzs || item.price_uzs >= item.market_uzs) return 0;
+return Math.round((1 - item.price_uzs / item.market_uzs) * 100);
+}
+
+function gfMarketLine(item){
+const d = gfDict();
+if (!item.market_ton) return '';
+const base = d.gf_market_line.replace('{ton}', gfTon(item.market_ton)).replace('{sum}', item.market_uzs ? formatCoins(item.market_uzs) : '—');
+const off = gfDiscount(item);
+return `<div class="gf-market">${escapeHtml(base)}${off >= 1 ? ` <b>${escapeHtml(d.gf_cheaper.replace('{pct}', off))}</b>` : ''}</div>`;
+}
+
 function gfRarityScore(item){
 // Чем меньше доля, тем реже: суммируем «редкость» трёх признаков.
 return [item.model_rarity, item.symbol_rarity, item.backdrop_rarity].reduce((s, r) => s + (r ? 1000 / r : 0), 0);
@@ -84,6 +101,7 @@ return `<button type="button" class="gf-card" data-gf-id="${item.id}">
 <span class="gf-card-name">${escapeHtml(item.title)}</span>
 <span class="gf-card-model">${escapeHtml(item.model || '')} <b>${gfPct(item.model_rarity)}</b></span>
 <span class="gf-card-price">${item.price_uzs ? escapeHtml(formatCoins(item.price_uzs)) : escapeHtml(d.gf_no_price)}</span>
+${gfDiscount(item) >= 1 ? `<span class="gf-card-off">${escapeHtml(d.gf_cheaper.replace('{pct}', gfDiscount(item)))}</span>` : ''}
 </span>
 </button>`;
 }
@@ -269,6 +287,7 @@ ${listed ? `<div class="gf-detail-note">${escapeHtml(d.gf_on_sale.replace('{pric
 <input type="text" inputmode="numeric" class="gf-price-input" id="gfSellPrice" placeholder="${escapeHtml(d.gf_price_ph)}" value="${listed ? l.price_uzs : ''}">
 </div>
 <div class="gf-mine-hint" id="gfSellHint"></div>
+<div id="gfSellMarket"></div>
 ${after ? `<div class="gf-detail-note">${escapeHtml(after)}</div>` : `<div class="gf-detail-note">${escapeHtml(d.gf_sell_note)}</div>`}
 <button type="button" class="welcome-btn primary u-w100" id="gfSellBtn"${after ? ' disabled' : ''}>${escapeHtml(listed ? d.gf_btn_change : d.gf_btn_sell)}</button>
 ${listed ? `<button type="button" class="gf-link-btn" id="gfSellCancel">${escapeHtml(d.gf_btn_unlist)}</button>` : ''}
@@ -283,6 +302,20 @@ hint.textContent = price ? d.gf_you_get.replace('{sum}', formatCoins(Math.max(0,
 };
 input.addEventListener('input', updHint);
 updHint();
+// Подсказка цены: рынок Fragment и быстрые кнопки «рынок −5% / −10%».
+const showMarket = (m) => {
+const box = document.getElementById('gfSellMarket');
+if (!box || !m || !m.ton) return;
+const line = d.gf_market_line.replace('{ton}', gfTon(m.ton)).replace('{sum}', m.uzs ? formatCoins(m.uzs) : '—');
+box.innerHTML = `<div class="gf-market">${escapeHtml(line)}</div>` + (m.uzs ? `<div class="gf-quick">${[0, 5, 10].map(p => {
+const v = Math.max(10000, Math.round(m.uzs * (1 - p / 100) / 1000) * 1000);
+return `<button type="button" data-gf-quick="${v}">${escapeHtml(p ? d.gf_market_minus.replace('{pct}', p) : d.gf_market_eq)}</button>`;
+}).join('')}</div>` : '');
+box.querySelectorAll('[data-gf-quick]').forEach(b => b.onclick = () => { input.value = b.dataset.gfQuick; updHint(); });
+};
+if (item.market_ton) showMarket({ ton: item.market_ton, uzs: item.market_uzs });
+else fetch(API_BASE + '/api/gifts/market?name=' + encodeURIComponent(item.name) + '&model=' + encodeURIComponent(item.model || ''))
+.then(r => r.json()).then(m => { item.market_ton = m.ton; item.market_uzs = m.uzs; showMarket(m); }).catch(() => {});
 document.getElementById('gfSellBtn').onclick = () => {
 const btn = document.getElementById('gfSellBtn');
 const status = document.getElementById('gfSellStatus');
@@ -424,6 +457,69 @@ span.textContent = img.dataset.gsEmoji;
 img.replaceWith(span);
 }, true);
 
+// ---------- «Сообщить, когда появится» ----------
+
+let gfWants = [];
+
+function gfCollections(){
+const names = new Set(gfItems.map(it => it.base_name).filter(Boolean));
+(gfProfileItems || []).forEach(it => it.base_name && names.add(it.base_name));
+['Plush Pepe', 'Durov\'s Cap', 'Precious Peach', 'Heart Locket', 'Mad Pumpkin', 'Jester Hat', 'Love Potion', 'Swiss Watch', 'Eternal Rose', 'Signet Ring',
+'Vintage Cigar', 'Lol Pop', 'Homemade Cake', 'Snoop Dogg', 'Toy Bear', 'Light Sword', 'Mighty Arm', 'Kissed Frog', 'Scared Cat', 'Witch Hat'].forEach(n => names.add(n));
+return [...names].sort();
+}
+
+function renderWants(){
+const d = gfDict();
+const box = document.getElementById('gfWantsList');
+if (!box) return;
+box.innerHTML = gfWants.length ? gfWants.map(w => `<div class="gf-want"><span>🔔 ${escapeHtml(w.base_name)}${w.model ? ' · ' + escapeHtml(w.model) : ''}${w.max_price ? ' · ' + escapeHtml(d.gf_want_upto.replace('{sum}', formatCoins(w.max_price))) : ''}</span>
+<button type="button" data-gf-want-del="${w.id}" aria-label="×">×</button></div>`).join('') : `<div class="gs-note">${escapeHtml(d.gf_wants_empty)}</div>`;
+}
+
+function openWants(){
+const d = gfDict();
+document.getElementById('gfDetail').innerHTML = `
+<div class="gf-detail-name">${escapeHtml(d.gf_wants_title)}</div>
+<div class="gf-detail-note">${escapeHtml(d.gf_wants_sub)}</div>
+<input type="text" id="gfWantName" class="gf-price-input gs-input" list="gfWantNames" placeholder="${escapeHtml(d.gf_want_name_ph)}" autocomplete="off">
+<datalist id="gfWantNames">${gfCollections().map(n => `<option value="${escapeHtml(n)}">`).join('')}</datalist>
+<input type="text" id="gfWantModel" class="gf-price-input gs-input" placeholder="${escapeHtml(d.gf_want_model_ph)}" autocomplete="off">
+<input type="text" inputmode="numeric" id="gfWantPrice" class="gf-price-input gs-input" placeholder="${escapeHtml(d.gf_want_price_ph)}">
+<button type="button" class="welcome-btn primary u-w100" id="gfWantAdd">${escapeHtml(d.gf_want_add)}</button>
+<div class="edit-status" id="gfWantStatus"></div>
+<div class="gf-wants" id="gfWantsList"></div>`;
+renderWants();
+if (tg && tg.initData) fetch(API_BASE + '/api/gifts/wants?init_data=' + encodeURIComponent(tg.initData)).then(r => r.json()).then(data => { gfWants = data.items || []; renderWants(); }).catch(() => {});
+document.getElementById('gfWantAdd').onclick = () => {
+const status = document.getElementById('gfWantStatus');
+if (!tg || !tg.initData){ status.className = 'edit-status is-error'; status.textContent = d.gf_err_unauthorized; return; }
+const price = parseInt(String(document.getElementById('gfWantPrice').value).replace(/\D/g, ''), 10) || 0;
+gfPost('/api/gifts/wants', { base_name: document.getElementById('gfWantName').value, model: document.getElementById('gfWantModel').value, max_price: price || null })
+.then(({ ok, data }) => {
+if (!ok){ status.className = 'edit-status is-error'; status.textContent = d['gf_want_err_' + data.error] || gfError(data.error); return; }
+status.className = 'edit-status'; status.textContent = d.gf_want_saved;
+gfWants = data.items || []; renderWants();
+['gfWantName', 'gfWantModel', 'gfWantPrice'].forEach(id => { document.getElementById(id).value = ''; });
+if (typeof haptic === 'function') haptic('success');
+}).catch(() => { status.className = 'edit-status is-error'; status.textContent = d.gf_err_generic; });
+};
+document.getElementById('giftOverlay').classList.add('show');
+}
+
+// Ссылка из поста/уведомления: ?startapp=gift_<id> — открыть подарок на витрине.
+function openGiftById(id){
+goToScreen('gifts');
+setGiftsTab('buy');
+let tries = 0;
+const tick = () => {
+const it = gfItems.find(x => String(x.id) === String(id));
+if (it){ openGift(it); return; }
+if (++tries < 20) setTimeout(tick, 300);
+};
+tick();
+}
+
 function setGiftsTab(tab){
 document.querySelectorAll('#gfTabs [data-gf-tab]').forEach(b => b.classList.toggle('active', b.dataset.gfTab === tab));
 document.getElementById('gfBuyPane').hidden = tab !== 'buy';
@@ -460,6 +556,7 @@ document.getElementById('gfDetail').innerHTML = `
 <div class="gf-detail-name">${escapeHtml(item.title)}</div>
 <div class="gf-traits">${traits.map(([k, v, r]) => `<div class="gf-trait"><span>${escapeHtml(k)}</span><b>${escapeHtml(v || '—')}</b><i>${gfPct(r)}</i></div>`).join('')}</div>
 <div class="gf-detail-price">${escapeHtml(formatCoins(item.price_uzs))}</div>
+${gfMarketLine(item)}
 <div class="gf-detail-note">${escapeHtml(item.p2p ? d.gf_buy_note_p2p : (gfInfo.manual ? d.gf_buy_note_manual : d.gf_buy_note))}</div>
 <button type="button" class="welcome-btn primary u-w100" id="gfBuyBtn">${escapeHtml(d.gf_btn_buy.replace('{price}', formatCoins(item.price_uzs)))}</button>
 <div class="edit-status" id="gfBuyStatus"></div>`;
@@ -509,7 +606,9 @@ document.getElementById('gfClose').addEventListener('click', closeGift);
 document.getElementById('giftOverlay').addEventListener('click', (e) => {
 if (e.target.id === 'giftOverlay'){ closeGift(); return; }
 const tgLink = e.target.closest('[data-gf-tg]');
-if (tgLink){ e.preventDefault(); if (tg && typeof tg.openTelegramLink === 'function') tg.openTelegramLink(tgLink.dataset.gfTg); else window.open(tgLink.dataset.gfTg, '_blank'); }
+if (tgLink){ e.preventDefault(); if (tg && typeof tg.openTelegramLink === 'function') tg.openTelegramLink(tgLink.dataset.gfTg); else window.open(tgLink.dataset.gfTg, '_blank'); return; }
+const del = e.target.closest('[data-gf-want-del]');
+if (del){ gfPost('/api/gifts/wants/delete', { id: Number(del.dataset.gfWantDel) }).then(({ data }) => { gfWants = (data && data.items) || []; renderWants(); }).catch(() => {}); }
 });
 document.getElementById('gfSort').addEventListener('change', renderGiftsGrid);
 let gfSearchTimer = null;
@@ -522,6 +621,7 @@ const chip = e.target.closest('[data-gf-col]');
 if (chip){ gfCollection = chip.dataset.gfCol; if (typeof dgArm === 'function') dgArm('gfGrid'); renderGiftChips(); renderGiftsGrid(); return; }
 const tgLink = e.target.closest('[data-gf-tg]');
 if (tgLink){ e.preventDefault(); if (tg && typeof tg.openTelegramLink === 'function') tg.openTelegramLink(tgLink.dataset.gfTg); else window.open(tgLink.dataset.gfTg, '_blank'); return; }
+if (e.target.closest('#gfWantsBtn')){ openWants(); return; }
 const gsTab = e.target.closest('[data-gs-to]');
 if (gsTab){
 gsTo = gsTab.dataset.gsTo;
