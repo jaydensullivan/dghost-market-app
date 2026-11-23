@@ -716,7 +716,7 @@ gs_err_recipient_not_found: "Этот человек ещё не открыва�
 gs_err_out_of_stock: "Подарки временно закончились — уже пополняем. Попробуй чуть позже.",
 gs_err_send_failed: "Telegram не принял подарок — деньги вернули на баланс.",
 gs_err_no_upgrade: "У этого подарка нет улучшения.",
-gf_market_line: "На Fragment такая модель — от {ton} TON (~{sum})",
+gf_market_line: "Цена рынка ~{ton} TON (~{sum})",
 gf_cheaper: "−{pct}% к рынку",
 gf_market_eq: "По рынку",
 gf_market_minus: "Рынок −{pct}%",
