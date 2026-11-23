@@ -712,7 +712,7 @@ gs_err_recipient_not_found: "Bu odam hali @dghostmarketbot'ni ochmagan — botni
 gs_err_out_of_stock: "Sovg'alar vaqtincha tugadi — to'ldiryapmiz. Birozdan keyin urinib ko'ring.",
 gs_err_send_failed: "Telegram sovg'ani qabul qilmadi — pul balansga qaytarildi.",
 gs_err_no_upgrade: "Bu sovg'ada yaxshilash yo'q.",
-gf_market_line: "Fragment'da bu model — {ton} TON dan (~{sum})",
+gf_market_line: "Bozor narxi ~{ton} TON (~{sum})",
 gf_cheaper: "bozordan −{pct}%",
 gf_market_eq: "Bozor narxi",
 gf_market_minus: "Bozor −{pct}%",

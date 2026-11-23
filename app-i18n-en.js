@@ -712,7 +712,7 @@ gs_err_recipient_not_found: "This person hasn't opened @dghostmarketbot yet — 
 gs_err_out_of_stock: "Gifts are temporarily out of stock — refilling now. Try a bit later.",
 gs_err_send_failed: "Telegram didn't accept the gift — the money is back on your balance.",
 gs_err_no_upgrade: "This gift has no upgrade.",
-gf_market_line: "On Fragment this model starts at {ton} TON (~{sum})",
+gf_market_line: "Market price ~{ton} TON (~{sum})",
 gf_cheaper: "−{pct}% vs market",
 gf_market_eq: "Market price",
 gf_market_minus: "Market −{pct}%",
