@@ -1167,6 +1167,24 @@
 <input id="adminRfValue" type="number" min="0" step="1000" placeholder="350000">
 </div>
 <div class="edit-field">
+<label for="adminRfStars" data-i18n="admin_rf_stars">⭐ Приз в Stars каждому победителю (0 — не Stars)</label>
+<input id="adminRfStars" type="number" min="0" step="50" placeholder="100">
+<div class="shop-hint" data-i18n="admin_rf_stars_hint">Stars купятся автоматически на username победителя.</div>
+</div>
+<div class="edit-field">
+<div class="edit-row">
+<label style="flex:1"><span data-i18n="admin_rf_winners">🏆 Победителей</span><input id="adminRfWinners" type="number" min="1" max="10" value="1"></label>
+<label style="flex:1"><span data-i18n="admin_rf_invites">👥 Сколько друзей пригласить</span><input id="adminRfInvites" type="number" min="1" max="50" value="1"></label>
+</div>
+</div>
+<div class="edit-field">
+<label for="adminRfTarget" data-i18n="admin_rf_target">Куда приглашать друзей</label>
+<select id="adminRfTarget">
+<option value="market" data-i18n="admin_rf_target_market">В маркет (реферальная ссылка)</option>
+<option value="channel" data-i18n="admin_rf_target_channel">В канал (личная ссылка в канал)</option>
+</select>
+</div>
+<div class="edit-field">
 <label data-i18n="admin_rf_duration">Длительность</label>
 <div class="edit-row">
 <input id="adminRfDays" type="number" min="0" max="60" placeholder="дней, напр. 2" aria-label="дни">
@@ -2860,8 +2878,8 @@
 </div>
 </div>
 <script src="app-core.js?v=21"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=84', en: 'app-i18n-en.js?v=83' };</script>
-<script src="app-i18n.js?v=206"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=85', en: 'app-i18n-en.js?v=84' };</script>
+<script src="app-i18n.js?v=207"></script>
 <script src="app-navigation.js?v=33"></script>
 <script src="app-shop.js?v=55"></script>
 <script src="app-legal.js?v=3"></script>
@@ -2882,14 +2900,14 @@
 <script src="app-withdraw.js?v=41"></script>
 <script src="app-instant.js?v=1"></script>
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
-<script>window.DG_ADMIN_SRC = 'app-admin.js?v=48';</script>
+<script>window.DG_ADMIN_SRC = 'app-admin.js?v=49';</script>
 <!-- 3D-просмотрщик (210 КБ) грузится после открытия витрины — ensure3DScript в app-navigation.js. -->
 <script>window.DG_3D_SRC = 'app-3d.js?v=139';</script>
 <script src="app-auctions.js?v=9"></script>
 <script src="app-reviews.js?v=4"></script>
 <script src="app-notifications.js?v=3"></script>
 <script src="app-telegram.js?v=21"></script>
-<script src="app-raffle.js?v=13"></script>
+<script src="app-raffle.js?v=14"></script>
 <script src="app-home.js?v=13"></script>
 <script src="app-desktop.js?v=2"></script>
 <script src="app-support.js?v=4"></script>

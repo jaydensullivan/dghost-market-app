@@ -1286,7 +1286,8 @@ const btn = document.getElementById('adminGwStartBtn');
 const title = document.getElementById('adminRfTitle').value.trim();
 const hours = Number(document.getElementById('adminRfDays').value || 0) * 24
 + Number(document.getElementById('adminRfHours').value || 0);
-if (!adminGwPrizeSkin && !title){ status.textContent = dict.admin_gw_media_need_prize; return; }
+const stars = Math.max(0, Math.floor(Number(document.getElementById('adminRfStars').value) || 0));
+if (!adminGwPrizeSkin && !title && !stars){ status.textContent = dict.admin_gw_media_need_prize; return; }
 if (!(hours > 0)){ status.textContent = dict.admin_rf_need_duration; return; }
 const post = document.getElementById('adminRfPost').checked;
 const media = document.getElementById('adminGwPostMedia').value;
@@ -1303,6 +1304,10 @@ hours,
 use_gif: hasGif,
 post_to_channels: post,
 require_sub: document.getElementById('adminRfRequireSub').checked,
+prize_stars: stars || null,
+winners: Number(document.getElementById('adminRfWinners').value) || 1,
+invites: Number(document.getElementById('adminRfInvites').value) || 1,
+invite_target: document.getElementById('adminRfTarget').value,
 post_media: media === 'gif' && !hasGif ? 'card' : media,
 }
 }))
@@ -1311,6 +1316,7 @@ status.textContent = res.post_failed ? dict.admin_rf_post_failed : dict.status_d
 setAdminGwPrizeSkin(null);
 document.getElementById('adminRfTitle').value = '';
 document.getElementById('adminRfValue').value = '';
+document.getElementById('adminRfStars').value = '';
 document.getElementById('adminGwGifPreview').style.display = 'none';
 loadAdminGiveawayPanel(); loadAdminStatus();
 if (typeof loadRaffle === 'function') loadRaffle();
