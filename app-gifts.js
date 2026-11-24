@@ -82,7 +82,7 @@ return Math.round((1 - item.price_uzs / item.market_uzs) * 100);
 
 function gfMarketLine(item){
 const d = gfDict();
-if (!item.market_ton) return '';
+if (!item.market_uzs) return '';
 const base = d.gf_market_line.replace('{ton}', gfTon(item.market_ton)).replace('{sum}', item.market_uzs ? formatCoins(item.market_uzs) : '—');
 const off = gfDiscount(item);
 return `<div class="gf-market">${escapeHtml(base)}${off >= 1 ? ` <b>${escapeHtml(d.gf_cheaper.replace('{pct}', off))}</b>` : ''}</div>`;
@@ -302,10 +302,10 @@ hint.textContent = price ? d.gf_you_get.replace('{sum}', formatCoins(Math.max(0,
 };
 input.addEventListener('input', updHint);
 updHint();
-// Подсказка цены: рынок Fragment и быстрые кнопки «рынок −5% / −10%».
+// Подсказка цены: цена рынка в сумах и быстрые кнопки «рынок −5% / −10%».
 const showMarket = (m) => {
 const box = document.getElementById('gfSellMarket');
-if (!box || !m || !m.ton) return;
+if (!box || !m || !m.uzs) return;
 const line = d.gf_market_line.replace('{ton}', gfTon(m.ton)).replace('{sum}', m.uzs ? formatCoins(m.uzs) : '—');
 box.innerHTML = `<div class="gf-market">${escapeHtml(line)}</div>` + (m.uzs ? `<div class="gf-quick">${[0, 5, 10].map(p => {
 const v = Math.max(10000, Math.round(m.uzs * (1 - p / 100) / 1000) * 1000);
