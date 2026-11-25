@@ -352,6 +352,16 @@ if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.
 headerAvatarBtn.innerHTML = `<img src="${escapeHtml(tg.initDataUnsafe.user.photo_url)}" alt="" style="width:100%; height:100%; object-fit:cover;">`;
 }
 
+// Меню аватара открыто — всё позади затемнено и размыто, меню читается
+// чётче; нажатие на фон закрывает меню (обработчик клика по документу ниже).
+const headerMenuScrim = document.createElement('div');
+headerMenuScrim.className = 'hdr-menu-scrim';
+headerMenuScrim.setAttribute('aria-hidden', 'true');
+document.body.appendChild(headerMenuScrim);
+new MutationObserver(() => {
+document.body.classList.toggle('hdr-menu-open', headerMenu.style.display === 'block');
+}).observe(headerMenu, { attributes: true, attributeFilter: ['style'] });
+
 headerAvatarBtn.addEventListener('click', (e) => {
 e.stopPropagation();
 headerMenu.style.display = (headerMenu.style.display === 'none') ? 'block' : 'none';

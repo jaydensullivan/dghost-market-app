@@ -6038,3 +6038,10 @@ body.hdr-float .brand-tr{ padding:4px; border-radius:999px; background:color-mix
 html:not(.dg-desk) .gf-wants-btn{ display:inline-flex; width:auto; padding:4px 2px; margin-bottom:8px; border:0; background:none; font-size:12px; font-weight:600; color:var(--space-ink, #c4a0ff); }
 /* Рефералка только со Stars: кошелёк только при остатке */
 .pf-wallet[hidden]{ display:none; }
+
+/* Меню аватара: фон позади затемнён и размыт (app-navigation.js) */
+.hdr-menu-scrim{ position:fixed; inset:0; z-index:455; background:rgba(5,3,10,.5); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);
+  opacity:0; pointer-events:none; transition:opacity .2s ease; }
+body.hdr-menu-open .hdr-menu-scrim{ opacity:1; pointer-events:auto; }
+html.dg-calm .hdr-menu-scrim{ transition:none; }
+body.theme-light .hdr-menu-scrim{ background:rgba(20,12,30,.25); }
