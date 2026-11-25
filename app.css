@@ -6065,3 +6065,25 @@ body.theme-light .hdr-menu-scrim{ background:rgba(20,12,30,.25); }
 .pro-plan-old{ font-size:11px; line-height:1.3; }
 .pro-plan-old s{ opacity:.55; white-space:nowrap; }
 .pro-plan-old span{ color:#7CF2A5; }
+
+/* ---------- Вау: карточка раскрывается в лот (app-catalog.js: dgOpenLot) ---------- */
+html.lot-vt .buy-overlay, html.lot-vt .buy-sheet, html.lot-vt .buy-overlay *{ animation:none !important; transition:none !important; }
+::view-transition-group(dg-lot){ animation-duration:.36s; animation-timing-function:cubic-bezier(.2,.8,.2,1); }
+::view-transition-old(dg-lot), ::view-transition-new(dg-lot){ height:100%; object-fit:cover; }
+html.lot-vt::view-transition-old(root){ animation:spVtFade .3s ease both; }
+html.lot-vt::view-transition-new(root){ animation:lotVtIn .3s ease both; }
+@keyframes lotVtIn{ from{ opacity:0; } }
+
+/* ---------- Вау: блик по карточкам высшей редкости ---------- */
+.skin-card.rarity-covert .skin-photo-wrap, .skin-card.rarity-contraband .skin-photo-wrap,
+.skin-card.rarity-extraordinary .skin-photo-wrap{ overflow:hidden; }
+.skin-card.rarity-covert .skin-photo-wrap::after, .skin-card.rarity-contraband .skin-photo-wrap::after,
+.skin-card.rarity-extraordinary .skin-photo-wrap::after{
+  content:""; position:absolute; inset:-40% -60%; z-index:1; pointer-events:none;
+  background:linear-gradient(105deg, transparent 42%, rgba(255,255,255,.16) 50%, transparent 58%);
+  transform:translateX(-70%); animation:dgSheen 5.5s ease-in-out infinite; }
+.skin-card.rarity-covert .skin-photo-wrap::after{ animation-delay:.4s; }
+.skin-card.rarity-contraband .skin-photo-wrap::after, .skin-card.rarity-extraordinary .skin-photo-wrap::after{
+  background:linear-gradient(105deg, transparent 42%, rgba(255,214,102,.22) 50%, transparent 58%); }
+@keyframes dgSheen{ 0%, 62%{ transform:translateX(-70%); } 82%, 100%{ transform:translateX(70%); } }
+html.dg-calm .skin-photo-wrap::after{ animation:none !important; display:none; }

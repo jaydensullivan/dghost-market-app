@@ -736,7 +736,7 @@ return;
 const openBtn = e.target.closest('[data-open]');
 if (openBtn){
 const skin = lastSkins.find(s => String(s.id) === openBtn.dataset.open);
-if (skin) openBuySheet(skin);
+if (skin) dgOpenLot(skin, openBtn.closest('[data-card]'));
 return;
 }
 // Нажатие на саму карточку (не на кнопку внутри) открывает лот —
@@ -744,8 +744,39 @@ return;
 const card = e.target.closest('[data-card]');
 if (card && !e.target.closest('button, a, input, select')){
 const skin = lastSkins.find(s => String(s.id) === card.dataset.card);
-if (skin) openBuySheet(skin);
+if (skin) dgOpenLot(skin, card);
 }
+}
+
+// Карточка раскрывается в окно лота: фото карточки перелетает в шапку
+// окна (View Transitions). Нет поддержки или «Меньше анимаций» — как раньше.
+function dgOpenLot(skin, card){
+const from = card && card.querySelector('.skin-photo-wrap');
+const calm = typeof dgMotionCalm === 'function' && dgMotionCalm();
+if (!from || calm || typeof document.startViewTransition !== 'function'){ openBuySheet(skin); return; }
+const html = document.documentElement;
+const hero = () => document.getElementById('buyHero');
+from.style.viewTransitionName = 'dg-lot';
+html.classList.add('lot-vt');
+let vt;
+try {
+vt = document.startViewTransition(() => {
+from.style.viewTransitionName = '';
+openBuySheet(skin);
+const to = hero();
+if (to) to.style.viewTransitionName = 'dg-lot';
+});
+} catch (e){
+from.style.viewTransitionName = '';
+html.classList.remove('lot-vt');
+openBuySheet(skin);
+return;
+}
+vt.finished.finally(() => {
+html.classList.remove('lot-vt');
+const to = hero();
+if (to) to.style.viewTransitionName = '';
+});
 }
 
 skinsList.addEventListener('click', onSkinGridClick);
