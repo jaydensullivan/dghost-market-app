@@ -5990,9 +5990,11 @@ html.sp-vt::view-transition-group(*){ animation-duration:.34s; }
 /* ============================================================
    Упрощение (телефон): первый экран маркета, профиль, шапка
    ============================================================ */
-/* Скины: «‹ 01 / MARKETPLACE» не занимает экран — к выбору ведут логотип,
+/* Пространства: «‹ 01 / MARKETPLACE» не занимает экран — к выбору ведут логотип,
    «Назад» Telegram и свайп от края (кнопка остаётся в DOM для них). */
-html:not(.dg-desk) #screenShop .sp-head{ position:absolute; width:1px; height:1px; margin:0; padding:0; overflow:hidden; clip-path:inset(50%); }
+html:not(.dg-desk) .sp-head{ position:absolute; width:1px; height:1px; margin:0; padding:0; overflow:hidden; clip-path:inset(50%); }
+/* В карточке сервиса Пополнений «‹» ведёт обратно к каталогу — там шапку показываем. */
+html:not(.dg-desk) #screenTopup:has(#gtDetailView:not([hidden])) > .sp-head{ position:static; width:auto; height:auto; overflow:visible; clip-path:none; margin:0 0 12px; }
 /* баннер ниже, текст одной строкой */
 html:not(.dg-desk) .promo{ margin-bottom:10px; }
 html:not(.dg-desk) .promo-slide{ min-height:60px; padding:8px 10px; gap:10px; }
@@ -6031,3 +6033,8 @@ body.hdr-float .brand-tr{ padding:4px; border-radius:999px; background:color-mix
 .pf-settings .pf-set-btn svg{ width:18px; height:18px; }
 /* «Мой тариф» — сразу под балансом */
 #profileProCard{ margin-bottom:12px; }
+
+/* Подарки: «Сообщить, когда появится» — строкой-ссылкой, а не большой рамкой */
+html:not(.dg-desk) .gf-wants-btn{ display:inline-flex; width:auto; padding:4px 2px; margin-bottom:8px; border:0; background:none; font-size:12px; font-weight:600; color:var(--space-ink, #c4a0ff); }
+/* Рефералка только со Stars: кошелёк только при остатке */
+.pf-wallet[hidden]{ display:none; }

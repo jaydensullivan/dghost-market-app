@@ -12,6 +12,7 @@ const referralClaimBtn = document.getElementById('referralClaimBtn');
 const referralClaimStatus = document.getElementById('referralClaimStatus');
 
 let referralLinkRaw = '';
+let referralMoneyOn = true;
 
 // ---------- дашборд рефералов ----------
 // Друзья показываются без имён — «Друг №N», как и везде на площадке.
@@ -25,11 +26,12 @@ const box = document.getElementById('referralDashboard');
 const locale = currentLang === 'uz' ? 'uz-UZ' : (currentLang === 'en' ? 'en-US' : 'ru-RU');
 const conv = d.invited ? Math.round(d.active / d.invited * 100) : 0;
 
-const grid = `<div class="sp-grid">
+const money = referralMoneyOn ? `<div class="sp-cell"><div class="sp-val rd-money">${formatCoins(d.earned_total)}</div><div class="sp-sub">${dict.rd_earned}</div></div>
+<div class="sp-cell"><div class="sp-val rd-money">${formatCoins(d.earned_30d)}</div><div class="sp-sub">${dict.rd_30d}</div></div>` : '';
+const grid = `<div class="sp-grid${referralMoneyOn ? '' : ' rd-two'}">
 <div class="sp-cell"><div class="sp-val">${d.invited}</div><div class="sp-sub">${dict.rd_invited}${d.new_30d ? ` · <span class="rd-up">${dict.rd_new.replace('{n}', d.new_30d)}</span>` : ''}</div></div>
 <div class="sp-cell"><div class="sp-val">${d.active}</div><div class="sp-sub">${dict.rd_active}</div></div>
-<div class="sp-cell"><div class="sp-val rd-money">${formatCoins(d.earned_total)}</div><div class="sp-sub">${dict.rd_earned}</div></div>
-<div class="sp-cell"><div class="sp-val rd-money">${formatCoins(d.earned_30d)}</div><div class="sp-sub">${dict.rd_30d}</div></div>
+${money}
 </div>`;
 
 if (!d.invited){
@@ -52,7 +54,7 @@ return `<div class="rd-friend">
 <div class="rd-friend-name">${dict.rd_friend.replace('{n}', f.n)}</div>
 <div class="sp-sub">${date ? dict.rd_joined.replace('{date}', date) + ' · ' : ''}${status}</div>
 </div>
-${f.earned ? `<div class="rd-friend-earned">+${formatCoins(f.earned)}</div>` : ''}
+${f.earned && referralMoneyOn ? `<div class="rd-friend-earned">+${formatCoins(f.earned)}</div>` : ''}
 </div>`;
 }).join('');
 const more = (!referralFriendsExpanded && d.friends.length > 5)
@@ -62,7 +64,7 @@ const more = (!referralFriendsExpanded && d.friends.length > 5)
 box.innerHTML = grid
 + `<details class="rd-details"${referralFriendsExpanded ? ' open' : ''}><summary>${dict.rd_friends} (${d.friends.length})</summary>`
 + convBar + friends + more
-+ `<div class="shop-hint" style="margin-top:8px;">${dict.rd_note}</div></details>`;
++ (referralMoneyOn ? `<div class="shop-hint" style="margin-top:8px;">${dict.rd_note}</div>` : '') + '</details>';
 }
 
 document.getElementById('referralDashboard').addEventListener('click', (e) => {
@@ -101,9 +103,13 @@ if (!data || data.error) throw new Error();
 referralLinkRaw = data.link;
 referralLinkText.textContent = referralLinkRaw;
 referralInvitedCount.textContent = data.invited_count;
-referralBonusText.textContent = dict.referral_bonus_text(data.bonus_percent);
-referralWalletValue.textContent = `${formatCoins(data.wallet)} / ${formatCoins(data.wallet_cap)}`;
+// Денежный кошелёк выключен (бот: money_enabled = false) — только Stars за
+// друзей; кошелёк виден, лишь пока в нём что-то осталось (перевести на баланс).
+referralMoneyOn = data.money_enabled !== false;
+referralBonusText.textContent = referralMoneyOn ? dict.referral_bonus_text(data.bonus_percent) : dict.referral_stars_intro;
+referralWalletValue.textContent = referralMoneyOn ? `${formatCoins(data.wallet)} / ${formatCoins(data.wallet_cap)}` : formatCoins(data.wallet);
 document.getElementById('referralWalletBar').style.width = (data.wallet_cap ? Math.min(100, data.wallet / data.wallet_cap * 100) : 0) + '%';
+document.getElementById('referralWalletBar').closest('.pf-wallet').hidden = !referralMoneyOn && !(data.wallet > 0);
 referralClaimBtn.style.display = data.wallet > 0 ? '' : 'none';
 loadStarRef();
 if (data.dashboard) renderReferralDashboard(data.dashboard);
