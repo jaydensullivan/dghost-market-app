@@ -283,3 +283,39 @@ if (!e.target.closest('[data-lots-retry]')) return;
 const p = loadMe();
 if (p && p.then) p.then(renderMyLots);
 });
+
+
+// ---------- «Только что купили» ----------
+// Лента над категориями: последние продажи (предмет, цена, когда) — без
+// покупателя и продавца. Меняется каждые 4 с; обновляется раз в 2 минуты.
+// Продаж за неделю нет или бот старый — ленты нет.
+(function liveFeed(){
+const box = document.getElementById('liveFeed');
+if (!box) return;
+let items = [];
+let i = 0;
+const ago = (iso) => {
+const d = I18N[currentLang] || I18N.ru;
+const m = Math.max(1, Math.round((Date.now() - Date.parse(iso)) / 60000));
+if (m < 60) return d.dt_ago_min.replace('{n}', m);
+const h = Math.round(m / 60);
+return h < 24 ? d.dt_ago_h.replace('{n}', h) : d.dt_ago_d.replace('{n}', Math.round(h / 24));
+};
+function show(){
+if (!items.length){ box.hidden = true; return; }
+const d = I18N[currentLang] || I18N.ru;
+const it = items[i % items.length];
+const img = it.photo_url && typeof steamImg === 'function' ? `<img src="${escapeHtml(steamImg(it.photo_url, 64, 48))}" alt="" onerror="this.remove()">` : '<span class="live-dot" aria-hidden="true"></span>';
+box.innerHTML = `<div class="live-item">${img}<span class="live-text">${escapeHtml(d.live_bought.replace('{title}', it.title).replace('{price}', formatCoins(it.price)))}</span><span class="live-ago">${escapeHtml(ago(it.sold_at))}</span></div>`;
+box.hidden = false;
+}
+function load(){
+fetch(API_BASE + '/api/recent_sales')
+.then(r => r.ok ? r.json() : null)
+.then(data => { items = (data && data.items) || []; i = 0; show(); })
+.catch(() => {});
+}
+load();
+setInterval(load, 120000);
+setInterval(() => { if (items.length > 1 && !document.hidden){ i++; show(); } }, 4000);
+})();

@@ -6065,3 +6065,86 @@ body.theme-light .hdr-menu-scrim{ background:rgba(20,12,30,.25); }
 .pro-plan-old{ font-size:11px; line-height:1.3; }
 .pro-plan-old s{ opacity:.55; white-space:nowrap; }
 .pro-plan-old span{ color:#7CF2A5; }
+
+/* ---------- Вау: карточка раскрывается в лот (app-catalog.js: dgOpenLot) ---------- */
+html.lot-vt .buy-overlay, html.lot-vt .buy-sheet, html.lot-vt .buy-overlay *{ animation:none !important; transition:none !important; }
+::view-transition-group(dg-lot){ animation-duration:.36s; animation-timing-function:cubic-bezier(.2,.8,.2,1); }
+::view-transition-old(dg-lot), ::view-transition-new(dg-lot){ height:100%; object-fit:cover; }
+html.lot-vt::view-transition-old(root){ animation:spVtFade .3s ease both; }
+html.lot-vt::view-transition-new(root){ animation:lotVtIn .3s ease both; }
+@keyframes lotVtIn{ from{ opacity:0; } }
+
+/* ---------- Вау: блик по карточкам высшей редкости ---------- */
+.skin-card.rarity-covert .skin-photo-wrap, .skin-card.rarity-contraband .skin-photo-wrap,
+.skin-card.rarity-extraordinary .skin-photo-wrap{ overflow:hidden; }
+.skin-card.rarity-covert .skin-photo-wrap::after, .skin-card.rarity-contraband .skin-photo-wrap::after,
+.skin-card.rarity-extraordinary .skin-photo-wrap::after{
+  content:""; position:absolute; inset:-40% -60%; z-index:1; pointer-events:none;
+  background:linear-gradient(105deg, transparent 42%, rgba(255,255,255,.16) 50%, transparent 58%);
+  transform:translateX(-70%); animation:dgSheen 5.5s ease-in-out infinite; }
+.skin-card.rarity-covert .skin-photo-wrap::after{ animation-delay:.4s; }
+.skin-card.rarity-contraband .skin-photo-wrap::after, .skin-card.rarity-extraordinary .skin-photo-wrap::after{
+  background:linear-gradient(105deg, transparent 42%, rgba(255,214,102,.22) 50%, transparent 58%); }
+@keyframes dgSheen{ 0%, 62%{ transform:translateX(-70%); } 82%, 100%{ transform:translateX(70%); } }
+html.dg-calm .skin-photo-wrap::after{ animation:none !important; display:none; }
+
+/* Подарки: поиск + иконка фильтров в одну строку, фильтры — по нажатию */
+.gf-search-row{ margin-bottom:10px; }
+.gf-search-row .shop-search{ flex:1; min-width:0; margin:0; }
+.gf-filters[hidden]{ display:none; }
+.gf-filters{ flex-wrap:wrap; }
+.gf-filters #gfSort{ flex:1 1 100%; }
+.gf-toolbar:has(#gfChips:empty){ display:none; }
+
+/* Название раздела у логотипа: «CS2 Скины» / «Подарки» / «Пополнения» */
+.brand-tl{ gap:10px; }
+.brand-space{ font-family:'Inter', sans-serif; font-size:15px; font-weight:800; letter-spacing:0; color:var(--text, #fff); white-space:nowrap; }
+html.sp-home-open .brand-space{ display:none; }
+html.dg-desk .brand-space{ display:none; }
+/* На главной Скинов справа плашка баланса — на узком экране подпись с ней не помещается. */
+@media (max-width:459px){ body[data-tab="shop"]:has(#balancePill:not([style*="none"])) .brand-space{ display:none; } }
+
+/* «Пригласить друзей»: без длинной ссылки на экране — «Скопировать ссылку» и «Поделиться» */
+#referralLinkBox{ padding:0; border:0; background:none; display:block; }
+#referralLinkBox.has-link #referralLinkText{ display:none; }
+#referralLinkBox:not(.has-link) #referralCopyBtn{ display:none; }
+#referralCopyBtn{ width:100%; justify-content:center; min-height:40px; }
+
+/* «Только что купили» */
+.live-feed{ margin:0 0 8px; padding:6px 10px; border-radius:12px; background:rgba(34,197,94,.06); border:1px solid rgba(34,197,94,.2); overflow:hidden; }
+.live-feed[hidden]{ display:none; }
+.live-item{ display:flex; align-items:center; gap:8px; font-size:12px; min-height:24px; animation:liveIn .35s ease both; }
+.live-item img{ width:32px; height:24px; object-fit:contain; flex:none; }
+.live-dot{ width:8px; height:8px; border-radius:50%; background:#22c55e; box-shadow:0 0 0 3px rgba(34,197,94,.2); flex:none; animation:livePulse 1.6s ease-in-out infinite; }
+.live-text{ flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.live-ago{ flex:none; opacity:.6; font-size:11px; }
+@keyframes liveIn{ from{ opacity:0; transform:translateY(6px); } }
+@keyframes livePulse{ 50%{ box-shadow:0 0 0 6px rgba(34,197,94,0); } }
+html.dg-calm .live-item, html.dg-calm .live-dot{ animation:none; }
+html.dg-desk .live-feed{ display:none; }
+
+/* Знакомство с разделом (app-spaces.js: showIntro) */
+.sp-intro{ position:fixed; inset:0; z-index:960; display:flex; align-items:flex-end; justify-content:center; padding:16px;
+  background:rgba(5,3,10,.55); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); animation:spIntroBg .22s ease both; }
+.sp-intro.out{ opacity:0; transition:opacity .2s ease; }
+.sp-intro-card{ position:relative; width:100%; max-width:440px; margin-bottom:calc(env(safe-area-inset-bottom, 0px) + 8px); padding:26px 22px 20px; border-radius:24px; text-align:center;
+  background:linear-gradient(160deg, color-mix(in srgb, var(--space-a, #7c3aed) 22%, #120c20), #0f0a1a 70%); border:1px solid color-mix(in srgb, var(--space-b, #9333ea) 45%, transparent);
+  box-shadow:0 20px 60px rgba(0,0,0,.5); animation:spIntroIn .3s cubic-bezier(.2,.8,.2,1) both; }
+.sp-intro-skip{ position:absolute; top:12px; right:14px; border:0; background:none; color:var(--muted, #a99bc4); font-size:13px; cursor:pointer; }
+.sp-intro-ico{ font-size:52px; line-height:1; margin:6px 0 10px; }
+.sp-intro-num{ font-size:10px; font-weight:700; letter-spacing:.2em; color:var(--space-ink, #c4a0ff); }
+.sp-intro-t{ font-size:22px; line-height:1.2; margin:8px 0 8px; color:#fff; }
+.sp-intro-s{ font-size:14px; line-height:1.5; color:#cfc6e0; margin:0 0 16px; }
+.sp-intro-dots{ display:flex; justify-content:center; gap:6px; margin-bottom:16px; }
+.sp-intro-dots i{ width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.2); transition:width .2s; }
+.sp-intro-dots i.on{ width:20px; border-radius:4px; background:linear-gradient(90deg, var(--space-a, #7c3aed), var(--space-b, #9333ea)); }
+.sp-intro-next{ width:100%; min-height:48px; border:0; border-radius:14px; color:#fff; font:700 15px Inter, system-ui, sans-serif; cursor:pointer;
+  background:linear-gradient(135deg, var(--space-a, #7c3aed), var(--space-b, #9333ea)); box-shadow:0 8px 22px var(--space-glow, rgba(124,58,237,.35)); }
+@keyframes spIntroBg{ from{ opacity:0; } }
+@keyframes spIntroIn{ from{ opacity:0; transform:translateY(30px) scale(.98); } }
+html.dg-calm .sp-intro, html.dg-calm .sp-intro-card{ animation:none; }
+@media (min-width:900px){ .sp-intro{ align-items:center; } }
+/* «Впервые здесь?» в Скинах — заменено знакомством с разделом */
+#newbieTip{ display:none !important; }
+.gf-filters #gfRarity{ flex:1 1 100%; }
+.gf-filters .gf-price-filter{ flex:1 1 calc(50% - 4px); }

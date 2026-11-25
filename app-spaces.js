@@ -90,6 +90,9 @@ return null; // Скины: подсветку ставит switchTab
 
 function applyNav(screen){
 const sp = SPACES[current];
+// Где ты — маленькой подписью у логотипа (строка «‹ 01 / …» на телефоне скрыта).
+const label = document.getElementById('brandSpace');
+if (label){ label.setAttribute('data-i18n', sp.title); label.textContent = t(sp.title); }
 navButtons().forEach((btn, i) => {
 const label = btn.querySelector('.nav-label');
 if (label && sp.nav[i]){ label.setAttribute('data-i18n', sp.nav[i]); label.textContent = t(sp.nav[i]); }
@@ -173,6 +176,53 @@ goToScreen(SPACES[key].root);
 if (key === 'gifts' && typeof setGiftsTab === 'function') setGiftsTab('buy');
 if (key === 'topup' && typeof showTopupView === 'function') showTopupView(false);
 window.scrollTo(0, 0);
+maybeIntro(key);
+}
+
+// ---------- знакомство: 3 слайда при первом входе в раздел ----------
+// Один раз на раздел (localStorage dg_intro_<раздел>). Тексты —
+// sp_intro_<раздел>_<1..3>_t / _s в словарях.
+const INTRO_ICONS = { skins: ['🎯', '🛡', '💰'], gifts: ['🎁', '✨', '💸'], topup: ['⚡', '🎮', '✅'] };
+function introSeen(key){ try { return localStorage.getItem('dg_intro_' + key) === '1'; } catch(e) { return true; } }
+function markIntro(key){ try { localStorage.setItem('dg_intro_' + key, '1'); } catch(e) {} }
+
+function maybeIntro(key){
+if (!INTRO_ICONS[key] || introSeen(key) || document.getElementById('spIntro')) return;
+setTimeout(() => {
+if (current !== key || document.documentElement.classList.contains('sp-home-open') || introSeen(key)) return;
+showIntro(key);
+}, 450);
+}
+
+function showIntro(key){
+let step = 0;
+const box = document.createElement('div');
+box.id = 'spIntro';
+box.className = 'sp-intro';
+box.setAttribute('role', 'dialog');
+box.setAttribute('aria-modal', 'true');
+document.body.appendChild(box);
+const close = () => { markIntro(key); box.classList.add('out'); setTimeout(() => box.remove(), calm() ? 0 : 220); };
+const render = () => {
+const dots = [0, 1, 2].map(i => `<i class="${i === step ? 'on' : ''}"></i>`).join('');
+box.innerHTML = `<div class="sp-intro-card">
+<button type="button" class="sp-intro-skip" data-intro="skip">${escapeHtml(t('sp_intro_skip'))}</button>
+<div class="sp-intro-ico" aria-hidden="true">${INTRO_ICONS[key][step]}</div>
+<div class="sp-intro-num">${escapeHtml(SPACES[key].num)} · ${step + 1}/3</div>
+<h2 class="sp-intro-t">${escapeHtml(t(`sp_intro_${key}_${step + 1}_t`))}</h2>
+<p class="sp-intro-s">${escapeHtml(t(`sp_intro_${key}_${step + 1}_s`))}</p>
+<div class="sp-intro-dots">${dots}</div>
+<button type="button" class="sp-intro-next" data-intro="next">${escapeHtml(t(step < 2 ? 'sp_intro_next' : 'sp_intro_done'))}</button>
+</div>`;
+};
+box.addEventListener('click', (e) => {
+const b = e.target.closest('[data-intro]');
+if (!b) return;
+if (b.dataset.intro === 'skip' || step >= 2){ close(); return; }
+step++;
+render();
+});
+render();
 }
 
 // Список может дорисоваться позже (каталог обновляется с сервера) —
@@ -363,5 +413,7 @@ if (spaceLink) enter(spaceLink[1]);
 else if (target) { /* openScreenFromLaunch откроет нужный экран сам */ }
 else if (!saved()) showHome(false);
 else if (current !== 'skins') enter(current);
+// Пришёл в Скины сразу (последний раздел) — знакомство, если ещё не было.
+else maybeIntro('skins');
 applyNav(typeof currentTab !== 'undefined' ? currentTab : 'shop');
 })();
