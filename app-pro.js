@@ -185,6 +185,7 @@ if (data && !data.error){
 proStatus = data;
 renderProCard();
 renderPlanLots();
+renderProPayOpen();
 renderDeposit();
 if (proPlansOverlay && proPlansOverlay.classList.contains('show')) renderProPlans();
 }
@@ -201,6 +202,7 @@ if (!proPlansOverlay) return;
 document.getElementById('proPlansStatus').textContent = '';
 renderProPlans();
 proPlansOverlay.classList.add('show');
+loadProPayments();
 // Свежие цены и срок — вдруг тариф сменили с другого устройства.
 loadProStatus();
 }
@@ -297,6 +299,8 @@ const price = formatCoins(tier ? proPayPrice(tier) : proStatus.price);
 const name = proTierName(tierId || 'pro');
 const days = proStatus.days;
 let ask = dict.pro_confirm.replace('{name}', name).replace('{price}', price).replace('{days}', days);
+// Подсказка в окне выбора способа оплаты: без «спишется с баланса».
+let payHint = dict.plan_pay_hint.replace('{price}', price).replace('{days}', days);
 const oldId = proStatus.tier || 'pro';
 const oldTier = proTier(oldId);
 if (proStatus.active && tier && oldId !== tier.id && proStatus.expires_at && oldTier){
@@ -306,11 +310,23 @@ const conv = oldTier.price > 0 && tier.price > 0 ? left * oldTier.price / tier.p
 const until = new Date(Date.now() + conv + days * 86400000).toISOString();
 ask = dict.pro_confirm_switch.replace('{name}', name).replace('{price}', price)
 .replace('{old}', proTierName(oldId)).replace('{date}', proDateText(until));
+payHint = ask;
 }
 if (tier && proFirstPercent() && proPayPrice(tier) < tier.price){
 ask += proFirstText().confirm.replace('{p}', proFirstPercent()).replace('{full}', formatCoins(tier.price));
+payHint += proFirstText().confirm.replace('{p}', proFirstPercent()).replace('{full}', formatCoins(tier.price));
 }
-showConfirmDialog(ask, () => {
+// Можно платить переводом на карту — окно выбора способа (там же баланс).
+if (proStatus.card_pay && proStatus.card_pay.enabled && !proStatus.admin){
+openProPay(tierId || 'pro', payHint, tier ? proPayPrice(tier) : proStatus.price);
+return;
+}
+showConfirmDialog(ask, () => payProFromBalance(tierId, price, name));
+}
+
+function payProFromBalance(tierId, price, name){
+if (proBuying) return;
+const dict = I18N[currentLang] || I18N.ru;
 proBuying = true;
 const plansStatus = document.getElementById('proPlansStatus');
 fetch(API_BASE + '/api/pro/buy', {
@@ -337,10 +353,200 @@ loadProChannels();
 if (typeof loadMe === 'function') loadMe();
 showAlert(dict.pro_ok.replace('{name}', name).replace('{date}', proDateText(data.expires_at)));
 loadProSettings();
+closeProPay();
+loadProPayments();
 })
 .catch(() => showAlert(errorMessage('network')))
 .finally(() => { proBuying = false; });
+}
+
+// ---------- Оплата тарифа переводом на карту с чеком (бот: plan_payments.py) ----------
+// Выбор способа → реквизиты и сумма → имя плательщика и чек → «на проверке».
+// Тариф включает админ; продавцу приходит сообщение в боте.
+const proPayOverlay = document.getElementById('proPayOverlay');
+let proPayTier = 'pro';
+let proPayPhoto = null;
+let proPayId = null;
+
+function proPayEl(id){ return document.getElementById(id); }
+
+function proPayShow(step){
+proPayEl('proPayChoose').hidden = step !== 'choose';
+proPayEl('proPayCard').hidden = step !== 'card';
+proPayEl('proPayWait').hidden = step !== 'wait';
+}
+
+function openProPay(tierId, ask, price){
+const dict = I18N[currentLang] || I18N.ru;
+proPayTier = tierId;
+proPayEl('proPayTitle').textContent = dict.plan_pay_title.replace('{name}', proTierName(tierId));
+proPayEl('proPayHint').textContent = ask;
+proPayEl('proPayBalanceBtn').textContent = dict.plan_pay_balance.replace('{price}', formatCoins(price));
+proPayEl('proPayCardBtn').textContent = dict.plan_pay_card.replace('{price}', formatCoins(price));
+proPayEl('proPayStatus').textContent = '';
+proPayShow('choose');
+proPayOverlay.classList.add('show');
+}
+
+// Незавершённая оплата: продолжить (реквизиты) или показать «на проверке».
+function openProPayOpen(){
+const cp = proStatus && proStatus.card_pay;
+const open = cp && cp.open;
+if (!open) return;
+const dict = I18N[currentLang] || I18N.ru;
+proPayTier = open.ref;
+proPayEl('proPayTitle').textContent = dict.plan_pay_title.replace('{name}', proTierName(open.ref));
+proPayEl('proPayHint').textContent = '';
+proPayEl('proPayStatus').textContent = '';
+if (open.status === 'pending_review'){
+proPayEl('proPayWait').textContent = dict.plan_pay_wait.replace('{name}', proTierName(open.ref)).replace('{price}', formatCoins(open.amount));
+proPayShow('wait');
+} else {
+renderProPayCard(open, cp.details, cp.expires_hours);
+}
+proPayOverlay.classList.add('show');
+}
+
+function closeProPay(){
+if (proPayOverlay) proPayOverlay.classList.remove('show');
+}
+
+function renderProPayCard(payment, details, hours){
+const dict = I18N[currentLang] || I18N.ru;
+proPayId = payment.id;
+proPayPhoto = null;
+const amount = formatCoins(payment.amount);
+proPayEl('proPayAmount').textContent = amount;
+proPayEl('proPayAmount').dataset.gtCopy = String(payment.amount);
+proPayEl('proPayDetails').textContent = details || '';
+proPayEl('proPayDetails').dataset.gtCopy = (details || '').replace(/[^0-9]/g, '').slice(0, 16) || details || '';
+proPayEl('proPayCardHint').textContent = dict.plan_pay_card_hint.replace('{h}', hours || 2);
+proPayEl('proPayHint').textContent = '';
+proPayEl('proPayFileLabel').textContent = dict.gt_card_attach;
+proPayEl('proPayFile').value = '';
+proPayShow('card');
+}
+
+function proPayError(code){
+const dict = I18N[currentLang] || I18N.ru;
+return ({
+payment_pending: dict.plan_pay_pending_err,
+card_payment_disabled: dict.plan_pay_disabled,
+already_processed: dict.plan_pay_gone,
+payer_name_required: dict.plan_pay_need_name,
+photo_required: dict.plan_pay_need_photo,
+})[code] || errorMessage(code);
+}
+
+function proPayPost(path, body){
+return fetch(API_BASE + path, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify(Object.assign({ init_data: tg.initData }, body)),
+}).then(r => r.json().catch(() => ({})).then(data => ({ ok: r.ok, data })));
+}
+
+function startProCardPay(){
+const status = proPayEl('proPayStatus');
+const btn = proPayEl('proPayCardBtn');
+btn.disabled = true;
+status.textContent = '';
+proPayPost('/api/pro/pay_card', { tier: proPayTier })
+.then(({ ok, data }) => {
+if (!ok){ status.textContent = proPayError(data.error); return; }
+renderProPayCard(data.payment, data.card_details, data.expires_hours);
+loadProStatus();
+})
+.catch(() => { status.textContent = errorMessage('network'); })
+.finally(() => { btn.disabled = false; });
+}
+
+function sendProPayReceipt(){
+const dict = I18N[currentLang] || I18N.ru;
+const status = proPayEl('proPayStatus');
+const payer = proPayEl('proPayPayer').value.trim().replace(/\s+/g, ' ');
+if (payer.split(' ').length < 2){ status.textContent = dict.plan_pay_need_name; return; }
+if (!proPayPhoto){ status.textContent = dict.plan_pay_need_photo; return; }
+const btn = proPayEl('proPaySendBtn');
+btn.disabled = true;
+status.textContent = dict.gt_card_sending;
+proPayPost('/api/pro/payments/' + proPayId + '/receipt', { photo_base64: proPayPhoto, payer_name: payer })
+.then(({ ok, data }) => {
+if (!ok){ status.textContent = proPayError(data.error); return; }
+status.textContent = '';
+proPayEl('proPayWait').textContent = dict.plan_pay_sent;
+proPayShow('wait');
+if (typeof haptic === 'function') haptic('success');
+loadProStatus();
+loadProPayments();
+})
+.catch(() => { status.textContent = errorMessage('network'); })
+.finally(() => { btn.disabled = false; });
+}
+
+if (proPayOverlay){
+proPayEl('proPayBalanceBtn').addEventListener('click', () => {
+const tier = proTier(proPayTier);
+payProFromBalance(proPayTier, formatCoins(tier ? proPayPrice(tier) : proStatus.price), proTierName(proPayTier));
 });
+proPayEl('proPayCardBtn').addEventListener('click', startProCardPay);
+proPayEl('proPaySendBtn').addEventListener('click', sendProPayReceipt);
+proPayEl('proPayCloseBtn').addEventListener('click', closeProPay);
+proPayOverlay.addEventListener('click', (e) => { if (e.target === proPayOverlay) closeProPay(); });
+proPayEl('proPayFile').addEventListener('change', (e) => {
+const file = e.target.files && e.target.files[0];
+if (!file) return;
+const compress = typeof gtCompressImage === 'function' ? gtCompressImage : (typeof topupCompressImage === 'function' ? topupCompressImage : null);
+const done = (data) => { proPayPhoto = data; proPayEl('proPayFileLabel').textContent = (I18N[currentLang] || I18N.ru).gt_card_attached; };
+if (compress) compress(file).then(done).catch(() => { proPayPhoto = null; });
+else { const fr = new FileReader(); fr.onload = () => done(fr.result); fr.readAsDataURL(file); }
+});
+proPayEl('proPayCancelPayBtn').addEventListener('click', () => {
+if (!proPayId) return;
+proPayPost('/api/pro/payments/' + proPayId + '/cancel', {}).finally(() => {
+proPayId = null;
+closeProPay();
+loadProStatus();
+loadProPayments();
+});
+});
+}
+
+// Незавершённая оплата — строка в карточке тарифа с кнопкой «Продолжить».
+function renderProPayOpen(){
+const box = document.getElementById('proPayOpen');
+if (!box) return;
+const open = proStatus && proStatus.card_pay && proStatus.card_pay.open;
+if (!open){ box.hidden = true; return; }
+const dict = I18N[currentLang] || I18N.ru;
+const name = proTierName(open.ref);
+const text = open.status === 'pending_review'
+? dict.plan_pay_wait.replace('{name}', name).replace('{price}', formatCoins(open.amount))
+: dict.plan_pay_open_await.replace('{name}', name).replace('{price}', formatCoins(open.amount));
+box.innerHTML = `<span>${escapeHtml(text)}</span>`
++ (open.status === 'awaiting_payment' ? `<button type="button" class="pf-btn" data-pro-pay-open>${escapeHtml(dict.plan_pay_continue)}</button>` : '');
+box.hidden = false;
+}
+document.addEventListener('click', (e) => {
+if (e.target.closest('[data-pro-pay-open]')) openProPayOpen();
+});
+
+// История платежей — в окне «Тарифы».
+const PRO_PAY_BADGE = { paid: 'ok', rejected: 'bad', expired: 'bad', cancelled: 'bad' };
+function loadProPayments(){
+const box = document.getElementById('proPayHistory');
+if (!box || !tg || !tg.initData) return;
+fetch(API_BASE + '/api/pro/payments?init_data=' + encodeURIComponent(tg.initData))
+.then(r => r.ok ? r.json() : null)
+.then(data => {
+const dict = I18N[currentLang] || I18N.ru;
+const items = (data && data.items) || [];
+box.innerHTML = items.length ? items.map(p => `<div class="plan-pay-row">
+<div><b>${escapeHtml(proTierName(p.ref))}</b> · ${escapeHtml(formatCoins(p.amount))}<span>${escapeHtml(proDateText(p.created_at))} · ${escapeHtml(dict['plan_pay_m_' + p.method] || p.method)}</span></div>
+<span class="gt-badge gt-badge-${PRO_PAY_BADGE[p.status] || 'wait'}">${escapeHtml(dict['plan_pay_s_' + p.status] || p.status)}</span>
+</div>`).join('') : `<div class="shop-hint">${escapeHtml(dict.plan_pay_history_empty)}</div>`;
+})
+.catch(() => {});
 }
 
 if (proPlansOverlay){
@@ -773,6 +979,7 @@ applyTranslations = function(){
 proBaseApplyTranslations.apply(this, arguments);
 renderProCard();
 renderPlanLots();
+renderProPayOpen();
 renderProChannels();
 renderProSettings();
 };
