@@ -6122,3 +6122,29 @@ html.dg-desk .brand-space{ display:none; }
 @keyframes livePulse{ 50%{ box-shadow:0 0 0 6px rgba(34,197,94,0); } }
 html.dg-calm .live-item, html.dg-calm .live-dot{ animation:none; }
 html.dg-desk .live-feed{ display:none; }
+
+/* Знакомство с разделом (app-spaces.js: showIntro) */
+.sp-intro{ position:fixed; inset:0; z-index:960; display:flex; align-items:flex-end; justify-content:center; padding:16px;
+  background:rgba(5,3,10,.55); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); animation:spIntroBg .22s ease both; }
+.sp-intro.out{ opacity:0; transition:opacity .2s ease; }
+.sp-intro-card{ position:relative; width:100%; max-width:440px; margin-bottom:calc(env(safe-area-inset-bottom, 0px) + 8px); padding:26px 22px 20px; border-radius:24px; text-align:center;
+  background:linear-gradient(160deg, color-mix(in srgb, var(--space-a, #7c3aed) 22%, #120c20), #0f0a1a 70%); border:1px solid color-mix(in srgb, var(--space-b, #9333ea) 45%, transparent);
+  box-shadow:0 20px 60px rgba(0,0,0,.5); animation:spIntroIn .3s cubic-bezier(.2,.8,.2,1) both; }
+.sp-intro-skip{ position:absolute; top:12px; right:14px; border:0; background:none; color:var(--muted, #a99bc4); font-size:13px; cursor:pointer; }
+.sp-intro-ico{ font-size:52px; line-height:1; margin:6px 0 10px; }
+.sp-intro-num{ font-size:10px; font-weight:700; letter-spacing:.2em; color:var(--space-ink, #c4a0ff); }
+.sp-intro-t{ font-size:22px; line-height:1.2; margin:8px 0 8px; color:#fff; }
+.sp-intro-s{ font-size:14px; line-height:1.5; color:#cfc6e0; margin:0 0 16px; }
+.sp-intro-dots{ display:flex; justify-content:center; gap:6px; margin-bottom:16px; }
+.sp-intro-dots i{ width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.2); transition:width .2s; }
+.sp-intro-dots i.on{ width:20px; border-radius:4px; background:linear-gradient(90deg, var(--space-a, #7c3aed), var(--space-b, #9333ea)); }
+.sp-intro-next{ width:100%; min-height:48px; border:0; border-radius:14px; color:#fff; font:700 15px Inter, system-ui, sans-serif; cursor:pointer;
+  background:linear-gradient(135deg, var(--space-a, #7c3aed), var(--space-b, #9333ea)); box-shadow:0 8px 22px var(--space-glow, rgba(124,58,237,.35)); }
+@keyframes spIntroBg{ from{ opacity:0; } }
+@keyframes spIntroIn{ from{ opacity:0; transform:translateY(30px) scale(.98); } }
+html.dg-calm .sp-intro, html.dg-calm .sp-intro-card{ animation:none; }
+@media (min-width:900px){ .sp-intro{ align-items:center; } }
+/* «Впервые здесь?» в Скинах — заменено знакомством с разделом */
+#newbieTip{ display:none !important; }
+.gf-filters #gfRarity{ flex:1 1 100%; }
+.gf-filters .gf-price-filter{ flex:1 1 calc(50% - 4px); }
