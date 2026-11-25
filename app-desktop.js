@@ -5,9 +5,12 @@
 // классом html.dg-desk, когда окно шире DESK_MIN_WIDTH, и выключается
 // обратно при сужении. Стили — app-desktop.css.
 //
-//   шапка: логотип, разделы, поиск (пишет в обычный #skinSearch);
-//   «Выгода дня» на всю ширину: скин в 3D (embed.html, режим витрины),
-//     свет цвета редкости идёт за курсором;
+//   шапка: логотип (→ выбор пространства), разделы текущего пространства
+//     (Скины / Подарки / Пополнения, app-spaces.js), поиск (пишет в поле
+//     поиска пространства), справа — переключатель пространств;
+//   «Выгода дня» на всю ширину: сначала картинка скина, 3D (embed.html,
+//     режим витрины, ~4 МБ) — по наведению или через 2,5 с, и никогда,
+//     пока открыт выбор пространства; свет цвета редкости идёт за курсором;
 //   полоса доверия: гарант, 24 часа, 0% покупателю, оплата в сумах;
 //   слева — категории (те же кнопки #categoryChips) и фильтры: цена,
 //     износ, редкость, StatTrak, наклейки (тот же activeFilters);
@@ -54,22 +57,28 @@ shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2
 clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
 zero: '<path d="M19 5 5 19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
 card: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+skins: '<circle cx="12" cy="12" r="7"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/><circle cx="12" cy="12" r="1"/>',
+gifts: '<rect x="3" y="8" width="18" height="5" rx="1"/><path d="M5 13v8h14v-8M12 8v13M12 8S10.5 3 7.5 4.5 9 8 12 8zm0 0s1.5-5 4.5-3.5S15 8 12 8z"/>',
+topup: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
 };
+// Разделы ПК-шапки в Скинах; в Подарках и Пополнениях — разделы
+// пространства из app-spaces.js (те же, что в нижнем меню телефона).
+const SKINS_NAV = [['shop', 'nav_market'], ['deals', 'nav_deals'], ['lots', 'nav_sell'], ['timer', 'nav_giveaway']];
+const SPACE_KEYS = ['skins', 'gifts', 'topup'];
+const SPACE_SEARCH = { skins: 'skinSearch', gifts: 'gfSearch', topup: 'gtSearch' };
+const space = () => (window.dgSpace ? window.dgSpace.current() : 'skins');
 
 // ---------- разметка ----------
 
 const top = document.createElement('header');
 top.className = 'dt-top';
 top.innerHTML = `
-<button type="button" class="dt-logo" data-dt-go="shop" aria-label="DGhostMarket"><img src="logo-120.webp" alt="" width="44" height="44"></button>
-<nav class="dt-nav">
-<button type="button" data-dt-go="shop" data-i18n="nav_market">Маркет</button>
-<button type="button" data-dt-go="deals" data-i18n="nav_deals">Сделки</button>
-<button type="button" data-dt-go="lots" data-i18n="nav_sell">Продать</button>
-<button type="button" data-dt-go="timer" data-i18n="nav_giveaway">Раздача</button>
-</nav>
-<label class="dt-search">${icon(ICON.search)}<input id="dtSearch" type="search" autocomplete="off" data-i18n-placeholder="dt_search_ph" placeholder=""><span class="dt-kbd" aria-hidden="true">/</span></label>
-<button type="button" class="dt-sell" data-dt-sell data-i18n="header_menu_sell">Продать скин</button>`;
+<button type="button" class="dt-logo" data-dt-home data-i18n-aria-label="sp_all_spaces" aria-label="DGhostMarket"><img src="logo-120.webp" alt="" width="44" height="44"></button>
+<nav class="dt-nav"></nav>
+<label class="dt-search">${icon(ICON.search)}<input id="dtSearch" type="search" autocomplete="off" placeholder=""><span class="dt-kbd" aria-hidden="true">/</span></label>
+<button type="button" class="dt-sell" data-dt-sell data-i18n="header_menu_sell">Продать скин</button>
+<div class="dt-spaces" role="group" data-i18n-aria-label="sp_all_spaces">${SPACE_KEYS.map(k =>
+`<button type="button" class="dt-sp dt-sp-${k}" data-dt-space="${k}">${icon(ICON[k])}</button>`).join('')}</div>`;
 
 const hero = document.createElement('section');
 hero.className = 'dt-hero';
@@ -148,6 +157,8 @@ shop.appendChild(body);
 if (chips && !chipsHome.parentNode){ chips.before(chipsHome); side.querySelector('.dt-cats-slot').appendChild(chips); }
 fillSort();
 syncFromState();
+navSpace = '';
+renderNav();
 if (typeof applyTranslations === 'function') applyTranslations();
 renderHero();
 renderFresh();
@@ -164,16 +175,50 @@ shop.classList.remove('dt-has-hero');
 grid.querySelectorAll('.skin-card').forEach(resetTilt);
 if (chips && chipsHome.parentNode){ chipsHome.replaceWith(chips); }
 stopHero3d();
+clearTimeout(hero3dTimer);
+hero3dPending = null;
 }
 function sync(){ if (mq.matches) enable(); else disable(); }
 if (mq.addEventListener) mq.addEventListener('change', sync); else mq.addListener(sync);
 
 // ---------- шапка ----------
 
+// Разделы и поиск — под текущее пространство; перерисовываем, когда
+// оно меняется (app-spaces.js ставит data-space на <html>).
+let navSpace = '';
+function renderNav(){
+const sp = space();
+if (sp === navSpace) return;
+navSpace = sp;
+const d = dict();
+const nav = top.querySelector('.dt-nav');
+nav.innerHTML = sp === 'skins'
+? SKINS_NAV.map(([go, key]) => `<button type="button" data-dt-go="${go}" data-i18n="${key}">${esc(d[key] || key)}</button>`).join('')
+: window.dgSpace.nav().map((key, i) => `<button type="button" data-dt-nav="${i}" data-i18n="${key}">${esc(d[key] || key)}</button>`).join('');
+top.querySelector('.dt-sell').hidden = sp !== 'skins';
+top.querySelectorAll('[data-dt-space]').forEach(b => {
+const on = b.dataset.dtSpace === sp;
+b.classList.toggle('on', on);
+b.setAttribute('aria-pressed', String(on));
+b.title = d['sp_' + b.dataset.dtSpace + '_title'] || '';
+b.setAttribute('aria-label', b.title);
+});
+const field = document.getElementById(SPACE_SEARCH[sp]);
+searchInput.value = field ? field.value : '';
+searchInput.placeholder = sp === 'skins' ? (d.dt_search_ph || '') : (field ? field.placeholder : '');
+highlightNav();
+}
+new MutationObserver(() => { if (on) renderNav(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-space'] });
+
 const SCREEN_FOR_TAB = { shop: 'shop', deals: 'deals', lots: 'lots', timer: 'timer' };
 top.addEventListener('click', (e) => {
 const go = e.target.closest('[data-dt-go]');
-if (go){ goToScreen(go.dataset.dtGo); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+if (go){ goToScreen(go.dataset.dtGo); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+const nav = e.target.closest('[data-dt-nav]');
+if (nav && window.dgSpace){ window.dgSpace.go(Number(nav.dataset.dtNav)); window.scrollTo({ top: 0, behavior: 'smooth' }); highlightNav(); return; }
+const sp = e.target.closest('[data-dt-space]');
+if (sp && window.dgSpace){ window.dgSpace.enter(sp.dataset.dtSpace); return; }
+if (e.target.closest('[data-dt-home]') && typeof window.dgShowSpaces === 'function') window.dgShowSpaces(true);
 });
 document.addEventListener('click', (e) => {
 if (!on || !e.target.closest('[data-dt-sell]')) return;
@@ -183,15 +228,28 @@ setTimeout(() => { const b = document.getElementById('addSkinBtn'); if (b) b.cli
 function highlightNav(){
 const tab = document.body.dataset.tab || 'shop';
 top.querySelectorAll('.dt-nav [data-dt-go]').forEach(b => b.classList.toggle('on', SCREEN_FOR_TAB[b.dataset.dtGo] === tab));
+// В Подарках и Пополнениях подсветка — как у нижнего меню (app-spaces.js).
+const navBtns = [...document.querySelectorAll('#bottomNav .nav-btn')];
+top.querySelectorAll('.dt-nav [data-dt-nav]').forEach(b => {
+const src = navBtns[Number(b.dataset.dtNav)];
+b.classList.toggle('on', !!src && src.classList.contains('active'));
+});
 }
 new MutationObserver(highlightNav).observe(document.body, { attributes: true, attributeFilter: ['data-tab'] });
+new MutationObserver(highlightNav).observe(document.getElementById('bottomNav'), { subtree: true, attributes: true, attributeFilter: ['class'] });
 
-// Поиск в шапке пишет в обычное поле каталога — фильтрует app-catalog.js.
+// Поиск в шапке пишет в поле поиска пространства — фильтрует его модуль
+// (каталог скинов, витрина подарков, каталог пополнений).
 searchInput.addEventListener('input', () => {
-if (!skinSearchEl) return;
-if ((document.body.dataset.tab || 'shop') !== 'shop') goToScreen('shop');
-skinSearchEl.value = searchInput.value;
-skinSearchEl.dispatchEvent(new Event('input', { bubbles: true }));
+const sp = space();
+const field = sp === 'skins' ? skinSearchEl : document.getElementById(SPACE_SEARCH[sp]);
+if (!field) return;
+const tab = document.body.dataset.tab || 'shop';
+if (sp === 'skins' && tab !== 'shop') goToScreen('shop');
+if (sp === 'gifts'){ if (tab !== 'gifts') goToScreen('gifts'); if (typeof setGiftsTab === 'function') setGiftsTab('buy'); }
+if (sp === 'topup'){ if (tab !== 'topup') goToScreen('topup'); if (typeof showTopupView === 'function') showTopupView(false); }
+field.value = searchInput.value;
+field.dispatchEvent(new Event('input', { bubbles: true }));
 });
 document.addEventListener('keydown', (e) => {
 if (!on || e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) return;
@@ -333,7 +391,7 @@ hero.innerHTML = `
 </div>
 <div class="dt-stage"><img src="${esc(typeof steamImg === 'function' ? steamImg(s.photo_url, 512, 384) : s.photo_url)}" alt=""></div>`;
 hero._skin = s;
-startHero3d(s);
+scheduleHero3d(s);
 }
 hero.addEventListener('click', (e) => {
 if (e.target.closest('[data-dt-hero]') && hero._skin) openBuySheet(hero._skin);
@@ -364,7 +422,35 @@ stage.appendChild(heroFrame);
 }
 function stopHero3d(){
 if (heroFrame){ heroFrame.remove(); heroFrame = null; }
+hero.classList.remove('dt-live');
 }
+// 3D-модель весит ~4 МБ: сначала картинка, модель — по наведению на
+// «Выгоду дня» или через 2,5 с. Пока открыт выбор пространства или
+// маркет не на экране — ждём (на HOME 3D не грузим вообще).
+let hero3dPending = null;
+let hero3dTimer = null;
+function hero3dBlocked(){
+return !on || hero.hidden || document.documentElement.classList.contains('sp-home-open') || (document.body.dataset.tab || 'shop') !== 'shop';
+}
+function scheduleHero3d(s){
+clearTimeout(hero3dTimer);
+hero3dPending = s;
+hero3dTimer = setTimeout(tryHero3d, 2500);
+}
+function tryHero3d(){
+if (!hero3dPending || heroFrame || hero3dBlocked()) return;
+const s = hero3dPending;
+hero3dPending = null;
+clearTimeout(hero3dTimer);
+startHero3d(s);
+}
+// Только настоящее движение мыши: pointerenter приходит и тогда, когда
+// экран сменился под неподвижным курсором (после клика по карточке HOME).
+hero.addEventListener('pointermove', () => { if (hero3dPending) tryHero3d(); });
+// Закрыли выбор пространства или вернулись в маркет — догружаем, если пора.
+const rearmHero3d = () => { if (hero3dPending){ clearTimeout(hero3dTimer); hero3dTimer = setTimeout(tryHero3d, 2500); } };
+new MutationObserver(rearmHero3d).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+new MutationObserver(rearmHero3d).observe(document.body, { attributes: true, attributeFilter: ['data-tab'] });
 window.addEventListener('message', (e) => {
 if (!heroFrame || e.source !== heroFrame.contentWindow || !e.data || e.data.source !== 'dghost3d') return;
 if (e.data.event === 'ready') hero.classList.add('dt-live');
@@ -434,7 +520,7 @@ if (typeof applyTranslations === 'function'){
 const origT = applyTranslations;
 applyTranslations = function(){
 const out = origT.apply(this, arguments);
-if (on){ heroKey = ''; renderHero(); renderFresh(); fillSort(); }
+if (on){ heroKey = ''; renderHero(); renderFresh(); fillSort(); navSpace = ''; renderNav(); }
 return out;
 };
 }

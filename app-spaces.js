@@ -1,6 +1,6 @@
 // ============================================================
 // ТРИ ПРОСТРАНСТВА: CS2 Скины · Подарки · Пополнения
-// (docs/SPACES-NAVIGATION.md, этапы 1–2)
+// (docs/SPACES-NAVIGATION.md, этапы 1–4)
 //
 // HOME — экран «Выбери свой мир»: три карточки, без нижнего меню.
 // Показываем при первом входе, по «Назад» из корня пространства и по
@@ -43,11 +43,11 @@ function calm(){ return typeof dgMotionCalm === 'function' ? dgMotionCalm() : do
 let current = saved() || 'skins';
 
 // ---------- шапки пространств ----------
-function makeHead(key){
+function makeHead(key, id){
 const head = document.createElement('div');
 head.className = 'sp-head';
 head.dataset.space = key;
-head.innerHTML = `<button type="button" class="sp-back" id="spBack_${key}" data-i18n-aria-label="sp_all_spaces" aria-label="${escapeHtml(t('sp_all_spaces'))}">‹</button>`
+head.innerHTML = `<button type="button" class="sp-back" id="spBack_${id || key}" data-i18n-aria-label="sp_all_spaces" aria-label="${escapeHtml(t('sp_all_spaces'))}">‹</button>`
 + `<div class="sp-head-txt"><span class="sp-num">${SPACES[key].num}</span><b data-i18n="${SPACES[key].title}">${escapeHtml(t(SPACES[key].title))}</b></div>`;
 head.querySelector('.sp-back').addEventListener('click', () => {
 // В Пополнениях внутри карточки сервиса «назад» — к каталогу.
@@ -64,6 +64,14 @@ const gifts = document.getElementById('screenGifts');
 if (gifts && !document.getElementById('spBack_gifts')) gifts.insertBefore(makeHead('gifts'), gifts.firstChild);
 const topup = document.getElementById('screenTopup');
 if (topup && !document.getElementById('spBack_topup')) topup.insertBefore(makeHead('topup'), topup.firstChild);
+// «Заказы» Пополнений — это экран сделок: своя шапка пространства
+// вместо старой «←» (видна только в Пополнениях, см. app.css).
+const deals = document.getElementById('screenDeals');
+if (deals && !document.getElementById('spBack_orders')){
+const h = makeHead('topup', 'orders');
+h.classList.add('sp-head-orders');
+deals.insertBefore(h, deals.firstChild);
+}
 }
 
 // ---------- нижнее меню ----------
@@ -288,6 +296,23 @@ document.documentElement.classList.remove('sp-home-open');
 
 window.dgShowSpaces = showHome;
 
+// Для ПК-шапки (app-desktop.js): текущее пространство, его разделы,
+// переход в раздел и переключение пространства без HOME.
+window.dgSpace = {
+current: () => current,
+nav: () => SPACES[current].nav.slice(),
+go(i){
+if (current === 'skins'){ const b = navButtons()[i]; if (b) b.click(); }
+else route(i);
+},
+enter(key){
+if (!SPACES[key]) return;
+if (key !== current) saveSpace();
+hideHome();
+enter(key);
+},
+};
+
 // Логотип — к выбору пространства.
 document.addEventListener('click', (e) => {
 if (e.target.closest('.brand-tl .brand-logo')) showHome(true);
@@ -319,9 +344,9 @@ const tch = e.changedTouches[0];
 const dx = tch.clientX - x0, dy = Math.abs(tch.clientY - y0);
 x0 = null;
 if (dx < 60 || dy > 30) return;
-const back = document.getElementById('spBack_' + current);
-// Только из корня пространства, когда ничего не открыто поверх.
-if (back && back.getClientRects().length && !document.querySelector('.edit-overlay.show, .buy-overlay.show')) back.click();
+// Только из корня пространства (видна его «‹»), когда ничего не открыто поверх.
+const back = [...document.querySelectorAll('.sp-back')].find(b => b.getClientRects().length && getComputedStyle(b).visibility !== 'hidden');
+if (back && !document.querySelector('.edit-overlay.show, .buy-overlay.show')) back.click();
 }, { passive: true });
 })();
 

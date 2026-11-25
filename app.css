@@ -5829,6 +5829,10 @@ body.theme-light{ --space-ink:var(--accent, #6d28d9); }
 /* в пространствах старые «←» и заголовки заменены шапкой */
 #gfBackBtn, #gtBackBtn, #screenGifts > [data-i18n="gf_title"], #gtCatalogView > [data-i18n="gt_title"]{ display:none !important; }
 html.sp-home-open .sp-back{ visibility:hidden; }
+/* «Заказы» Пополнений: шапка пространства вместо «←» сделок */
+.sp-head.sp-head-orders{ display:none; }
+html[data-space="topup"] .sp-head.sp-head-orders{ display:flex; }
+html[data-space="topup"] #dealsBackBtn{ display:none !important; }
 /* на ПК у маркета своя шапка с разделами */
 html.dg-desk #screenShop .sp-head{ display:none; }
 
@@ -5860,10 +5864,10 @@ html[data-space="gifts"] .sp-back:focus-visible, html[data-space="topup"] .sp-ba
 /* меню только снизу: вкладки Подарков сверху не дублируем, переключатель
    «Скины / Пополнения» в сделках не нужен (раздел зависит от пространства),
    профиль — значком в шапке, а не в нижнем меню */
-html:not(.dg-desk) #gfTabs, #dealsSeg, #tabProfileBtn{ display:none !important; }
+#gfTabs, #dealsSeg, #tabProfileBtn{ display:none !important; }
 
-/* главная Скинов на телефоне: Пополнения и Подарки — свои пространства */
-html:not(.dg-desk) #gtStrip, html:not(.dg-desk) #giftsEntry{ display:none !important; }
+/* главная Скинов: Пополнения и Подарки — свои пространства (и на ПК) */
+#gtStrip, #giftsEntry{ display:none !important; }
 html:not(.dg-desk) #newbieTip{ min-height:0; padding-top:6px; padding-bottom:6px; }
 html:not(.dg-desk) #newbieTip *{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 /* карточка лота: один float, обычная кнопка «Купить» */

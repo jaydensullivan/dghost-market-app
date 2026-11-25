@@ -51,6 +51,25 @@ background:var(--cta-gradient); color:#fff; font:700 14px 'Inter', sans-serif;
 box-shadow:0 6px 18px -6px color-mix(in srgb, var(--accent) 70%, transparent); transition:transform .2s var(--dt-ease);
 }
 html.dg-desk .dt-sell:hover{ transform:translateY(-1px); }
+html.dg-desk .dt-sell[hidden]{ display:none; }
+/* переключатель пространств: Скины · Подарки · Пополнения */
+html.dg-desk .dt-spaces{ display:flex; gap:4px; padding:4px; border-radius:14px; background:rgba(255,255,255,.04); border:1px solid var(--dt-line); }
+html.dg-desk .dt-sp{ width:36px; height:36px; display:grid; place-items:center; border:0; border-radius:10px; background:none; color:var(--muted); cursor:pointer; transition:color .2s, background .2s; }
+html.dg-desk .dt-sp:hover{ color:var(--text); background:rgba(255,255,255,.06); }
+html.dg-desk .dt-sp.on{ color:#fff; background:linear-gradient(135deg, var(--space-a), var(--space-b)); box-shadow:0 4px 14px -4px var(--space-glow); }
+html.dg-desk .dt-sp:focus-visible{ outline:2px solid var(--space-ink); outline-offset:1px; }
+/* разделы в цвете пространства */
+html.dg-desk .dt-nav button.on{ background:color-mix(in srgb, var(--space-b) 18%, transparent); }
+/* Подарки и Пополнения на ПК — по центру, не во всю ширину */
+html.dg-desk #screenGifts, html.dg-desk #screenTopup, html.dg-desk #screenDeals{ max-width:1180px; margin-left:auto; margin-right:auto; }
+/* поиск этих пространств — в шапке (пишет в те же поля) */
+html.dg-desk #gfBuyPane > .shop-search, html.dg-desk #gtCatalogView > .shop-search{ display:none; }
+/* сетки Подарков и Пополнений — по ширине экрана, а не в две колонки телефона */
+html.dg-desk .gf-grid{ grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:14px; }
+html.dg-desk .gt-games-grid{ grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:14px; }
+html.dg-desk .gt-svc-grid{ grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:14px; }
+html.dg-desk .gt-offers{ grid-template-columns:repeat(auto-fill, minmax(170px, 1fr)); }
+html.dg-desk .gf-filters .gf-sort{ flex:0 1 260px; }
 /* иконки справа (баланс, корзина, колокольчик, профиль) — те же, в шапке */
 html.dg-desk .brand-tr{ position:fixed !important; top:16px !important; right:32px !important; z-index:460 !important; }
 html.dg-desk body.hdr-hidden .brand-tr{ transform:none; opacity:1; pointer-events:auto; }
