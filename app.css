@@ -5986,3 +5986,48 @@ html.sp-vt::view-transition-group(*){ animation-duration:.34s; }
   .sp-card{ flex:1; height:360px; }
   .sp-card-skins .sp-art img{ height:200px; top:50px; right:10px; }
 }
+
+/* ============================================================
+   Упрощение (телефон): первый экран маркета, профиль, шапка
+   ============================================================ */
+/* Скины: «‹ 01 / MARKETPLACE» не занимает экран — к выбору ведут логотип,
+   «Назад» Telegram и свайп от края (кнопка остаётся в DOM для них). */
+html:not(.dg-desk) #screenShop .sp-head{ position:absolute; width:1px; height:1px; margin:0; padding:0; overflow:hidden; clip-path:inset(50%); }
+/* баннер ниже, текст одной строкой */
+html:not(.dg-desk) .promo{ margin-bottom:10px; }
+html:not(.dg-desk) .promo-slide{ min-height:60px; padding:8px 10px; gap:10px; }
+html:not(.dg-desk) .promo-img{ flex-basis:44px; width:44px; height:44px; }
+html:not(.dg-desk) .promo-title{ font-size:14px; -webkit-line-clamp:1; }
+html:not(.dg-desk) .promo-text{ -webkit-line-clamp:1; font-size:12px; }
+html:not(.dg-desk) .promo-btn{ flex-basis:36px; width:36px; height:36px; }
+html:not(.dg-desk) .promo-dots{ margin-top:4px; }
+/* категории — компактные чипы в строку: картинка слева от подписи */
+html:not(.dg-desk) .shop-cats{ margin-bottom:8px; }
+html:not(.dg-desk) .shop-cats .category-chip{ flex-direction:row; gap:6px; min-width:0; min-height:36px; padding:4px 12px 4px 8px; border-radius:999px; font-size:12px; white-space:nowrap; }
+html:not(.dg-desk) .shop-cats .category-chip .cat-ico{ width:28px; height:19px; }
+html:not(.dg-desk) .shop-cats .category-chip svg{ width:18px; height:18px; }
+html:not(.dg-desk) .shop-search-row{ margin-bottom:8px; }
+html:not(.dg-desk) #shopTabs{ margin-bottom:10px; }
+html:not(.dg-desk) #shopTabs button{ min-height:36px; font-size:13px; }
+
+/* Шапка вернулась посреди страницы — на подложке, а не поверх карточек. */
+body.hdr-float .brand-tr{ padding:4px; border-radius:999px; background:color-mix(in srgb, var(--bg, #0b0714) 78%, transparent);
+  -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); box-shadow:0 6px 20px rgba(0,0,0,.35); }
+
+/* Профиль: баланс — одной плотной карточкой */
+.pf-balance{ padding:12px 14px; }
+.pf-balance .pf-ico{ width:36px; height:36px; }
+.pf-balance-amount{ font-size:24px !important; }
+.pf-money-row{ margin-top:10px; gap:8px; }
+.pf-money-btn{ min-height:40px; padding-top:0; padding-bottom:0; font-size:14px; }
+/* активность — три плотных плитки без значков */
+.pf-stats .stat-box{ padding:10px 12px; min-height:0; }
+.pf-stats .pf-ico{ display:none; }
+.pf-stats .stat-value{ font-size:20px; }
+/* служебное — одной колонкой мелким списком */
+.pf-settings{ grid-template-columns:1fr; gap:0; margin-top:6px; border-radius:14px; overflow:hidden; border:1px solid var(--red-dim, rgba(255,255,255,.08)); }
+.pf-settings .pf-set-btn{ border:0; border-radius:0; min-height:44px; font-size:13px; background:transparent; border-bottom:1px solid rgba(255,255,255,.05); }
+.pf-settings .pf-set-btn:last-child{ border-bottom:0; }
+.pf-settings .pf-set-btn svg{ width:18px; height:18px; }
+/* «Мой тариф» — сразу под балансом */
+#profileProCard{ margin-bottom:12px; }

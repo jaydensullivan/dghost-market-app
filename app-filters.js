@@ -110,6 +110,9 @@ document.getElementById('profileSellerSection').style.display = (status === 'ver
 document.getElementById('profileVerified').style.display = (status === 'verified') ? '' : 'none';
 // История и CSV продаж — всем, кто может продавать (с паспортом или без).
 document.querySelectorAll('.pf-seller-only').forEach(el => { el.style.display = (status === 'verified' || instantCanWithdraw) ? '' : 'none'; });
+// Карточка «Мой тариф» в профиле — продавцам (app-pro.js: renderProCard).
+window.dgIsSeller = status === 'verified' || !!instantCanWithdraw;
+if (typeof renderProCard === 'function') renderProCard();
 }
 
 // Фото документа и селфи — сжатые в JPEG (base64), номер — только

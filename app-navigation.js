@@ -379,6 +379,14 @@ goToScreen('auctions');
 } else if (action === 'sell'){
 goToScreen('lots');
 setTimeout(() => addSkinBtn.click(), 150);
+} else if (action === 'plan'){
+// «Мой тариф»: карточка в профиле, а у покупателя — сразу окно тарифов.
+switchTab('profile');
+setTimeout(() => {
+const card = document.getElementById('profileProCard');
+if (card && card.offsetParent) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+else if (typeof openProPlans === 'function') openProPlans();
+}, 150);
 } else if (action === 'support'){
 openSupport();
 } else if (action === 'giveaway'){

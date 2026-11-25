@@ -236,6 +236,8 @@ if (!act) return;
 const action = act.dataset.pfAction;
 if (action === 'notifications'){
 document.getElementById('notifBellBtn').click();
+} else if (action === 'plans'){
+if (typeof openProPlans === 'function') openProPlans();
 } else if (action === 'legal'){
 openLegal('terms');
 } else if (action === 'support'){
@@ -270,6 +272,8 @@ window.addEventListener('scroll', () => {
 const y = window.scrollY || 0;
 if (Math.abs(y - lastY) < 8) return;
 document.body.classList.toggle('hdr-hidden', y > lastY && y > 120);
+// Вернулась посреди страницы — на подложке (app.css: hdr-float).
+document.body.classList.toggle('hdr-float', y > 60);
 lastY = y;
 }, { passive: true });
 })();

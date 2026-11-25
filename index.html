@@ -16,7 +16,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=9"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);if(localStorage.getItem('dg_calm')==='1')document.documentElement.classList.add('dg-calm');}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=162">
+<link rel="stylesheet" href="app.css?v=163">
 <link rel="stylesheet" href="app-desktop.css?v=3" media="(min-width: 1280px)">
 </head>
 <body data-tab="shop">
@@ -46,12 +46,7 @@
 </button>
 <div id="headerMenu" class="edit-sheet" style="display:none; position:absolute; top:48px; right:0; width:210px; padding:8px; border-radius:14px; z-index:501;">
 <button type="button" class="header-menu-item" data-header-action="profile"><svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-user"/></svg> <span data-i18n="header_menu_profile">Профиль</span></button>
-<button type="button" class="header-menu-item" data-header-action="balance"><svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-coins"/></svg> <span data-i18n="header_menu_balance">Баланс</span></button>
-<button type="button" class="header-menu-item" data-header-action="history"><svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-history"/></svg> <span data-i18n="header_menu_history">История сделок</span></button>
-<button type="button" class="header-menu-item" data-header-action="giveaway"><svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-gift"/></svg> <span data-i18n="nav_giveaway">Раздача</span></button>
-<button type="button" class="header-menu-item" data-header-action="wants"><svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-heart"/></svg> <span data-i18n="header_menu_wants">Хочу</span></button>
-<button type="button" class="header-menu-item" data-header-action="auctionsList"><svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-gavel"/></svg> <span data-i18n="nav_auctions_short">Аукционы</span></button>
-<button type="button" class="header-menu-item" data-header-action="sell"><svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-tag"/></svg> <span data-i18n="header_menu_sell">Продать скин</span></button>
+<button type="button" class="header-menu-item" data-header-action="plan"><svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-star"/></svg> <span data-i18n="header_menu_plan">Мой тариф</span></button>
 <button type="button" class="header-menu-item" data-header-action="support"><svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-help"/></svg> <span data-i18n="header_menu_support">Поддержка</span></button>
 <button type="button" class="header-menu-item" data-header-action="legal"><svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-doc"/></svg> <span data-i18n="header_menu_legal">Правила и оферты</span></button>
 <button type="button" class="header-menu-item" data-header-action="auctions" id="headerMenuAuctions" style="display:none;"><svg class="gi" width="20" height="20" aria-hidden="true"><use href="#gi-gavel"/></svg> <span data-i18n="header_menu_auctions">Аукцион</span></button>
@@ -309,6 +304,21 @@
 </div>
 </div>
 
+<!-- ⭐ Мой тариф: объявления по тарифу, продление (app-pro.js) — продавцам. -->
+<div class="pf-card pro-card" id="profileProCard" style="display:none;">
+<div class="pro-head"><span class="pro-title" data-i18n="pro_title">⭐ DGhost PRO — для продавцов</span><span class="pro-badge" id="proBadge"></span></div>
+<div class="pro-features" data-i18n="pro_features">🎞 GIF и 🎬 видео твоих лотов в 3D
+📢 Публикация своего лота в канал DGhostMarket
+🖼 Картинка — бесплатно для всех</div>
+<div class="pro-status" id="proStatusText"></div>
+<!-- Объявления по тарифу: «Скины 7 из 10», что не входит, когда включатся лимиты (app-pro.js). -->
+<div class="plan-lots" id="proLotsBox" hidden></div>
+<!-- Незавершённая оплата тарифа переводом: ждём перевод / чек на проверке. -->
+<div class="plan-pay-open" id="proPayOpen" hidden></div>
+<button type="button" class="pf-btn pro-buy" id="proBuyBtn"></button>
+<button type="button" class="pf-btn pro-cab-open" id="proCabinetBtn" hidden data-i18n="pro_cab_btn">⚙️ Кабинет PRO — каналы, настройки, аукционы</button>
+</div>
+
 <!-- 📊 Моя активность -->
 <div class="profile-stats pf-stats">
 <button type="button" class="stat-box" data-pf-go="deals">
@@ -327,6 +337,40 @@
 
 <!-- Меню профиля: строки раскрываются по одной, как способы оплаты в пополнении (app-pfmenu.js). -->
 <div class="pf-menu" id="pfMenu">
+<div class="pf-acc" data-pfacc="seller">
+<button type="button" class="pf-acc-hd" aria-expanded="false"><span class="pf-ico green"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-idcard"/></svg></span><span class="pf-acc-t" data-i18n="pfm_seller">Продавцу</span><span class="pf-acc-hint" id="pfmHint_seller"></span><svg class="pf-acc-ch" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+<div class="pf-acc-bd"><div class="pf-acc-in">
+<!-- 🪪 Стать продавцом — только пока не проверен -->
+<div class="pf-card" id="profileSellerSection">
+<div class="pf-card-head">
+<div class="pf-ico green"><svg class="gi" width="26" height="26" aria-hidden="true"><use href="#gi-idcard"/></svg></div>
+<div class="pf-card-title"><div class="pf-title" data-i18n="pf_seller_title">Статус продавца</div></div>
+</div>
+<div id="sellerStatusNone">
+<div class="shop-hint" style="margin:8px 0 10px;" data-i18n="seller_status_none_hint">Продавать можно без паспорта — нужен вход через Steam и номер телефона. Проверка личности (паспорт и селфи) понадобится для вывода крупной суммы и для дорогих лотов: остаток видно в окне вывода.</div>
+<button type="button" id="openKycBtn" class="steam-link-btn u-w100" data-i18n="seller_btn_become">Пройти проверку личности</button>
+</div>
+<div id="sellerStatusPending" style="display:none;">
+<div class="shop-hint u-mt8" data-i18n="seller_status_pending">⏳ Заявка на проверке — обычно рассматривается в течение дня.</div>
+</div>
+<div id="sellerStatusRejected" style="display:none;">
+<div class="shop-hint" style="color:#e07a7a; margin:8px 0 10px;" data-i18n="seller_status_rejected">❌ Заявка отклонена. Проверь данные и подай заново.</div>
+<button type="button" id="openKycBtnAgain" class="steam-link-btn secondary u-w100" data-i18n="seller_btn_resubmit">Подать заявку снова</button>
+</div>
+<div id="sellerStatusVerified" style="display:none;"></div>
+</div>
+<button type="button" class="pf-btn u-w100 u-mt8" data-pf-action="plans" data-i18n="pf_plans_btn">⭐ Тарифы для продавцов</button>
+
+<!-- 🧊 3D-рендер для бизнеса — как на сайте (app-render3d.js) -->
+<!-- B2B-предложение: только проверенным продавцам и админам, не покупателю. -->
+<div class="pf-card r3d-card" id="r3dCard" hidden>
+<button type="button" class="pf-btn" id="r3dOpenBtn" data-i18n="r3d_btn">🧊 3D-рендер для бизнеса</button>
+<div class="r3d-sub" id="r3dCardSub" data-i18n="r3d_btn_sub">3D-просмотр скинов на вашем сайте — тарифы от $19</div>
+</div>
+
+</div></div>
+</div>
+<button type="button" class="pf-acc pf-acc-hd pf-acc-link" id="openWantsBtn"><span class="pf-ico gold"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-heart"/></svg></span><span class="pf-acc-t" data-i18n="wants_title">Хочу</span><span class="pf-acc-hint" data-i18n="pfm_wants_hint">слежу · ищу</span><svg class="pf-acc-ch" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
 <div class="pf-acc" data-pfacc="ref">
 <button type="button" class="pf-acc-hd" aria-expanded="false"><span class="pf-ico violet"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-people"/></svg></span><span class="pf-acc-t" data-i18n="pfm_ref">Пригласить друзей</span><span class="pf-acc-hint" id="pfmHint_ref"></span><svg class="pf-acc-ch" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
 <div class="pf-acc-bd"><div class="pf-acc-in">
@@ -372,7 +416,6 @@
 
 </div></div>
 </div>
-<button type="button" class="pf-acc pf-acc-hd pf-acc-link" id="openWantsBtn"><span class="pf-ico gold"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-heart"/></svg></span><span class="pf-acc-t" data-i18n="wants_title">Хочу</span><span class="pf-acc-hint" data-i18n="pfm_wants_hint">слежу · ищу</span><svg class="pf-acc-ch" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
 <div class="pf-acc" data-pfacc="sec">
 <button type="button" class="pf-acc-hd" aria-expanded="false"><span class="pf-ico teal"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-shield"/></svg></span><span class="pf-acc-t" data-i18n="pfm_sec">Вход и безопасность</span><span class="pf-acc-hint" id="pfmHint_sec"></span><svg class="pf-acc-ch" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
 <div class="pf-acc-bd"><div class="pf-acc-in">
@@ -454,51 +497,6 @@
 
 </div></div>
 </div>
-<div class="pf-acc" data-pfacc="seller">
-<button type="button" class="pf-acc-hd" aria-expanded="false"><span class="pf-ico green"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-idcard"/></svg></span><span class="pf-acc-t" data-i18n="pfm_seller">Продавцу</span><span class="pf-acc-hint" id="pfmHint_seller"></span><svg class="pf-acc-ch" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-<div class="pf-acc-bd"><div class="pf-acc-in">
-<!-- 🪪 Стать продавцом — только пока не проверен -->
-<div class="pf-card" id="profileSellerSection">
-<div class="pf-card-head">
-<div class="pf-ico green"><svg class="gi" width="26" height="26" aria-hidden="true"><use href="#gi-idcard"/></svg></div>
-<div class="pf-card-title"><div class="pf-title" data-i18n="pf_seller_title">Статус продавца</div></div>
-</div>
-<div id="sellerStatusNone">
-<div class="shop-hint" style="margin:8px 0 10px;" data-i18n="seller_status_none_hint">Продавать можно без паспорта — нужен вход через Steam и номер телефона. Проверка личности (паспорт и селфи) понадобится для вывода крупной суммы и для дорогих лотов: остаток видно в окне вывода.</div>
-<button type="button" id="openKycBtn" class="steam-link-btn u-w100" data-i18n="seller_btn_become">Пройти проверку личности</button>
-</div>
-<div id="sellerStatusPending" style="display:none;">
-<div class="shop-hint u-mt8" data-i18n="seller_status_pending">⏳ Заявка на проверке — обычно рассматривается в течение дня.</div>
-</div>
-<div id="sellerStatusRejected" style="display:none;">
-<div class="shop-hint" style="color:#e07a7a; margin:8px 0 10px;" data-i18n="seller_status_rejected">❌ Заявка отклонена. Проверь данные и подай заново.</div>
-<button type="button" id="openKycBtnAgain" class="steam-link-btn secondary u-w100" data-i18n="seller_btn_resubmit">Подать заявку снова</button>
-</div>
-<div id="sellerStatusVerified" style="display:none;"></div>
-</div>
-
-<!-- 🧊 3D-рендер для бизнеса — как на сайте (app-render3d.js) -->
-<!-- B2B-предложение: только проверенным продавцам и админам, не покупателю. -->
-<div class="pf-card r3d-card" id="r3dCard" hidden>
-<button type="button" class="pf-btn" id="r3dOpenBtn" data-i18n="r3d_btn">🧊 3D-рендер для бизнеса</button>
-<div class="r3d-sub" id="r3dCardSub" data-i18n="r3d_btn_sub">3D-просмотр скинов на вашем сайте — тарифы от $19</div>
-</div>
-<div class="pf-card pro-card" id="profileProCard" style="display:none;">
-<div class="pro-head"><span class="pro-title" data-i18n="pro_title">⭐ DGhost PRO — для продавцов</span><span class="pro-badge" id="proBadge"></span></div>
-<div class="pro-features" data-i18n="pro_features">🎞 GIF и 🎬 видео твоих лотов в 3D
-📢 Публикация своего лота в канал DGhostMarket
-🖼 Картинка — бесплатно для всех</div>
-<div class="pro-status" id="proStatusText"></div>
-<!-- Объявления по тарифу: «Скины 7 из 10», что не входит, когда включатся лимиты (app-pro.js). -->
-<div class="plan-lots" id="proLotsBox" hidden></div>
-<!-- Незавершённая оплата тарифа переводом: ждём перевод / чек на проверке. -->
-<div class="plan-pay-open" id="proPayOpen" hidden></div>
-<button type="button" class="pf-btn pro-buy" id="proBuyBtn"></button>
-<button type="button" class="pf-btn pro-cab-open" id="proCabinetBtn" hidden data-i18n="pro_cab_btn">⚙️ Кабинет PRO — каналы, настройки, аукционы</button>
-</div>
-
-</div></div>
-</div>
 <div class="pf-acc" data-pfacc="set">
 <button type="button" class="pf-acc-hd" aria-expanded="false"><span class="pf-ico blue"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-gear"/></svg></span><span class="pf-acc-t" data-i18n="pfm_settings">Настройки</span><span class="pf-acc-hint" id="pfmHint_set"></span><svg class="pf-acc-ch" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
 <div class="pf-acc-bd"><div class="pf-acc-in">
@@ -553,7 +551,6 @@
 <div class="pf-settings">
 <button type="button" class="pf-set-btn dgw-guest-only" id="webLoginBtn"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-user"/></svg><span data-i18n="web_login">Войти</span></button>
 <button type="button" class="pf-set-btn dgw-in-only" id="webLogoutBtn"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-exit"/></svg><span data-i18n="web_logout">Выйти из аккаунта на сайте</span></button>
-<button type="button" class="pf-set-btn" data-pf-action="notifications"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-bell"/></svg><span data-i18n="pf_notifications">Уведомления</span></button>
 <button type="button" class="pf-set-btn pf-seller-only" id="openHistoryBtn" style="display:none;"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-history"/></svg><span data-i18n="pf_history">История операций</span></button>
 <button type="button" class="pf-set-btn pf-seller-only" id="exportSalesCsvBtn" style="display:none;"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-doc"/></svg><span data-i18n="btn_export_csv">Экспорт CSV</span></button>
 <button type="button" class="pf-set-btn" data-pf-action="legal"><svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-doc"/></svg><span data-i18n="header_menu_legal">Правила и оферты</span></button>
@@ -2943,15 +2940,15 @@
 </div>
 </div>
 <script src="app-core.js?v=21"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=93', en: 'app-i18n-en.js?v=92' };</script>
-<script src="app-i18n.js?v=215"></script>
-<script src="app-navigation.js?v=33"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=94', en: 'app-i18n-en.js?v=93' };</script>
+<script src="app-i18n.js?v=216"></script>
+<script src="app-navigation.js?v=34"></script>
 <script src="app-shop.js?v=56"></script>
 <script src="app-legal.js?v=3"></script>
 <script src="app-deals.js?v=30"></script>
 <script src="app-catalog.js?v=39"></script>
 <script src="app-cart.js?v=12"></script>
-<script src="app-filters.js?v=75"></script>
+<script src="app-filters.js?v=76"></script>
 <script src="app-music.js?v=2"></script>
 <script src="app-steam.js?v=18"></script>
 <script src="app-logins.js?v=4"></script>
@@ -2973,11 +2970,11 @@
 <script src="app-notifications.js?v=3"></script>
 <script src="app-telegram.js?v=25"></script>
 <script src="app-raffle.js?v=14"></script>
-<script src="app-home.js?v=14"></script>
+<script src="app-home.js?v=15"></script>
 <script src="app-desktop.js?v=3"></script>
 <script src="app-support.js?v=4"></script>
 <script src="app-spaces.js?v=5"></script>
-<script src="app-pro.js?v=23"></script>
+<script src="app-pro.js?v=24"></script>
 <script>window.DG_R3D_SRC = 'app-render3d.js?v=5';</script>
 </body>
 </html>
