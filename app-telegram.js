@@ -81,6 +81,8 @@ legalOverlay: 'legalCloseBtn',
 // Экранные «назад» внутри приложения — сначала более глубокие.
 const SCREEN_BACK_BTNS = [
 'dealsBackBtn', 'buyRequestsBackBtn',
+// Корень пространства (app-spaces.js): «назад» — к выбору пространства.
+'spBack_skins', 'spBack_gifts', 'spBack_topup',
 'rfBackBtn', 'auctionsBackBtn', 'adminBackBtn',
 ];
 
