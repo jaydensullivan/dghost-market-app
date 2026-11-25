@@ -403,11 +403,11 @@ const open = cp && cp.open;
 if (!open) return;
 const dict = I18N[currentLang] || I18N.ru;
 proPayTier = open.ref;
-proPayEl('proPayTitle').textContent = dict.plan_pay_title.replace('{name}', proTierName(open.ref));
+proPayEl('proPayTitle').textContent = open.kind === 'promotion' ? dict.promo_pay_title.replace('{name}', proPaymentName(open)) : dict.plan_pay_title.replace('{name}', proTierName(open.ref));
 proPayEl('proPayHint').textContent = '';
 proPayEl('proPayStatus').textContent = '';
 if (open.status === 'pending_review'){
-proPayEl('proPayWait').textContent = dict.plan_pay_wait.replace('{name}', proTierName(open.ref)).replace('{price}', formatCoins(open.amount));
+proPayEl('proPayWait').textContent = dict.plan_pay_wait.replace('{name}', proPaymentName(open)).replace('{price}', formatCoins(open.amount));
 proPayShow('wait');
 } else {
 renderProPayCard(open, cp.details, cp.expires_hours);
@@ -527,7 +527,7 @@ if (!box) return;
 const open = proStatus && proStatus.card_pay && proStatus.card_pay.open;
 if (!open){ box.hidden = true; return; }
 const dict = I18N[currentLang] || I18N.ru;
-const name = proTierName(open.ref);
+const name = proPaymentName(open);
 const text = open.status === 'pending_review'
 ? dict.plan_pay_wait.replace('{name}', name).replace('{price}', formatCoins(open.amount))
 : dict.plan_pay_open_await.replace('{name}', name).replace('{price}', formatCoins(open.amount));
@@ -550,7 +550,7 @@ fetch(API_BASE + '/api/pro/payments?init_data=' + encodeURIComponent(tg.initData
 const dict = I18N[currentLang] || I18N.ru;
 const items = (data && data.items) || [];
 box.innerHTML = items.length ? items.map(p => `<div class="plan-pay-row">
-<div><b>${escapeHtml(proTierName(p.ref))}</b> · ${escapeHtml(formatCoins(p.amount))}<span>${escapeHtml(proDateText(p.created_at))} · ${escapeHtml(dict['plan_pay_m_' + p.method] || p.method)}</span></div>
+<div><b>${escapeHtml(proPaymentName(p))}</b> · ${escapeHtml(formatCoins(p.amount))}<span>${escapeHtml(proDateText(p.created_at))} · ${escapeHtml(dict['plan_pay_m_' + p.method] || p.method)}</span></div>
 <span class="gt-badge gt-badge-${PRO_PAY_BADGE[p.status] || 'wait'}">${escapeHtml(dict['plan_pay_s_' + p.status] || p.status)}</span>
 </div>`).join('') : `<div class="shop-hint">${escapeHtml(dict.plan_pay_history_empty)}</div>`;
 })
@@ -1321,3 +1321,153 @@ if (el) obs.observe(el, { childList: true, characterData: true, subtree: true })
 });
 updateProCabinet();
 })();
+
+// ------------------------------------------------------------
+// ПРОДВИЖЕНИЕ ОБЪЯВЛЕНИЙ (бот: promotions.py, docs/SUBSCRIPTIONS.md §5)
+//
+// Кнопка «📣 Продвинуть» у своих объявлений («Мои лоты», «Мои подарки»):
+// выбор вида (Featured / Highlight / Top), оплата с баланса или переводом
+// на карту — тем же окном с реквизитами и чеком, что у тарифа.
+// ------------------------------------------------------------
+
+const PROMO_KINDS = ['featured', 'highlight', 'top'];
+const promoOverlay = document.getElementById('promoOverlay');
+let promoInfo = null;
+let promoTarget = null;   // { market, id }
+let promoKind = 'featured';
+let promoBusy = false;
+
+function promoWhen(iso){
+if (!iso) return '';
+return new Date(iso).toLocaleString(currentLang === 'en' ? 'en-GB' : 'ru-RU', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
+function promoName(kind){
+const dict = I18N[currentLang] || I18N.ru;
+return dict['promo_name_' + kind] || kind;
+}
+
+// Название платежа в истории и в «незавершённой оплате»: тариф или продвижение.
+function proPaymentName(p){
+if (p && p.kind === 'promotion'){
+const kind = String(p.ref || '').split(':')[0];
+return (I18N[currentLang] || I18N.ru).promo_payment_name.replace('{name}', promoName(kind));
+}
+return proTierName(p && p.ref);
+}
+
+function renderPromoSheet(){
+if (!promoInfo || !promoTarget) return;
+const dict = I18N[currentLang] || I18N.ru;
+const kinds = promoInfo.kinds || {};
+const dur = k => {
+const h = (kinds[k] || {}).hours || 0;
+return h % 24 === 0 && h >= 48 ? dict.promo_days.replace('{n}', h / 24) : dict.promo_hours.replace('{n}', h);
+};
+document.getElementById('promoKinds').innerHTML = PROMO_KINDS.map(k => {
+const info = kinds[k] || {};
+const disc = info.base_price && info.price < info.base_price;
+return `<button type="button" class="promo-kind${k === promoKind ? ' on' : ''}" data-promo-kind="${k}">
+<b>${escapeHtml(promoName(k))}</b><span class="promo-kind-price">${escapeHtml(formatCoins(info.price || 0))}${disc ? ` <s>${escapeHtml(formatCoins(info.base_price))}</s>` : ''}</span>
+<span class="promo-kind-desc">${escapeHtml((dict['promo_desc_' + k] || '').replace('{n}', promoInfo.top_slots || 4))} · ${escapeHtml(dur(k))}</span>
+</button>`;
+}).join('');
+const mine = (promoInfo.mine || []).filter(m => m.market === promoTarget.market && m.item_id === promoTarget.id);
+document.getElementById('promoNow').innerHTML = mine.map(m => `<div>${escapeHtml((m.status === 'active' ? dict.promo_running : dict.promo_waiting)
+.replace('{name}', promoName(m.kind)).replace('{date}', promoWhen(m.status === 'active' ? m.ends_at : m.starts_at)))}</div>`).join('');
+const price = formatCoins(((kinds[promoKind] || {}).price) || 0);
+document.getElementById('promoPayBalanceBtn').textContent = dict.promo_pay_balance.replace('{price}', price);
+const cardBtn = document.getElementById('promoPayCardBtn');
+cardBtn.textContent = dict.promo_pay_card.replace('{price}', price);
+cardBtn.hidden = !(proStatus && proStatus.card_pay && proStatus.card_pay.enabled);
+// Без тарифа продвижение недоступно — подсказка и кнопка к тарифам.
+const free = proStatus && proStatus.plan && proStatus.plan.tier === 'free' && !proStatus.admin;
+document.getElementById('promoPay').hidden = !!free;
+document.getElementById('promoStatus').textContent = free ? dict.promo_need_plan : '';
+}
+
+function openPromo(market, id){
+if (!tg || !tg.initData || !promoOverlay) return;
+promoTarget = { market: market, id: Number(id) };
+promoKind = 'featured';
+document.getElementById('promoStatus').textContent = '';
+document.getElementById('promoKinds').innerHTML = '';
+document.getElementById('promoNow').innerHTML = '';
+promoOverlay.classList.add('show');
+fetch(API_BASE + '/api/promotions?init_data=' + encodeURIComponent(tg.initData))
+.then(r => r.ok ? r.json() : null)
+.then(data => { if (data){ promoInfo = data; renderPromoSheet(); } })
+.catch(() => { document.getElementById('promoStatus').textContent = errorMessage('network'); });
+}
+
+function closePromo(){
+if (promoOverlay) promoOverlay.classList.remove('show');
+}
+
+function promoError(data){
+const dict = I18N[currentLang] || I18N.ru;
+if (data.error === 'insufficient_funds') return dict.promo_no_money.replace('{price}', formatCoins(data.price || 0));
+if (data.error === 'promo_plan_required') return dict.promo_need_plan;
+if (data.error === 'not_found') return dict.promo_gone;
+return typeof proPayError === 'function' ? proPayError(data.error) : errorMessage(data.error);
+}
+
+function buyPromo(pay){
+if (promoBusy || !promoTarget) return;
+const dict = I18N[currentLang] || I18N.ru;
+const status = document.getElementById('promoStatus');
+promoBusy = true;
+status.textContent = '';
+fetch(API_BASE + '/api/promotions/buy', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ init_data: tg.initData, market: promoTarget.market, item_id: promoTarget.id, kind: promoKind, pay: pay }),
+})
+.then(r => r.json().catch(() => ({})).then(data => ({ ok: r.ok, data })))
+.then(({ ok, data }) => {
+if (!ok){ status.textContent = promoError(data); return; }
+if (pay === 'card'){
+// Тот же шаг перевода, что у тарифа: сумма, реквизиты, чек.
+closePromo();
+proPayEl('proPayTitle').textContent = dict.promo_pay_title.replace('{name}', promoName(promoKind));
+renderProPayCard(data.payment, data.card_details, data.expires_hours);
+proPayOverlay.classList.add('show');
+loadProStatus();
+return;
+}
+const queued = data.starts_at && new Date(data.starts_at) - Date.now() > 60000;
+showAlert(queued
+? dict.promo_queued.replace('{name}', promoName(promoKind)).replace('{date}', promoWhen(data.starts_at))
+: dict.promo_ok.replace('{name}', promoName(promoKind)).replace('{date}', promoWhen(data.ends_at)));
+if (typeof haptic === 'function') haptic('success');
+closePromo();
+if (typeof loadMe === 'function') loadMe();
+if (promoTarget.market === 'gifts'){ if (typeof loadGifts === 'function') loadGifts(); }
+else if (typeof loadSkins === 'function') loadSkins();
+})
+.catch(() => { status.textContent = errorMessage('network'); })
+.finally(() => { promoBusy = false; });
+}
+
+if (promoOverlay){
+document.getElementById('promoKinds').addEventListener('click', (e) => {
+const b = e.target.closest('[data-promo-kind]');
+if (!b) return;
+promoKind = b.dataset.promoKind;
+renderPromoSheet();
+});
+document.getElementById('promoPayBalanceBtn').addEventListener('click', () => buyPromo('balance'));
+document.getElementById('promoPayCardBtn').addEventListener('click', () => buyPromo('card'));
+document.getElementById('promoCloseBtn').addEventListener('click', closePromo);
+promoOverlay.addEventListener('click', (e) => { if (e.target === promoOverlay) closePromo(); });
+}
+
+// Кнопка «Продвинуть» — раньше обработчиков карточки (иначе откроется лот).
+document.addEventListener('click', (e) => {
+const b = e.target.closest('[data-promo-open]');
+if (!b) return;
+e.preventDefault();
+e.stopPropagation();
+const [market, id] = b.dataset.promoOpen.split(':');
+openPromo(market, id);
+}, true);

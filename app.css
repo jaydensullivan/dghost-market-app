@@ -4536,6 +4536,23 @@ body.theme-light .plan-lots{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0
 .plan-pay-history{ display:flex; flex-direction:column; gap:6px; margin:6px 0 10px; }
 .plan-pay-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 10px; border-radius:10px; background:var(--surface); border:1px solid var(--red-dim); font-size:13px; }
 .plan-pay-row span:not(.gt-badge){ display:block; font-size:11px; opacity:.65; margin-top:2px; }
+/* Продвижение: пометка и рамка Highlight в каталоге, окно «Продвинуть» */
+.skin-photo-wrap, .gf-card-art{ position:relative; }
+.promo-tag{ position:absolute; left:6px; bottom:6px; z-index:2; padding:2px 7px; border-radius:999px; font-size:10px; font-weight:700; letter-spacing:.02em;
+  background:rgba(10,7,16,.72); color:#fde68a; border:1px solid rgba(251,191,36,.45); backdrop-filter:blur(4px); pointer-events:none; }
+.skin-card.promo-hl, .gf-card.promo-hl{ border-color:transparent; background:linear-gradient(var(--surface), var(--surface)) padding-box, linear-gradient(135deg, #fbbf24, #f472b6, #a855f7) border-box;
+  box-shadow:0 0 0 1px rgba(251,191,36,.25), 0 6px 22px rgba(251,191,36,.16); }
+.promo-open-btn{ width:100%; margin-top:8px; font-size:12px; }
+.promo-now{ display:flex; flex-direction:column; gap:4px; margin-bottom:10px; font-size:13px; color:#7CF2A5; }
+.promo-now:empty{ display:none; }
+.promo-kinds{ display:flex; flex-direction:column; gap:8px; margin-bottom:12px; }
+.promo-kind{ display:grid; grid-template-columns:1fr auto; gap:2px 10px; text-align:left; padding:12px; border-radius:14px; border:1px solid var(--red-dim); background:var(--surface); color:var(--text); font:inherit; cursor:pointer; }
+.promo-kind.on{ border-color:transparent; background:linear-gradient(var(--surface), var(--surface)) padding-box, var(--cta-gradient) border-box; }
+.promo-kind b{ font-size:15px; }
+.promo-kind-price{ font-weight:800; white-space:nowrap; }
+.promo-kind-price s{ opacity:.5; font-weight:600; font-size:12px; }
+.promo-kind-desc{ grid-column:1 / -1; font-size:12px; opacity:.75; }
+#promoPay[hidden]{ display:none; }
 .pro-buy{ width:100%; justify-content:center; background:linear-gradient(90deg, var(--accent), var(--accent-2)); color:#fff; border:0; }
 .save.pro-locked::after{ content:" 🔒 PRO"; font-size:11px; opacity:.85; }
 .pro-channels{ margin-top:12px; padding-top:10px; border-top:1px solid rgba(168,85,247,.3); }
