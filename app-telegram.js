@@ -82,7 +82,7 @@ legalOverlay: 'legalCloseBtn',
 const SCREEN_BACK_BTNS = [
 'dealsBackBtn', 'buyRequestsBackBtn',
 // Корень пространства (app-spaces.js): «назад» — к выбору пространства.
-'spBack_skins', 'spBack_gifts', 'spBack_topup',
+'spBack_skins', 'spBack_gifts', 'spBack_topup', 'spBack_orders',
 'rfBackBtn', 'auctionsBackBtn', 'adminBackBtn',
 ];
 
