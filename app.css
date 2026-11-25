@@ -4509,6 +4509,20 @@ padding:2px 7px; border-radius:6px; font-size:11px; font-weight:700; line-height
 .pro-badge:empty{ display:none; }
 .pro-features{ white-space:pre-line; font-size:13px; line-height:1.5; opacity:.9; margin-bottom:8px; }
 .pro-status{ font-size:12px; opacity:.75; margin-bottom:10px; }
+/* Объявления по тарифу (app-pro.js: renderPlanLots) */
+.plan-lots{ margin:0 0 10px; padding:10px 12px; border-radius:12px; background:rgba(0,0,0,.18); border:1px solid rgba(255,255,255,.06); }
+.plan-lots[hidden]{ display:none; }
+.plan-title{ font-size:12px; font-weight:700; opacity:.8; margin-bottom:6px; }
+.plan-row{ display:grid; grid-template-columns:1fr auto; align-items:center; gap:2px 8px; font-size:13px; padding:3px 0; }
+.plan-row b{ font-weight:700; }
+.plan-row.off{ opacity:.55; }
+.plan-row.off b{ font-weight:500; font-size:12px; }
+.plan-row.full b{ color:#fbbf24; }
+.plan-bar{ grid-column:1 / -1; display:block; height:4px; border-radius:2px; background:rgba(255,255,255,.08); overflow:hidden; }
+.plan-bar > i{ display:block; height:100%; border-radius:2px; background:linear-gradient(90deg, var(--space-a, #7c3aed), var(--space-b, #9333ea)); }
+.plan-row.full .plan-bar > i{ background:#f59e0b; }
+.plan-note{ font-size:12px; opacity:.75; margin-top:6px; line-height:1.4; }
+body.theme-light .plan-lots{ background:rgba(0,0,0,.04); border-color:rgba(0,0,0,.06); }
 .pro-buy{ width:100%; justify-content:center; background:linear-gradient(90deg, var(--accent), var(--accent-2)); color:#fff; border:0; }
 .save.pro-locked::after{ content:" 🔒 PRO"; font-size:11px; opacity:.85; }
 .pro-channels{ margin-top:12px; padding-top:10px; border-top:1px solid rgba(168,85,247,.3); }

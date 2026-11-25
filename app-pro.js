@@ -112,6 +112,70 @@ btn.textContent = dict.pro_btn_buy.replace('{price}', formatCoins(proMinPrice())
 }
 }
 
+// ---------- Объявления по тарифу (бот: plan — docs/SUBSCRIPTIONS.md §4) ----------
+// Сколько объявлений занято в каждом разделе, что не входит в тариф и с
+// какого дня лимиты действуют. Пока лимиты не включены — только показываем.
+const PLAN_MARKETS = ['skins', 'gifts'];
+
+function planDateText(iso){
+return iso ? proDateText(iso) : '';
+}
+
+function renderPlanLots(){
+const box = document.getElementById('proLotsBox');
+if (!box) return;
+const plan = proStatus && proStatus.plan;
+if (!plan || !plan.markets || proStatus.admin){ box.hidden = true; return; }
+const dict = I18N[currentLang] || I18N.ru;
+const rows = PLAN_MARKETS.map(m => {
+const u = plan.markets[m] || {};
+const name = escapeHtml(dict['plan_market_' + m]);
+if (!u.allowed) return `<div class="plan-row off"><span>${name}</span><b>${escapeHtml(dict.plan_locked)}</b></div>`;
+if (u.limit === null || u.limit === undefined){
+return `<div class="plan-row"><span>${name}</span><b>${escapeHtml(dict.plan_unlimited.replace('{used}', u.used || 0))}</b></div>`;
+}
+const pct = Math.min(100, Math.round((u.used || 0) / Math.max(1, u.limit) * 100));
+const full = (u.used || 0) >= u.limit;
+return `<div class="plan-row${full ? ' full' : ''}"><span>${name}</span><b>${escapeHtml(dict.plan_of.replace('{used}', u.used || 0).replace('{limit}', u.limit))}</b>`
++ `<i class="plan-bar"><i style="width:${pct}%"></i></i></div>`;
+}).join('');
+const notes = [];
+const over = PLAN_MARKETS.reduce((n, m) => {
+const u = plan.markets[m] || {};
+return n + (u.allowed && u.limit != null ? Math.max(0, (u.used || 0) - u.limit) : 0);
+}, 0);
+if (over) notes.push(dict.plan_over.replace('{n}', over));
+if (plan.market_count < 2 && !plan.chosen_market && !(plan.addons && plan.addons.second_market)
+&& PLAN_MARKETS.every(m => (plan.markets[m] || {}).allowed)) notes.push(dict.plan_choose_first);
+if (!plan.enforced) notes.push(plan.enforce_from ? dict.plan_enforce_soon.replace('{date}', planDateText(plan.enforce_from)) : dict.plan_enforce_off);
+box.innerHTML = `<div class="plan-title">${escapeHtml(dict.plan_lots_title)}</div>${rows}`
++ notes.map(n => `<div class="plan-note">${escapeHtml(n)}</div>`).join('');
+box.hidden = false;
+}
+
+// Отказ при выставлении из-за тарифа (plan_limit_reached / plan_market_locked):
+// понятный текст с цифрами и предложение открыть тарифы.
+function planErrorMessage(data){
+if (!data || typeof data.error !== 'string' || data.error.indexOf('plan_') !== 0) return null;
+const dict = I18N[currentLang] || I18N.ru;
+const market = dict['plan_market_' + (data.market || 'skins')] || '';
+if (data.error === 'plan_market_locked') return dict.plan_market_msg.replace('{market}', market);
+return dict.plan_limit_msg.replace('{used}', data.used != null ? data.used : '—')
+.replace('{limit}', data.limit != null ? data.limit : '—').replace('{market}', market);
+}
+
+function offerPlans(data){
+const msg = planErrorMessage(data);
+if (!msg) return false;
+const dict = I18N[currentLang] || I18N.ru;
+showConfirmDialog(msg + '\n\n' + dict.plan_open_plans, () => {
+if (typeof openProPlans === 'function') openProPlans();
+});
+// Цифры в карточке тарифа — свежие.
+loadProStatus();
+return true;
+}
+
 function loadProStatus(){
 if (!tg || !tg.initData) return Promise.resolve(null);
 return fetch(API_BASE + '/api/pro?init_data=' + encodeURIComponent(tg.initData))
@@ -120,6 +184,7 @@ return fetch(API_BASE + '/api/pro?init_data=' + encodeURIComponent(tg.initData))
 if (data && !data.error){
 proStatus = data;
 renderProCard();
+renderPlanLots();
 renderDeposit();
 if (proPlansOverlay && proPlansOverlay.classList.contains('show')) renderProPlans();
 }
@@ -151,7 +216,8 @@ const days = proStatus.days;
 const current = proStatus.active ? (proStatus.tier || 'pro') : 'free';
 document.getElementById('proPlansHint').textContent = dict.pro_plans_hint.replace('{days}', days)
 + (proFirstPercent() ? ' ' + proFirstText().note.replace('{p}', proFirstPercent()) : '');
-const cols = [{ id: 'free', price: 0, share_per_hour: proStatus.free_share_per_hour || 30, market_posts: 0, own_channels: 0, own_posts: 0, own_auctions: 0, own_raffles: 0 }]
+const free = proStatus.free_plan || { lots: 3, markets: 1 };
+const cols = [{ id: 'free', price: 0, share_per_hour: proStatus.free_share_per_hour || 30, market_posts: 0, own_channels: 0, own_posts: 0, own_auctions: 0, own_raffles: 0, lots: free.lots, markets: free.markets }]
 .concat(PRO_TIER_IDS.map(proTier).filter(Boolean));
 
 document.getElementById('proPlans').innerHTML = cols.map(t => {
@@ -192,7 +258,12 @@ const no = '<span class="pro-no">—</span>';
 // null — без лимита (у «Гаранта» посты в канал маркета).
 const num = v => (v === null ? '∞' : (v ? String(v) : no));
 // Третий элемент — пояснение строки: открывается по ⓘ под самой строкой.
+// Лимиты объявлений (plans.py) — первыми: главное, чем различаются тарифы.
+const lots = v => (v === null ? '∞' : (v === undefined ? no : String(v)));
+const markets = v => (v === undefined ? no : escapeHtml(v >= 2 ? dict.plan_markets_both : dict.plan_markets_one));
 const rows = [
+[dict.plan_cmp_lots, t => lots(t.lots), dict.plan_help_lots],
+[dict.plan_cmp_markets, t => markets(t.markets), dict.plan_help_markets],
 [dict.pro_cmp_buy, () => yes, dict.pro_help_buy],
 [dict.pro_cmp_photo, () => yes, dict.pro_help_photo],
 [dict.pro_cmp_3d, () => yes, dict.pro_help_3d],
@@ -259,6 +330,7 @@ return;
 }
 proStatus = data;
 renderProCard();
+renderPlanLots();
 renderProPlans();
 renderProChannels();
 loadProChannels();
@@ -700,6 +772,7 @@ const proBaseApplyTranslations = applyTranslations;
 applyTranslations = function(){
 proBaseApplyTranslations.apply(this, arguments);
 renderProCard();
+renderPlanLots();
 renderProChannels();
 renderProSettings();
 };

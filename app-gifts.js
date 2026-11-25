@@ -336,7 +336,8 @@ btn.disabled = true;
 gfPost('/api/gifts/prelist', { name: item.name, price_uzs: price }).then(({ ok, data }) => {
 if (!ok){
 status.className = 'edit-status is-error';
-status.textContent = gfError(data.error);
+// Лимит тарифа: текст с цифрами и предложение открыть тарифы (app-pro.js).
+status.textContent = (typeof offerPlans === 'function' && offerPlans(data)) ? planErrorMessage(data) : gfError(data.error);
 input.classList.add('field-error');
 if (typeof haptic === 'function') haptic('error');
 return;
@@ -663,7 +664,11 @@ const price = parseInt(String(row.querySelector('.gf-price-input').value).replac
 set.disabled = true;
 gfPost('/api/gifts/price', { id: Number(set.dataset.gfSet), price_uzs: price })
 .then(({ ok, data }) => {
-if (!ok){ showToast(gfError(data.error)); if (typeof haptic === 'function') haptic('error'); return; }
+if (!ok){
+if (!(typeof offerPlans === 'function' && offerPlans(data))) showToast(gfError(data.error));
+if (typeof haptic === 'function') haptic('error');
+return;
+}
 showToast(d.gf_listed_ok);
 if (typeof haptic === 'function') haptic('success');
 loadGiftsMine(); loadGifts();

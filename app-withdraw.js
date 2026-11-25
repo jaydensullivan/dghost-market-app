@@ -764,6 +764,7 @@ body: JSON.stringify({ init_data: tg.initData, inspect_link: link, tradable_afte
 const data = await r.json().catch(() => ({}));
 if (!r.ok){
 if (data.error === 'seller_offer_required') sellerOfferAccepted = false;
+if (typeof offerPlans === 'function' && offerPlans(data)) throw new Error(planErrorMessage(data));
 if (data.error === 'lot_price_kyc_required') throw new Error(lotPriceKycMessage(data));
 if (data.error === 'steam_login_required' || data.error === 'phone_required') openSellerVerify();
 if (data.error === 'price_too_high'){
@@ -1114,6 +1115,10 @@ return;
 if (err === 'seller_offer_required'){
 sellerOfferAccepted = false;
 openSellerOffer(() => bulkStart(items, pct));
+return;
+}
+if (typeof offerPlans === 'function' && offerPlans(data)){
+status.textContent = planErrorMessage(data);
 return;
 }
 if (err === 'steam_login_required' || err === 'phone_required'){
@@ -1688,6 +1693,7 @@ if (data.error === 'seller_offer_required'){
 sellerOfferAccepted = false;
 openSellerOffer(() => publishSkin(triggerBtn, statusEl, overlayEl));
 }
+if (typeof offerPlans === 'function' && offerPlans(data)) throw new Error(planErrorMessage(data));
 if (data.error === 'price_too_high'){
 throw new Error((I18N[currentLang] || I18N.ru).price_too_high.replace('{max}', formatCoins(data.max_allowed)).replace('{market}', formatCoins(data.market_price_uzs)));
 }
