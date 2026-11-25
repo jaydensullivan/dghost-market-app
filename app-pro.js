@@ -231,13 +231,25 @@ if (!proStatus) return;
 const dict = I18N[currentLang] || I18N.ru;
 const days = proStatus.days;
 const current = proStatus.active ? (proStatus.tier || 'pro') : 'free';
-document.getElementById('proPlansHint').textContent = dict.pro_plans_hint.replace('{days}', days)
+// Одна строка вместо абзаца; скидка первого месяца — отдельной строкой.
+document.getElementById('proPlansHint').textContent = dict.pro_plans_hint_short
 + (proFirstPercent() ? ' ' + proFirstText().note.replace('{p}', proFirstPercent()) : '');
 const free = proStatus.free_plan || { lots: 3, markets: 1 };
 const cols = [{ id: 'free', price: 0, share_per_hour: proStatus.free_share_per_hour || 30, market_posts: 0, own_channels: 0, own_posts: 0, own_auctions: 0, own_raffles: 0, lots: free.lots, markets: free.markets }]
 .concat(PRO_TIER_IDS.map(proTier).filter(Boolean));
+// Карточками — Free / Старт / PRO / Бизнес. «Гарант» (по заявке, дорогой)
+// — строкой под ними, если это не тариф самого продавца; в таблице сравнения он есть.
+const cards = cols.filter(t => !t.approval || t.id === current);
+const garant = cols.find(t => t.approval && t.id !== current);
+// Три главные строки карточки: объявления, разделы, продвижение.
+const planLines = t => {
+const lots = t.lots === null ? dict.plan_card_lots_inf : dict.plan_card_lots.replace('{n}', t.lots != null ? t.lots : '—');
+const mk = t.markets >= 2 ? dict.plan_card_markets_both : dict.plan_card_markets_one;
+const promo = t.id === 'free' ? dict.plan_card_promo_no : dict.plan_card_promo_yes;
+return `<ul class="pro-plan-lines"><li>${escapeHtml(lots)}</li><li>${escapeHtml(mk)}</li><li class="${t.id === 'free' ? 'off' : ''}">${escapeHtml(promo)}</li></ul>`;
+};
 
-document.getElementById('proPlans').innerHTML = cols.map(t => {
+document.getElementById('proPlans').innerHTML = cards.map(t => {
 const isCurrent = t.id === current;
 const disc = t.id !== 'free' && proFirstPercent() && proPayPrice(t) < t.price;
 const price = t.id === 'free' ? dict.pro_free_price : formatCoins(proPayPrice(t));
@@ -262,13 +274,28 @@ const flag = isCurrent ? `<span class="pro-plan-flag current">${escapeHtml(dict.
 return `<div class="pro-plan${t.popular ? ' popular' : ''}${isCurrent ? ' current' : ''}">
 ${flag}
 <div class="pro-plan-name">${escapeHtml(proTierName(t.id))}</div>
-<div class="pro-plan-price">${escapeHtml(price)}${disc ? ` <s style="opacity:.55;font-weight:600;font-size:13px;">${escapeHtml(formatCoins(t.price))}</s>` : ''}</div>
-${disc ? `<div class="pro-plan-per" style="color:#7CF2A5;">${escapeHtml(proFirstText().badge.replace('{p}', proFirstPercent()))}</div>` : ''}
+<div class="pro-plan-price">${escapeHtml(price)}</div>
+${disc ? `<div class="pro-plan-old"><s>${escapeHtml(formatCoins(t.price))}</s> · <span>${escapeHtml(proFirstText().badge.replace('{p}', proFirstPercent()))}</span></div>` : ''}
 <div class="pro-plan-per">${t.id === 'free' ? '&nbsp;' : escapeHtml(dict.pro_per_days.replace('{days}', days))}</div>
-<div class="pro-plan-tag">${escapeHtml(dict['pro_tag_' + t.id] || '')}</div>
+${planLines(t)}
 ${action}
 </div>`;
 }).join('');
+
+// «Гарант» — одной строкой: что даёт, цена и действие по статусу заявки.
+const gBox = document.getElementById('proGarantLine');
+if (gBox){
+gBox.hidden = !garant || proStatus.admin;
+if (garant && !proStatus.admin){
+const g = proStatus.garant || {};
+let act;
+if (g.status === 'approved') act = `<button type="button" class="pf-btn" data-pro-tier="${garant.id}">${escapeHtml(dict.pro_pick)}</button>`;
+else if (g.status === 'pending') act = `<span class="pro-garant-state">${escapeHtml(dict.pro_garant_pending)}</span>`;
+else if (!g.verified_seller) act = `<span class="pro-garant-state">${escapeHtml(dict.pro_garant_need_kyc)}</span>`;
+else act = `<button type="button" class="pf-btn" data-garant-apply="1">${escapeHtml(dict.pro_garant_apply)}</button>`;
+gBox.innerHTML = `<div><b>${escapeHtml(proTierName(garant.id))}</b> · ${escapeHtml(formatCoins(garant.price))}<span>${escapeHtml(dict.plan_garant_line)}</span></div>${act}`;
+}
+}
 
 const yes = '<span class="pro-yes">✓</span>';
 const no = '<span class="pro-no">—</span>';
@@ -565,14 +592,17 @@ box.innerHTML = items.length ? items.map(p => `<div class="plan-pay-row">
 }
 
 if (proPlansOverlay){
-document.getElementById('proPlans').addEventListener('click', (e) => {
+// Карточки тарифов и строка «Гаранта» — одни и те же кнопки.
+const onPlanClick = (e) => {
 if (e.target.closest('[data-garant-apply]')){
 applyGarant();
 return;
 }
 const btn = e.target.closest('[data-pro-tier]');
 if (btn) buyPro(btn.dataset.proTier);
-});
+};
+document.getElementById('proPlans').addEventListener('click', onPlanClick);
+document.getElementById('proGarantLine').addEventListener('click', onPlanClick);
 document.getElementById('proPlansCloseBtn').addEventListener('click', closeProPlans);
 proPlansOverlay.addEventListener('click', (e) => { if (e.target === proPlansOverlay) closeProPlans(); });
 document.getElementById('proCompare').addEventListener('click', (e) => {
