@@ -727,21 +727,28 @@
 </div>
 <div id="gfBuyPane">
 <button type="button" class="gf-wants-btn u-mb12" id="gfWantsBtn" data-i18n="gf_wants_btn">🔔 Сообщить, когда появится нужный подарок</button>
-<label class="shop-search u-mb12">
+<div class="shop-search-row gf-search-row">
+<label class="shop-search">
 <svg class="gi" width="18" height="18" aria-hidden="true"><use href="#gi-search"/></svg>
 <input id="gfSearch" type="search" placeholder="Подарок, модель, фон" data-i18n-placeholder="gf_search_placeholder">
 </label>
+<!-- Сортировка и фильтры — под иконкой, как у Скинов (app-gifts.js). -->
+<button type="button" id="gfFiltersBtn" class="shop-filter-btn" aria-expanded="false" data-i18n-aria-label="aria_filters" aria-label="Фильтры">
+<svg class="gi" width="22" height="22" aria-hidden="true"><use href="#gi-filter"/></svg>
+<span id="gfFiltersCount" class="filters-count" style="display:none;">0</span>
+</button>
+</div>
 <div class="gf-toolbar">
 <div class="gf-chips" id="gfChips"></div>
+</div>
+<!-- Сортировка, редкость (самый редкий из трёх признаков) и цена. -->
+<div class="gf-filters" id="gfFilters" hidden>
 <select id="gfSort" class="gf-sort" aria-label="Сортировка">
 <option value="new" data-i18n="gf_sort_new">Новые</option>
 <option value="cheap" data-i18n="gf_sort_cheap">Дешевле</option>
 <option value="expensive" data-i18n="gf_sort_expensive">Дороже</option>
 <option value="rare" data-i18n="gf_sort_rare">Редкие</option>
 </select>
-</div>
-<!-- Фильтры подарков: редкость (самый редкий из трёх признаков) и цена. -->
-<div class="gf-filters">
 <select id="gfRarity" class="gf-sort" aria-label="Редкость" data-i18n-aria-label="gf_rarity_aria">
 <option value="" data-i18n="gf_rarity_any">Любая редкость</option>
 <option value="20" data-i18n="gf_rarity_20">Редкие · до 2%</option>

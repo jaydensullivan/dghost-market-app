@@ -6087,3 +6087,11 @@ html.lot-vt::view-transition-new(root){ animation:lotVtIn .3s ease both; }
   background:linear-gradient(105deg, transparent 42%, rgba(255,214,102,.22) 50%, transparent 58%); }
 @keyframes dgSheen{ 0%, 62%{ transform:translateX(-70%); } 82%, 100%{ transform:translateX(70%); } }
 html.dg-calm .skin-photo-wrap::after{ animation:none !important; display:none; }
+
+/* Подарки: поиск + иконка фильтров в одну строку, фильтры — по нажатию */
+.gf-search-row{ margin-bottom:10px; }
+.gf-search-row .shop-search{ flex:1; min-width:0; margin:0; }
+.gf-filters[hidden]{ display:none; }
+.gf-filters{ flex-wrap:wrap; }
+.gf-filters #gfSort{ flex:1 1 100%; }
+.gf-toolbar:has(#gfChips:empty){ display:none; }

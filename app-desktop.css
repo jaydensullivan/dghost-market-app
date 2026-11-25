@@ -63,7 +63,8 @@ html.dg-desk .dt-nav button.on{ background:color-mix(in srgb, var(--space-b) 18%
 /* Подарки и Пополнения на ПК — по центру, не во всю ширину */
 html.dg-desk #screenGifts, html.dg-desk #screenTopup, html.dg-desk #screenDeals{ max-width:1180px; margin-left:auto; margin-right:auto; }
 /* поиск этих пространств — в шапке (пишет в те же поля) */
-html.dg-desk #gfBuyPane > .shop-search, html.dg-desk #gtCatalogView > .shop-search{ display:none; }
+html.dg-desk #gfBuyPane .gf-search-row .shop-search, html.dg-desk #gtCatalogView > .shop-search{ display:none; }
+html.dg-desk .gf-search-row{ justify-content:flex-end; }
 /* сетки Подарков и Пополнений — по ширине экрана, а не в две колонки телефона */
 html.dg-desk .gf-grid{ grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:14px; }
 html.dg-desk .gt-games-grid{ grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:14px; }

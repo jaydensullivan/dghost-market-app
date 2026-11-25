@@ -632,6 +632,24 @@ let gfSearchTimer = null;
 document.getElementById('gfSearch').addEventListener('input', () => { clearTimeout(gfSearchTimer); gfSearchTimer = setTimeout(renderGiftsGrid, 200); });
 ['gfPriceMin', 'gfPriceMax'].forEach(id => document.getElementById(id).addEventListener('input', () => { clearTimeout(gfSearchTimer); gfSearchTimer = setTimeout(renderGiftsGrid, 300); }));
 
+// Сортировка и фильтры — под иконкой; на иконке — сколько включено.
+function gfFiltersCount(){
+const n = (document.getElementById('gfSort').value !== 'new' ? 1 : 0)
++ (document.getElementById('gfRarity').value ? 1 : 0)
++ (document.getElementById('gfPriceMin').value ? 1 : 0)
++ (document.getElementById('gfPriceMax').value ? 1 : 0);
+const badge = document.getElementById('gfFiltersCount');
+badge.textContent = n;
+badge.style.display = n ? '' : 'none';
+}
+document.getElementById('gfFiltersBtn').addEventListener('click', () => {
+const box = document.getElementById('gfFilters');
+box.hidden = !box.hidden;
+document.getElementById('gfFiltersBtn').setAttribute('aria-expanded', String(!box.hidden));
+});
+document.getElementById('gfFilters').addEventListener('input', gfFiltersCount);
+document.getElementById('gfFilters').addEventListener('change', gfFiltersCount);
+
 document.getElementById('screenGifts').addEventListener('click', (e) => {
 const tab = e.target.closest('[data-gf-tab]');
 if (tab){ setGiftsTab(tab.dataset.gfTab); return; }
