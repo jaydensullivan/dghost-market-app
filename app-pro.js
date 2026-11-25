@@ -85,7 +85,14 @@ if (!proStatus){
 card.style.display = 'none';
 return;
 }
-card.style.display = '';
+// «Мой тариф» — продавцам: есть подписка, объявления, оплата в процессе или
+// может продавать. Покупателю тарифы — кнопкой в «Продавцу».
+const plan = proStatus.plan || {};
+const hasLots = Object.values(plan.markets || {}).some(m => (m.used || 0) > 0);
+const seller = proStatus.admin || proStatus.active || hasLots || window.dgIsSeller
+|| (proStatus.card_pay && proStatus.card_pay.open) || (plan.status && plan.status !== 'none');
+card.style.display = seller ? '' : 'none';
+if (!seller) return;
 const badge = document.getElementById('proBadge');
 const status = document.getElementById('proStatusText');
 const btn = document.getElementById('proBuyBtn');

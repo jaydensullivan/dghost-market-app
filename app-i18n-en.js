@@ -203,6 +203,8 @@ plan_help_markets: "FREE and Start include one section of your choice: Skins or 
 plan_limit_msg: "Plan limit: {used} of {limit} listings in “{market}”. Remove a listing or change your plan.",
 plan_market_msg: "“{market}” is not included in your plan. PRO and above include both sections.",
 plan_open_plans: "Open plans?",
+header_menu_plan: "My plan",
+pf_plans_btn: "⭐ Plans for sellers",
 promo_tag: "Promoted",
 promo_title: "📣 Promote listing",
 promo_hint: "Promotion lifts your listing higher and makes it stand out. It does not guarantee a sale.",
