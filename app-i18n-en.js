@@ -203,6 +203,7 @@ plan_help_markets: "FREE and Start include one section of your choice: Skins or 
 plan_limit_msg: "Plan limit: {used} of {limit} listings in “{market}”. Remove a listing or change your plan.",
 plan_market_msg: "“{market}” is not included in your plan. PRO and above include both sections.",
 plan_open_plans: "Open plans?",
+referral_stars_intro: "Invite friends with your link — for each one who buys Stars (100 ⭐+) in Top-ups for the first time, you get +5 ⭐. Collect 100 ⭐ — claim them for free.",
 header_menu_plan: "My plan",
 pf_plans_btn: "⭐ Plans for sellers",
 promo_tag: "Promoted",

@@ -43,7 +43,8 @@ const dict = I18N[currentLang] || I18N.ru;
 const hints = {};
 const starBox = $('starRefBox'), starVal = $('starRefValue'), wallet = $('referralWalletValue');
 if (shown(starBox) && starVal && starVal.textContent !== '—') hints.ref = '⭐ ' + starVal.textContent;
-else if (wallet && wallet.textContent !== '—') hints.ref = wallet.textContent;
+// Денежный кошелёк — только если он показан (рефералка со Stars прячет его).
+else if (wallet && wallet.textContent !== '—' && shown(wallet.closest('.pf-wallet'))) hints.ref = wallet.textContent;
 const totp = $('totpSummaryStatus');
 hints.sec = totp && totp.classList.contains('ok')
 ? '<span class="pf-acc-ok">🔒 ' + (dict.pfm_sec_on || '') + '</span>'

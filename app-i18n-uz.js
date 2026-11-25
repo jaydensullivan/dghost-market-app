@@ -203,6 +203,7 @@ plan_help_markets: "FREE va Startda — tanlov bo'yicha bitta bo'lim: Skinlar yo
 plan_limit_msg: "Tarif limiti: «{market}» bo'limida {limit} tadan {used} ta e'lon. Lotni olib tashlang yoki tarifni almashtiring.",
 plan_market_msg: "«{market}» bo'limi tarifingizga kirmaydi. PRO va undan yuqorida ikkala bo'lim ochiq.",
 plan_open_plans: "Tariflarni ochamizmi?",
+referral_stars_intro: "Do'stlaringizni havolangiz orqali taklif qiling — Pullik to'ldirishlarda birinchi marta 100 ⭐ dan Stars olgan har bir do'st uchun sizga +5 ⭐. 100 ⭐ yig'sangiz — bepul oling.",
 header_menu_plan: "Mening tarifim",
 pf_plans_btn: "⭐ Sotuvchilar uchun tariflar",
 promo_tag: "Reklama",
