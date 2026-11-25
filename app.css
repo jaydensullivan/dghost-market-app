@@ -5828,6 +5828,11 @@ html[data-space="gifts"] #screenGifts .shop-tabs button.active,
 html[data-space="topup"] #screenTopup .shop-tabs button.active{ background:linear-gradient(135deg, var(--sp-a), var(--sp-b)); }
 html[data-space="gifts"] .nav-btn.active, html[data-space="topup"] .nav-btn.active{ color:var(--sp-ink); }
 
+/* меню только снизу: вкладки Подарков сверху не дублируем, переключатель
+   «Скины / Пополнения» в сделках не нужен (раздел зависит от пространства),
+   профиль — значком в шапке, а не в нижнем меню */
+html:not(.dg-desk) #gfTabs, #dealsSeg, #tabProfileBtn{ display:none !important; }
+
 /* главная Скинов на телефоне: Пополнения и Подарки — свои пространства */
 html:not(.dg-desk) #gtStrip, html:not(.dg-desk) #giftsEntry{ display:none !important; }
 html:not(.dg-desk) #newbieTip{ min-height:0; padding-top:6px; padding-bottom:6px; }

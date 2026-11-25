@@ -84,8 +84,20 @@ const topupOverlay = document.getElementById('topupOverlay');
 const withdrawOverlay = document.getElementById('withdrawOverlay');
 
 document.getElementById('openTopupBtn').addEventListener('click', () => {
+syncStarsTopup();
 topupOverlay.classList.add('show');
 });
+
+// В пространстве «Скины» Stars как способ пополнения не предлагаем —
+// только в Подарках и Пополнениях. Пространство меняется на ходу,
+// поэтому проверяем при каждом открытии окна.
+function syncStarsTopup(){
+const box = document.getElementById('starsTopupBox');
+const hide = !starsInfo || document.documentElement.dataset.space === 'skins';
+if (hide && box.classList.contains('open')) topupAccChosen = false;
+box.hidden = hide;
+gtAccAutoOpen();
+}
 document.getElementById('topupCancel').addEventListener('click', () => {
 topupOverlay.classList.remove('show');
 });
@@ -118,9 +130,8 @@ fetch(API_BASE + '/api/stars/info')
 // Только внутри Telegram: на сайте окна оплаты Stars нет.
 const can = !!(d.enabled && tg && tg.openInvoice && tg.initData);
 starsInfo = can ? d : null;
-document.getElementById('starsTopupBox').hidden = !can;
 if (can) document.getElementById('openTopupBtn').style.display = '';
-gtAccAutoOpen();
+syncStarsTopup();
 if (can) document.getElementById('starsAmount').min = d.min;
 renderStarsPreview();
 })
