@@ -1,6 +1,6 @@
 // ============================================================
 // ТРИ ПРОСТРАНСТВА: CS2 Скины · Подарки · Пополнения
-// (docs/SPACES-NAVIGATION.md, этап 1)
+// (docs/SPACES-NAVIGATION.md, этапы 1–2)
 //
 // HOME — экран «Выбери свой мир»: три карточки, без нижнего меню.
 // Показываем при первом входе, по «Назад» из корня пространства и по
@@ -37,7 +37,8 @@ function d(){ return (typeof I18N !== 'undefined' && (I18N[currentLang] || I18N.
 function t(key){ return d()[key] || key; }
 function remember(key){ try { localStorage.setItem(SPACE_KEY, key); } catch(e) {} }
 function saved(){ try { const v = localStorage.getItem(SPACE_KEY); return SPACES[v] ? v : null; } catch(e) { return null; } }
-function calm(){ return document.documentElement.classList.contains('dg-calm'); }
+// «Меньше анимаций» (dg-calm) или системное prefers-reduced-motion.
+function calm(){ return typeof dgMotionCalm === 'function' ? dgMotionCalm() : document.documentElement.classList.contains('dg-calm'); }
 
 let current = saved() || 'skins';
 
@@ -142,14 +143,86 @@ const baseGiftsTab = setGiftsTab;
 setGiftsTab = function(tab){ baseGiftsTab(tab); if (current === 'gifts') applyNav(currentTab); };
 }
 
+// Состояние пространства при уходе на HOME: экран и прокрутка. Поиск,
+// фильтры, вкладки и категории живут в самих экранах — их не пересоздаём,
+// только прячем, так что при возврате они те же.
+const memo = {};
+function saveSpace(){
+memo[current] = { screen: currentTab, y: window.scrollY };
+}
+
 function enter(key){
 current = key;
 remember(key);
 document.documentElement.dataset.space = key;
+const m = memo[key];
+if (m){
+goToScreen(m.screen);
+restoreScroll(m.y);
+return;
+}
 goToScreen(SPACES[key].root);
 if (key === 'gifts' && typeof setGiftsTab === 'function') setGiftsTab('buy');
 if (key === 'topup' && typeof showTopupView === 'function') showTopupView(false);
 window.scrollTo(0, 0);
+}
+
+// Список может дорисоваться позже (каталог обновляется с сервера) —
+// пробуем ещё раз, если пользователь сам не успел прокрутить.
+function restoreScroll(y){
+window.scrollTo(0, y);
+if (!y) return;
+requestAnimationFrame(() => window.scrollTo(0, y));
+setTimeout(() => { if (Math.abs(window.scrollY - y) > 4 && window.scrollY < 4) window.scrollTo(0, y); }, 400);
+}
+
+// ---------- переход HOME ⇄ пространство ----------
+// View Transitions: выбранная карточка раскрывается в интерфейс
+// пространства (новый экран открывается «окном» от её рамки до всего
+// экрана), две другие уезжают в стороны. Назад — то же в обратную
+// сторону. Без View Transitions — затухание за 240 мс, при «Меньше
+// анимаций» — мгновенно.
+const canVT = typeof document.startViewTransition === 'function';
+function setCardRect(card){
+const r = card.getBoundingClientRect();
+const st = document.documentElement.style;
+st.setProperty('--sp-t', Math.max(0, r.top) + 'px');
+st.setProperty('--sp-l', Math.max(0, r.left) + 'px');
+st.setProperty('--sp-r', Math.max(0, window.innerWidth - r.right) + 'px');
+st.setProperty('--sp-b', Math.max(0, window.innerHeight - r.bottom) + 'px');
+}
+function nameOthers(key, on){
+let n = 0;
+home.querySelectorAll('[data-space-go]').forEach(c => {
+c.style.viewTransitionName = (on && c.dataset.spaceGo !== key) ? 'sp-other-' + (++n) : '';
+});
+}
+function runVT(dir, update){
+const html = document.documentElement;
+html.classList.add('sp-vt', 'sp-vt-' + dir);
+let vt;
+try { vt = document.startViewTransition(update); }
+catch(e){ html.classList.remove('sp-vt', 'sp-vt-' + dir); update(); return; }
+vt.finished.finally(() => {
+html.classList.remove('sp-vt', 'sp-vt-' + dir);
+if (home) nameOthers('', false);
+});
+}
+
+function openSpace(card){
+const key = card.dataset.spaceGo;
+if (calm()){ hideHome(); enter(key); return; }
+if (canVT){
+setCardRect(card);
+nameOthers(key, true);
+runVT('in', () => { nameOthers(key, false); hideHome(); enter(key); });
+return;
+}
+// Без View Transitions: выбранная приближается, остальные уезжают.
+home.classList.add('sp-leaving');
+card.classList.add('sp-pick');
+enter(key);
+setTimeout(hideHome, 240);
 }
 
 // ---------- HOME: «Выбери свой мир» ----------
@@ -178,19 +251,26 @@ ${['skins', 'gifts', 'topup'].map(key => `<button type="button" class="sp-card s
 document.body.appendChild(home);
 home.addEventListener('click', (e) => {
 const card = e.target.closest('[data-space-go]');
-if (!card) return;
-const key = card.dataset.spaceGo;
-if (calm()){ hideHome(); enter(key); return; }
-// Выбранная карточка приближается, остальные уезжают в стороны.
-home.classList.add('sp-leaving');
-card.classList.add('sp-pick');
-enter(key);
-setTimeout(hideHome, 260);
+if (card) openSpace(card);
 });
 }
 
 function showHome(animate){
 if (!home) buildHome();
+if (!home.hidden) return;
+saveSpace();
+if (animate && !calm() && canVT){
+runVT('out', () => {
+openHome(false);
+const card = home.querySelector('[data-space-go="' + current + '"]');
+if (card){ setCardRect(card); nameOthers(current, true); }
+});
+return;
+}
+openHome(animate);
+}
+
+function openHome(animate){
 home.hidden = false;
 home.classList.remove('sp-leaving');
 home.querySelectorAll('.sp-pick').forEach(c => c.classList.remove('sp-pick'));
@@ -214,11 +294,23 @@ if (e.target.closest('.brand-tl .brand-logo')) showHome(true);
 });
 
 // ---------- свайп от левого края → назад ----------
+// Не перехватываем жест в горизонтальных лентах (карусели, чипы),
+// в 3D-просмотрщике и на полях ввода.
+function ownsSwipe(el){
+for (; el && el !== document.body; el = el.parentElement){
+if (el.matches('canvas, input, textarea, select, .viewer3d, [class*="viewer3d"], model-viewer')) return true;
+if (el.scrollWidth > el.clientWidth + 1){
+const ox = getComputedStyle(el).overflowX;
+if (ox === 'auto' || ox === 'scroll') return true;
+}
+}
+return false;
+}
 (function edgeSwipe(){
 let x0 = null, y0 = 0;
 document.addEventListener('touchstart', (e) => {
 const tch = e.touches[0];
-x0 = (tch.clientX <= 20 && !document.documentElement.classList.contains('sp-home-open')) ? tch.clientX : null;
+x0 = (e.touches.length === 1 && tch.clientX <= 20 && !document.documentElement.classList.contains('sp-home-open') && !ownsSwipe(e.target)) ? tch.clientX : null;
 y0 = tch.clientY;
 }, { passive: true });
 document.addEventListener('touchend', (e) => {
