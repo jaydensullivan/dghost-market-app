@@ -186,10 +186,10 @@ const canVT = typeof document.startViewTransition === 'function';
 function setCardRect(card){
 const r = card.getBoundingClientRect();
 const st = document.documentElement.style;
-st.setProperty('--sp-t', Math.max(0, r.top) + 'px');
-st.setProperty('--sp-l', Math.max(0, r.left) + 'px');
-st.setProperty('--sp-r', Math.max(0, window.innerWidth - r.right) + 'px');
-st.setProperty('--sp-b', Math.max(0, window.innerHeight - r.bottom) + 'px');
+st.setProperty('--sp-ct', Math.max(0, r.top) + 'px');
+st.setProperty('--sp-cl', Math.max(0, r.left) + 'px');
+st.setProperty('--sp-cr', Math.max(0, window.innerWidth - r.right) + 'px');
+st.setProperty('--sp-cb', Math.max(0, window.innerHeight - r.bottom) + 'px');
 }
 function nameOthers(key, on){
 let n = 0;
