@@ -5870,7 +5870,7 @@ html:not(.dg-desk) #newbieTip *{ white-space:nowrap; overflow:hidden; text-overf
 .sp-card-gifts .sp-gift.b{ width:86px; height:86px; border-radius:20px; right:22px; top:34px; transform:rotate(10deg); }
 .sp-card-topup .sp-art img{ width:88px; height:88px; border-radius:22px; right:30px; top:20px; }
 /* выход: выбранная приближается, остальные уезжают в стороны */
-.sp-home.sp-leaving{ animation:spFadeOut .26s ease forwards; }
+.sp-home.sp-leaving{ animation:spFadeOut .24s ease forwards; }
 .sp-home.sp-leaving .sp-card.sp-pick{ transform:scale(1.05); }
 .sp-home.sp-leaving .sp-card-skins:not(.sp-pick), .sp-home.sp-leaving .sp-card-topup:not(.sp-pick){ transform:translateX(-115%); opacity:0; }
 .sp-home.sp-leaving .sp-card-gifts:not(.sp-pick){ transform:translateX(115%); opacity:0; }
@@ -5880,6 +5880,29 @@ html:not(.dg-desk) #newbieTip *{ white-space:nowrap; overflow:hidden; text-overf
 @keyframes spFadeOut{ 60%{ opacity:1; } to{ opacity:0; } }
 @keyframes spCardIn{ from{ opacity:0; transform:translateY(18px) scale(.97); } to{ opacity:1; transform:none; } }
 html.dg-calm .sp-home *, html.dg-calm .sp-home{ animation:none !important; transition:none !important; }
+/* View Transitions (app-spaces.js): карточка раскрывается в пространство.
+   --sp-t/--sp-r/--sp-b/--sp-l — отступы рамки карточки от краёв экрана. */
+html.sp-vt-in::view-transition-old(root){ animation:spVtFade .34s ease both; }
+html.sp-vt-in::view-transition-new(root){ animation:spVtReveal .34s cubic-bezier(.2,.8,.2,1) both; }
+html.sp-vt-out::view-transition-old(root){ z-index:2; animation:spVtShrink .3s cubic-bezier(.4,0,.2,1) both; }
+html.sp-vt-out::view-transition-new(root){ animation:none; }
+html.sp-vt-in::view-transition-old(sp-other-1){ animation:spVtOutL .28s cubic-bezier(.4,0,.2,1) both; }
+html.sp-vt-in::view-transition-old(sp-other-2){ animation:spVtOutR .28s cubic-bezier(.4,0,.2,1) both; }
+html.sp-vt-out::view-transition-new(sp-other-1){ animation:spVtInL .3s cubic-bezier(.2,.8,.2,1) both; }
+html.sp-vt-out::view-transition-new(sp-other-2){ animation:spVtInR .3s cubic-bezier(.2,.8,.2,1) both; }
+html.sp-vt::view-transition-group(*){ animation-duration:.34s; }
+@keyframes spVtFade{ to{ opacity:0; } }
+@keyframes spVtReveal{
+  from{ clip-path:inset(var(--sp-t) var(--sp-r) var(--sp-b) var(--sp-l) round 24px); }
+  to{ clip-path:inset(0 0 0 0 round 0); } }
+@keyframes spVtShrink{
+  from{ clip-path:inset(0 0 0 0 round 0); }
+  75%{ opacity:1; }
+  to{ clip-path:inset(var(--sp-t) var(--sp-r) var(--sp-b) var(--sp-l) round 24px); opacity:0; } }
+@keyframes spVtOutL{ to{ transform:translateX(-115%); opacity:0; } }
+@keyframes spVtOutR{ to{ transform:translateX(115%); opacity:0; } }
+@keyframes spVtInL{ from{ transform:translateX(-115%); opacity:0; } }
+@keyframes spVtInR{ from{ transform:translateX(115%); opacity:0; } }
 @media (min-width:900px){
   .sp-home-in{ max-width:1180px; padding-top:48px; }
   .sp-cards{ flex-direction:row; }
