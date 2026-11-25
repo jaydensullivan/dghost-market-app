@@ -90,6 +90,9 @@ return null; // Скины: подсветку ставит switchTab
 
 function applyNav(screen){
 const sp = SPACES[current];
+// Где ты — маленькой подписью у логотипа (строка «‹ 01 / …» на телефоне скрыта).
+const label = document.getElementById('brandSpace');
+if (label){ label.setAttribute('data-i18n', sp.title); label.textContent = t(sp.title); }
 navButtons().forEach((btn, i) => {
 const label = btn.querySelector('.nav-label');
 if (label && sp.nav[i]){ label.setAttribute('data-i18n', sp.nav[i]); label.textContent = t(sp.nav[i]); }

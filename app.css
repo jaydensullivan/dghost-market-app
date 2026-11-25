@@ -6095,3 +6095,11 @@ html.dg-calm .skin-photo-wrap::after{ animation:none !important; display:none; }
 .gf-filters{ flex-wrap:wrap; }
 .gf-filters #gfSort{ flex:1 1 100%; }
 .gf-toolbar:has(#gfChips:empty){ display:none; }
+
+/* Название раздела у логотипа: «CS2 Скины» / «Подарки» / «Пополнения» */
+.brand-tl{ gap:10px; }
+.brand-space{ font-family:'Inter', sans-serif; font-size:15px; font-weight:800; letter-spacing:0; color:var(--text, #fff); white-space:nowrap; }
+html.sp-home-open .brand-space{ display:none; }
+html.dg-desk .brand-space{ display:none; }
+/* На главной Скинов справа плашка баланса — на узком экране подпись с ней не помещается. */
+@media (max-width:459px){ body[data-tab="shop"]:has(#balancePill:not([style*="none"])) .brand-space{ display:none; } }
