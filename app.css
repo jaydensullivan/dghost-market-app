@@ -6103,3 +6103,9 @@ html.sp-home-open .brand-space{ display:none; }
 html.dg-desk .brand-space{ display:none; }
 /* На главной Скинов справа плашка баланса — на узком экране подпись с ней не помещается. */
 @media (max-width:459px){ body[data-tab="shop"]:has(#balancePill:not([style*="none"])) .brand-space{ display:none; } }
+
+/* «Пригласить друзей»: без длинной ссылки на экране — «Скопировать ссылку» и «Поделиться» */
+#referralLinkBox{ padding:0; border:0; background:none; display:block; }
+#referralLinkBox.has-link #referralLinkText{ display:none; }
+#referralLinkBox:not(.has-link) #referralCopyBtn{ display:none; }
+#referralCopyBtn{ width:100%; justify-content:center; min-height:40px; }

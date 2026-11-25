@@ -203,6 +203,7 @@ plan_help_markets: "FREE and Start include one section of your choice: Skins or 
 plan_limit_msg: "Plan limit: {used} of {limit} listings in “{market}”. Remove a listing or change your plan.",
 plan_market_msg: "“{market}” is not included in your plan. PRO and above include both sections.",
 plan_open_plans: "Open plans?",
+referral_copy_link: "Copy link",
 pro_plans_hint_short: "Buying is free. A plan is for selling more.",
 plan_card_lots: "📦 {n} listings",
 plan_card_lots_inf: "📦 Unlimited listings",

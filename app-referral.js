@@ -102,6 +102,8 @@ fetch(API_BASE + '/api/referral_info?init_data=' + encodeURIComponent(tg.initDat
 if (!data || data.error) throw new Error();
 referralLinkRaw = data.link;
 referralLinkText.textContent = referralLinkRaw;
+// Ссылка загрузилась — на экране вместо неё кнопка «Скопировать ссылку».
+referralLinkBox.classList.add('has-link');
 referralInvitedCount.textContent = data.invited_count;
 // Денежный кошелёк выключен (бот: money_enabled = false) — только Stars за
 // друзей; кошелёк виден, лишь пока в нём что-то осталось (перевести на баланс).
