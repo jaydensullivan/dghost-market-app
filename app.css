@@ -5807,15 +5807,25 @@ input.field-error, .field-error{ border-color:#f87171 !important; box-shadow:0 0
 /* ============================================================
    Три пространства (app-spaces.js, docs/SPACES-NAVIGATION.md)
    ============================================================ */
-:root{ --sp-a:#7c3aed; --sp-b:#9333ea; --sp-ink:#c4a0ff; }
-html[data-space="gifts"]{ --sp-a:#c026d3; --sp-b:#ec4899; --sp-ink:#f49ad2; }
-html[data-space="topup"]{ --sp-a:#4f46e5; --sp-b:#3b82f6; --sp-ink:#8cb4ff; }
+/* Цвет пространства: --space-a → --space-b (градиент), --space-glow (тень),
+   --space-ink (текст и значки активного пункта). Скины следуют теме
+   оформления из профиля (по умолчанию фиолетовый), Подарки и Пополнения —
+   свои цвета. В светлой схеме Telegram ink темнее, чтобы читался на белом.
+   Карточки товаров не красим — только меню, вкладки, чипы и главные кнопки. */
+:root{ --space-a:var(--accent, #7c3aed); --space-b:var(--accent-2, #9333ea); --space-glow:rgba(124, 58, 237, .35); --space-ink:var(--red-glow, #c4a0ff); }
+html[data-space="gifts"]{ --space-a:#c026d3; --space-b:#ec4899; --space-glow:rgba(236, 72, 153, .35); --space-ink:#f49ad2;
+  --cta-gradient:linear-gradient(135deg, var(--space-a), var(--space-b)); }
+html[data-space="topup"]{ --space-a:#4f46e5; --space-b:#3b82f6; --space-glow:rgba(59, 130, 246, .35); --space-ink:#8cb4ff;
+  --cta-gradient:linear-gradient(135deg, var(--space-a), var(--space-b)); }
+html[data-space="gifts"] body.theme-light{ --space-ink:#a21caf; --cta-gradient:linear-gradient(135deg, var(--space-a), var(--space-b)); }
+html[data-space="topup"] body.theme-light{ --space-ink:#3730a3; --cta-gradient:linear-gradient(135deg, var(--space-a), var(--space-b)); }
+body.theme-light{ --space-ink:var(--accent, #6d28d9); }
 
 .sp-head{ display:flex; align-items:center; gap:10px; margin:0 0 12px; }
 .sp-back{ flex:none; width:38px; height:38px; border-radius:12px; border:1px solid var(--border, rgba(255,255,255,.1)); background:rgba(255,255,255,.06); color:var(--text, #fff); font:600 22px/1 Inter, system-ui, sans-serif; display:grid; place-items:center; cursor:pointer; }
 .sp-head-txt{ display:flex; flex-direction:column; min-width:0; }
 .sp-head-txt b{ font-size:20px; font-weight:800; line-height:1.15; color:var(--text, #fff); }
-.sp-num{ font-size:10px; font-weight:700; letter-spacing:.2em; color:var(--sp-ink); }
+.sp-num{ font-size:10px; font-weight:700; letter-spacing:.2em; color:var(--space-ink); }
 /* в пространствах старые «←» и заголовки заменены шапкой */
 #gfBackBtn, #gtBackBtn, #screenGifts > [data-i18n="gf_title"], #gtCatalogView > [data-i18n="gt_title"]{ display:none !important; }
 html.sp-home-open .sp-back{ visibility:hidden; }
@@ -5823,10 +5833,29 @@ html.sp-home-open .sp-back{ visibility:hidden; }
 html.dg-desk #screenShop .sp-head{ display:none; }
 
 /* цвет пространства: подсветка меню и активные вкладки */
-html[data-space] .nav-pill{ background:color-mix(in srgb, var(--sp-b) 16%, transparent); border-color:color-mix(in srgb, var(--sp-b) 40%, transparent); }
-html[data-space="gifts"] #screenGifts .shop-tabs button.active,
-html[data-space="topup"] #screenTopup .shop-tabs button.active{ background:linear-gradient(135deg, var(--sp-a), var(--sp-b)); }
-html[data-space="gifts"] .nav-btn.active, html[data-space="topup"] .nav-btn.active{ color:var(--sp-ink); }
+html[data-space] .nav-pill{ background:color-mix(in srgb, var(--space-b) 16%, transparent); border-color:color-mix(in srgb, var(--space-b) 40%, transparent); }
+html[data-space="gifts"] .nav-btn.active, html[data-space="topup"] .nav-btn.active{ color:var(--space-ink); }
+/* активные вкладки и чипы, главные кнопки — цветом пространства */
+html[data-space="gifts"] .shop-tabs button.active, html[data-space="topup"] .shop-tabs button.active,
+html[data-space="gifts"] .gf-chip.active, html[data-space="topup"] .gt-genre.active{ background:linear-gradient(135deg, var(--space-a), var(--space-b)); border-color:transparent; color:#fff; }
+html[data-space="gifts"] .steam-link-btn:not(.secondary), html[data-space="topup"] .steam-link-btn:not(.secondary),
+html[data-space="gifts"] .welcome-btn.primary, html[data-space="topup"] .welcome-btn.primary{ background:linear-gradient(135deg, var(--space-a), var(--space-b)); border-color:transparent; }
+html[data-space="topup"] #gtPayBtn, html[data-space="gifts"] .welcome-btn.primary{ box-shadow:0 6px 22px var(--space-glow); }
+html[data-space="gifts"] .sp-back:focus-visible, html[data-space="topup"] .sp-back:focus-visible{ outline:2px solid var(--space-ink); }
+
+/* фильтры Подарков: редкость и цена */
+.gf-filters{ display:flex; gap:8px; margin:-4px 0 12px; }
+.gf-filters .gf-sort{ flex:1 1 auto; min-width:0; }
+.gf-price-filter{ flex:0 1 96px; min-width:0; padding:7px 10px; border-radius:10px; border:1px solid var(--red-dim); background:var(--surface); color:var(--text); font-size:13px; }
+/* Пополнения: разделы и сортировка пакетов; история заказов */
+.gt-offer-tools{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+.gt-offer-tools[hidden]{ display:none; }
+.gt-offer-tools .gt-ofs{ flex:1 1 100%; min-width:0; margin:0; }
+.gt-offer-tools .gt-ofs:empty{ display:none; }
+.gt-ofs-sort{ flex:0 0 auto; margin-left:auto; }
+.gt-of-chips{ margin:0 0 10px; }
+#gtOrdersList .h-day{ margin:12px 2px 6px; }
+.gt-order-meta b.positive{ color:#4ade80; font-weight:700; }
 
 /* меню только снизу: вкладки Подарков сверху не дублируем, переключатель
    «Скины / Пополнения» в сделках не нужен (раздел зависит от пространства),
@@ -5881,7 +5910,7 @@ html:not(.dg-desk) #newbieTip *{ white-space:nowrap; overflow:hidden; text-overf
 @keyframes spCardIn{ from{ opacity:0; transform:translateY(18px) scale(.97); } to{ opacity:1; transform:none; } }
 html.dg-calm .sp-home *, html.dg-calm .sp-home{ animation:none !important; transition:none !important; }
 /* View Transitions (app-spaces.js): карточка раскрывается в пространство.
-   --sp-t/--sp-r/--sp-b/--sp-l — отступы рамки карточки от краёв экрана. */
+   --sp-ct/--sp-cr/--sp-cb/--sp-cl — отступы рамки карточки от краёв экрана. */
 html.sp-vt-in::view-transition-old(root){ animation:spVtFade .34s ease both; }
 html.sp-vt-in::view-transition-new(root){ animation:spVtReveal .34s cubic-bezier(.2,.8,.2,1) both; }
 html.sp-vt-out::view-transition-old(root){ z-index:2; animation:spVtShrink .3s cubic-bezier(.4,0,.2,1) both; }
@@ -5893,12 +5922,12 @@ html.sp-vt-out::view-transition-new(sp-other-2){ animation:spVtInR .3s cubic-bez
 html.sp-vt::view-transition-group(*){ animation-duration:.34s; }
 @keyframes spVtFade{ to{ opacity:0; } }
 @keyframes spVtReveal{
-  from{ clip-path:inset(var(--sp-t) var(--sp-r) var(--sp-b) var(--sp-l) round 24px); }
+  from{ clip-path:inset(var(--sp-ct) var(--sp-cr) var(--sp-cb) var(--sp-cl) round 24px); }
   to{ clip-path:inset(0 0 0 0 round 0); } }
 @keyframes spVtShrink{
   from{ clip-path:inset(0 0 0 0 round 0); }
   75%{ opacity:1; }
-  to{ clip-path:inset(var(--sp-t) var(--sp-r) var(--sp-b) var(--sp-l) round 24px); opacity:0; } }
+  to{ clip-path:inset(var(--sp-ct) var(--sp-cr) var(--sp-cb) var(--sp-cl) round 24px); opacity:0; } }
 @keyframes spVtOutL{ to{ transform:translateX(-115%); opacity:0; } }
 @keyframes spVtOutR{ to{ transform:translateX(115%); opacity:0; } }
 @keyframes spVtInL{ from{ transform:translateX(-115%); opacity:0; } }

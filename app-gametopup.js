@@ -288,15 +288,30 @@ ${p.unit ? `<span class="gt-offer-unit">${escapeHtml(p.unit)}</span>` : ''}
 
 // Пакеты разделами: бонус 1-го пополнения · валюта · пропуски и наборы.
 // «Выгодно» — самая низкая цена за единицу среди обычных пакетов одной валюты.
+// Фильтр раздела и сортировка: сбрасываются при открытии другой игры.
+let gtOfferSec = '';
+let gtOfferSort = '';
+const gtUnitPrice = r => (r.p.total > 0 && r.o.price_uzs ? r.o.price_uzs / r.p.total : Infinity);
+const GT_OFFER_SORTS = {
+cheap: (a, b) => (a.o.price_uzs || Infinity) - (b.o.price_uzs || Infinity),
+expensive: (a, b) => (b.o.price_uzs || 0) - (a.o.price_uzs || 0),
+unit: (a, b) => gtUnitPrice(a) - gtUnitPrice(b),
+};
+
 function gtOffersHtml(offers){
 const d = gtDict();
 const rows = offers.map(o => { const p = gtParseOffer(o.name); return { o: o, p: p, kind: gtCurrencyKind(p) }; });
 const isCurrency = r => r.p.total > 0 && GT_CURRENCY_KINDS.includes(r.kind);
-const groups = [
+const allGroups = [
 ['bonus', d.gt_offers_bonus, rows.filter(r => r.p.bonus)],
 ['currency', d.gt_offers_currency, rows.filter(r => !r.p.bonus && isCurrency(r))],
 ['packs', d.gt_offers_packs, rows.filter(r => !r.p.bonus && !isCurrency(r))],
 ].filter(g => g[2].length);
+renderTopupOfferTools(allGroups, rows.length);
+if (gtOfferSec && !allGroups.some(g => g[0] === gtOfferSec)) gtOfferSec = '';
+const sorter = GT_OFFER_SORTS[gtOfferSort];
+const groups = allGroups.filter(g => !gtOfferSec || g[0] === gtOfferSec)
+.map(([id, title, list]) => [id, title, sorter ? list.slice().sort(sorter) : list]);
 const best = new Set();
 const byUnit = {};
 for (const r of rows){
@@ -314,6 +329,27 @@ const showTitles = groups.length > 1;
 return groups.map(([id, title, list]) =>
 (showTitles ? `<div class="gt-offers-title">${escapeHtml(title)}</div>` : '')
 + list.map(r => gtOfferHtml(r.o, r.p, r.kind, best.has(r.o.id), showTitles)).join('')).join('');
+}
+
+// Над пакетами: чипы разделов (если их больше одного) и сортировка
+// (если пакетов больше трёх). Иначе панель не показываем.
+function renderTopupOfferTools(groups, count){
+const d = gtDict();
+const box = document.getElementById('gtOfferTools');
+const chips = groups.length > 1 ? [['', d.gt_ofs_all]].concat(groups.map(g => [g[0], g[1]])) : [];
+box.hidden = !chips.length && count < 4;
+if (box.hidden){ box.innerHTML = ''; return; }
+box.innerHTML = `<div class="gt-genres gt-ofs">${chips.map(([id, label]) =>
+`<button type="button" class="gt-genre${id === gtOfferSec ? ' active' : ''}" data-gt-ofs="${id}">${escapeHtml(label)}</button>`).join('')}</div>`
++ (count >= 4 ? `<select class="gf-sort gt-ofs-sort" id="gtOfferSort" aria-label="${escapeHtml(d.gt_sort_aria)}">${['', 'cheap', 'expensive', 'unit'].map(v =>
+`<option value="${v}"${v === gtOfferSort ? ' selected' : ''}>${escapeHtml(d['gt_sort_' + (v || 'default')])}</option>`).join('')}</select>` : '');
+}
+
+function renderTopupOffers(){
+const box = document.getElementById('gtOffers');
+box.innerHTML = gtOffersHtml((gtCurrent && gtCurrent.offers) || [])
+|| `<div class="skins-empty skins-empty-md">${gtDict().gt_nothing_found}</div>`;
+if (gtOffer) box.querySelectorAll('[data-gt-offer]').forEach(b => b.classList.toggle('active', b.dataset.gtOffer === gtOffer.id));
 }
 
 function loadTopupCatalog(){
@@ -456,6 +492,9 @@ goToScreen('topup');
 showTopupView(true);
 gtCurrent = null;
 gtOffer = null;
+gtOfferSec = '';
+gtOfferSort = '';
+document.getElementById('gtOfferTools').hidden = true;
 document.getElementById('gtDetailHead').innerHTML = `<div class="skins-empty skins-empty-md">${d.loading}</div>`;
 document.getElementById('gtOffers').innerHTML = '';
 if (!gtGroupBySlug.has(slug) || document.getElementById('gtDetailView').hidden) document.getElementById('gtRegions').hidden = true;
@@ -484,8 +523,7 @@ renderTopupRegions(slug);
 const accent = c.color || (group && group.color) || known.color || (gtTheme(cover) || {}).accent || '';
 const offersBox = document.getElementById('gtOffers');
 if (accent) offersBox.style.setProperty('--gt-accent', accent); else offersBox.style.removeProperty('--gt-accent');
-offersBox.innerHTML = gtOffersHtml(data.offers || [])
-|| `<div class="skins-empty skins-empty-md">${d.gt_nothing_found}</div>`;
+renderTopupOffers();
 renderTopupFields((data.fields || []));
 })
 .catch(() => {
@@ -859,21 +897,74 @@ const cls = s === 'completed' ? 'ok' : (['refunded', 'rejected', 'expired'].incl
 return `<span class="gt-badge gt-badge-${cls}">${escapeHtml(d['gt_status_' + s] || d.gt_status_processing)}</span>`;
 }
 
+// «История заказов» в Пополнениях: заказы игр/Steam/Telegram и
+// пополнения баланса (карта, Stars) одним списком по дням, с чипами
+// по статусу. Одобренная заявка на пополнение уже есть как операция,
+// поэтому из заявок берём только ждущие и отклонённые.
+let gtOrderRows = [];
+let gtOrderFilter = 'all';
+const GT_BALANCE_TYPES = ['topup_manual', 'topup_stars', 'topup_crypto'];
+
+function gtOrderState(row){
+if (row.kind === 'order') return row.status === 'completed' ? 'done' : (['refunded', 'rejected', 'expired'].includes(row.status) ? 'back' : 'work');
+if (row.kind === 'request') return row.status === 'rejected' ? 'back' : 'work';
+return 'done';
+}
+
+function gtOrderRowHtml(row){
+const d = gtDict();
+const time = row.created_at ? new Date(row.created_at).toLocaleTimeString(typeof historyLocale === 'function' ? historyLocale() : undefined, { hour: '2-digit', minute: '2-digit' }) : '';
+if (row.kind === 'order'){
+const o = row.o;
+return `<div class="gt-order">
+<div class="gt-order-top"><span class="gt-order-name">${escapeHtml(o.category)} — ${escapeHtml(o.offer)}</span>${gtStatusBadge(o.status)}</div>
+<div class="gt-order-meta">${formatCoins(o.price_uzs)} · ${escapeHtml(time)}</div>
+${(o.codes || []).map(c => `<button type="button" class="gt-code" data-gt-copy="${escapeHtml(c)}">${escapeHtml(c)} 📋</button>`).join('')}
+</div>`;
+}
+const state = gtOrderState(row);
+const badge = `<span class="gt-badge gt-badge-${state === 'done' ? 'ok' : (state === 'back' ? 'bad' : 'wait')}">${escapeHtml(row.kind === 'request' ? (d['hs_' + row.status] || row.status) : d.gt_status_completed)}</span>`;
+const labels = currentLang === 'uz' ? (typeof HISTORY_TYPE_LABELS_UZ !== 'undefined' && HISTORY_TYPE_LABELS_UZ)
+: currentLang === 'en' ? (typeof HISTORY_TYPE_LABELS_EN !== 'undefined' && HISTORY_TYPE_LABELS_EN)
+: (typeof HISTORY_TYPE_LABELS_RU !== 'undefined' && HISTORY_TYPE_LABELS_RU);
+const name = row.kind === 'request' ? d.gt_hist_request : ((labels && labels[row.type]) || d.gt_hist_balance);
+return `<div class="gt-order gt-order-balance">
+<div class="gt-order-top"><span class="gt-order-name">${escapeHtml(name)}</span>${badge}</div>
+<div class="gt-order-meta"><b class="positive">+${formatCoins(Math.abs(row.amount))}</b> · ${escapeHtml(time)}</div>
+</div>`;
+}
+
+function renderTopupOrders(){
+const d = gtDict();
+const list = document.getElementById('gtOrdersList');
+if (!gtOrderRows.length){ list.innerHTML = `<div class="skins-empty skins-empty-md">${d.sp_orders_empty}</div>`; return; }
+const chips = ['all', 'work', 'done', 'back'].map(f =>
+`<button type="button" class="gt-genre${f === gtOrderFilter ? ' active' : ''}" data-gt-of="${f}">${escapeHtml(d['gt_of_' + f])}</button>`).join('');
+const rows = gtOrderRows.filter(r => gtOrderFilter === 'all' || gtOrderState(r) === gtOrderFilter);
+const body = !rows.length ? `<div class="skins-empty skins-empty-md">${d.gt_nothing_found}</div>`
+: (typeof groupByDayHtml === 'function' ? groupByDayHtml(rows, gtOrderRowHtml) : rows.map(gtOrderRowHtml).join(''));
+list.innerHTML = `<div class="gt-genres gt-of-chips">${chips}</div>` + body;
+}
+
 function loadTopupOrders(){
 const d = gtDict();
 const list = document.getElementById('gtOrdersList');
 if (!tg || !tg.initData){ list.innerHTML = ''; return; }
 list.innerHTML = `<div class="skins-empty skins-empty-md">${d.loading}</div>`;
-fetch(API_BASE + '/api/game_topup/orders?init_data=' + encodeURIComponent(tg.initData))
-.then(r => r.json())
-.then(data => {
-const items = data.items || [];
-list.innerHTML = items.length ? items.map(o => `
-<div class="gt-order">
-<div class="gt-order-top"><span class="gt-order-name">${escapeHtml(o.category)} — ${escapeHtml(o.offer)}</span>${gtStatusBadge(o.status)}</div>
-<div class="gt-order-meta">${formatCoins(o.price_uzs)} · ${escapeHtml(new Date(o.created_at).toLocaleString())}</div>
-${(o.codes || []).map(c => `<button type="button" class="gt-code" data-gt-copy="${escapeHtml(c)}">${escapeHtml(c)} 📋</button>`).join('')}
-</div>`).join('') : `<div class="skins-empty skins-empty-md">${d.gt_orders_empty}</div>`;
+const q = '?init_data=' + encodeURIComponent(tg.initData);
+// История баланса — не обязательна: если не загрузилась, показываем заказы.
+const balance = fetch(API_BASE + '/api/transactions' + q).then(r => r.json()).catch(() => null);
+Promise.all([fetch(API_BASE + '/api/game_topup/orders' + q).then(r => r.json()), balance])
+.then(([orders, tx]) => {
+const rows = (orders.items || []).map(o => ({ kind: 'order', created_at: o.created_at, status: o.status, o: o }));
+if (tx){
+(tx.items || []).filter(i => GT_BALANCE_TYPES.includes(i.type) && i.amount > 0)
+.forEach(i => rows.push({ kind: 'balance', created_at: i.created_at, type: i.type, amount: i.amount }));
+(tx.requests || []).filter(r => r.kind === 'topup' && r.status !== 'approved')
+.forEach(r => rows.push({ kind: 'request', created_at: r.created_at, status: r.status, amount: r.amount }));
+}
+gtOrderRows = rows.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+renderTopupOrders();
 })
 .catch(() => { list.innerHTML = `<div class="skins-empty skins-empty-md">${d.gt_load_failed}</div>`; });
 }
@@ -893,6 +984,10 @@ const type = e.target.closest('[data-gt-type]');
 const genre = e.target.closest('[data-gt-genre]');
 if (genre){ gtGenre = genre.dataset.gtGenre; renderTopupCatalog(gtItems); return; }
 if (type){ gtType = type.dataset.gtType; gtGenre = ''; if ((document.getElementById('gtSearch').value || '').trim()) loadTopupCatalog(); else renderTopupCatalog(gtItems); return; }
+const of = e.target.closest('[data-gt-of]');
+if (of){ gtOrderFilter = of.dataset.gtOf; renderTopupOrders(); return; }
+const ofs = e.target.closest('[data-gt-ofs]');
+if (ofs){ gtOfferSec = ofs.dataset.gtOfs; renderTopupOffers(); return; }
 const offer = e.target.closest('[data-gt-offer]');
 if (offer){ gtSelectOffer(offer.dataset.gtOffer); return; }
 if (e.target.closest('#gtCheckBtn')){ checkTopupId(); return; }
@@ -951,3 +1046,7 @@ document.getElementById('gtStrip').addEventListener('keydown', (e) => {
 if ((e.key === 'Enter' || e.key === ' ') && e.target.id === 'gtStrip'){ e.preventDefault(); gtType = ''; gtGenre = ''; goToScreen('topup'); }
 });
 
+
+document.addEventListener('change', (e) => {
+if (e.target.id === 'gtOfferSort'){ gtOfferSort = e.target.value; renderTopupOffers(); }
+});

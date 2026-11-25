@@ -113,6 +113,16 @@ const q = (document.getElementById('gfSearch').value || '').trim().toLowerCase()
 const sort = document.getElementById('gfSort').value;
 let list = gfItems.filter(it => !gfCollection || it.base_name === gfCollection);
 if (q) list = list.filter(it => [it.title, it.model, it.symbol, it.backdrop].join(' ').toLowerCase().includes(q));
+// Редкость — по самому редкому из трёх признаков (доля в промилле).
+const rarity = Number(document.getElementById('gfRarity').value) || 0;
+if (rarity) list = list.filter(it => {
+const r = [it.model_rarity, it.symbol_rarity, it.backdrop_rarity].filter(v => v != null);
+return r.length && Math.min(...r) <= rarity;
+});
+const pMin = Number(document.getElementById('gfPriceMin').value) || 0;
+const pMax = Number(document.getElementById('gfPriceMax').value) || 0;
+if (pMin) list = list.filter(it => it.price_uzs && it.price_uzs >= pMin);
+if (pMax) list = list.filter(it => it.price_uzs && it.price_uzs <= pMax);
 if (sort === 'cheap') list = list.slice().sort((a, b) => a.price_uzs - b.price_uzs);
 else if (sort === 'expensive') list = list.slice().sort((a, b) => b.price_uzs - a.price_uzs);
 else if (sort === 'rare') list = list.slice().sort((a, b) => gfRarityScore(b) - gfRarityScore(a));
@@ -611,8 +621,10 @@ const del = e.target.closest('[data-gf-want-del]');
 if (del){ gfPost('/api/gifts/wants/delete', { id: Number(del.dataset.gfWantDel) }).then(({ data }) => { gfWants = (data && data.items) || []; renderWants(); }).catch(() => {}); }
 });
 document.getElementById('gfSort').addEventListener('change', renderGiftsGrid);
+document.getElementById('gfRarity').addEventListener('change', renderGiftsGrid);
 let gfSearchTimer = null;
 document.getElementById('gfSearch').addEventListener('input', () => { clearTimeout(gfSearchTimer); gfSearchTimer = setTimeout(renderGiftsGrid, 200); });
+['gfPriceMin', 'gfPriceMax'].forEach(id => document.getElementById(id).addEventListener('input', () => { clearTimeout(gfSearchTimer); gfSearchTimer = setTimeout(renderGiftsGrid, 300); }));
 
 document.getElementById('screenGifts').addEventListener('click', (e) => {
 const tab = e.target.closest('[data-gf-tab]');

@@ -16,7 +16,7 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="app-web.js?v=9"></script>
 <script>try{var t=localStorage.getItem('dg_theme');if(t)document.documentElement.setAttribute('data-theme',t);if(localStorage.getItem('dg_calm')==='1')document.documentElement.classList.add('dg-calm');}catch(e){}</script>
-<link rel="stylesheet" href="app.css?v=156">
+<link rel="stylesheet" href="app.css?v=157">
 <link rel="stylesheet" href="app-desktop.css?v=2" media="(min-width: 1280px)">
 </head>
 <body data-tab="shop">
@@ -739,6 +739,17 @@
 <option value="rare" data-i18n="gf_sort_rare">Редкие</option>
 </select>
 </div>
+<!-- Фильтры подарков: редкость (самый редкий из трёх признаков) и цена. -->
+<div class="gf-filters">
+<select id="gfRarity" class="gf-sort" aria-label="Редкость" data-i18n-aria-label="gf_rarity_aria">
+<option value="" data-i18n="gf_rarity_any">Любая редкость</option>
+<option value="20" data-i18n="gf_rarity_20">Редкие · до 2%</option>
+<option value="10" data-i18n="gf_rarity_10">Очень редкие · до 1%</option>
+<option value="5" data-i18n="gf_rarity_5">Уникальные · до 0,5%</option>
+</select>
+<input id="gfPriceMin" class="gf-price-filter" type="number" min="0" inputmode="numeric" placeholder="Цена от" data-i18n-placeholder="gf_price_from">
+<input id="gfPriceMax" class="gf-price-filter" type="number" min="0" inputmode="numeric" placeholder="до, сум" data-i18n-placeholder="gf_price_to">
+</div>
 <div class="gf-grid" id="gfGrid"></div>
 </div>
 <!-- Обычные подарки Telegram за сумы (app-gifts.js: loadGiftShop; бот: gift_shop.py). -->
@@ -783,6 +794,8 @@
 <!-- Сначала куда зачислить (Player ID / логин), потом пакет. -->
 <div id="gtFields" class="u-mb12"></div>
 <div class="profile-section-title" data-i18n="gt_choose_amount">Выберите сумму</div>
+<!-- Разделы пакетов и сортировка (app-gametopup.js: renderTopupOffers). -->
+<div class="gt-offer-tools" id="gtOfferTools" hidden></div>
 <div class="gt-offers" id="gtOffers"></div>
 <div id="gtPayBox" hidden>
 <div class="gt-promo-row">
@@ -2878,8 +2891,8 @@
 </div>
 </div>
 <script src="app-core.js?v=21"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=88', en: 'app-i18n-en.js?v=87' };</script>
-<script src="app-i18n.js?v=210"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=89', en: 'app-i18n-en.js?v=88' };</script>
+<script src="app-i18n.js?v=211"></script>
 <script src="app-navigation.js?v=33"></script>
 <script src="app-shop.js?v=55"></script>
 <script src="app-legal.js?v=3"></script>
@@ -2891,12 +2904,12 @@
 <script src="app-steam.js?v=18"></script>
 <script src="app-logins.js?v=4"></script>
 <script src="app-topup.js?v=12"></script>
-<script src="app-gametopup.js?v=16"></script>
+<script src="app-gametopup.js?v=17"></script>
 <script src="app-history.js?v=12"></script>
 <script src="app-referral.js?v=15"></script>
 <script src="app-pfmenu.js?v=1"></script>
 <script src="app-motion.js?v=3"></script>
-<script src="app-gifts.js?v=8"></script>
+<script src="app-gifts.js?v=9"></script>
 <script src="app-withdraw.js?v=41"></script>
 <script src="app-instant.js?v=1"></script>
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
@@ -2911,7 +2924,7 @@
 <script src="app-home.js?v=13"></script>
 <script src="app-desktop.js?v=2"></script>
 <script src="app-support.js?v=4"></script>
-<script src="app-spaces.js?v=3"></script>
+<script src="app-spaces.js?v=4"></script>
 <script src="app-pro.js?v=19"></script>
 <script>window.DG_R3D_SRC = 'app-render3d.js?v=5';</script>
 </body>
