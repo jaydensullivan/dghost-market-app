@@ -203,6 +203,8 @@ plan_help_markets: "FREE and Start include one section of your choice: Skins or 
 plan_limit_msg: "Plan limit: {used} of {limit} listings in “{market}”. Remove a listing or change your plan.",
 plan_market_msg: "“{market}” is not included in your plan. PRO and above include both sections.",
 plan_open_plans: "Open plans?",
+plan_banner_expiring: "⏳ Your {name} plan ends on {date} — renew early so nothing stops.",
+plan_banner_grace: "⚠️ Your {name} plan has ended. Its listing limits apply until {date} — renew to keep everything.",
 plan_pay_title: "Pay for the {name} plan",
 plan_pay_hint: "{price} for {days} days. Choose how to pay.",
 plan_pay_balance: "From balance — {price}",
