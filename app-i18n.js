@@ -207,6 +207,7 @@ plan_help_markets: "На FREE и Старте — один раздел на в�
 plan_limit_msg: "Лимит тарифа: {used} из {limit} объявлений в разделе «{market}». Сними лот или смени тариф.",
 plan_market_msg: "Раздел «{market}» не входит в твой тариф. На PRO и выше доступны оба раздела.",
 plan_open_plans: "Открыть тарифы?",
+live_bought: "🔥 {title} — куплен за {price}",
 referral_copy_link: "Скопировать ссылку",
 pro_plans_hint_short: "Покупать — бесплатно. Тариф нужен, чтобы продавать больше.",
 plan_card_lots: "📦 {n} объявлений",

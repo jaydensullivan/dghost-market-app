@@ -203,6 +203,7 @@ plan_help_markets: "FREE va Startda — tanlov bo'yicha bitta bo'lim: Skinlar yo
 plan_limit_msg: "Tarif limiti: «{market}» bo'limida {limit} tadan {used} ta e'lon. Lotni olib tashlang yoki tarifni almashtiring.",
 plan_market_msg: "«{market}» bo'limi tarifingizga kirmaydi. PRO va undan yuqorida ikkala bo'lim ochiq.",
 plan_open_plans: "Tariflarni ochamizmi?",
+live_bought: "🔥 {title} — {price} ga sotib olindi",
 referral_copy_link: "Havolani nusxalash",
 pro_plans_hint_short: "Sotib olish — bepul. Tarif ko'proq sotish uchun kerak.",
 plan_card_lots: "📦 {n} ta e'lon",
