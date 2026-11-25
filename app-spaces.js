@@ -9,19 +9,20 @@
 // ведут сразу в нужное место, минуя HOME.
 //
 // У каждого пространства своя шапка («‹ 01 / MARKETPLACE — CS2 Скины»)
-// и своё нижнее меню; «Профиль» с балансом всегда последний. Кнопки
-// меню те же четыре (#bottomNav), меняются подписи и действия.
+// и своё нижнее меню из трёх кнопок. Профиль — только значком в шапке
+// (#headerAvatarBtn), в нижнем меню его нет. Кнопки меню те же
+// (#bottomNav), меняются подписи и действия.
 // ============================================================
 
 (function(){
 const SPACE_KEY = 'dg_space';
 const SPACES = {
 skins: { num: '01 / MARKETPLACE', title: 'sp_skins_title', desc: 'sp_skins_desc', root: 'shop',
-nav: ['nav_market', 'nav_deals', 'nav_sell', 'nav_profile'] },
+nav: ['nav_market', 'nav_deals', 'nav_sell'] },
 gifts: { num: '02 / GIFTS', title: 'sp_gifts_title', desc: 'sp_gifts_desc', root: 'gifts',
-nav: ['gf_tab_buy', 'gf_tab_send', 'gf_tab_mine', 'nav_profile'] },
+nav: ['gf_tab_buy', 'gf_tab_send', 'gf_tab_mine'] },
 topup: { num: '03 / TOP-UP', title: 'sp_topup_title', desc: 'sp_topup_desc', root: 'topup',
-nav: ['sp_nav_catalog', 'sp_nav_orders', 'sp_nav_support', 'nav_profile'] },
+nav: ['sp_nav_catalog', 'sp_nav_orders', 'sp_nav_support'] },
 };
 // Экран → пространство. Общие экраны (профиль, сделки, поддержка) не
 // меняют текущее пространство: «Заказы» в Пополнениях — это «Сделки».
@@ -68,7 +69,7 @@ if (topup && !document.getElementById('spBack_topup')) topup.insertBefore(makeHe
 function navButtons(){ return [...document.querySelectorAll('#bottomNav .nav-btn')]; }
 
 function activeIndex(screen){
-if (screen === 'profile' || screen === 'pro') return 3;
+if (screen === 'profile' || screen === 'pro') return -1;
 if (current === 'gifts'){
 if (screen !== 'gifts') return -1;
 const tab = document.querySelector('#gfTabs [data-gf-tab].active');
@@ -91,14 +92,12 @@ if (typeof dgNavPill === 'function') requestAnimationFrame(dgNavPill);
 
 function route(i){
 if (current === 'gifts'){
-if (i === 3){ goToScreen('profile'); return; }
 goToScreen('gifts');
 if (typeof setGiftsTab === 'function') setGiftsTab(['buy', 'send', 'mine'][i]);
 } else if (current === 'topup'){
 if (i === 0){ goToScreen('topup'); if (typeof showTopupView === 'function') showTopupView(false); }
-else if (i === 1){ goToScreen('deals'); if (typeof setDealsSeg === 'function') setDealsSeg('topup'); }
+else if (i === 1) goToScreen('deals');
 else if (i === 2){ if (typeof openSupport === 'function') openSupport(); else goToScreen('support'); }
-else goToScreen('profile');
 }
 applyNav(currentTab);
 }
@@ -121,8 +120,22 @@ const sp = SCREEN_SPACE[name];
 if (sp && sp !== current){ current = sp; remember(sp); }
 else if (sp) remember(sp);
 document.documentElement.dataset.space = current;
+if (name === 'deals') dealsForSpace();
 applyNav(name);
 };
+
+// «Сделки» в Скинах — только сделки со скинами, «Заказы» в Пополнениях —
+// только заказы пополнений. Переключатель «Скины / Пополнения» скрыт.
+const dealsTitle = document.querySelector('#screenDeals [data-i18n="deals_screen_title"]');
+function dealsForSpace(){
+const topup = current === 'topup';
+if (typeof setDealsSeg === 'function') setDealsSeg(topup ? 'topup' : 'skins');
+if (dealsTitle){
+const key = topup ? 'sp_orders_title' : 'deals_screen_title';
+dealsTitle.setAttribute('data-i18n', key);
+dealsTitle.textContent = t(key);
+}
+}
 
 if (typeof setGiftsTab === 'function'){
 const baseGiftsTab = setGiftsTab;
