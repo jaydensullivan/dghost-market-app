@@ -140,6 +140,13 @@ return `<div class="plan-row${full ? ' full' : ''}"><span>${name}</span><b>${esc
 + `<i class="plan-bar"><i style="width:${pct}%"></i></i></div>`;
 }).join('');
 const notes = [];
+// Подписка заканчивается / закончилась, но лимиты ещё действуют (льготный период).
+let banner = '';
+if (plan.status === 'expiring' && plan.expires_at){
+banner = dict.plan_banner_expiring.replace('{name}', proTierName(plan.tier)).replace('{date}', planDateText(plan.expires_at));
+} else if (plan.status === 'grace' && plan.grace_until){
+banner = dict.plan_banner_grace.replace('{name}', proTierName(plan.tier)).replace('{date}', planDateText(plan.grace_until));
+}
 const over = PLAN_MARKETS.reduce((n, m) => {
 const u = plan.markets[m] || {};
 return n + (u.allowed && u.limit != null ? Math.max(0, (u.used || 0) - u.limit) : 0);
@@ -148,7 +155,8 @@ if (over) notes.push(dict.plan_over.replace('{n}', over));
 if (plan.market_count < 2 && !plan.chosen_market && !(plan.addons && plan.addons.second_market)
 && PLAN_MARKETS.every(m => (plan.markets[m] || {}).allowed)) notes.push(dict.plan_choose_first);
 if (!plan.enforced) notes.push(plan.enforce_from ? dict.plan_enforce_soon.replace('{date}', planDateText(plan.enforce_from)) : dict.plan_enforce_off);
-box.innerHTML = `<div class="plan-title">${escapeHtml(dict.plan_lots_title)}</div>${rows}`
+box.innerHTML = (banner ? `<div class="plan-banner">${escapeHtml(banner)}</div>` : '')
++ `<div class="plan-title">${escapeHtml(dict.plan_lots_title)}</div>${rows}`
 + notes.map(n => `<div class="plan-note">${escapeHtml(n)}</div>`).join('');
 box.hidden = false;
 }
