@@ -95,8 +95,10 @@ return [item.model_rarity, item.symbol_rarity, item.backdrop_rarity].reduce((s, 
 
 function gfCardHtml(item){
 const d = gfDict();
-return `<button type="button" class="gf-card" data-gf-id="${item.id}">
-<span class="gf-card-art" style="background:${gfBg(item)}"><img src="${escapeHtml(item.image || '')}" alt="" loading="lazy"></span>
+const promo = Array.isArray(item.promo) ? item.promo : [];
+const promoCls = promo.length ? ' is-promo' + (promo.includes('highlight') ? ' promo-hl' : '') : '';
+return `<button type="button" class="gf-card${promoCls}" data-gf-id="${item.id}">
+<span class="gf-card-art" style="background:${gfBg(item)}"><img src="${escapeHtml(item.image || '')}" alt="" loading="lazy">${promo.length ? `<span class="promo-tag">${escapeHtml(d.promo_tag)}</span>` : ''}</span>
 <span class="gf-card-body">
 <span class="gf-card-name">${escapeHtml(item.title)}</span>
 <span class="gf-card-model">${escapeHtml(item.model || '')} <b>${gfPct(item.model_rarity)}</b></span>
@@ -126,6 +128,8 @@ if (pMax) list = list.filter(it => it.price_uzs && it.price_uzs <= pMax);
 if (sort === 'cheap') list = list.slice().sort((a, b) => a.price_uzs - b.price_uzs);
 else if (sort === 'expensive') list = list.slice().sort((a, b) => b.price_uzs - a.price_uzs);
 else if (sort === 'rare') list = list.slice().sort((a, b) => gfRarityScore(b) - gfRarityScore(a));
+// Продвижение (бот: promo) — только при витринной сортировке «Новые».
+if (sort === 'new' && typeof dgPromoOrder === 'function') list = dgPromoOrder(list, true);
 grid.innerHTML = list.length ? list.map(gfCardHtml).join('')
 : `<div class="skins-empty skins-empty-md">${escapeHtml(gfItems.length ? d.gf_nothing_found : d.gf_empty)}</div>`;
 }
@@ -205,6 +209,7 @@ ${(it.status === 'held' || it.status === 'listed') ? `
 <div class="gf-mine-hint" data-gf-payout="${it.id}">${it.payout_uzs ? escapeHtml(d.gf_you_get.replace('{sum}', formatCoins(it.payout_uzs))) : ''}</div>
 <div class="gf-mine-row">
 ${it.status === 'listed' ? `<button type="button" class="pf-btn gf-ghost" data-gf-unlist="${it.id}">${escapeHtml(d.gf_btn_unlist)}</button>` : ''}
+${it.status === 'listed' ? `<button type="button" class="pf-btn promo-open-btn" data-promo-open="gifts:${it.id}">${escapeHtml(d.promo_btn)}</button>` : ''}
 <button type="button" class="pf-btn gf-ghost" data-gf-return="${it.id}">${escapeHtml(d.gf_btn_return)}</button>
 </div>` : ''}
 </div>

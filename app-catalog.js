@@ -461,10 +461,16 @@ const stickerStrip = stickersMini
 ? `<div class="skin-stickers">${stickersMini}</div>`
 : '';
 
+// Продвижение (бот: promo): Highlight — рамка, любое — пометка «Продвижение».
+const promo = Array.isArray(skin.promo) ? skin.promo : [];
+const promoCls = promo.length ? ' is-promo' + (promo.includes('highlight') ? ' promo-hl' : '') : '';
+const promoTag = promo.length ? `<span class="promo-tag">${escapeHtml((I18N[currentLang] || I18N.ru).promo_tag)}</span>` : '';
+
 return `
-<div class="skin-card ${rarityClass}" data-card="${skin.id}">
+<div class="skin-card ${rarityClass}${promoCls}" data-card="${skin.id}">
 <div class="skin-photo-wrap"${rarityBg}>
 ${photo}
+${promoTag}
 ${(wearBadge || stBadge) ? `<div class="skin-badges">${wearBadge}${stBadge}</div>` : ''}
 ${favBtn}
 ${lockBadge || hotBadge}
@@ -553,6 +559,19 @@ deepLinkAuctionId = Number(tg.initDataUnsafe.start_param.slice(8));
 const deepLinkGiveaway = !!(tg && tg.initDataUnsafe && typeof tg.initDataUnsafe.start_param === 'string'
 && (tg.initDataUnsafe.start_param === 'giveaway' || tg.initDataUnsafe.start_param.startsWith('ref_')));
 
+// Top — первые места раздела; бот держит не больше 4 одновременно, а
+// порядок внутри меняем каждый час, чтобы ни у кого не было вечного первого
+// места. withFeatured — Featured сразу за Top (вкладка «Популярное»).
+function dgPromoOrder(list, withFeatured){
+const has = (x, k) => Array.isArray(x.promo) && x.promo.includes(k);
+const hour = Math.floor(Date.now() / 3600000);
+const top = list.filter(x => has(x, 'top')).sort((a, b) => ((a.id + hour) % 97) - ((b.id + hour) % 97));
+const featured = withFeatured ? list.filter(x => !has(x, 'top') && has(x, 'featured')) : [];
+if (!top.length && !featured.length) return list;
+const first = new Set(top.concat(featured));
+return top.concat(featured, list.filter(x => !first.has(x)));
+}
+
 function applyFiltersAndRender(){
 const q = skinSearch.value.trim().toLowerCase();
 const sort = skinSort.value;
@@ -622,6 +641,12 @@ filtered.sort((a, b) => rank(a) - rank(b)
 || b.id - a.id);
 } else {
 filtered.sort((a, b) => b.id - a.id);
+}
+
+// Продвижение — только при витринной сортировке (сам выбрал «дешевле» —
+// порядок его): Top — первыми, Featured — следом в «Популярном».
+if (sort === 'auto' || !sort){
+filtered = dgPromoOrder(filtered, currentShopTab === 'popular');
 }
 
 if (!filtered.length){

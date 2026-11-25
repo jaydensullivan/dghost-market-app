@@ -163,6 +163,15 @@ const mine = (typeof lastSkins !== 'undefined' ? lastSkins : []).filter(s => s.s
 box.innerHTML = mine.length
 ? mine.map(skinCardHtml).join('')
 : `<div class="skins-empty">${dict.lots_empty}</div>`;
+// «📣 Продвинуть» под каждым своим лотом (окно — app-pro.js: openPromo).
+box.querySelectorAll('[data-card]').forEach(card => {
+const btn = document.createElement('button');
+btn.type = 'button';
+btn.className = 'pf-btn promo-open-btn';
+btn.dataset.promoOpen = 'skins:' + card.dataset.card;
+btn.textContent = dict.promo_btn;
+card.appendChild(btn);
+});
 markOverpricedLots(mine);
 }
 
