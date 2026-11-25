@@ -6045,3 +6045,5 @@ html:not(.dg-desk) .gf-wants-btn{ display:inline-flex; width:auto; padding:4px 2
 body.hdr-menu-open .hdr-menu-scrim{ opacity:1; pointer-events:auto; }
 html.dg-calm .hdr-menu-scrim{ transition:none; }
 body.theme-light .hdr-menu-scrim{ background:rgba(20,12,30,.25); }
+
+.buy-guide-video-btn[hidden]{ display:none !important; }
