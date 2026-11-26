@@ -5905,10 +5905,12 @@ html[data-space="gifts"] .sp-back:focus-visible, html[data-space="topup"] .sp-ba
 #gtOrdersList .h-day{ margin:12px 2px 6px; }
 .gt-order-meta b.positive{ color:#4ade80; font-weight:700; }
 
-/* меню только снизу: вкладки Подарков сверху не дублируем, переключатель
-   «Скины / Пополнения» в сделках не нужен (раздел зависит от пространства),
-   профиль — значком в шапке, а не в нижнем меню */
-#gfTabs, #dealsSeg, #tabProfileBtn{ display:none !important; }
+/* меню только снизу (html[data-space] ставит app-spaces.js): вкладки Подарков
+   сверху не дублируем, переключатель «Скины / Пополнения» в сделках не нужен
+   (раздел зависит от пространства), профиль — значком в шапке, а не в нижнем меню */
+html[data-space] #gfTabs,
+html[data-space] #dealsSeg,
+html[data-space] #tabProfileBtn{ display:none !important; }
 
 /* главная Скинов: Пополнения и Подарки — свои пространства (и на ПК) */
 #gtStrip, #giftsEntry{ display:none !important; }
