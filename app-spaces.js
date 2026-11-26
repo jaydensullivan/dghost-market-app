@@ -136,14 +136,15 @@ if (name === 'deals') dealsForSpace();
 applyNav(name);
 };
 
-// «Сделки» в Скинах — только сделки со скинами, «Заказы» в Пополнениях —
-// только заказы пополнений. Переключатель «Скины / Пополнения» скрыт.
+// «Сделки» в Скинах — только сделки со скинами (заголовок «Мои сделки»),
+// «Заказы» в Пополнениях — только заказы пополнений (заголовок «Заказы»,
+// как кнопка меню). Переключатель «Скины / Пополнения» скрыт (app.css).
 const dealsTitle = document.querySelector('#screenDeals [data-i18n="deals_screen_title"]');
 function dealsForSpace(){
 const topup = current === 'topup';
 if (typeof setDealsSeg === 'function') setDealsSeg(topup ? 'topup' : 'skins');
 if (dealsTitle){
-const key = topup ? 'sp_orders_title' : 'deals_screen_title';
+const key = topup ? 'sp_nav_orders' : 'deals_screen_title';
 dealsTitle.setAttribute('data-i18n', key);
 dealsTitle.textContent = t(key);
 }
