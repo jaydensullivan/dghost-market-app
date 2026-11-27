@@ -209,12 +209,16 @@ try { target = new URLSearchParams(location.search).get('open'); } catch(e) {}
 if (!target && tg && tg.initDataUnsafe && typeof tg.initDataUnsafe.start_param === 'string') target = tg.initDataUnsafe.start_param;
 // Подарок из поста в канале или уведомления: startapp=gift_<id>.
 if (target && /^gift_\d+$/.test(target)){ const gid = target.slice(5); setTimeout(() => { if (typeof openGiftById === 'function') openGiftById(gid); }, 400); return; }
-if (target !== 'deals' && target !== 'sell' && target !== 'wants' && target !== 'search' && target !== 'pro' && target !== 'topup' && target !== 'gifts') return;
+if (target !== 'deals' && target !== 'sell' && target !== 'wants' && target !== 'search' && target !== 'pro' && target !== 'topup' && target !== 'gifts' && target !== 'gifts_send') return;
 setTimeout(() => {
 if (target === 'gifts'){
 // Подарки Telegram: бот пишет продавцу «укажи цену» (?open=gifts).
 goToScreen('gifts');
 if (typeof setGiftsTab === 'function') setGiftsTab('mine');
+} else if (target === 'gifts_send'){
+// Обычные подарки за сумы: «Купить в Telegram» у гостя сайта (бот: /start gifts_send).
+goToScreen('gifts');
+if (typeof setGiftsTab === 'function') setGiftsTab('send');
 } else if (target === 'topup'){
 // Пополнения игр: /games в боте, ссылка ?startapp=topup.
 goToScreen('topup');
