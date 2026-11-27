@@ -380,6 +380,9 @@ return fetch(API_BASE + '/api/gifts/shop?lang=' + encodeURIComponent(currentLang
 if (!ok){ gsState = 'failed'; renderGiftShop(); return; }
 gsItems = data.items || [];
 gsState = data.enabled === false ? 'off' : 'ok';
+// Цена «от» — для подписи Подарков на экране выбора раздела (app-spaces.js).
+const from = gsItems.reduce((m, it) => (it.price_uzs > 0 && (!m || it.price_uzs < m) ? it.price_uzs : m), 0);
+if (from && typeof window.dgGiftsFrom === 'function') window.dgGiftsFrom(from);
 renderGiftShop();
 })
 .catch(() => { gsState = 'failed'; renderGiftShop(); });
@@ -390,7 +393,25 @@ const img = it.img ? `<img src="${escapeHtml(API_BASE + it.img)}" alt="" loading
 return `<span class="${cls}">${img || `<span class="gs-emoji">${escapeHtml(it.emoji || '🎁')}</span>`}</span>`;
 }
 
+// Ряд обычных подарков на главной Подарков (вкладка «Купить»): сначала
+// самые дешёвые; нажатие — вкладка «Отправить» и сразу окно покупки.
+function renderGiftStrip(){
+const box = document.getElementById('gsStrip');
+if (!box) return;
+const ok = gsState === 'ok' && gsItems.length > 0;
+box.hidden = !ok;
+if (!ok) return;
+const d = gfDict();
+const items = gsItems.slice().sort((a, b) => a.price_uzs - b.price_uzs);
+document.getElementById('gsStripFrom').textContent = d.gs_strip_from.replace('{price}', formatCoins(items[0].price_uzs));
+document.getElementById('gsStripRow').innerHTML = items.map(it => `<button type="button" class="gs-chip" data-gs-strip="${escapeHtml(it.id)}" aria-label="${escapeHtml(it.name + ' · ' + formatCoins(it.price_uzs))}">
+${gsArt(it, 'gs-chip-art')}
+<span class="gs-chip-price">${escapeHtml(formatCoins(it.price_uzs))}</span>
+</button>`).join('');
+}
+
 function renderGiftShop(){
+renderGiftStrip();
 const d = gfDict();
 const box = document.getElementById('gsGrid');
 if (!box) return;
@@ -547,6 +568,7 @@ if (tab === 'send') loadGiftShop();
 
 function loadGiftsScreen(){
 loadGifts().then(() => renderGiftsHow());
+loadGiftShop();
 }
 
 function gfPost(path, body){
@@ -667,6 +689,14 @@ u.hidden = gsTo !== 'friend';
 if (gsTo === 'friend') u.focus();
 return;
 }
+const stripCard = e.target.closest('[data-gs-strip]');
+if (stripCard){
+const it = gsItems.find(x => x.id === stripCard.dataset.gsStrip);
+setGiftsTab('send');
+if (it) openShopGift(it);
+return;
+}
+if (e.target.closest('[data-gs-all]')){ setGiftsTab('send'); window.scrollTo(0, 0); return; }
 const gsCard = e.target.closest('[data-gs-id]');
 if (gsCard){ const it = gsItems.find(x => x.id === gsCard.dataset.gsId); if (it) openShopGift(it); return; }
 const prof = e.target.closest('[data-gf-prof]');
