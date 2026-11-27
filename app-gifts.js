@@ -444,7 +444,7 @@ ${gsArt(it, 'gs-hero')}
 <div class="gf-detail-name" style="text-align:center">${escapeHtml(it.name)}</div>
 <div class="gf-detail-note" style="text-align:center">${escapeHtml(d.gs_for.replace('{who}', rec.to === 'self' ? d.gs_to_self_long : rec.label))}</div>
 ${it.upgrade_price_uzs ? `<label class="gs-check"><input type="checkbox" id="gsUpgrade"><span>${escapeHtml(d.gs_upgrade.replace('{sum}', formatCoins(it.upgrade_price_uzs)))}</span></label>` : ''}
-<button type="button" class="welcome-btn primary u-w100" id="gsSendBtn">${escapeHtml(d.gs_btn_send.replace('{price}', formatCoins(total(false))))}</button>
+<button type="button" class="welcome-btn primary u-w100" id="gsSendBtn" data-tg-start="gifts_send">${escapeHtml(d.gs_btn_send.replace('{price}', formatCoins(total(false))))}</button>
 <div class="edit-status" id="gsStatus"></div>`;
 const up = document.getElementById('gsUpgrade');
 const btn = document.getElementById('gsSendBtn');
@@ -596,7 +596,7 @@ document.getElementById('gfDetail').innerHTML = `
 <div class="gf-detail-price">${escapeHtml(formatCoins(item.price_uzs))}</div>
 ${gfMarketLine(item)}
 <div class="gf-detail-note">${escapeHtml(item.p2p ? d.gf_buy_note_p2p : (gfInfo.manual ? d.gf_buy_note_manual : d.gf_buy_note))}</div>
-<button type="button" class="welcome-btn primary u-w100" id="gfBuyBtn">${escapeHtml(d.gf_btn_buy.replace('{price}', formatCoins(item.price_uzs)))}</button>
+<button type="button" class="welcome-btn primary u-w100" id="gfBuyBtn" data-tg-start="gift_${Number(item.id)}">${escapeHtml(d.gf_btn_buy.replace('{price}', formatCoins(item.price_uzs)))}</button>
 <div class="edit-status" id="gfBuyStatus"></div>`;
 document.getElementById('gfBuyBtn').onclick = () => buyGift(item);
 document.getElementById('giftOverlay').classList.add('show');
