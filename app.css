@@ -4388,10 +4388,12 @@ color:#f2eefa; text-align:center; box-shadow:0 20px 60px rgba(123,44,255,.25);
 .dgw-gate-title{ font-size:20px; font-weight:800; margin-bottom:8px; }
 .dgw-gate-text{ font-size:14px; line-height:1.45; opacity:.85; margin-bottom:18px; }
 .dgw-btn-steam{ min-height:48px; font-size:15px; }
-.dgw-gate-or{ margin:14px 0 10px; font-size:12px; opacity:.6; }
+.dgw-gate-or, .dgw-gate-site{ margin:14px 0 10px; font-size:12px; opacity:.6; }
 .dgw-gate-widget{ min-height:48px; display:flex; justify-content:center; }
 .dgw-btn.dgw-btn-tg{ display:flex; align-items:center; justify-content:center; gap:10px; width:100%; min-height:48px; background:#2aabee; border-color:#2aabee; color:#fff; font-weight:600; }
 .dgw-btn.dgw-btn-tg:hover{ background:#229ed9; }
+.dgw-btn.dgw-btn-tglot{ text-decoration:none; font-size:16px; font-weight:800; min-height:52px; }
+.dgw-gate-lotnote{ margin:8px 0 4px; font-size:12px; opacity:.7; line-height:1.4; }
 .dgw-gate-status{ min-height:18px; margin:8px 0; font-size:13px; color:#ff6b8a; }
 .dgw-btn-email{ margin-top:10px; }
 .dgw-email-form{ margin-top:10px; display:flex; flex-direction:column; gap:8px; }

@@ -44,6 +44,9 @@ steam: 'Войти через Steam',
 or_tg: 'или через Telegram',
 tg_btn: 'Войти через Telegram',
 guest: 'Смотреть без входа',
+buy_tg: 'Купить в Telegram',
+buy_tg_note: 'Лот откроется в @dghostmarketbot — входить на сайте не нужно.',
+or_site: 'или войди здесь',
 need: 'Войти через Telegram',
 failed: 'Не удалось войти. Попробуй ещё раз.',
 ok: 'OK', cancel: 'Отмена',
@@ -66,6 +69,9 @@ steam: 'Steam orqali kirish',
 or_tg: 'yoki Telegram orqali',
 tg_btn: 'Telegram orqali kirish',
 guest: "Kirmasdan ko'rish",
+buy_tg: "Telegram'da sotib olish",
+buy_tg_note: "Lot @dghostmarketbot'da ochiladi — saytga kirish shart emas.",
+or_site: 'yoki shu yerda kiring',
 need: 'Telegram orqali kirish',
 failed: "Kirib bo'lmadi. Qayta urinib ko'ring.",
 ok: 'OK', cancel: 'Bekor qilish',
@@ -88,6 +94,9 @@ steam: 'Log in with Steam',
 or_tg: 'or with Telegram',
 tg_btn: 'Log in with Telegram',
 guest: 'Browse without logging in',
+buy_tg: 'Buy in Telegram',
+buy_tg_note: 'The lot opens in @dghostmarketbot — no need to log in here.',
+or_site: 'or log in here',
 need: 'Log in with Telegram',
 failed: 'Login failed. Please try again.',
 ok: 'OK', cancel: 'Cancel',
@@ -319,14 +328,19 @@ body: JSON.stringify({ init_data: 'web:' + token }),
 }).then(done, done);
 };
 
-function openGate(){
+// lotId — гость нажал «Купить» (или «Предложить цену», «Хочу») в лоте:
+// первой кнопкой ведём в бота прямо на этот лот (бот: /start skin_<id>),
+// вход на сайте — запасным путём ниже.
+function openGate(lotId){
 if (document.querySelector('.dgw-gate')) return;
 const gate = document.createElement('div');
 gate.className = 'dgw-gate';
+const lot = /^\d{1,9}$/.test(String(lotId || '')) ? String(lotId) : '';
 gate.innerHTML =
 '<div class="dgw-gate-box">'
 + '<img class="dgw-gate-logo" src="logo.webp" alt="">'
 + '<div class="dgw-gate-title"></div>'
++ (lot ? '<a class="dgw-btn dgw-btn-tg dgw-btn-tglot" target="_blank" rel="noopener"><span></span></a><div class="dgw-gate-lotnote"></div><div class="dgw-gate-site"></div>' : '')
 + '<div class="dgw-gate-text"></div>'
 + '<button type="button" class="dgw-btn dgw-btn-steam"><span></span></button>'
 + '<div class="dgw-gate-or"></div>'
@@ -343,6 +357,14 @@ gate.innerHTML =
 + '<div class="dgw-gate-note"></div>'
 + '</div>';
 gate.querySelector('.dgw-gate-title').textContent = T.title;
+if (lot){
+const a = gate.querySelector('.dgw-btn-tglot');
+a.href = 'https://t.me/dghostmarketbot?start=skin_' + lot;
+a.querySelector('span').textContent = '🛒 ' + T.buy_tg;
+a.addEventListener('click', () => gate.remove());
+gate.querySelector('.dgw-gate-lotnote').textContent = T.buy_tg_note;
+gate.querySelector('.dgw-gate-site').textContent = T.or_site;
+}
 gate.querySelector('.dgw-gate-text').textContent = T.text;
 gate.querySelector('.dgw-btn-steam span').textContent = T.steam;
 gate.querySelector('.dgw-btn-steam').addEventListener('click', steamLogin);
@@ -379,11 +401,13 @@ const t = e.target.closest && e.target.closest(GUEST_GATED);
 if (!t) return;
 e.preventDefault();
 e.stopImmediatePropagation();
-openGate();
+// Нажали в открытом лоте — предлагаем купить его в Telegram.
+const inLot = t.closest('#buyOverlay') && typeof pendingBuySkin !== 'undefined' && pendingBuySkin;
+openGate(inLot ? pendingBuySkin.id : '');
 }, true);
 }
 const inBtn = document.getElementById('webLoginBtn');
-if (inBtn) inBtn.addEventListener('click', openGate);
+if (inBtn) inBtn.addEventListener('click', () => openGate());
 const outBtn = document.getElementById('webLogoutBtn');
 if (outBtn) outBtn.addEventListener('click', () => {
 wa.showConfirm(outBtn.textContent.trim() + '?', ok => { if (ok) window.dgWebLogout(); });
