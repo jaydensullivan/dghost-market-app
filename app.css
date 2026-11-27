@@ -6152,3 +6152,21 @@ html.dg-calm .sp-intro, html.dg-calm .sp-intro-card{ animation:none; }
 #newbieTip{ display:none !important; }
 .gf-filters #gfRarity{ flex:1 1 100%; }
 .gf-filters .gf-price-filter{ flex:1 1 calc(50% - 4px); }
+
+/* Подарки: ряд обычных подарков первым на главной (app-gifts.js: renderGiftStrip) */
+.gs-strip{ padding:12px 0 4px; border-radius:16px; }
+.gs-strip[hidden]{ display:none; }
+.gs-strip-head{ display:flex; align-items:baseline; gap:8px; margin:0 2px 10px; }
+.gs-strip-title{ font-size:15px; font-weight:800; color:var(--silver); }
+.gs-strip-from{ font-size:13px; font-weight:700; color:var(--space-ink, var(--red-glow)); }
+.gs-strip-all{ margin-left:auto; border:0; background:none; color:var(--space-ink, var(--red-glow)); font-size:13px; font-weight:700; cursor:pointer; padding:4px 2px; }
+.gs-strip-row{ display:flex; gap:10px; overflow-x:auto; padding:2px 2px 8px; scroll-snap-type:x proximity; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+.gs-strip-row::-webkit-scrollbar{ display:none; }
+.gs-chip{ flex:0 0 84px; scroll-snap-align:start; display:flex; flex-direction:column; align-items:center; gap:6px; padding:10px 6px 8px; border-radius:16px;
+  border:1px solid color-mix(in srgb, var(--space-b, #a855f7) 30%, transparent); background:var(--surface); color:var(--text); cursor:pointer; font-family:inherit; }
+.gs-chip:active{ transform:scale(.97); }
+.gs-chip-art{ display:flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:14px;
+  background:radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--space-b, #a855f7) 28%, transparent), transparent 72%); }
+.gs-chip-art img{ width:48px; height:48px; object-fit:contain; }
+.gs-chip-art .gs-emoji{ font-size:34px; }
+.gs-chip-price{ font-size:12px; font-weight:800; white-space:nowrap; }

@@ -308,6 +308,8 @@ ${['skins', 'gifts', 'topup'].map(key => `<button type="button" class="sp-card s
 </div>
 </div>`;
 document.body.appendChild(home);
+renderGiftsDesc();
+refreshGiftsFrom();
 home.addEventListener('click', (e) => {
 const card = e.target.closest('[data-space-go]');
 if (card) openSpace(card);
@@ -343,6 +345,54 @@ if (!home) return;
 home.hidden = true;
 home.classList.remove('sp-leaving', 'sp-enter');
 document.documentElement.classList.remove('sp-home-open');
+}
+
+// ---------- подпись Подарков на HOME: «Подарки от 3 200 сум и уникальные NFT» ----------
+// Цену «от» даёт магазин обычных подарков (app-gifts.js → dgGiftsFrom).
+// Кэш на сутки (localStorage dg_gs_from); нет кэша — один лёгкий запрос
+// магазина после показа HOME (без картинок), до ответа — подпись без цены.
+const GS_FROM_KEY = 'dg_gs_from';
+function giftsFrom(){
+try { const v = JSON.parse(localStorage.getItem(GS_FROM_KEY) || 'null'); return v && v.price > 0 ? v : null; } catch(e) { return null; }
+}
+function renderGiftsDesc(){
+const el = home && home.querySelector('.sp-card-gifts .sp-card-txt small');
+if (!el) return;
+const v = giftsFrom();
+if (v && typeof formatCoins === 'function'){
+el.removeAttribute('data-i18n');
+el.textContent = t('sp_gifts_desc_from').replace('{price}', formatCoins(v.price));
+} else {
+el.setAttribute('data-i18n', 'sp_gifts_desc');
+el.textContent = t('sp_gifts_desc');
+}
+}
+window.dgGiftsFrom = function(price){
+try { localStorage.setItem(GS_FROM_KEY, JSON.stringify({ price: price, at: Date.now() })); } catch(e) {}
+renderGiftsDesc();
+};
+function refreshGiftsFrom(){
+const v = giftsFrom();
+if (v && Date.now() - (v.at || 0) < 864e5) return;
+setTimeout(() => {
+fetch(API_BASE + '/api/gifts/shop?lang=' + encodeURIComponent(currentLang || 'ru'))
+.then(r => r.ok ? r.json() : null)
+.then(data => {
+const items = (data && data.enabled !== false && data.items) || [];
+const from = items.reduce((m, it) => (it.price_uzs > 0 && (!m || it.price_uzs < m) ? it.price_uzs : m), 0);
+if (from) window.dgGiftsFrom(from);
+})
+.catch(() => {});
+}, 1200);
+}
+// Смена языка: подпись с ценой и ряд подарков собираются кодом — обновляем сами.
+if (typeof setLanguage === 'function'){
+const baseSetLanguage = setLanguage;
+setLanguage = function(lang){
+baseSetLanguage(lang);
+renderGiftsDesc();
+if (typeof renderGiftStrip === 'function') renderGiftStrip();
+};
 }
 
 window.dgShowSpaces = showHome;
