@@ -1698,7 +1698,10 @@ buyConfirmCard.style.display = (!isOwn && hostedPayMethods.length) ? '' : 'none'
 // Продавец с депозитом «Гаранта» — можно перевести прямо ему (seller_card_ok от бота).
 const sellerCardOk = !isOwn && !!skin.seller_card_ok;
 document.getElementById('buyConfirmSellerCard').style.display = sellerCardOk ? '' : 'none';
-const noPayMethod = !isOwn && !canPayFromBalance && !directP2pPurchaseEnabled && !hostedPayMethods.length && !sellerCardOk;
+// Гость веб-версии: способов оплаты не знаем (они приходят с профилем) —
+// показываем обычную «Купить», а нажатие ведёт в «Купить в Telegram» / вход (app-web.js).
+const webGuest = document.documentElement.classList.contains('dg-web-guest');
+const noPayMethod = !webGuest && !isOwn && !canPayFromBalance && !directP2pPurchaseEnabled && !hostedPayMethods.length && !sellerCardOk;
 document.getElementById('buyNoPaymentHint').style.display = noPayMethod ? '' : 'none';
 // Оплатить нечем — говорим это сразу на кнопке и ведём в поддержку,
 // а не после гайда и окна оплаты.
