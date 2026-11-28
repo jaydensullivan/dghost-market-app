@@ -763,6 +763,12 @@ document.getElementById('adminGtRate').placeholder = d.rate_effective ? String(M
 document.getElementById('adminGtRateMode').value = d.rate_mode || 'binance';
 document.getElementById('adminGtRateFee').value = d.rate_fee != null ? d.rate_fee : 2;
 document.getElementById('adminGtLowBalance').value = d.low_balance != null ? d.low_balance : '';
+// FazerCards: поставщик Telegram Stars / Premium (без ключа — всё через Arcadezy).
+document.getElementById('adminGtTgProvider').value = d.telegram_provider || 'fazer';
+document.getElementById('adminFazerLowBalance').value = d.fazer_low_balance != null ? d.fazer_low_balance : '';
+document.getElementById('adminFazerState').textContent = !d.fazer_configured ? dict.admin_fazer_no_key
+: (d.telegram_provider === 'arcadezy' ? dict.admin_fazer_off : dict.admin_fazer_on)
+.replace('{balance}', d.fazer_balance_usd == null ? '—' : '$' + Number(d.fazer_balance_usd).toFixed(2));
 gtAdminRates = { binance: d.rate_binance || null, voluto: d.rate_voluto || null };
 document.getElementById('adminStarsEnabled').checked = !!d.stars_enabled;
 document.getElementById('adminStarsRate').value = d.stars_rate || '';
@@ -813,6 +819,8 @@ rate: document.getElementById('adminGtRate').value.trim(),
 rate_mode: document.getElementById('adminGtRateMode').value,
 rate_fee: Number(document.getElementById('adminGtRateFee').value) || 0,
 low_balance: Number(document.getElementById('adminGtLowBalance').value) || 0,
+telegram_provider: document.getElementById('adminGtTgProvider').value,
+fazer_low_balance: Number(document.getElementById('adminFazerLowBalance').value) || 0,
 stars_enabled: document.getElementById('adminStarsEnabled').checked,
 stars_rate: Number(document.getElementById('adminStarsRate').value) || 150,
 types: [...document.querySelectorAll('[data-gt-admin-type]:checked')].map(i => i.dataset.gtAdminType),
