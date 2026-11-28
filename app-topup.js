@@ -134,6 +134,7 @@ if (can) document.getElementById('openTopupBtn').style.display = '';
 syncStarsTopup();
 if (can) document.getElementById('starsAmount').min = d.min;
 renderStarsPreview();
+syncSellStars();
 })
 .catch(() => { document.getElementById('starsTopupBox').hidden = true; });
 }
@@ -169,6 +170,66 @@ status.textContent = d.stars_topup_failed;
 })
 .catch(() => { status.textContent = d.stars_topup_failed; });
 });
+
+// ---------- продать Stars боту ----------
+// Тот же счёт, что у пополнения Stars, но подано как продажа: человек
+// отдаёт звёзды и получает сумы по курсу. Сумы — на баланс сразу, на
+// карту — через 21 день (stars_topup.WITHDRAW_HOLD_DAYS в маркет-боте).
+// Видно везде, кроме пространства «Скины»; на HOME — карточка (app-spaces.js).
+const sellOverlay = document.getElementById('sellStarsOverlay');
+function sellStarsAvailable(){ return !!starsInfo; }
+function sellRateText(){ return starsDict().sell_stars_rate.replace('{rate}', formatCoins(starsInfo.rate)); }
+function syncSellStars(){
+const btn = document.getElementById('openSellStarsBtn');
+btn.hidden = !starsInfo;
+if (starsInfo) document.getElementById('sellStarsRateChip').textContent = formatCoins(starsInfo.rate) + ' / ⭐';
+document.dispatchEvent(new Event('dg-stars-info'));
+}
+function renderSellStars(){
+if (!starsInfo) return;
+document.getElementById('sellStarsRate').textContent = sellRateText();
+const n = parseInt(document.getElementById('sellStarsAmount').value, 10) || 0;
+document.getElementById('sellStarsGet').textContent = n > 0 ? starsDict().sell_stars_get.replace('{stars}', n).replace('{sum}', formatCoins(Math.floor(n * starsInfo.rate))) : '';
+}
+function openSellStars(){
+if (!starsInfo) return;
+document.getElementById('sellStarsStatus').textContent = '';
+document.getElementById('sellStarsAmount').min = starsInfo.min;
+renderSellStars();
+sellOverlay.classList.add('show');
+}
+document.getElementById('openSellStarsBtn').addEventListener('click', openSellStars);
+document.getElementById('sellStarsCancel').addEventListener('click', () => sellOverlay.classList.remove('show'));
+document.getElementById('sellStarsAmount').addEventListener('input', renderSellStars);
+document.querySelectorAll('[data-sell-stars]').forEach(btn => btn.addEventListener('click', () => {
+document.getElementById('sellStarsAmount').value = btn.dataset.sellStars;
+renderSellStars();
+}));
+document.getElementById('sellStarsBtn').addEventListener('click', () => {
+const d = starsDict();
+const status = document.getElementById('sellStarsStatus');
+const stars = parseInt(document.getElementById('sellStarsAmount').value, 10) || 0;
+if (!starsInfo || stars < starsInfo.min || stars > starsInfo.max){
+status.textContent = d.stars_topup_bad_amount.replace('{min}', starsInfo ? starsInfo.min : 1);
+return;
+}
+status.textContent = d.loading;
+fetch(API_BASE + '/api/stars/invoice', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ init_data: tg.initData, stars: stars }) })
+.then(r => r.json().then(j => (r.ok ? j : Promise.reject(j))))
+.then(j => {
+status.textContent = '';
+tg.openInvoice(j.link, result => {
+if (result === 'paid'){
+status.textContent = d.sell_stars_done.replace('{sum}', formatCoins(Math.floor(stars * starsInfo.rate)));
+setTimeout(() => { if (typeof loadProfile === 'function') loadProfile(); }, 2500);
+} else if (result === 'failed'){
+status.textContent = d.stars_topup_failed;
+}
+});
+})
+.catch(() => { status.textContent = d.stars_topup_failed; });
+});
+window.dgSellStars = { available: sellStarsAvailable, open: openSellStars, rate: () => (starsInfo ? starsInfo.rate : 0) };
 
 loadStarsInfo();
 

@@ -438,6 +438,11 @@ const cards = [`<button type="button" class="sp-mini" data-sp-promo="chat"><span
 if (promoStarRef && promoStarRef.enabled && promoStarRef.reward){
 cards.push(`<button type="button" class="sp-mini" data-sp-promo="stars"><span class="sp-mini-ico" aria-hidden="true">⭐</span><span><b>${escapeHtml(t('sp_starref_t'))}</b><small>${escapeHtml(t('sp_starref_s').replace('{n}', promoStarRef.reward))}</small></span></button>`);
 }
+// Продать Stars — первой, во всю ширину: деньги сразу, это цепляет.
+const sell = window.dgSellStars;
+if (sell && sell.available()){
+cards.unshift(`<button type="button" class="sp-mini sp-mini-wide sp-mini-gold" data-sp-promo="sell"><span class="sp-mini-ico" aria-hidden="true">⭐</span><span><b>${escapeHtml(t('sp_sell_t'))}</b><small>${escapeHtml(t('sp_sell_s').replace('{rate}', formatCoins(sell.rate())))}</small></span><span class="sp-mini-go" aria-hidden="true">→</span></button>`);
+}
 box.querySelector('#spPromoRow').innerHTML = cards.join('');
 box.hidden = false;
 }
@@ -456,6 +461,7 @@ fetch(API_BASE + '/api/stars_ref/info?init_data=' + encodeURIComponent(tg.initDa
 .catch(() => {});
 }
 }
+document.addEventListener('dg-stars-info', () => { if (promoLoaded) renderPromo(); });
 function promoClick(e){
 if (e.target.closest('#spRaffle')){ hideHome(); goToScreen('timer'); return true; }
 const mini = e.target.closest('[data-sp-promo]');
@@ -463,6 +469,10 @@ if (!mini) return false;
 if (mini.dataset.spPromo === 'chat'){
 if (typeof tg !== 'undefined' && tg && typeof tg.openTelegramLink === 'function') tg.openTelegramLink(CHAT_URL);
 else window.open(CHAT_URL, '_blank', 'noopener');
+} else if (mini.dataset.spPromo === 'sell'){
+hideHome();
+goToScreen('profile');
+setTimeout(() => { if (window.dgSellStars) window.dgSellStars.open(); }, 300);
 } else {
 hideHome();
 goToScreen('profile');
