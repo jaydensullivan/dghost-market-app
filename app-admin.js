@@ -769,6 +769,10 @@ document.getElementById('adminFazerLowBalance').value = d.fazer_low_balance != n
 document.getElementById('adminFazerState').textContent = !d.fazer_configured ? dict.admin_fazer_no_key
 : (d.telegram_provider === 'arcadezy' ? dict.admin_fazer_off : dict.admin_fazer_on)
 .replace('{balance}', d.fazer_balance_usd == null ? '—' : '$' + Number(d.fazer_balance_usd).toFixed(2));
+// Витрина FazerCards: продукты включаем по одному (Stars, потом Steam…).
+document.getElementById('adminGtCatalog').value = d.catalog_setting === 'arcadezy' ? 'arcadezy' : 'fazer';
+document.getElementById('adminGtFazerLive').innerHTML = (d.fazer_products || []).map(p =>
+`<label class="admin-perm-chip"><input type="checkbox" data-gt-fazer-live="${escapeHtml(p.slug)}" ${(d.fazer_live || []).includes(p.slug) ? 'checked' : ''}> ${escapeHtml(p.name)}</label>`).join('');
 gtAdminRates = { binance: d.rate_binance || null, voluto: d.rate_voluto || null };
 document.getElementById('adminStarsEnabled').checked = !!d.stars_enabled;
 document.getElementById('adminStarsRate').value = d.stars_rate || '';
@@ -821,6 +825,8 @@ rate_fee: Number(document.getElementById('adminGtRateFee').value) || 0,
 low_balance: Number(document.getElementById('adminGtLowBalance').value) || 0,
 telegram_provider: document.getElementById('adminGtTgProvider').value,
 fazer_low_balance: Number(document.getElementById('adminFazerLowBalance').value) || 0,
+catalog_mode: document.getElementById('adminGtCatalog').value,
+fazer_live: [...document.querySelectorAll('[data-gt-fazer-live]:checked')].map(i => i.dataset.gtFazerLive),
 stars_enabled: document.getElementById('adminStarsEnabled').checked,
 stars_rate: Number(document.getElementById('adminStarsRate').value) || 150,
 types: [...document.querySelectorAll('[data-gt-admin-type]:checked')].map(i => i.dataset.gtAdminType),
