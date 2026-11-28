@@ -1485,6 +1485,14 @@
 <label class="gt-adm-cell"><span data-i18n="admin_fazer_low_balance">Написать мне, когда на FazerCards меньше, $</span><input id="adminFazerLowBalance" type="number" min="0" step="1"></label>
 </div>
 <div class="shop-hint" id="adminFazerState"></div>
+<!-- Витрина: только продукты FazerCards (по одному) или весь каталог Arcadezy. -->
+<div class="gt-adm-grid u-mt8">
+<label class="gt-adm-cell"><span data-i18n="admin_gt_catalog">Что показывать в мини-аппе</span><select id="adminGtCatalog">
+<option value="fazer" data-i18n="admin_gt_catalog_fazer">Только FazerCards</option>
+<option value="arcadezy" data-i18n="admin_gt_catalog_arcadezy">Весь каталог Arcadezy</option></select></label>
+</div>
+<div style="font-size:12px; color:var(--muted); margin:8px 0 4px;" data-i18n="admin_gt_fazer_live">Включённые продукты FazerCards</div>
+<div class="admin-perm-chips" id="adminGtFazerLive"></div>
 <div style="font-size:12px; color:var(--muted); margin:6px 0 4px;" data-i18n="admin_gt_type_markups">Наценка по разделам, % (пусто — общая)</div>
 <div class="gt-adm-grid" id="adminGtTypeMarkups"></div>
 <div style="font-size:12px; color:var(--muted); margin:10px 0 4px;" data-i18n="admin_gt_slug_markups">Своя наценка для игры</div>
@@ -2998,8 +3006,8 @@
 </div>
 </div>
 <script src="app-core.js?v=21"></script>
-<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=104', en: 'app-i18n-en.js?v=103' };</script>
-<script src="app-i18n.js?v=226"></script>
+<script>window.DG_I18N_SRC = { uz: 'app-i18n-uz.js?v=105', en: 'app-i18n-en.js?v=104' };</script>
+<script src="app-i18n.js?v=227"></script>
 <script src="app-navigation.js?v=35"></script>
 <script src="app-shop.js?v=58"></script>
 <script src="app-legal.js?v=3"></script>
@@ -3020,7 +3028,7 @@
 <script src="app-withdraw.js?v=42"></script>
 <script src="app-instant.js?v=1"></script>
 <!-- Админка (~80 КБ) нужна только админам и аукционистам — грузится по требованию (ensureAdminScript). -->
-<script>window.DG_ADMIN_SRC = 'app-admin.js?v=50';</script>
+<script>window.DG_ADMIN_SRC = 'app-admin.js?v=51';</script>
 <!-- 3D-просмотрщик (210 КБ) грузится после открытия витрины — ensure3DScript в app-navigation.js. -->
 <script>window.DG_3D_SRC = 'app-3d.js?v=139';</script>
 <script src="app-auctions.js?v=9"></script>
