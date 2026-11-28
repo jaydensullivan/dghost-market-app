@@ -296,6 +296,7 @@ home.innerHTML = `<div class="sp-home-in">
 <div class="sp-brand"><img src="logo-120.webp" alt="" width="44" height="44"><div><b>DGhost</b><span>DIGITAL MARKETPLACE</span></div></div>
 <h1 class="sp-home-title" data-i18n="sp_home_title">${escapeHtml(t('sp_home_title'))}</h1>
 <p class="sp-home-sub" data-i18n="sp_home_sub">${escapeHtml(t('sp_home_sub'))}</p>
+<div class="sp-promo" id="spPromo" hidden><button type="button" class="sp-raffle" id="spRaffle" hidden></button><div class="sp-promo-row" id="spPromoRow"></div></div>
 <div class="sp-cards">
 ${['skins', 'gifts', 'topup'].map(key => `<button type="button" class="sp-card sp-card-${key}" data-space-go="${key}">
 <span class="sp-num">${SPACES[key].num}</span>
@@ -310,7 +311,9 @@ ${['skins', 'gifts', 'topup'].map(key => `<button type="button" class="sp-card s
 document.body.appendChild(home);
 renderGiftsDesc();
 refreshGiftsFrom();
+loadPromo();
 home.addEventListener('click', (e) => {
+if (promoClick(e)) return;
 const card = e.target.closest('[data-space-go]');
 if (card) openSpace(card);
 });
@@ -333,6 +336,7 @@ openHome(animate);
 
 function openHome(animate){
 home.hidden = false;
+renderPromo();
 home.classList.remove('sp-leaving');
 home.querySelectorAll('.sp-pick').forEach(c => c.classList.remove('sp-pick'));
 home.classList.toggle('sp-enter', !!animate && !calm());
@@ -391,8 +395,80 @@ const baseSetLanguage = setLanguage;
 setLanguage = function(lang){
 baseSetLanguage(lang);
 renderGiftsDesc();
+renderPromo();
 if (typeof renderGiftStrip === 'function') renderGiftStrip();
 };
+}
+
+// ---------- HOME: розыгрыш, награды недели чата, Stars за друзей ----------
+// Что привлекает людей — над разделами. Розыгрыш — из /api/giveaway (лёгкий
+// JSON), есть только пока идёт; «Stars за друзей» — внутри Telegram и если
+// программа включена (/api/stars_ref/info). Каталоги и 3D на HOME не грузим.
+const CHAT_URL = 'https://t.me/+Xz_xwetAULY2MjFi';
+let promoRaffle = null, promoStarRef = null, promoLoaded = false;
+function plural(n, one, few, many){
+const a = Math.abs(n) % 100, b = a % 10;
+if (a > 10 && a < 20) return many;
+if (b > 1 && b < 5) return few;
+return b === 1 ? one : many;
+}
+function promoLeft(endsAt){
+const ms = new Date(endsAt).getTime() - Date.now();
+if (!(ms > 0)) return '';
+const days = Math.floor(ms / 864e5);
+if (days >= 1) return t('sp_raffle_left_days').replace('{n}', days).replace('{w}', plural(days, t('sp_day_1'), t('sp_day_2'), t('sp_day_5')));
+return t('sp_raffle_left_hours').replace('{n}', Math.max(1, Math.ceil(ms / 36e5)));
+}
+function renderPromo(){
+const box = home && home.querySelector('#spPromo');
+if (!box) return;
+const r = promoRaffle;
+const rb = box.querySelector('#spRaffle');
+const left = r ? promoLeft(r.ends_at) : '';
+rb.hidden = !(r && left);
+if (!rb.hidden){
+const w = Number(r.winners_count) || 1;
+rb.innerHTML = `<span class="sp-raffle-ico" aria-hidden="true">🎁</span>
+<span class="sp-raffle-txt"><span class="sp-raffle-tag">${escapeHtml(t('sp_raffle_tag'))}<span class="sp-raffle-left">⏳ ${escapeHtml(left)}</span></span>
+<b class="sp-raffle-title">${escapeHtml(r.title || '')}</b>
+<span class="sp-raffle-meta">${escapeHtml(t('sp_raffle_meta').replace('{w}', w).replace('{ww}', plural(w, t('sp_winner_1'), t('sp_winner_2'), t('sp_winner_5'))).replace('{p}', Number(r.participants) || 0))}</span></span>
+<span class="sp-raffle-btn">${escapeHtml(t('sp_raffle_btn'))} →</span>`;
+}
+const cards = [`<button type="button" class="sp-mini" data-sp-promo="chat"><span class="sp-mini-ico" aria-hidden="true">🏆</span><span><b>${escapeHtml(t('sp_rewards_t'))}</b><small>${escapeHtml(t('sp_rewards_s'))}</small></span></button>`];
+if (promoStarRef && promoStarRef.enabled && promoStarRef.reward){
+cards.push(`<button type="button" class="sp-mini" data-sp-promo="stars"><span class="sp-mini-ico" aria-hidden="true">⭐</span><span><b>${escapeHtml(t('sp_starref_t'))}</b><small>${escapeHtml(t('sp_starref_s').replace('{n}', promoStarRef.reward))}</small></span></button>`);
+}
+box.querySelector('#spPromoRow').innerHTML = cards.join('');
+box.hidden = false;
+}
+function loadPromo(){
+if (promoLoaded) { renderPromo(); return; }
+promoLoaded = true;
+renderPromo();
+fetch(API_BASE + '/api/giveaway')
+.then(r => r.ok ? r.json() : null)
+.then(d => { const c = d && d.current; promoRaffle = c && c.status === 'active' ? c : null; renderPromo(); })
+.catch(() => {});
+if (typeof tg !== 'undefined' && tg && tg.initData){
+fetch(API_BASE + '/api/stars_ref/info?init_data=' + encodeURIComponent(tg.initData))
+.then(r => r.ok ? r.json() : null)
+.then(d => { promoStarRef = d; renderPromo(); })
+.catch(() => {});
+}
+}
+function promoClick(e){
+if (e.target.closest('#spRaffle')){ hideHome(); goToScreen('timer'); return true; }
+const mini = e.target.closest('[data-sp-promo]');
+if (!mini) return false;
+if (mini.dataset.spPromo === 'chat'){
+if (typeof tg !== 'undefined' && tg && typeof tg.openTelegramLink === 'function') tg.openTelegramLink(CHAT_URL);
+else window.open(CHAT_URL, '_blank', 'noopener');
+} else {
+hideHome();
+goToScreen('profile');
+setTimeout(() => { const b = document.getElementById('starRefBox'); if (b && !b.hidden) b.scrollIntoView({ block: 'center', behavior: calm() ? 'auto' : 'smooth' }); }, 350);
+}
+return true;
 }
 
 window.dgShowSpaces = showHome;
