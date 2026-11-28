@@ -422,6 +422,14 @@ let agreementGateRequested = false;
 function showAgreementGate(){
 if (agreementAccepted) return;
 agreementGateRequested = true;
+// Окно правил открывается только для известного пользователя, а
+// loadMe() зовёт лишь экран скинов: в «Подарках» и «Пополнениях»
+// currentUserId ещё пуст, и окно не появлялось («окно уже открыто»
+// без окна). Тогда сначала грузим профиль — loadMe() сам откроет окно.
+if (!currentUserId && typeof loadMe === 'function'){
+const p = loadMe();
+if (p && typeof p.then === 'function') return;
+}
 updateMandatorySteamOverlay();
 }
 
